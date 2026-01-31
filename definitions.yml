@@ -1,0 +1,133 @@
+definitions:
+  - name: Book Instant or Scheduled Service
+    definition: Allows a customer to request and confirm a one-time or future service by selecting the service type, time slot, and location.
+    aliases:
+      - Service Booking
+      - Create Booking
+    examples:
+      - Book a plumber for immediate service
+      - Schedule weekly house cleaning
+
+  - name: Rate & Review Service
+    definition: Enables a customer to provide feedback after service completion using a numerical rating and optional textual review.
+    aliases:
+      - Service Feedback
+      - Customer Review
+    examples:
+      - Rating a service provider 4 out of 5
+      - Writing a review about service quality
+
+  - name: Profile Management
+    definition: Allows a service provider to create, update, and maintain personal, professional, and verification details.
+    aliases:
+      - Provider Profile Management
+    examples:
+      - Updating contact information
+      - Uploading identity verification documents
+
+  - name: Manage Work Calendar
+    definition: Enables a service provider to define availability, working hours, and blocked time slots for service assignments.
+    aliases:
+      - Availability Management
+      - Schedule Management
+    examples:
+      - Marking weekends as unavailable
+      - Setting daily working hours
+
+  - name: Tracking Daily Service Completion
+    definition: Tracks whether assigned services are completed as scheduled and records execution status.
+    aliases:
+      - Service Execution Tracking
+    examples:
+      - Marking a service as completed
+      - Flagging a missed service
+
+  - name: Manage Users
+    definition: Allows the system administrator to create, update, deactivate, or monitor customer accounts.
+    aliases:
+      - User Administration
+    examples:
+      - Blocking a fraudulent user
+      - Updating user account details
+
+  - name: Manage Providers
+    definition: Enables the system administrator to onboard, approve, suspend, or manage service providers.
+    aliases:
+      - Provider Administration
+    examples:
+      - Approving a new electrician
+      - Suspending a provider for policy violations
+
+  - name: Handle Schedule Failure / Reassignment
+    definition: Manages cases where a scheduled service cannot be fulfilled and reallocates the service to another provider.
+    aliases:
+      - Service Reassignment
+      - Exception Handling
+    examples:
+      - Provider no-show handling
+      - Emergency reassignment to another provider
+
+  - name: Manage Skillset
+    definition: Allows a manager to define, update, and associate skills with service providers.
+    aliases:
+      - Skill Management
+    examples:
+      - Assigning AC Repair skill to a provider
+      - Updating provider certification levels
+
+  - name: Manage Revenue Reports
+    definition: Enables managerial roles to view and analyze revenue generated from services over time.
+    aliases:
+      - Financial Reporting
+    examples:
+      - Monthly revenue summary
+      - Service-wise earnings analysis
+
+  - name: Service Discovery
+    definition: Allows customers to browse or search available services by category, location, or availability.
+    aliases:
+      - Browse Services
+      - Search Services
+    examples:
+      - Browsing cleaning services
+      - Searching for nearby electricians
+
+  - name: Service Assignment
+    definition: Allocates an available and qualified service provider to a confirmed booking.
+    aliases:
+      - Provider Allocation
+    examples:
+      - Auto-assigning nearest provider
+      - Manual assignment by system
+
+  - name: Payment Processing
+    definition: Handles service payments, platform fees, and transaction confirmation through the platform.
+    aliases:
+      - Payment Transaction
+    examples:
+      - Online payment for a booked service
+      - Recording transaction success or failure
+
+  - name: Cancel or Reschedule Booking
+    definition: Allows customers or the system to modify or cancel an existing booking within allowed policies.
+    aliases:
+      - Booking Modification
+    examples:
+      - Rescheduling a service to another date
+      - Cancelling a confirmed booking
+
+  - name: Service Completion Confirmation
+    definition: Confirms that a service has been successfully executed and accepted by the customer.
+    aliases:
+      - Close Service
+    examples:
+      - Customer confirming service completion
+      - System marking service as closed
+
+  - name: Dispute Management
+    definition: Handles complaints raised by customers regarding service quality, delays, or provider behavior.
+    aliases:
+      - Issue Resolution
+    examples:
+      - Reporting poor service quality
+      - Resolving customer-provider disputes
