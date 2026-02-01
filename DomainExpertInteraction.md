@@ -1,16 +1,18 @@
 # Summary of the interaction
 ## Basic information
-    Domain: Digital Marketplace for Services (Non-Retail)
-    Problem statement: On-Demand Service Scheduling and Fulfillment System
-    Date of interaction: 30th Jan 2026
-    Mode of interaction: Video call
-    Duration (in-minutes): 47 min
-    Publicly accessible Video link: https://drive.google.com/file/d/1O4z_dL_rCN1q1zkA0fzaKNp5JvnNuzBU/view?usp=sharing
+### Domain: Digital Marketplace for Services (Non-Retail)
+- Problem statement: On-Demand Service Scheduling and Fulfillment System
+- Date of interaction: 30th Jan 2026
+-  Mode of interaction: Video call
+- Duration (in-minutes): 47 min
+- Publicly accessible Video link: https://drive.google.com/file/d/1O4z_dL_rCN1q1zkA0fzaKNp5JvnNuzBU/view?usp=sharing
 ## Domain Expert Details
-    Role/ designation (Do not include personal or sensitive information): Software Engineer – Backend & Machine Learning
-    Experience in the domain (Brief description of responsibilities and years of experience in domain):
-    B.Tech (IT) graduate from IIIT Allahabad with industry experience as Software Engineer–I at Urban Company and prior internships in AI-driven and product-based startups. Experienced in building and optimizing scalable backend systems, working on high-throughput services, database performance optimization, and applied machine learning. Has hands-on experience in NLP, semantic search, distributed systems, and production-grade APIs, with measurable improvements in system latency and performance. Strong background in data structures and algorithms and competitive programming
-    Nature of work: Developer
+### Role/ designation 
+- Software Development Engineer – Backend & Machine Learning
+### Experience in the domain :
+- B.Tech (IT) graduate from IIIT Allahabad with industry experience as Software Engineer–I at Urban Company and prior internships in AI-driven and product-based startups. Experienced in building and optimizing scalable backend systems, working on high-throughput services, database performance optimization, and applied machine learning. Has hands-on experience in NLP, semantic search, distributed systems, and production-grade APIs, with measurable improvements in system latency and performance. Strong background in data structures and algorithms and competitive programming
+### Nature of work
+- Developer
 ## Domain Context and Terminology
 - How would you describe the overall purpose of this problem statement in your daily work?
 ## Overall Purpose of the Problem Statement (Daily Work Perspective)
