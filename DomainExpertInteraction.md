@@ -153,6 +153,7 @@ This strengthens long-term platform trust.
 | Skill-Based Clustering | The process of grouping service providers based on their skills to enable efficient job assignment.                                    |
 | Skill Package          | A predefined set of skills attached to a service provider by the fulfillment team to determine the types of jobs they can be assigned. |
 | Direct Job Assignment  | A process where the fulfillment team assigns jobs directly to providers without allowing providers to accept or reject the job.        |
+
 Some of the terms the domain expert has mentioned are used in the company level. We haven't adopted some of those terms in the project yet because,the domain expert told, it is not advisable to adopt that company level terminology at this stage of project. 
 
 ## Actors and Responsibilities
