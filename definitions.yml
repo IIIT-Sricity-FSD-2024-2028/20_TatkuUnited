@@ -1,133 +1,272 @@
-definitions:
-  - name: Book Instant or Scheduled Service
-    definition: Allows a customer to request and confirm a one-time or future service by selecting the service type, time slot, and location.
-    aliases:
-      - Service Booking
-      - Create Booking
-    examples:
-      - Book a plumber for immediate service
-      - Schedule weekly house cleaning
+# Domain: Digital Marketplace for Services (Non-Retail)
+# Problem Statement: On-Demand Service Scheduling and Fulfillment System
+# Last Updated: 2026-02-01  
 
-  - name: Rate & Review Service
-    definition: Enables a customer to provide feedback after service completion using a numerical rating and optional textual review.
-    aliases:
-      - Service Feedback
-      - Customer Review
-    examples:
-      - Rating a service provider 4 out of 5
-      - Writing a review about service quality
+BookInstantOrScheduledService:
+  definition: >
+    Allows a customer to request and confirm a one-time or future service
+    by selecting the service type, time slot, and location within the platform.
+  examples:
+    - Booking a plumber for immediate service
+    - Scheduling weekly house cleaning
+  aliases:
+    - Service Booking
+    - Create Booking
 
-  - name: Profile Management
-    definition: Allows a service provider to create, update, and maintain personal, professional, and verification details.
-    aliases:
-      - Provider Profile Management
-    examples:
-      - Updating contact information
-      - Uploading identity verification documents
+RateAndReviewService:
+  definition: >
+    Enables a customer to provide feedback after service completion using
+    a numerical rating and optional textual review.
+  examples:
+    - Rating a service provider 4 out of 5
+    - Writing a review about service quality
+  aliases:
+    - Service Feedback
+    - Customer Review
 
-  - name: Manage Work Calendar
-    definition: Enables a service provider to define availability, working hours, and blocked time slots for service assignments.
-    aliases:
-      - Availability Management
-      - Schedule Management
-    examples:
-      - Marking weekends as unavailable
-      - Setting daily working hours
+ProfileManagement:
+  definition: >
+    Allows a service provider to create, update, and maintain personal,
+    professional, and verification-related profile information.
+  examples:
+    - Updating contact information
+    - Uploading identity verification documents
+  aliases:
+    - Provider Profile Management
 
-  - name: Tracking Daily Service Completion
-    definition: Tracks whether assigned services are completed as scheduled and records execution status.
-    aliases:
-      - Service Execution Tracking
-    examples:
-      - Marking a service as completed
-      - Flagging a missed service
+ManageWorkCalendar:
+  definition: >
+    Enables a service provider to define availability, working hours,
+    and blocked time slots for accepting service assignments.
+  examples:
+    - Marking weekends as unavailable
+    - Setting daily working hours
+  aliases:
+    - Availability Management
+    - Schedule Management
 
-  - name: Manage Users
-    definition: Allows the system administrator to create, update, deactivate, or monitor customer accounts.
-    aliases:
-      - User Administration
-    examples:
-      - Blocking a fraudulent user
-      - Updating user account details
+TrackingDailyServiceCompletion:
+  definition: >
+    Tracks whether assigned services are completed as scheduled and records
+    the execution status of each service.
+  examples:
+    - Marking a service as completed
+    - Flagging a missed service
+  aliases:
+    - Service Execution Tracking
 
-  - name: Manage Providers
-    definition: Enables the system administrator to onboard, approve, suspend, or manage service providers.
-    aliases:
-      - Provider Administration
-    examples:
-      - Approving a new electrician
-      - Suspending a provider for policy violations
+ManageUsers:
+  definition: >
+    Allows the system administrator to create, update, deactivate,
+    or monitor customer accounts.
+  examples:
+    - Blocking a fraudulent user
+    - Updating user account details
+  aliases:
+    - User Administration
 
-  - name: Handle Schedule Failure / Reassignment
-    definition: Manages cases where a scheduled service cannot be fulfilled and reallocates the service to another provider.
-    aliases:
-      - Service Reassignment
-      - Exception Handling
-    examples:
-      - Provider no-show handling
-      - Emergency reassignment to another provider
+ManageProviders:
+  definition: >
+    Enables the system administrator to onboard, approve, suspend,
+    or manage service providers on the platform.
+  examples:
+    - Approving a new electrician
+    - Suspending a provider for policy violations
+  aliases:
+    - Provider Administration
 
-  - name: Manage Skillset
-    definition: Allows a manager to define, update, and associate skills with service providers.
-    aliases:
-      - Skill Management
-    examples:
-      - Assigning AC Repair skill to a provider
-      - Updating provider certification levels
+HandleScheduleFailureOrReassignment:
+  definition: >
+    Manages situations where a scheduled service cannot be fulfilled
+    and reallocates the service to another suitable provider.
+  examples:
+    - Handling provider no-show
+    - Emergency reassignment to another provider
+  aliases:
+    - Service Reassignment
+    - Exception Handling
 
-  - name: Manage Revenue Reports
-    definition: Enables managerial roles to view and analyze revenue generated from services over time.
-    aliases:
-      - Financial Reporting
-    examples:
-      - Monthly revenue summary
-      - Service-wise earnings analysis
+ManageSkillset:
+  definition: >
+    Allows managerial roles to define, update, and associate skills
+    with service providers.
+  examples:
+    - Assigning AC Repair skill to a provider
+    - Updating provider certification levels
+  aliases:
+    - Skill Management
 
-  - name: Service Discovery
-    definition: Allows customers to browse or search available services by category, location, or availability.
-    aliases:
-      - Browse Services
-      - Search Services
-    examples:
-      - Browsing cleaning services
-      - Searching for nearby electricians
+ManageRevenueReports:
+  definition: >
+    Enables managers to view and analyze revenue generated from services
+    over a specific time period.
+  examples:
+    - Monthly revenue summary
+    - Service-wise earnings analysis
+  aliases:
+    - Financial Reporting
 
-  - name: Service Assignment
-    definition: Allocates an available and qualified service provider to a confirmed booking.
-    aliases:
-      - Provider Allocation
-    examples:
-      - Auto-assigning nearest provider
-      - Manual assignment by system
+ServiceDiscovery:
+  definition: >
+    Allows customers to browse or search available services based on
+    category, location, or availability.
+  examples:
+    - Browsing cleaning services
+    - Searching for nearby electricians
+  aliases:
+    - Browse Services
+    - Search Services
 
-  - name: Payment Processing
-    definition: Handles service payments, platform fees, and transaction confirmation through the platform.
-    aliases:
-      - Payment Transaction
-    examples:
-      - Online payment for a booked service
-      - Recording transaction success or failure
+ServiceAssignment:
+  definition: >
+    Allocates an available and qualified service provider to a confirmed
+    service booking.
+  examples:
+    - Auto-assigning the nearest provider
+    - Manual assignment by the system
+  aliases:
+    - Provider Allocation
 
-  - name: Cancel or Reschedule Booking
-    definition: Allows customers or the system to modify or cancel an existing booking within allowed policies.
-    aliases:
-      - Booking Modification
-    examples:
-      - Rescheduling a service to another date
-      - Cancelling a confirmed booking
+PaymentProcessing:
+  definition: >
+    Handles customer payments, platform fees, and transaction confirmation
+    for booked services.
+  examples:
+    - Online payment for a booked service
+    - Recording transaction success or failure
+  aliases:
+    - Payment Transaction
 
-  - name: Service Completion Confirmation
-    definition: Confirms that a service has been successfully executed and accepted by the customer.
-    aliases:
-      - Close Service
-    examples:
-      - Customer confirming service completion
-      - System marking service as closed
+CancelOrRescheduleBooking:
+  definition: >
+    Allows customers or the system to modify or cancel an existing booking
+    according to platform policies.
+  examples:
+    - Rescheduling a service to another date
+    - Cancelling a confirmed booking
+  aliases:
+    - Booking Modification
 
-  - name: Dispute Management
-    definition: Handles complaints raised by customers regarding service quality, delays, or provider behavior.
-    aliases:
-      - Issue Resolution
-    examples:
-      - Reporting poor service quality
-      - Resolving customer-provider disputes
+ServiceCompletionConfirmation:
+  definition: >
+    Confirms that a service has been successfully executed and accepted
+    by the customer.
+  examples:
+    - Customer confirming service completion
+    - System marking service as closed
+  aliases:
+    - Close Service
+
+DisputeManagement:
+  definition: >
+    Handles complaints raised by customers regarding service quality,
+    delays, or service provider behavior.
+  examples:
+    - Reporting poor service quality
+    - Resolving customer-provider disputes
+  aliases:
+    - Issue Resolution
+
+Checkout:
+  definition: >
+    Represents the final step in the service booking process where the
+    customer reviews service details and completes payment before booking
+    confirmation.
+  examples:
+    - Customer confirms service details and pays for the booking
+  aliases:
+    - Checkout Screen
+    - Payment Confirmation
+
+FulfillmentTeam:
+  definition: >
+    An internal operational team responsible for assigning services,
+    managing provider allocation, and ensuring successful service execution.
+  examples:
+    - Assigning a provider to a confirmed booking
+    - Reassigning a job when a provider is unavailable
+  aliases:
+    - Operations Team
+    - Fulfillment Operations
+
+CatalogTeam:
+  definition: >
+    An internal team responsible for managing service listings, categories,
+    pricing structures, and service definitions on the platform.
+  examples:
+    - Creating a new service category
+    - Updating service pricing and descriptions
+  aliases:
+    - Service Catalog Management Team
+
+DeliveryTeam:
+  definition: >
+    An internal team responsible for overseeing the on-ground execution
+    and completion of services delivered to customers.
+  examples:
+    - Monitoring daily service completion
+    - Escalating service delays or failures
+  aliases:
+    - Service Execution Team
+
+Skill:
+  definition: >
+    A specific capability or competency required by a service provider
+    to perform a particular service.
+  examples:
+    - AC Repair
+    - Deep Cleaning
+  aliases:
+    - Provider Skill
+    - Competency
+
+ServiceProvider:
+  definition: >
+    An individual or organization registered on the platform to deliver
+    services assigned by the fulfillment team.
+  examples:
+    - Electrician assigned to a home repair service
+  aliases:
+    - Provider
+    - Service Partner
+
+ServiceCategory:
+  definition: >
+    A classification used to group related services based on their nature
+    or domain.
+  examples:
+    - Electrical Services
+    - Home Cleaning
+  aliases:
+    - Category
+    - Service Type
+
+ProviderSkillClustering:
+  definition: >
+    The process of grouping service providers based on their skills to
+    enable efficient service assignment.
+  examples:
+    - Clustering AC repair providers separately from plumbers
+  aliases:
+    - Skill-Based Clustering
+    - Provider Grouping
+
+SkillPackage:
+  definition: >
+    A predefined set of skills attached to a service provider or service
+    role by the fulfillment team to determine eligible job assignments.
+  examples:
+    - Assigning a home cleaning skill package to a provider
+  aliases:
+    - Skill Set
+    - Provider Skill Package
+
+DirectJobAssignment:
+  definition: >
+    A fulfillment process where the fulfillment team directly assigns
+    jobs to service providers without allowing acceptance or rejection.
+  examples:
+    - Provider automatically assigned a service booking
+  aliases:
+    - Forced Assignment
+    - System-Assigned Job
