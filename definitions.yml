@@ -217,8 +217,7 @@ ServiceProvider:
   examples:
     - Electrician assigned to a home repair service
   aliases:
-    - Provider
-    - Service Partner
+    - Partner
 
 ServiceCategory:
   definition: >
