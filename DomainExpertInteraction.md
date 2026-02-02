@@ -14,8 +14,7 @@
 ### Nature of work
 - Developer
 ## Domain Context and Terminology
-- How would you describe the overall purpose of this problem statement in your daily work?
-## Overall Purpose of the Problem Statement (Daily Work Perspective)
+### Overall Purpose of the Problem Statement (Daily Work Perspective)
 
 The overall purpose of the **On-Demand Service Scheduling and Fulfillment System** in daily work is to systematically manage and control how service requests are **scheduled, assigned, and executed** in a reliable and structured manner.
 
