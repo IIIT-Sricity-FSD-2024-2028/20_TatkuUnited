@@ -55,16 +55,6 @@ TrackingDailyServiceCompletion:
   aliases:
     - Service Execution Tracking
 
-ManageUsers:
-  definition: >
-    Allows the system administrator to create, update, deactivate,
-    or monitor customer accounts.
-  examples:
-    - Blocking a fraudulent user
-    - Updating user account details
-  aliases:
-    - User Administration
-
 ManageProviders:
   definition: >
     Enables the system administrator to onboard, approve, suspend,
