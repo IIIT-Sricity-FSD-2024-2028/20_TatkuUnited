@@ -131,11 +131,10 @@ Fulfillment logic, scheduling algorithms, delivery coordination, and administrat
 
 ---
 
-## 9. Planned Features by Actor
+## 9. Features for Actors
 
 ### Customer
 - Book instant, scheduled, or recurring services  
-- Select system-generated slots  
 - Make secure payments  
 - Receive provider and schedule notifications  
 - Track service execution  
