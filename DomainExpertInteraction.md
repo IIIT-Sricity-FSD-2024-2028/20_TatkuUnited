@@ -140,7 +140,7 @@ Feedback and collective learning allow:
 
 This strengthens long-term platform trust.
 
-- List key terms used by the domain expert and their meanings (Copy these to definition.yml)
+## Key terms mentioned by the Domain expert
 
 | Term                   | Meaning as explained by the expert                                                                                                     |
 | ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
