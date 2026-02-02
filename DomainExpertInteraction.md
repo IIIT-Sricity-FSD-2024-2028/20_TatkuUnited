@@ -365,7 +365,7 @@ The domain expert highlighted that **managing these scheduling variables at scal
 ### Key Insight
 
 > While the high-level system design is straightforward, the real challenge lies in implementing a robust and flexible scheduling mechanism that can handle diverse services, time options, and provider constraints while ensuring reliable fulfillment.
- ## Assumptions & Clarifications
+
 ## Assumptions & Clarifications
 
 ### 1. Assumptions Made by the Team and Confirmed
