@@ -79,11 +79,13 @@ The platform adopts a **Collective Fulfillment Model**, inspired by real-world l
 
 ### Key Characteristics
 
-- Providers are grouped into **collectives** based on:
-  - Region
-  - Skill sets
-- Each collective maintains a **shared work calendar**
-- A **Collective Manager** oversees coordination
+- The platform **leverages pre-existing provider collectives** rather than creating or restructuring them  
+- Individual providers are **not onboarded independently**; all providers operate **through their respective collectives**  
+- Collectives are already organized based on:
+  - Region  
+  - Skill sets  
+- Each collective operates a **shared work calendar** for its providers  
+- A designated **Collective Manager** is responsible for coordination and operational oversight within the collective  
 
 ### Why This Model?
 
