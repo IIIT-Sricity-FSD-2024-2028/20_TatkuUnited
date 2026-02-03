@@ -45,16 +45,6 @@ ManageWorkCalendar:
     - Availability Management
     - Schedule Management
 
-TrackingDailyServiceCompletion:
-  definition: >
-    Tracks whether assigned services are completed as scheduled and records
-    the execution status of each service.
-  examples:
-    - Marking a service as completed
-    - Flagging a missed service
-  aliases:
-    - Service Execution Tracking
-
 ManageServiceProviders:
   definition: >
     The system manages service provider onboarding, intelligently assigns providers to customer requests, 
