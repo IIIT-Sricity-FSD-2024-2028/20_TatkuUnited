@@ -55,15 +55,17 @@ TrackingDailyServiceCompletion:
   aliases:
     - Service Execution Tracking
 
-ManageProviders:
+ManageServiceProviders:
   definition: >
-    Enables the system administrator to onboard, approve, suspend,
-    or manage service providers on the platform.
+    The system manages service provider onboarding, intelligently assigns providers to customer requests, 
+    updates work calendars in real time, and allows approval or suspension of providers.
   examples:
-    - Approving a new electrician
-    - Suspending a provider for policy violations
+    - Approving a new electrician.
+    - Assigning the service provider to the customer and updating the work calender.
+    - Suspending/sending warnings to a provider for policy violations.
   aliases:
     - Provider Administration
+    - Service Provider Management
 
 HandleScheduleFailureOrReassignment:
   definition: >
