@@ -125,7 +125,7 @@ The platform supports three booking types:
 
 1. **Customer**
 2. **Service Provider**
-3. **Manager (Collective Manager)**
+3. **Manager**
 
 Fulfillment logic, scheduling algorithms, delivery coordination, and administrative controls are **internal system responsibilities**.
 
@@ -151,7 +151,7 @@ Fulfillment logic, scheduling algorithms, delivery coordination, and administrat
 
 ---
 
-### Manager (Collective Manager)
+### Manager (Collective Representative)
 - Oversee collective-level scheduling  
 - Handle exceptional cases (disputes, no-shows)  
 - Monitor provider performance  
