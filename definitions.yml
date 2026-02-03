@@ -2,6 +2,53 @@
 # Problem Statement: On-Demand Service Scheduling and Fulfillment System
 # Last Updated: 2026-02-01  
 
+ServiceProvider:
+  definition: >
+    An individual or organization registered on the platform to deliver
+    services assigned by the fulfillment team.
+  examples:
+    - Electrician assigned to a home repair service
+  aliases:
+    - Partner
+
+Customer:
+  definition: >
+    An end user who browses available services, selects one or more services,
+    schedules or requests service delivery, and completes the booking and
+    payment process through the platform.
+  examples:
+    - A homeowner booking a one-time cleaning service
+    - A customer scheduling a recurring maintenance service
+  aliases:
+    - User
+    - Client
+
+Manager:
+  definition: >
+    An authorized individual who represents and oversees a service provider
+    collective, responsible for managing providers, approving or suspending
+    requests, and ensuring operational readiness and compliance.
+  examples:
+    - A person who represents a collective
+    - A manager approving new service providers
+  aliases:
+    - Representative
+    - Collective Manager
+
+System:
+  definition: >
+    The automated backend of the platform that orchestrates catalog, scheduling,
+    allocation, and fulfilment processes, handling all background operations
+    required to deliver services reliably and consistently.
+  examples:
+    - Automatically assigning service providers to customer bookings
+    - Detecting scheduling conflicts and updating work calendars
+    - Sending booking, payment, and status notifications
+  aliases:
+    - Platform
+    - Backend System
+    - Automated Services
+
 BookInstantOrScheduledService:
   definition: >
     Allows a customer to request and confirm a one-time or future service
@@ -201,15 +248,6 @@ Skill:
   aliases:
     - Provider Skill
     - Competency
-
-ServiceProvider:
-  definition: >
-    An individual or organization registered on the platform to deliver
-    services assigned by the fulfillment team.
-  examples:
-    - Electrician assigned to a home repair service
-  aliases:
-    - Partner
 
 ServiceCategory:
   definition: >
