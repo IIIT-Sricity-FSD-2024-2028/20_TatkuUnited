@@ -80,7 +80,7 @@ The platform adopts a **Collective Fulfillment Model**, inspired by real-world l
 ### Key Characteristics
 
 - The platform **leverages pre-existing provider collectives** rather than creating or restructuring them  
-- Individual providers are **not onboarded independently**; all providers operate **through their respective collectives**  
+- Our platform even onboards Individual providers, not exclusively collective providers.  
 - Collectives are already organized based on:
   - Region  
   - Skill sets  
