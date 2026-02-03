@@ -196,6 +196,8 @@ DisputeManagement:
   aliases:
     - Issue Resolution
 
+# Key terms mentioned by the service provider    
+
 Checkout:
   definition: >
     Represents the final step in the service booking process where the
