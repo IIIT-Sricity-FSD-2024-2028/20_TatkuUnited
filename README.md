@@ -79,11 +79,13 @@ The platform adopts a **Collective Fulfillment Model**, inspired by real-world l
 
 ### Key Characteristics
 
-- Providers are grouped into **collectives** based on:
-  - Region
-  - Skill sets
-- Each collective maintains a **shared work calendar**
-- A **Collective Manager** oversees coordination
+- The platform **leverages pre-existing provider collectives** rather than creating or restructuring them  
+- Individual providers will be onboarded if they join the existing collective.  
+- Collectives are already organized based on:
+  - Region  
+  - Skill sets  
+- Each collective operates a **shared work calendar** for its providers  
+- A designated **Collective Manager** is responsible for coordination and operational oversight within the collective  
 
 ### Why This Model?
 
@@ -123,17 +125,16 @@ The platform supports three booking types:
 
 1. **Customer**
 2. **Service Provider**
-3. **Manager (Collective Manager)**
+3. **Manager**
 
 Fulfillment logic, scheduling algorithms, delivery coordination, and administrative controls are **internal system responsibilities**.
 
 ---
 
-## 9. Planned Features by Actor
+## 9. Features for Actors
 
 ### Customer
 - Book instant, scheduled, or recurring services  
-- Select system-generated slots  
 - Make secure payments  
 - Receive provider and schedule notifications  
 - Track service execution  
@@ -150,7 +151,7 @@ Fulfillment logic, scheduling algorithms, delivery coordination, and administrat
 
 ---
 
-### Manager (Collective Manager)
+### Manager (Collective Representative)
 - Oversee collective-level scheduling  
 - Handle exceptional cases (disputes, no-shows)  
 - Monitor provider performance  

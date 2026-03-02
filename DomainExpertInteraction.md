@@ -1,19 +1,20 @@
 # Summary of the interaction
 ## Basic information
-    Domain: Digital Marketplace for Services (Non-Retail)
-    Problem statement: On-Demand Service Scheduling and Fulfillment System
-    Date of interaction: 30th Jan 2026
-    Mode of interaction: Video call
-    Duration (in-minutes): 47 min
-    Publicly accessible Video link: https://drive.google.com/file/d/1O4z_dL_rCN1q1zkA0fzaKNp5JvnNuzBU/view?usp=sharing
+### Domain: Digital Marketplace for Services (Non-Retail)
+- Problem statement: On-Demand Service Scheduling and Fulfillment System
+- Date of interaction: 30th Jan 2026
+-  Mode of interaction: Video call
+- Duration (in-minutes): 47 min
+- Publicly accessible Video link: https://drive.google.com/file/d/1O4z_dL_rCN1q1zkA0fzaKNp5JvnNuzBU/view?usp=sharing
 ## Domain Expert Details
-    Role/ designation (Do not include personal or sensitive information): Software Engineer – Backend & Machine Learning
-    Experience in the domain (Brief description of responsibilities and years of experience in domain):
-    B.Tech (IT) graduate from IIIT Allahabad with industry experience as Software Engineer–I at Urban Company and prior internships in AI-driven and product-based startups. Experienced in building and optimizing scalable backend systems, working on high-throughput services, database performance optimization, and applied machine learning. Has hands-on experience in NLP, semantic search, distributed systems, and production-grade APIs, with measurable improvements in system latency and performance. Strong background in data structures and algorithms and competitive programming
-    Nature of work: Developer
+### Role/ designation 
+- Software Development Engineer – Backend & Machine Learning
+### Experience in the domain :
+- B.Tech (IT) graduate from IIIT Allahabad with industry experience as Software Engineer–I at Urban Company and prior internships in AI-driven and product-based startups. Experienced in building and optimizing scalable backend systems, working on high-throughput services, database performance optimization, and applied machine learning. Has hands-on experience in NLP, semantic search, distributed systems, and production-grade APIs, with measurable improvements in system latency and performance. Strong background in data structures and algorithms and competitive programming
+### Nature of work
+- Developer
 ## Domain Context and Terminology
-- How would you describe the overall purpose of this problem statement in your daily work?
-## Overall Purpose of the Problem Statement (Daily Work Perspective)
+### Overall Purpose of the Problem Statement (Daily Work Perspective)
 
 The overall purpose of the **On-Demand Service Scheduling and Fulfillment System** in daily work is to systematically manage and control how service requests are **scheduled, assigned, and executed** in a reliable and structured manner.
 
@@ -139,7 +140,7 @@ Feedback and collective learning allow:
 
 This strengthens long-term platform trust.
 
-- List key terms used by the domain expert and their meanings (Copy these to definition.yml)
+## Key terms mentioned by the Domain expert
 
 | Term                   | Meaning as explained by the expert                                                                                                     |
 | ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
@@ -364,7 +365,7 @@ The domain expert highlighted that **managing these scheduling variables at scal
 ### Key Insight
 
 > While the high-level system design is straightforward, the real challenge lies in implementing a robust and flexible scheduling mechanism that can handle diverse services, time options, and provider constraints while ensuring reliable fulfillment.
- ## Assumptions & Clarifications
+
 ## Assumptions & Clarifications
 
 ### 1. Assumptions Made by the Team and Confirmed

@@ -2,6 +2,53 @@
 # Problem Statement: On-Demand Service Scheduling and Fulfillment System
 # Last Updated: 2026-02-01  
 
+ServiceProvider:
+  definition: >
+    An individual or organization registered on the platform to deliver
+    services assigned by the fulfillment team.
+  examples:
+    - Electrician assigned to a home repair service
+  aliases:
+    - Partner
+
+Customer:
+  definition: >
+    An end user who browses available services, selects one or more services,
+    schedules or requests service delivery, and completes the booking and
+    payment process through the platform.
+  examples:
+    - A homeowner booking a one-time cleaning service
+    - A customer scheduling a recurring maintenance service
+  aliases:
+    - User
+    - Client
+
+Manager:
+  definition: >
+    An authorized individual who represents and oversees a service provider
+    collective, responsible for managing providers, approving or suspending
+    requests, and ensuring operational readiness and compliance.
+  examples:
+    - A person who represents a collective
+    - A manager approving new service providers
+  aliases:
+    - Representative
+    - Collective Manager
+
+System:
+  definition: >
+    The automated backend of the platform that orchestrates catalog, scheduling,
+    allocation, and fulfilment processes, handling all background operations
+    required to deliver services reliably and consistently.
+  examples:
+    - Automatically assigning service providers to customer bookings
+    - Detecting scheduling conflicts and updating work calendars
+    - Sending booking, payment, and status notifications
+  aliases:
+    - Platform
+    - Backend System
+    - Automated Services
+
 BookInstantOrScheduledService:
   definition: >
     Allows a customer to request and confirm a one-time or future service
@@ -45,35 +92,17 @@ ManageWorkCalendar:
     - Availability Management
     - Schedule Management
 
-TrackingDailyServiceCompletion:
+ManageServiceProviders:
   definition: >
-    Tracks whether assigned services are completed as scheduled and records
-    the execution status of each service.
+    The system manages service provider onboarding, intelligently assigns providers to customer requests, 
+    updates work calendars in real time, and allows approval or suspension of providers.
   examples:
-    - Marking a service as completed
-    - Flagging a missed service
-  aliases:
-    - Service Execution Tracking
-
-ManageUsers:
-  definition: >
-    Allows the system administrator to create, update, deactivate,
-    or monitor customer accounts.
-  examples:
-    - Blocking a fraudulent user
-    - Updating user account details
-  aliases:
-    - User Administration
-
-ManageProviders:
-  definition: >
-    Enables the system administrator to onboard, approve, suspend,
-    or manage service providers on the platform.
-  examples:
-    - Approving a new electrician
-    - Suspending a provider for policy violations
+    - Approving a new electrician.
+    - Assigning the service provider to the customer and updating the work calender.
+    - Suspending/sending warnings to a provider for policy violations.
   aliases:
     - Provider Administration
+    - Service Provider Management
 
 HandleScheduleFailureOrReassignment:
   definition: >
@@ -167,6 +196,8 @@ DisputeManagement:
   aliases:
     - Issue Resolution
 
+# Key terms mentioned by the service provider    
+
 Checkout:
   definition: >
     Represents the final step in the service booking process where the
@@ -219,16 +250,6 @@ Skill:
   aliases:
     - Provider Skill
     - Competency
-
-ServiceProvider:
-  definition: >
-    An individual or organization registered on the platform to deliver
-    services assigned by the fulfillment team.
-  examples:
-    - Electrician assigned to a home repair service
-  aliases:
-    - Provider
-    - Service Partner
 
 ServiceCategory:
   definition: >
