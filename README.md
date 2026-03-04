@@ -43,7 +43,7 @@ Existing platforms such as Urban Company primarily cater to **middle- and high-i
 
 ---
 
-## 4. Target Audience (Key Differentiator)
+## 4. Target Audience 
 
 ### Primary Users
 - Middle-class households  
@@ -66,33 +66,33 @@ The platform is designed to ensure that **solving everyday nuances is just a cli
 ### Provider Experience (Key Difference)
 - Inspired by **unions / collectives**
 - Providers operate as part of a **collective workforce**
-- Scheduling is **not competitive bidding**
+- Fulfilment is **not competitive bidding**
 - No accept/reject flow for jobs  
 
 The system owns the responsibility of fulfillment.
 
 ---
 
-## 6. Collective (Union-Inspired) Model
+## 6. Collective Model
 
 The platform adopts a **Collective Fulfillment Model**, inspired by real-world labor unions, especially in semi-urban and rural contexts.
 
 ### Key Characteristics
 
-- The platform **leverages pre-existing provider collectives** rather than creating or restructuring them  
-- Individual providers will be onboarded if they join the existing collective.  
+- The platform **leverages pre-existing collectives and enables creation of new ones too.**  
+- Individual service providers have a choice of joining a nearby collective or operating on their own.
 - Collectives are already organized based on:
   - Region  
   - Skill sets  
-- Each collective operates a **shared work calendar** for its providers  
-- A designated **Collective Manager** is responsible for coordination and operational oversight within the collective  
+- The platform provides a **shared work calendar** for the service providers of a collective for better schedule and time management.
+- A designated **Collective Manager** is responsible for coordination and operational oversight within the collective.
 
 ### Why This Model?
 
 - Collectives already exist and function effectively  
-- Enables fair work distribution without income pooling  
-- Supports skill growth (senior providers train junior ones)  
-- Makes the platform viable in semi-urban and rural regions  
+- Enables fair work distribution with adopting the concept of income pooling to support healthy benefits such as health, education and skill development.
+- Supports skill growth (senior providers train junior ones).
+- Makes the platform viable in semi-urban and rural regions.
 
 > Customers interact with the **platform**, not individual providers.
 
@@ -125,7 +125,7 @@ The platform supports three booking types:
 
 1. **Customer**
 2. **Service Provider**
-3. **Manager**
+3. **Unit Manager**
 
 Fulfillment logic, scheduling algorithms, delivery coordination, and administrative controls are **internal system responsibilities**.
 
@@ -134,7 +134,7 @@ Fulfillment logic, scheduling algorithms, delivery coordination, and administrat
 ## 9. Features for Actors
 
 ### Customer
-- Book instant, scheduled, or recurring services  
+- Book instant or scheduled services  
 - Make secure payments  
 - Receive provider and schedule notifications  
 - Track service execution  
