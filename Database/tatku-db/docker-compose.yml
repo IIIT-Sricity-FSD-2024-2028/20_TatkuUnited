@@ -1,0 +1,33 @@
+# ============================================================
+# TATKU UNITED — Docker Compose v2.1
+# Spins up a clean PostgreSQL instance with the full schema
+# ============================================================
+
+services:
+  db:
+    image: postgres:16
+    container_name: tatku_db
+    restart: unless-stopped
+
+    environment:
+      POSTGRES_USER: tatku_user
+      POSTGRES_PASSWORD: tatku_pass
+      POSTGRES_DB: tatku_db
+
+    ports:
+      - "5432:5432"
+
+    volumes:
+      # Init script runs automatically on first boot (fresh container)
+      - ./init:/docker-entrypoint-initdb.d
+      # Named volume persists data across container restarts
+      - tatku_pgdata:/var/lib/postgresql/data
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U tatku_user -d tatku_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  tatku_pgdata:
