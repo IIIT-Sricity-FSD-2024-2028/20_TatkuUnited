@@ -1,3 +1,7 @@
+---
+config:
+  layout: elk
+---
 erDiagram
     Sector {
         BIGINT sector_id PK
@@ -296,31 +300,29 @@ erDiagram
         JSONB new_values
         TIMESTAMPTZ changed_at
     }
-
-    %% Relationships
     Collective_Manager ||--|| Collective : "manages"
-    Collective ||--o{ Unit : "contains"
-    Unit_Manager ||--o{ Unit : "manages"
-    Collective ||--o{ Collective_Sector : "covers"
+    Collective ||--|{ Unit : "contains"
+    Unit_Manager ||--|| Unit : "manages"
+    Collective ||--|{ Collective_Sector : "covers"
     Sector ||--o{ Collective_Sector : "belongs to"
-    Unit ||--o{ Service_Provider : "employs"
+    Unit ||--|{ Service_Provider : "employs"
     Sector ||--o{ Service_Provider : "home sector"
-    Service_Provider ||--o{ Provider_Skill : "has"
-    Skill ||--o{ Provider_Skill : "held by"
+    Service_Provider ||--|{ Provider_Skill : "has"
+    Skill ||--|{ Provider_Skill : "held by"
     Service_Provider ||--o{ Provider_Working_Hours : "works"
     Service_Provider ||--o{ Provider_Unavailability : "unavailable"
     Provider_Unavailability ||--o{ Provider_Unavailability : "parent of"
     Category ||--o{ Category : "parent of"
-    Category ||--o{ Service : "categorises"
-    Skill ||--o{ Service : "required by"
+    Service ||--|| Category : "belongs to"
+    Service ||--||Skill : "requires"
     Service ||--o{ Package_Service : "included in"
     Service_Package ||--o{ Package_Service : "contains"
     Customer ||--o{ Service_Package : "creates custom"
     Customer ||--o{ Booking : "places"
-    Sector ||--o{ Booking : "located in"
+    Booking ||--||Sector : "located in"
     Booking ||--o{ Booking : "parent of"
-    Booking ||--o{ Booking_Package : "includes"
-    Service_Package ||--o{ Booking_Package : "booked as"
+    Booking ||--|{ Booking_Package : "includes"
+    Service_Package ||--|{ Booking_Package : "booked as"
     Booking ||--o{ Job_Assignment : "assigned via"
     Service_Provider ||--o{ Job_Assignment : "executes"
     Booking ||--|| Transaction : "paid by"
