@@ -1,0 +1,662 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Discover Services – Tatku United</title>
+    <link rel="stylesheet" href="../css/service_pages/service_discovery.css" />
+  </head>
+  <body>
+    <!-- NAVBAR -->
+    <nav class="navbar">
+      <div class="nav-inner">
+        <a href="#" class="logo">
+          <span class="logo-badge">TU</span>
+          <span class="logo-name">Tatku United</span>
+        </a>
+        <ul class="nav-links">
+          <li><a href="#">Home</a></li>
+          <li><a href="service_discovery.html" class="active">Services</a></li>
+          <li><a href="#">About</a></li>
+        </ul>
+        <div class="nav-auth">
+          <a href="#" class="btn-login">Login</a>
+          <a href="#" class="btn-register">Register</a>
+        </div>
+        <button class="hamburger" id="hamburger" aria-label="Toggle menu">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+      <div class="mobile-menu" id="mobileMenu">
+        <ul>
+          <li><a href="#">Home</a></li>
+          <li><a href="service_discovery.html">Services</a></li>
+          <li><a href="#">About</a></li>
+          <li><a href="#">Login</a></li>
+          <li><a href="#">Register</a></li>
+        </ul>
+      </div>
+    </nav>
+
+    <!-- HERO -->
+    <section class="hero">
+      <div class="container">
+        <h1 class="hero-title">Discover Services</h1>
+        <p class="hero-sub">
+          Find trusted professionals for repairs, cleaning, and home maintenance
+          with upfront pricing and guaranteed satisfaction.
+        </p>
+        <div class="search-wrap">
+          <span class="search-icon">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <circle cx="11" cy="11" r="8" />
+              <line x1="21" y1="21" x2="16.65" y2="16.65" />
+            </svg>
+          </span>
+          <input
+            type="text"
+            id="searchInput"
+            class="search-input"
+            placeholder="Search for services (e.g., AC Repair, Plumbing, Cleaning)"
+          />
+        </div>
+      </div>
+    </section>
+
+    <!-- POPULAR CATEGORIES -->
+    <section class="section">
+      <div class="container">
+        <h2 class="section-heading">Popular Categories</h2>
+        <div class="categories-row" id="categoriesRow">
+          <button class="category-pill active" data-cat="all">
+            <span class="cat-icon-wrap">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+              >
+                <rect x="2" y="3" width="20" height="14" rx="2" />
+                <path d="M2 10h20M12 17v4M8 21h8" />
+              </svg>
+            </span>
+            <span>All</span>
+          </button>
+          <button class="category-pill" data-cat="ac repair">
+            <span class="cat-icon-wrap">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+              >
+                <rect x="2" y="6" width="20" height="12" rx="2" />
+                <path d="M6 12h12M8 9l-2 3 2 3M16 9l2 3-2 3" />
+              </svg>
+            </span>
+            <span>AC Repair</span>
+          </button>
+          <button class="category-pill" data-cat="electrical">
+            <span class="cat-icon-wrap">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+              >
+                <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
+              </svg>
+            </span>
+            <span>Electrical</span>
+          </button>
+          <button class="category-pill" data-cat="cleaning">
+            <span class="cat-icon-wrap">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+              >
+                <path d="M4 19l4-12 8 4-4 12H4zM8 7l4-4M16 11l4-4" />
+              </svg>
+            </span>
+            <span>Cleaning</span>
+          </button>
+          <button class="category-pill" data-cat="plumbing">
+            <span class="cat-icon-wrap">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+              >
+                <path
+                  d="M12 2a2 2 0 012 2c0 .74-.4 1.38-1 1.73V7h1a7 7 0 017 7H3a7 7 0 017-7h1V5.73c-.6-.35-1-.99-1-1.73a2 2 0 012-2zM5 15v1a7 7 0 0014 0v-1"
+                />
+              </svg>
+            </span>
+            <span>Plumbing</span>
+          </button>
+          <button class="category-pill" data-cat="appliances">
+            <span class="cat-icon-wrap">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+              >
+                <rect x="2" y="3" width="20" height="18" rx="2" />
+                <path d="M2 9h20M9 3v6M12 13v4M12 17h4" />
+              </svg>
+            </span>
+            <span>Appliance Repair</span>
+          </button>
+          <button class="category-pill" data-cat="painting">
+            <span class="cat-icon-wrap">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+              >
+                <path d="M2 20h20M6 20V8l6-5 6 5v12M10 20v-6h4v6" />
+              </svg>
+            </span>
+            <span>Painting</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- RECOMMENDED -->
+    <section class="section recommended">
+      <div class="container">
+        <div class="section-header">
+          <div>
+            <h2 class="section-heading no-gap">Recommended for you</h2>
+            <p class="section-sub">Top rated services in your area</p>
+          </div>
+          <a href="#" class="view-all-link">View all</a>
+        </div>
+
+        <div class="services-grid" id="servicesGrid">
+          <a href="service_page.html" class="service-card" data-cat="ac repair">
+            <div class="card-img">
+              <div class="card-badge ac">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <rect x="2" y="6" width="20" height="12" rx="2" />
+                  <path d="M6 12h12M8 9l-2 3 2 3M16 9l2 3-2 3" />
+                </svg>
+                AC REPAIR
+              </div>
+              <img
+                src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSs1-41hftOk0R2Q3bYrUCvADmJYdlwMgW32w&s"
+                alt="AC Repair"
+              />
+            </div>
+            <div class="card-body">
+              <div class="card-title-row">
+                <h3>Split AC Gas Refill</h3>
+                <span class="card-rating">
+                  <svg viewBox="0 0 20 20" fill="#f5a623">
+                    <path
+                      d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"
+                    />
+                  </svg>
+                  4.8
+                </span>
+              </div>
+              <p class="card-desc">
+                Complete pressure check and gas top-up for efficient cooling
+                performance.
+              </p>
+              <div class="card-footer">
+                <div>
+                  <span class="price-label">Starting from</span>
+                  <span class="price">₹499</span>
+                </div>
+                <button class="btn-book" onclick="event.preventDefault()">
+                  Add to Cart
+                </button>
+              </div>
+            </div>
+          </a>
+
+          <a href="service_page.html" class="service-card" data-cat="cleaning">
+            <div class="card-img">
+              <div class="card-badge cleaning">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path d="M4 19l4-12 8 4-4 12H4z" />
+                </svg>
+                CLEANING
+              </div>
+              <img
+                src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=80"
+                alt="Cleaning"
+              />
+            </div>
+            <div class="card-body">
+              <div class="card-title-row">
+                <h3>Full Home Deep Cleaning</h3>
+                <span class="card-rating">
+                  <svg viewBox="0 0 20 20" fill="#f5a623">
+                    <path
+                      d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"
+                    />
+                  </svg>
+                  4.9
+                </span>
+              </div>
+              <p class="card-desc">
+                Eco-friendly intensive cleaning for living rooms, kitchen, and
+                balcony.
+              </p>
+              <div class="card-footer">
+                <div>
+                  <span class="price-label">Starting from</span>
+                  <span class="price">₹2,499</span>
+                </div>
+                <button class="btn-book" onclick="event.preventDefault()">
+                  Add to Cart
+                </button>
+              </div>
+            </div>
+          </a>
+
+          <a
+            href="service_page.html"
+            class="service-card"
+            data-cat="electrical"
+          >
+            <div class="card-img">
+              <div class="card-badge electrical">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
+                </svg>
+                ELECTRICAL
+              </div>
+              <img
+                src="https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=600&q=80"
+                alt="Electrical"
+              />
+            </div>
+            <div class="card-body">
+              <div class="card-title-row">
+                <h3>Switchboard Repair</h3>
+                <span class="card-rating">
+                  <svg viewBox="0 0 20 20" fill="#f5a623">
+                    <path
+                      d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"
+                    />
+                  </svg>
+                  4.7
+                </span>
+              </div>
+              <p class="card-desc">
+                Diagnosis and repair of flickering lights, faulty sockets, and
+                breakers.
+              </p>
+              <div class="card-footer">
+                <div>
+                  <span class="price-label">Starting from</span>
+                  <span class="price">₹199</span>
+                </div>
+                <button class="btn-book" onclick="event.preventDefault()">
+                  Add to Cart
+                </button>
+              </div>
+            </div>
+          </a>
+
+          <a href="#" class="service-card" data-cat="plumbing">
+            <div class="card-img">
+              <div class="card-badge plumbing">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path
+                    d="M12 2a2 2 0 012 2c0 .74-.4 1.38-1 1.73V7h1a7 7 0 017 7H3a7 7 0 017-7h1V5.73c-.6-.35-1-.99-1-1.73A2 2 0 0112 2z"
+                  />
+                </svg>
+                PLUMBING
+              </div>
+              <img
+                src="https://images.unsplash.com/photo-1607472586893-edb57bdc0e39?w=600&q=80"
+                alt="Plumbing"
+              />
+            </div>
+            <div class="card-body">
+              <div class="card-title-row">
+                <h3>Faucet &amp; Sink Install</h3>
+                <span class="card-rating">
+                  <svg viewBox="0 0 20 20" fill="#f5a623">
+                    <path
+                      d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"
+                    />
+                  </svg>
+                  4.6
+                </span>
+              </div>
+              <p class="card-desc">
+                Quick installation of bathroom and kitchen fittings with leak
+                protection.
+              </p>
+              <div class="card-footer">
+                <div>
+                  <span class="price-label">Starting from</span>
+                  <span class="price">₹299</span>
+                </div>
+                <button class="btn-book" onclick="event.preventDefault()">
+                  Add to Cart
+                </button>
+              </div>
+            </div>
+          </a>
+
+          <a href="#" class="service-card" data-cat="appliances">
+            <div class="card-img">
+              <div class="card-badge appliances">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <rect x="2" y="3" width="20" height="18" rx="2" />
+                  <circle cx="12" cy="14" r="4" />
+                </svg>
+                APPLIANCES
+              </div>
+              <img
+                src="https://images.unsplash.com/photo-1626806787461-102c1bfaaea1?w=600&q=80"
+                alt="Appliances"
+              />
+            </div>
+            <div class="card-body">
+              <div class="card-title-row">
+                <h3>Washing Machine Repair</h3>
+                <span class="card-rating">
+                  <svg viewBox="0 0 20 20" fill="#f5a623">
+                    <path
+                      d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"
+                    />
+                  </svg>
+                  4.5
+                </span>
+              </div>
+              <p class="card-desc">
+                Diagnostic service for front/top load machines. Fix for leaks
+                and motor issues.
+              </p>
+              <div class="card-footer">
+                <div>
+                  <span class="price-label">Starting from</span>
+                  <span class="price">₹599</span>
+                </div>
+                <button class="btn-book" onclick="event.preventDefault()">
+                  Add to Cart
+                </button>
+              </div>
+            </div>
+          </a>
+
+          <a href="#" class="service-card" data-cat="painting">
+            <div class="card-img">
+              <div class="card-badge painting">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path d="M2 20h20M6 20V8l6-5 6 5v12" />
+                </svg>
+                PAINTING
+              </div>
+              <img
+                src="https://images.unsplash.com/photo-1562259929-b4e1fd3aef09?w=600&q=80"
+                alt="Painting"
+              />
+            </div>
+            <div class="card-body">
+              <div class="card-title-row">
+                <h3>Living Room Accent Wall</h3>
+                <span class="card-rating">
+                  <svg viewBox="0 0 20 20" fill="#f5a623">
+                    <path
+                      d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"
+                    />
+                  </svg>
+                  4.8
+                </span>
+              </div>
+              <p class="card-desc">
+                High-quality premium finish for your feature walls. Texture and
+                gloss options available.
+              </p>
+              <div class="card-footer">
+                <div>
+                  <span class="price-label">Starting from</span>
+                  <span class="price">₹1,299</span>
+                </div>
+                <button class="btn-book" onclick="event.preventDefault()">
+                  Add to Cart
+                </button>
+              </div>
+            </div>
+          </a>
+        </div>
+
+        <div class="no-results" id="noResults" style="display: none">
+          <p>No services found. Try a different search or category.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- WHY TATKU UNITED -->
+    <section class="why-section">
+      <div class="container">
+        <div class="why-grid">
+          <div class="why-card">
+            <div class="why-icon">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+              >
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+              </svg>
+            </div>
+            <h3>Background Verified</h3>
+            <p>
+              All our professionals go through a rigorous 5-step verification
+              process.
+            </p>
+          </div>
+          <div class="why-card">
+            <div class="why-icon">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+              >
+                <rect x="2" y="5" width="20" height="14" rx="2" />
+                <path d="M2 10h20" />
+              </svg>
+            </div>
+            <h3>Transparent Pricing</h3>
+            <p>No hidden charges. Know exactly what you pay before you book.</p>
+          </div>
+          <div class="why-card">
+            <div class="why-icon">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+              >
+                <path
+                  d="M14 9V5a3 3 0 00-3-3l-4 9v11h11.28a2 2 0 002-1.7l1.38-9a2 2 0 00-2-2.3H14z"
+                />
+                <path d="M7 22H4a2 2 0 01-2-2v-7a2 2 0 012-2h3" />
+              </svg>
+            </div>
+            <h3>Satisfaction Guarantee</h3>
+            <p>Not happy with the service? We'll make it right, guaranteed.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="footer">
+      <div class="container">
+        <div class="footer-grid">
+          <div class="footer-brand">
+            <a href="#" class="logo">
+              <span class="logo-badge">TU</span>
+              <span class="logo-name">Tatku United</span>
+            </a>
+            <p>
+              Revolutionizing local services through high-efficiency collective
+              scheduling and professional excellence.
+            </p>
+            <div class="footer-socials">
+              <a href="#" aria-label="Website">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <circle cx="12" cy="12" r="10" />
+                  <path
+                    d="M2 12h20M12 2a15.3 15.3 0 010 20M12 2a15.3 15.3 0 000 20"
+                  />
+                </svg>
+              </a>
+              <a href="#" aria-label="Email">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <rect x="2" y="4" width="20" height="16" rx="2" />
+                  <path d="M22 7l-10 7L2 7" />
+                </svg>
+              </a>
+              <a href="#" aria-label="Social">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <rect x="2" y="2" width="20" height="20" rx="5" />
+                  <circle cx="12" cy="12" r="4" />
+                  <circle cx="17.5" cy="6.5" r="0.5" fill="currentColor" />
+                </svg>
+              </a>
+            </div>
+          </div>
+          <div class="footer-col">
+            <h4>COMPANY</h4>
+            <ul>
+              <li><a href="#">About Us</a></li>
+              <li><a href="#">Our Collective Model</a></li>
+              <li><a href="#">Careers</a></li>
+              <li><a href="#">Press Kit</a></li>
+            </ul>
+          </div>
+          <div class="footer-col">
+            <h4>SERVICES</h4>
+            <ul>
+              <li><a href="#">AC Repair</a></li>
+              <li><a href="#">Electrical</a></li>
+              <li><a href="category_page.html">Cleaning</a></li>
+              <li><a href="#">Plumbing</a></li>
+            </ul>
+          </div>
+          <div class="footer-col footer-contact">
+            <h4>CONTACT</h4>
+            <ul>
+              <li>
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" />
+                  <circle cx="12" cy="10" r="3" />
+                </svg>
+                123 Collective Way, SF, CA
+              </li>
+              <li>
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path
+                    d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 10.81 19.79 19.79 0 01.01 2.22 2 2 0 012 .04h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.91 7.91a16 16 0 006.29 6.29l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"
+                  />
+                </svg>
+                +1 (555) 123-4567
+              </li>
+              <li>
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <rect x="2" y="4" width="20" height="16" rx="2" />
+                  <path d="M22 7l-10 7L2 7" />
+                </svg>
+                hello@servicecollective.com
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>
+          © 2026 Service Collective. All rights reserved. Designed for
+          professional reliability.
+        </p>
+      </div>
+    </footer>
+
+    <script src="../js/service_pages/service_discovery.js"></script>
+  </body>
+</html>
