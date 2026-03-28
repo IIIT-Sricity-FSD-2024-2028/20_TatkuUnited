@@ -1,0 +1,398 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Profile – Tatku United</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../../css/admin/profile.css" />
+  </head>
+  <body>
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <div class="logo-avatar">TU</div>
+        <span class="logo-name">Tatku United</span>
+      </div>
+      <div class="sidebar-section-label">OPERATIONAL PANEL</div>
+      <nav class="sidebar-nav">
+        <a href="admin_dashboard.html" class="nav-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="7" height="7" rx="1" />
+            <rect x="14" y="3" width="7" height="7" rx="1" />
+            <rect x="3" y="14" width="7" height="7" rx="1" />
+            <rect x="14" y="14" width="7" height="7" rx="1" />
+          </svg>
+          Dashboard
+        </a>
+        <a href="user_management.html" class="nav-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="9" cy="7" r="4" />
+            <path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2" />
+            <circle cx="19" cy="7" r="2" />
+            <path d="M23 21v-1a3 3 0 0 0-2-2.83" />
+          </svg>
+          User Management
+        </a>
+        <a href="collective_unit.html" class="nav-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="2" y="7" width="20" height="14" rx="2" />
+            <path d="M16 3H8" />
+            <path d="M12 3v4" />
+          </svg>
+          Collective &amp; Unit
+        </a>
+      </nav>
+      <div class="sidebar-section-label">SYSTEM CONTROLS</div>
+      <nav class="sidebar-nav">
+        <a href="platform_settings.html" class="nav-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3" />
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+          </svg>
+          Platform Settings
+        </a>
+        <a href="system_monitoring.html" class="nav-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+          </svg>
+          System Monitoring
+        </a>
+      </nav>
+      <div class="sidebar-section-label">ACCOUNT</div>
+      <nav class="sidebar-nav">
+        <a href="notifications.html" class="nav-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+            <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+          </svg>
+          Notifications
+        </a>
+        <a href="profile.html" class="nav-item active">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+            <circle cx="12" cy="7" r="4" />
+          </svg>
+          My Profile
+        </a>
+      </nav>
+      <div class="sidebar-footer">
+        <a href="#" class="logout-btn" id="logout-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+            <polyline points="16 17 21 12 16 7" />
+            <line x1="21" y1="12" x2="9" y2="12" />
+          </svg>
+          Logout
+        </a>
+      </div>
+    </aside>
+
+    <!-- MAIN -->
+    <div class="main-wrapper">
+      <!-- TOPBAR -->
+      <header class="topbar">
+        <div class="search-bar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8" />
+            <line x1="21" y1="21" x2="16.65" y2="16.65" />
+          </svg>
+          <input type="text" placeholder="Search system logs, users..." />
+        </div>
+        <div class="topbar-right">
+          <a href="notifications.html" class="topbar-icon-btn" title="Notifications" style="position:relative; text-decoration:none; display:flex; align-items:center; justify-content:center;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+              <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+            </svg>
+            <span class="notif-badge" id="notif-badge">3</span>
+          </a>
+          <div class="topbar-user">
+            <div class="user-info">
+              <span class="user-name" id="topbar-name">Admin User</span>
+              <span class="user-role">SUPER ADMIN</span>
+            </div>
+            <a href="profile.html" class="user-avatar active-avatar" title="My Profile">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="8" r="4" />
+                <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
+              </svg>
+            </a>
+          </div>
+        </div>
+      </header>
+
+      <!-- CONTENT -->
+      <div class="content-wrap">
+        <!-- Profile Hero -->
+        <div class="profile-hero">
+          <div class="profile-avatar-wrap">
+            <div class="profile-avatar" id="profile-avatar">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <circle cx="12" cy="8" r="4" />
+                <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
+              </svg>
+            </div>
+            <button class="avatar-edit-btn" onclick="document.getElementById('avatar-input').click()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+                <circle cx="12" cy="13" r="4" />
+              </svg>
+            </button>
+            <input type="file" id="avatar-input" accept="image/*" style="display:none" onchange="updateAvatar(this)" />
+          </div>
+          <div class="profile-hero-info">
+            <div class="admin-badge">SUPER ADMIN</div>
+            <h1 class="profile-name" id="hero-name">Admin User</h1>
+            <p class="profile-email" id="hero-email">admin@tatku.com</p>
+            <div class="profile-stats">
+              <div class="profile-stat">
+                <span class="stat-num">12</span>
+                <span class="stat-lbl">Collectives</span>
+              </div>
+              <div class="profile-stat">
+                <span class="stat-num">89</span>
+                <span class="stat-lbl">Active Units</span>
+              </div>
+              <div class="profile-stat">
+                <span class="stat-num">1,842</span>
+                <span class="stat-lbl">Total Users</span>
+              </div>
+              <div class="profile-stat">
+                <span class="stat-num">99.8%</span>
+                <span class="stat-lbl">System Uptime</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="profile-body">
+          <!-- LEFT COLUMN -->
+          <div class="profile-left">
+            <!-- Personal Info -->
+            <div class="section-card" id="personal-card">
+              <h2 class="section-title">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                  <circle cx="12" cy="7" r="4" />
+                </svg>
+                Personal Information
+              </h2>
+              <div class="form-grid">
+                <div class="form-field">
+                  <label>Full Name</label>
+                  <input type="text" id="full-name" value="Admin User" oninput="syncName()" />
+                </div>
+                <div class="form-field">
+                  <label>Email Address</label>
+                  <input type="email" id="email" value="admin@tatku.com" oninput="syncEmail()" />
+                </div>
+                <div class="form-field">
+                  <label>Phone Number</label>
+                  <div class="phone-row">
+                    <span class="phone-code">+91</span>
+                    <input type="tel" id="phone" value="9000000001" />
+                  </div>
+                </div>
+                <div class="form-field">
+                  <label>Admin ID</label>
+                  <input type="text" value="ADM-001" readonly class="readonly-field" />
+                </div>
+              </div>
+              <div class="form-footer">
+                <button class="btn-primary" onclick="saveSection('personal')">Save Changes</button>
+              </div>
+            </div>
+
+            <!-- Security -->
+            <div class="section-card">
+              <h2 class="section-title">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                </svg>
+                Security & Access
+              </h2>
+              <div class="sec-row">
+                <div>
+                  <div class="sec-label">Admin Password</div>
+                  <div class="sec-sub">Last changed 15 days ago</div>
+                </div>
+                <button class="btn-outline-sm" onclick="openPwdModal()">Change Password</button>
+              </div>
+              <div class="divider"></div>
+              <div class="sec-row">
+                <div>
+                  <div class="sec-label">Two-Factor Authentication</div>
+                  <div class="sec-sub">Mandatory for all admin accounts</div>
+                </div>
+                <label class="toggle">
+                  <input type="checkbox" checked disabled />
+                  <span class="toggle-track"></span>
+                </label>
+              </div>
+              <div class="divider"></div>
+              <div class="sec-row">
+                <div>
+                  <div class="sec-label">Session Timeout</div>
+                  <div class="sec-sub">Auto-logout after inactivity</div>
+                </div>
+                <select class="select-inline" onchange="showToast('Session timeout updated')">
+                  <option>30 minutes</option>
+                  <option selected>1 hour</option>
+                  <option>4 hours</option>
+                </select>
+              </div>
+              <div class="divider"></div>
+              <div class="sec-row">
+                <div>
+                  <div class="sec-label">Active Sessions</div>
+                  <div class="sec-sub">3 devices are currently logged in</div>
+                </div>
+                <button class="btn-outline-danger" onclick="showToast('All other sessions terminated')">Terminate All</button>
+              </div>
+            </div>
+
+            <!-- Platform Preferences -->
+            <div class="section-card">
+              <h2 class="section-title">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="3" />
+                  <path d="M19.07 4.93l-1.41 1.41M4.93 4.93l1.41 1.41M12 2v2M12 20v2M20 12h2M2 12h2M19.07 19.07l-1.41-1.41M4.93 19.07l1.41-1.41" />
+                </svg>
+                Platform Preferences
+              </h2>
+              <div class="pref-list">
+                <div class="pref-row">
+                  <div>
+                    <div class="pref-label">Critical System Alerts (Email)</div>
+                    <div class="pref-sub">Server errors, security breaches, downtime</div>
+                  </div>
+                  <label class="toggle">
+                    <input type="checkbox" checked onchange="showToast('Email alerts updated')" />
+                    <span class="toggle-track"></span>
+                  </label>
+                </div>
+                <div class="pref-row">
+                  <div>
+                    <div class="pref-label">Critical Alerts (SMS)</div>
+                    <div class="pref-sub">Immediate notification for P0 issues</div>
+                  </div>
+                  <label class="toggle">
+                    <input type="checkbox" checked onchange="showToast('SMS alerts updated')" />
+                    <span class="toggle-track"></span>
+                  </label>
+                </div>
+                <div class="pref-row">
+                  <div>
+                    <div class="pref-label">Daily System Digest</div>
+                    <div class="pref-sub">Summary of all platform activity at 8 AM</div>
+                  </div>
+                  <label class="toggle">
+                    <input type="checkbox" checked onchange="showToast('Daily digest updated')" />
+                    <span class="toggle-track"></span>
+                  </label>
+                </div>
+                <div class="pref-row">
+                  <div>
+                    <div class="pref-label">User Registration Alerts</div>
+                    <div class="pref-sub">Notify when new collectives or managers join</div>
+                  </div>
+                  <label class="toggle">
+                    <input type="checkbox" onchange="showToast('Registration alerts updated')" />
+                    <span class="toggle-track"></span>
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- RIGHT COLUMN -->
+          <div class="profile-right">
+            <!-- System Overview -->
+            <div class="section-card">
+              <h2 class="section-title">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+                </svg>
+                System Overview
+              </h2>
+              <div class="sys-stats" id="sys-stats"></div>
+            </div>
+
+            <!-- Admin Permissions -->
+            <div class="section-card">
+              <h2 class="section-title">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="3" y="11" width="18" height="11" rx="2" />
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                </svg>
+                Admin Permissions
+              </h2>
+              <div class="perm-list" id="perm-list"></div>
+            </div>
+
+            <!-- Recent Admin Actions -->
+            <div class="section-card">
+              <h2 class="section-title">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10" />
+                  <polyline points="12 6 12 12 16 14" />
+                </svg>
+                Recent Admin Actions
+              </h2>
+              <div class="activity-list" id="activity-list"></div>
+              <button class="download-log" onclick="showToast('Action log downloaded')">Download Action Log</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Password Modal -->
+    <div class="modal-overlay" id="pwd-modal" onclick="closePwdModal(event)">
+      <div class="modal">
+        <button class="modal-close" onclick="closePwdModalBtn()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
+        <div class="modal-header-row">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="11" width="18" height="11" rx="2" />
+            <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+          </svg>
+          <h2 class="modal-title">Change Admin Password</h2>
+        </div>
+        <div class="modal-fields">
+          <div class="form-field">
+            <label>Current Password</label><input type="password" placeholder="Enter current password" />
+          </div>
+          <div class="form-field">
+            <label>New Password</label><input type="password" placeholder="Min. 12 characters" />
+          </div>
+          <div class="form-field">
+            <label>Confirm New Password</label><input type="password" placeholder="Re-enter new password" />
+          </div>
+          <div class="form-field">
+            <label>2FA Code</label><input type="text" placeholder="Enter 6-digit code" />
+          </div>
+        </div>
+        <div class="modal-btns">
+          <button class="modal-btn-cancel" onclick="closePwdModalBtn()">Cancel</button>
+          <button class="modal-btn-save" onclick="closePwdModalBtn(); showToast('Password updated successfully!')">Update Password</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <script src="../../js/admin/profile.js"></script>
+  </body>
+</html>

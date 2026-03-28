@@ -141,3 +141,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--text-primar
 .form-row input:focus, .form-row select:focus { border-color: var(--blue); }
 .modal-foot { display: flex; gap: 10px; justify-content: flex-end; padding: 16px 22px; border-top: 1px solid var(--border); }
 .btn-ghost { background: transparent; color: var(--text-secondary); border: 1px solid var(--border); font-size: 13px; font-weight: 500; padding: 8px 16px; border-radius: var(--radius-sm); cursor: pointer; }
+.sidebar-footer { margin-top: auto; padding-top: 16px; border-top: 1px solid var(--border); }
+.logout-link { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: var(--radius-sm); color: var(--red); text-decoration: none; font-size: 13.5px; font-weight: 600; transition: background .15s; }
+.logout-link svg { width: 18px; height: 18px; flex-shrink: 0; }
+.logout-link:hover { background: var(--red-light); }

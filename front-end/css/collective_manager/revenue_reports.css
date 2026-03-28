@@ -86,3 +86,8 @@ body { font-family: var(--font); background: var(--bg); color: var(--text-primar
 .rev-table tbody tr:last-child td { border-bottom: none; }
 .rev-table tbody tr:hover td { background: var(--bg); }
 .rev-table td.booking-link { color: var(--accent); cursor: pointer; }
+
+.sidebar-footer { margin-top: auto; padding: 16px 12px 0; border-top: 1px solid var(--border); }
+.logout-link { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 7px; color: #dc2626; text-decoration: none; font-size: 13.5px; font-weight: 600; transition: background .15s; }
+.logout-link svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
+.logout-link:hover { background: #fef2f2; }
