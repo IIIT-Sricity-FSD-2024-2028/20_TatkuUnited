@@ -32,9 +32,7 @@
         </a>
         <a href="assigned-jobs.html" class="nav-item">
           <svg viewBox="0 0 24 24">
-            <path
-              d="M20 7H4a2 2 0 00-2 2v10a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2z"
-            />
+            <path d="M20 7H4a2 2 0 00-2 2v10a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2z" />
             <path d="M16 3H8a2 2 0 00-2 2v2h12V5a2 2 0 00-2-2z" />
           </svg>
           Assigned Jobs
@@ -48,9 +46,7 @@
         </a>
         <a href="earnings.html" class="nav-item">
           <svg viewBox="0 0 24 24">
-            <path
-              d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"
-            />
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z" />
             <path d="M12 6v6l4 2" />
           </svg>
           Earnings
@@ -68,15 +64,9 @@
       </div>
       <div class="legend">
         <div class="legend-title">LEGEND</div>
-        <div class="legend-item">
-          <span class="leg-box open"></span> Open Slot
-        </div>
-        <div class="legend-item">
-          <span class="leg-box booked"></span> Booked (System)
-        </div>
-        <div class="legend-item">
-          <span class="leg-box blocked"></span> Blocked Day
-        </div>
+        <div class="legend-item"><span class="leg-box open"></span> Open Slot</div>
+        <div class="legend-item"><span class="leg-box booked"></span> Booked (System)</div>
+        <div class="legend-item"><span class="leg-box unavail"></span> Unavailable Window</div>
       </div>
     </aside>
 
@@ -101,34 +91,9 @@
         <div class="page-header">
           <div>
             <h1 class="page-title">Availability Calendar</h1>
-            <p class="page-sub">
-              Manage your active shifts and track system-assigned cleaning jobs.
-            </p>
+            <p class="page-sub">Manage your active shifts and track system-assigned cleaning jobs.</p>
           </div>
           <div class="page-header-right">
-            <div class="view-toggle">
-              <button
-                class="toggle-btn active"
-                id="btn-month"
-                onclick="setView('month')"
-              >
-                Month
-              </button>
-              <button
-                class="toggle-btn"
-                id="btn-week"
-                onclick="setView('week')"
-              >
-                Week
-              </button>
-            </div>
-            <button class="manage-blocks-btn" onclick="openManageBlocks()">
-              <svg viewBox="0 0 24 24">
-                <rect x="3" y="11" width="18" height="11" rx="2" />
-                <path d="M7 11V7a5 5 0 0110 0v4" />
-              </svg>
-              Manage Blocks
-            </button>
           </div>
         </div>
 
@@ -136,27 +101,15 @@
           <div class="cal-nav">
             <div class="cal-month-nav">
               <button class="cal-arrow" onclick="prevMonth()">
-                <svg viewBox="0 0 24 24">
-                  <polyline points="15 18 9 12 15 6" />
-                </svg>
+                <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6" /></svg>
               </button>
               <h2 class="cal-month-label" id="cal-month-label"></h2>
               <button class="cal-arrow" onclick="nextMonth()">
-                <svg viewBox="0 0 24 24">
-                  <polyline points="9 18 15 12 9 6" />
-                </svg>
+                <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6" /></svg>
               </button>
-              <button class="today-btn" onclick="goToday()">Today</button>
             </div>
             <div class="cal-actions">
-              <button class="cal-icon-btn">
-                <svg viewBox="0 0 24 24">
-                  <line x1="4" y1="6" x2="20" y2="6" />
-                  <line x1="4" y1="12" x2="20" y2="12" />
-                  <line x1="4" y1="18" x2="14" y2="18" />
-                </svg>
-              </button>
-              <button class="cal-icon-btn">
+              <button class="cal-icon-btn" onclick="downloadCalendar()">
                 <svg viewBox="0 0 24 24">
                   <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
                   <polyline points="7 10 12 15 17 10" />
@@ -167,13 +120,8 @@
           </div>
 
           <div class="cal-grid-header">
-            <div>SUN</div>
-            <div>MON</div>
-            <div>TUE</div>
-            <div>WED</div>
-            <div>THU</div>
-            <div>FRI</div>
-            <div>SAT</div>
+            <div>SUN</div><div>MON</div><div>TUE</div><div>WED</div>
+            <div>THU</div><div>FRI</div><div>SAT</div>
           </div>
           <div class="cal-grid" id="cal-grid"></div>
 

@@ -32,9 +32,7 @@
         </a>
         <a href="assigned-jobs.html" class="nav-item">
           <svg viewBox="0 0 24 24">
-            <path
-              d="M20 7H4a2 2 0 00-2 2v10a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2z"
-            />
+            <path d="M20 7H4a2 2 0 00-2 2v10a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2z" />
             <path d="M16 3H8a2 2 0 00-2 2v2h12V5a2 2 0 00-2-2z" />
           </svg>
           Assigned Jobs
@@ -48,9 +46,7 @@
         </a>
         <a href="earnings.html" class="nav-item">
           <svg viewBox="0 0 24 24">
-            <path
-              d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"
-            />
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z" />
             <path d="M12 6v6l4 2" />
           </svg>
           Earnings
@@ -113,17 +109,11 @@
             </div>
             <div class="form-field">
               <label>Full Residential Address</label>
-              <input
-                type="text"
-                value="42, 7th Main Rd, HAL 2nd Stage, Indiranagar"
-                id="address"
-              />
+              <input type="text" value="42, 7th Main Rd, HAL 2nd Stage, Indiranagar" id="address" />
             </div>
           </div>
           <div class="card-footer">
-            <button class="btn-save-section" onclick="saveSection('personal')">
-              Save Personal Info
-            </button>
+            <button class="btn-save-section" onclick="saveSection('personal')">Save Personal Info</button>
           </div>
         </div>
 
@@ -131,9 +121,7 @@
         <div class="form-card" id="professional-card">
           <div class="card-section-head">
             <svg viewBox="0 0 24 24">
-              <path
-                d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"
-              />
+              <path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z" />
             </svg>
             <span>Professional Details</span>
           </div>
@@ -153,37 +141,170 @@
               <input type="number" value="8" id="experience" min="0" max="50" />
             </div>
             <div class="form-field full-width">
-              <label>Skills & Expertise</label>
-              <div class="tags-field" id="tags-field">
-                <span class="skill-tag"
-                  >Deep Cleaning
-                  <button onclick="removeTag(this)">×</button></span
-                >
-                <span class="skill-tag"
-                  >Sanitization
-                  <button onclick="removeTag(this)">×</button></span
-                >
-                <span class="skill-tag"
-                  >Pest Control
-                  <button onclick="removeTag(this)">×</button></span
-                >
-                <input
-                  type="text"
-                  class="tag-input"
-                  id="tag-input"
-                  placeholder="+ Add Skill"
-                  onkeydown="addTag(event)"
-                />
+              <label>Skills &amp; Expertise</label>
+
+              <!-- Current skills (read-only, removal requires approval) -->
+              <div class="skills-list" id="skills-list">
+                <div class="skill-row" data-skill="Deep Cleaning">
+                  <span class="skill-badge">
+                    <svg viewBox="0 0 24 24" width="13" height="13"><polyline points="20 6 9 17 4 12"/></svg>
+                    Deep Cleaning
+                  </span>
+                  <button class="btn-request-remove" onclick="requestRemoveSkill(this, 'Deep Cleaning')">
+                    <svg viewBox="0 0 24 24" width="12" height="12"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    Request Removal
+                  </button>
+                </div>
+                <div class="skill-row" data-skill="Sanitization">
+                  <span class="skill-badge">
+                    <svg viewBox="0 0 24 24" width="13" height="13"><polyline points="20 6 9 17 4 12"/></svg>
+                    Sanitization
+                  </span>
+                  <button class="btn-request-remove" onclick="requestRemoveSkill(this, 'Sanitization')">
+                    <svg viewBox="0 0 24 24" width="12" height="12"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    Request Removal
+                  </button>
+                </div>
+                <div class="skill-row" data-skill="Pest Control">
+                  <span class="skill-badge">
+                    <svg viewBox="0 0 24 24" width="13" height="13"><polyline points="20 6 9 17 4 12"/></svg>
+                    Pest Control
+                  </span>
+                  <button class="btn-request-remove" onclick="requestRemoveSkill(this, 'Pest Control')">
+                    <svg viewBox="0 0 24 24" width="12" height="12"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    Request Removal
+                  </button>
+                </div>
               </div>
+
+              <!-- Add New Skill panel -->
+              <button class="btn-add-skill-toggle" id="add-skill-toggle" onclick="toggleAddSkill()">
+                <svg viewBox="0 0 24 24" width="14" height="14"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                Add New Skill
+              </button>
+
+              <div class="add-skill-panel" id="add-skill-panel">
+                <div class="add-skill-row">
+                  <div class="add-skill-select-wrap">
+                    <svg viewBox="0 0 24 24" width="15" height="15" ><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/></svg>
+                    <select id="new-skill-select" class="skill-select">
+                      <option value="">— Choose a skill —</option>
+                      <option value="Plumbing">Plumbing</option>
+                      <option value="HVAC">HVAC</option>
+                      <option value="Electrical">Electrical</option>
+                      <option value="Painting">Painting</option>
+                      <option value="Carpentry">Carpentry</option>
+                      <option value="Cleaning">Cleaning</option>
+                      <option value="Landscaping">Landscaping</option>
+                    </select>
+                  </div>
+                  <button class="btn-request-verify" id="btn-request-verify" onclick="requestVerifySkill()">
+                    <svg viewBox="0 0 24 24" width="13" height="13"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                    Request Verification
+                  </button>
+                </div>
+                <p class="add-skill-hint">Select a skill and request verification. A manager will review and approve it before it appears on your profile.</p>
+              </div>
+            </div>
+
+            <!-- Resume Upload -->
+            <div class="form-field full-width">
+              <label>Resume</label>
+              <div class="upload-zone" id="resume-zone"
+                   ondragover="handleDragOver(event, 'resume-zone')"
+                   ondragleave="handleDragLeave('resume-zone')"
+                   ondrop="handleDrop(event, 'resume-input')"
+                   onclick="document.getElementById('resume-input').click()">
+                <input type="file" id="resume-input" accept=".pdf,.doc,.docx" style="display:none"
+                       onchange="handleFileSelect(this, 'resume-list', false)" />
+                <div class="upload-zone-icon">
+                  <svg viewBox="0 0 24 24" width="28" height="28"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+                </div>
+                <div class="upload-zone-text">
+                  <span class="upload-zone-title">Click to upload or drag &amp; drop</span>
+                  <span class="upload-zone-sub">PDF, DOC, DOCX &nbsp;·&nbsp; Max 5 MB &nbsp;·&nbsp; Single file</span>
+                </div>
+              </div>
+              <div class="upload-file-list" id="resume-list"></div>
+            </div>
+
+            <!-- Certificates Upload -->
+            <div class="form-field full-width">
+              <label>Certificates</label>
+              <div class="upload-zone" id="certs-zone"
+                   ondragover="handleDragOver(event, 'certs-zone')"
+                   ondragleave="handleDragLeave('certs-zone')"
+                   ondrop="handleDrop(event, 'certs-input')"
+                   onclick="document.getElementById('certs-input').click()">
+                <input type="file" id="certs-input" accept=".pdf,.jpg,.jpeg,.png" multiple style="display:none"
+                       onchange="handleFileSelect(this, 'certs-list', true)" />
+                <div class="upload-zone-icon">
+                  <svg viewBox="0 0 24 24" width="28" height="28"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                </div>
+                <div class="upload-zone-text">
+                  <span class="upload-zone-title">Click to upload or drag &amp; drop</span>
+                  <span class="upload-zone-sub">PDF, JPG, PNG &nbsp;·&nbsp; Max 5 MB per file &nbsp;·&nbsp; Multiple allowed</span>
+                </div>
+              </div>
+              <div class="upload-file-list" id="certs-list"></div>
             </div>
           </div>
           <div class="card-footer">
-            <button
-              class="btn-save-section"
-              onclick="saveSection('professional')"
-            >
-              Save Professional Details
-            </button>
+            <button class="btn-save-section" onclick="saveSection('professional')">Save Professional Details</button>
+          </div>
+        </div>
+
+        <!-- Work Hours -->
+        <div class="form-card" id="work-hours-card">
+          <div class="card-section-head">
+            <svg viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="10" />
+              <polyline points="12 6 12 12 16 14" />
+            </svg>
+            <span>Work Hours</span>
+          </div>
+          <p class="work-hours-desc">
+            Set the earliest and latest times you're available for bookings each day.
+            These times define the window shown in your calendar's availability picker.
+          </p>
+          <div class="work-hours-grid">
+            <div class="work-time-field">
+              <label>
+                <span class="work-time-icon work-time-icon--start">
+                  <svg viewBox="0 0 24 24" width="14" height="14"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 8 14"/></svg>
+                </span>
+                Day Start Time
+              </label>
+              <input
+                type="time"
+                id="work-start"
+                class="time-input"
+                value="08:00"
+                oninput="updateWorkHoursPreview()"
+              />
+            </div>
+            <div class="work-time-divider">
+              <svg viewBox="0 0 24 24" width="20" height="20"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="14 7 19 12 14 17"/></svg>
+            </div>
+            <div class="work-time-field">
+              <label>
+                <span class="work-time-icon work-time-icon--end">
+                  <svg viewBox="0 0 24 24" width="14" height="14"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                </span>
+                Day End Time
+              </label>
+              <input
+                type="time"
+                id="work-end"
+                class="time-input"
+                value="18:00"
+                oninput="updateWorkHoursPreview()"
+              />
+            </div>
+          </div>
+          <div class="work-hours-preview" id="work-hours-preview">Active window: 8:00 AM – 6:00 PM (10h)</div>
+          <div class="card-footer">
+            <button class="btn-save-section" onclick="saveWorkHours()">Save Work Hours</button>
           </div>
         </div>
 
@@ -200,27 +321,7 @@
               <div class="sec-label">Account Password</div>
               <div class="sec-sub">Last changed 3 months ago</div>
             </div>
-            <button class="sec-link-btn" onclick="showPasswordModal()">
-              Change Account Password
-            </button>
-          </div>
-          <div class="divider"></div>
-          <div class="security-row">
-            <div>
-              <div class="sec-label">Two-Factor Authentication</div>
-              <div class="sec-sub">
-                Secure your account with a code sent to your phone
-              </div>
-            </div>
-            <label class="toggle-wrap">
-              <input
-                type="checkbox"
-                checked
-                id="tfa-toggle"
-                onchange="toggle2FA(this)"
-              />
-              <span class="toggle-track" id="tfa-track"></span>
-            </label>
+            <button class="sec-link-btn" onclick="showPasswordModal()">Change Account Password</button>
           </div>
         </div>
 
@@ -229,13 +330,9 @@
           <div class="danger-row">
             <div>
               <div class="danger-title">Deactivate Account</div>
-              <div class="danger-sub">
-                Permanently remove your provider profile and all history.
-              </div>
+              <div class="danger-sub">Permanently remove your provider profile and all history.</div>
             </div>
-            <button class="btn-deactivate" onclick="confirmDeactivate()">
-              Deactivate
-            </button>
+            <button class="btn-deactivate" onclick="confirmDeactivate()">Deactivate</button>
           </div>
         </div>
       </main>
@@ -253,25 +350,21 @@
         <h2 class="modal-title">Change Password</h2>
         <div class="modal-form">
           <div class="form-field">
-            <label>Current Password</label
-            ><input type="password" placeholder="Enter current password" />
+            <label>Current Password</label>
+            <input type="password" placeholder="Enter current password" />
           </div>
           <div class="form-field">
-            <label>New Password</label
-            ><input type="password" placeholder="Min. 8 characters" />
+            <label>New Password</label>
+            <input type="password" placeholder="Min. 8 characters" />
           </div>
           <div class="form-field">
-            <label>Confirm New Password</label
-            ><input type="password" placeholder="Re-enter new password" />
+            <label>Confirm New Password</label>
+            <input type="password" placeholder="Re-enter new password" />
           </div>
         </div>
         <div class="modal-footer">
-          <button class="btn-cancel-modal" onclick="closePwdModalBtn()">
-            Cancel
-          </button>
-          <button class="btn-save-modal" onclick="closePwdModalBtn()">
-            Update Password
-          </button>
+          <button class="btn-cancel-modal" onclick="closePwdModalBtn()">Cancel</button>
+          <button class="btn-save-modal" onclick="closePwdModalBtn()">Update Password</button>
         </div>
       </div>
     </div>
