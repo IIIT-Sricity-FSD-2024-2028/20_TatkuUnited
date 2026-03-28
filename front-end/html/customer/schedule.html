@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Schedule Your Service – Tatku United</title>
+    <link rel="stylesheet" href="../../css/customer/schedule.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=DM+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <nav class="navbar">
+      <a href="home.html" class="nav-brand">
+        <div class="brand-logo">TU</div>
+        <span class="brand-name">Tatku United</span>
+      </a>
+      <div class="nav-links">
+        <a href="home.html" class="nav-link">Home</a>
+        <a href="services.html" class="nav-link">Services</a>
+        <a href="bookings.html" class="nav-link">Bookings</a>
+      </div>
+      <div class="nav-right">
+        <a href="cart.html" class="cart-btn">
+          <svg viewBox="0 0 24 24">
+            <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" />
+            <line x1="3" y1="6" x2="21" y2="6" />
+            <path d="M16 10a4 4 0 01-8 0" />
+          </svg>
+          <span class="cart-count" id="cart-count">0</span>
+        </a>
+        <a href="profile.html" class="user-avatar-btn" title="My Profile">
+          <svg viewBox="0 0 24 24">
+            <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" />
+            <circle cx="12" cy="7" r="4" />
+          </svg>
+        </a>
+      </div>
+    </nav>
+
+    <main class="main">
+      <h1 class="page-title">Schedule Your Service</h1>
+
+      <div class="mode-toggle">
+        <button
+          class="mode-btn active"
+          id="btn-instant"
+          onclick="setMode('instant')"
+        >
+          <svg viewBox="0 0 24 24">
+            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+          </svg>
+          Instant
+        </button>
+        <button
+          class="mode-btn"
+          id="btn-scheduled"
+          onclick="setMode('scheduled')"
+        >
+          <svg viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="10" />
+            <polyline points="12 6 12 12 16 14" />
+          </svg>
+          Scheduled
+        </button>
+      </div>
+
+      <div class="schedule-card">
+        <div class="info-banner" id="info-banner">
+          <svg viewBox="0 0 24 24">
+            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+          </svg>
+          <span id="info-text"
+            >Your service will be assigned to an available provider
+            immediately.</span
+          >
+        </div>
+
+        <div
+          class="scheduled-fields"
+          id="scheduled-fields"
+          style="display: none"
+        >
+          <div class="field-row">
+            <div class="form-field">
+              <label>Select Date</label>
+              <input type="date" id="sched-date" min="2026-03-28" />
+            </div>
+            <div class="form-field">
+              <label>Select Time Slot</label>
+              <select id="sched-time">
+                <option>08:00 AM – 10:00 AM</option>
+                <option>10:00 AM – 12:00 PM</option>
+                <option>12:00 PM – 02:00 PM</option>
+                <option>02:00 PM – 04:00 PM</option>
+                <option>04:00 PM – 06:00 PM</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="service-summary">
+          <div class="summary-row">
+            <div class="summary-icon">
+              <svg viewBox="0 0 24 24">
+                <path
+                  d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"
+                />
+              </svg>
+            </div>
+            <div class="summary-info">
+              <div class="summary-label">Service</div>
+              <div class="summary-value" id="svc-name">Home Deep Cleaning</div>
+            </div>
+          </div>
+          <div class="summary-row">
+            <div class="summary-icon">
+              <svg viewBox="0 0 24 24">
+                <path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0118 0z" />
+                <circle cx="12" cy="10" r="3" />
+              </svg>
+            </div>
+            <div class="summary-info">
+              <div class="summary-label">Location</div>
+              <div class="summary-value" id="svc-location">
+                21/229, Indira Nagar, Lucknow
+              </div>
+            </div>
+          </div>
+          <div class="summary-row">
+            <div class="summary-icon">
+              <svg viewBox="0 0 24 24">
+                <line x1="12" y1="1" x2="12" y2="23" />
+                <path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6" />
+              </svg>
+            </div>
+            <div class="summary-info">
+              <div class="summary-label">Estimated Price</div>
+              <div class="summary-value" id="svc-price">₹ 1200</div>
+            </div>
+          </div>
+        </div>
+
+        <button class="add-to-cart-btn" id="add-cart-btn" onclick="addToCart()">
+          <svg viewBox="0 0 24 24">
+            <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" />
+            <line x1="3" y1="6" x2="21" y2="6" />
+            <path d="M16 10a4 4 0 01-8 0" />
+          </svg>
+          Add to Cart
+        </button>
+      </div>
+
+      <div class="toast" id="toast">
+        <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12" /></svg>
+        Added to cart!
+        <a href="cart.html">View Cart →</a>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <span>© 2026 Tatku United Inc. All rights reserved.</span>
+      <div class="footer-links">
+        <a href="#">Terms of Service</a>
+        <a href="#">Privacy Policy</a>
+        <a href="#">Contact Support</a>
+      </div>
+    </footer>
+
+    <script src="../../js/customer/schedule.js"></script>
+  </body>
+</html>

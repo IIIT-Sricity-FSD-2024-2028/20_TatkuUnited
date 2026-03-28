@@ -1,0 +1,284 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Profile – Tatku United</title>
+    <link rel="stylesheet" href="../../css/provider/profile.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-logo">TU</div>
+        <div class="brand-text">
+          <span class="brand-name">Tatku United</span>
+          <span class="brand-sub">Provider Dashboard</span>
+        </div>
+      </div>
+      <nav class="nav">
+        <a href="dashboard.html" class="nav-item">
+          <svg viewBox="0 0 24 24">
+            <rect x="3" y="3" width="7" height="7" rx="1" />
+            <rect x="14" y="3" width="7" height="7" rx="1" />
+            <rect x="3" y="14" width="7" height="7" rx="1" />
+            <rect x="14" y="14" width="7" height="7" rx="1" />
+          </svg>
+          Dashboard
+        </a>
+        <a href="assigned-jobs.html" class="nav-item">
+          <svg viewBox="0 0 24 24">
+            <path
+              d="M20 7H4a2 2 0 00-2 2v10a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2z"
+            />
+            <path d="M16 3H8a2 2 0 00-2 2v2h12V5a2 2 0 00-2-2z" />
+          </svg>
+          Assigned Jobs
+        </a>
+        <a href="calendar.html" class="nav-item">
+          <svg viewBox="0 0 24 24">
+            <rect x="3" y="4" width="18" height="18" rx="2" />
+            <path d="M16 2v4M8 2v4M3 10h18" />
+          </svg>
+          Calendar
+        </a>
+        <a href="earnings.html" class="nav-item">
+          <svg viewBox="0 0 24 24">
+            <path
+              d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"
+            />
+            <path d="M12 6v6l4 2" />
+          </svg>
+          Earnings
+        </a>
+      </nav>
+      <div class="sidebar-footer">
+        <a href="#" class="nav-item logout">
+          <svg viewBox="0 0 24 24">
+            <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" />
+            <polyline points="16,17 21,12 16,7" />
+            <line x1="21" y1="12" x2="9" y2="12" />
+          </svg>
+          Logout
+        </a>
+      </div>
+    </aside>
+
+    <div class="main-wrap">
+      <header class="topbar">
+        <div class="topbar-right">
+          <a href="notifications.html" class="notif-btn">
+            <svg viewBox="0 0 24 24">
+              <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9" />
+              <path d="M13.73 21a2 2 0 01-3.46 0" />
+            </svg>
+            <span class="notif-dot"></span>
+          </a>
+          <a href="profile.html" class="user-chip active-chip">
+            <div class="user-avatar">P</div>
+            <span>Provider</span>
+          </a>
+        </div>
+      </header>
+
+      <main class="content">
+        <!-- Personal Info -->
+        <div class="form-card" id="personal-card">
+          <div class="card-section-head">
+            <svg viewBox="0 0 24 24">
+              <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" />
+              <circle cx="12" cy="7" r="4" />
+            </svg>
+            <span>Personal Information</span>
+          </div>
+          <div class="form-grid">
+            <div class="form-field">
+              <label>Full Name</label>
+              <input type="text" value="Rob Ber" id="full-name" />
+            </div>
+            <div class="form-field">
+              <label>Email Address</label>
+              <input type="email" value="iRob@houses.com" id="email" />
+            </div>
+            <div class="form-field">
+              <label>Phone Number</label>
+              <div class="phone-field">
+                <span class="phone-prefix">+91</span>
+                <input type="tel" value="9876543210" id="phone" />
+              </div>
+            </div>
+            <div class="form-field">
+              <label>Full Residential Address</label>
+              <input
+                type="text"
+                value="42, 7th Main Rd, HAL 2nd Stage, Indiranagar"
+                id="address"
+              />
+            </div>
+          </div>
+          <div class="card-footer">
+            <button class="btn-save-section" onclick="saveSection('personal')">
+              Save Personal Info
+            </button>
+          </div>
+        </div>
+
+        <!-- Professional Details -->
+        <div class="form-card" id="professional-card">
+          <div class="card-section-head">
+            <svg viewBox="0 0 24 24">
+              <path
+                d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"
+              />
+            </svg>
+            <span>Professional Details</span>
+          </div>
+          <div class="form-grid">
+            <div class="form-field">
+              <label>Service Category</label>
+              <select id="service-cat">
+                <option selected>Home Cleaning</option>
+                <option>Plumbing</option>
+                <option>Electrical</option>
+                <option>HVAC</option>
+                <option>Pest Control</option>
+              </select>
+            </div>
+            <div class="form-field">
+              <label>Experience (Years)</label>
+              <input type="number" value="8" id="experience" min="0" max="50" />
+            </div>
+            <div class="form-field full-width">
+              <label>Skills & Expertise</label>
+              <div class="tags-field" id="tags-field">
+                <span class="skill-tag"
+                  >Deep Cleaning
+                  <button onclick="removeTag(this)">×</button></span
+                >
+                <span class="skill-tag"
+                  >Sanitization
+                  <button onclick="removeTag(this)">×</button></span
+                >
+                <span class="skill-tag"
+                  >Pest Control
+                  <button onclick="removeTag(this)">×</button></span
+                >
+                <input
+                  type="text"
+                  class="tag-input"
+                  id="tag-input"
+                  placeholder="+ Add Skill"
+                  onkeydown="addTag(event)"
+                />
+              </div>
+            </div>
+          </div>
+          <div class="card-footer">
+            <button
+              class="btn-save-section"
+              onclick="saveSection('professional')"
+            >
+              Save Professional Details
+            </button>
+          </div>
+        </div>
+
+        <!-- Security -->
+        <div class="form-card" id="security-card">
+          <div class="card-section-head">
+            <svg viewBox="0 0 24 24">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+            </svg>
+            <span>Security & Authentication</span>
+          </div>
+          <div class="security-row">
+            <div>
+              <div class="sec-label">Account Password</div>
+              <div class="sec-sub">Last changed 3 months ago</div>
+            </div>
+            <button class="sec-link-btn" onclick="showPasswordModal()">
+              Change Account Password
+            </button>
+          </div>
+          <div class="divider"></div>
+          <div class="security-row">
+            <div>
+              <div class="sec-label">Two-Factor Authentication</div>
+              <div class="sec-sub">
+                Secure your account with a code sent to your phone
+              </div>
+            </div>
+            <label class="toggle-wrap">
+              <input
+                type="checkbox"
+                checked
+                id="tfa-toggle"
+                onchange="toggle2FA(this)"
+              />
+              <span class="toggle-track" id="tfa-track"></span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Danger Zone -->
+        <div class="form-card danger-card">
+          <div class="danger-row">
+            <div>
+              <div class="danger-title">Deactivate Account</div>
+              <div class="danger-sub">
+                Permanently remove your provider profile and all history.
+              </div>
+            </div>
+            <button class="btn-deactivate" onclick="confirmDeactivate()">
+              Deactivate
+            </button>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- Password Modal -->
+    <div class="modal-overlay" id="pwd-modal" onclick="closePwdModal(event)">
+      <div class="modal">
+        <button class="modal-close" onclick="closePwdModalBtn()">
+          <svg viewBox="0 0 24 24">
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
+        <h2 class="modal-title">Change Password</h2>
+        <div class="modal-form">
+          <div class="form-field">
+            <label>Current Password</label
+            ><input type="password" placeholder="Enter current password" />
+          </div>
+          <div class="form-field">
+            <label>New Password</label
+            ><input type="password" placeholder="Min. 8 characters" />
+          </div>
+          <div class="form-field">
+            <label>Confirm New Password</label
+            ><input type="password" placeholder="Re-enter new password" />
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn-cancel-modal" onclick="closePwdModalBtn()">
+            Cancel
+          </button>
+          <button class="btn-save-modal" onclick="closePwdModalBtn()">
+            Update Password
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <script src="../../js/provider/profile.js"></script>
+  </body>
+</html>

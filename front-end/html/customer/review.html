@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Service Feedback – Tatku United</title>
+    <link rel="stylesheet" href="../../css/customer/review.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=DM+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <nav class="navbar">
+      <a href="home.html" class="nav-brand">
+        <div class="brand-logo">TU</div>
+        <span class="brand-name">Tatku United</span>
+      </a>
+      <div class="nav-links">
+        <a href="home.html" class="nav-link">Home</a>
+        <a href="services.html" class="nav-link">Services</a>
+        <a href="bookings.html" class="nav-link">Bookings</a>
+      </div>
+      <div class="nav-right">
+        <a href="cart.html" class="cart-btn">
+          <svg viewBox="0 0 24 24">
+            <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" />
+            <line x1="3" y1="6" x2="21" y2="6" />
+            <path d="M16 10a4 4 0 01-8 0" />
+          </svg>
+          <span class="cart-count" id="cart-count">0</span>
+        </a>
+        <a href="profile.html" class="user-avatar-btn" title="My Profile">
+          <svg viewBox="0 0 24 24">
+            <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" />
+            <circle cx="12" cy="7" r="4" />
+          </svg>
+        </a>
+      </div>
+    </nav>
+
+    <main class="main" id="main-review">
+      <div class="breadcrumb">
+        <a href="bookings.html" class="bc-link">My Bookings</a>
+        <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6" /></svg>
+        <span class="bc-current">Service Feedback</span>
+      </div>
+
+      <div class="service-header-card">
+        <div class="service-completed-label">
+          <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12" /></svg>
+          SERVICE COMPLETED
+        </div>
+        <div class="service-header-body">
+          <div class="service-header-icon">
+            <svg viewBox="0 0 24 24">
+              <rect x="2" y="7" width="20" height="12" rx="2" />
+              <path d="M17 11h1M6 11h6" />
+            </svg>
+          </div>
+          <div class="service-header-info">
+            <div class="service-header-name">Microwave Deep Cleaning</div>
+            <div class="service-header-provider">
+              <svg viewBox="0 0 24 24">
+                <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" />
+                <circle cx="12" cy="7" r="4" />
+              </svg>
+              Provider: <strong>Sam Bhav</strong>
+            </div>
+          </div>
+          <div class="service-header-date">
+            <div class="date-label">DATE</div>
+            <div class="date-value">March 4, 2026</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="review-card">
+        <div class="review-question">How would you rate the service?</div>
+        <div class="review-sub">
+          Your feedback helps Sam improve their services.
+        </div>
+        <div class="star-row" id="star-row">
+          <button class="star active" data-val="1" onclick="setRating(1)">
+            ★
+          </button>
+          <button class="star active" data-val="2" onclick="setRating(2)">
+            ★
+          </button>
+          <button class="star active" data-val="3" onclick="setRating(3)">
+            ★
+          </button>
+          <button class="star active" data-val="4" onclick="setRating(4)">
+            ★
+          </button>
+          <button class="star" data-val="5" onclick="setRating(5)">★</button>
+        </div>
+        <div class="review-divider"></div>
+        <div class="review-field-header">
+          <span class="review-field-label">Detailed Review</span>
+          <span class="char-count" id="char-count">0 / 500 characters</span>
+        </div>
+        <textarea
+          class="review-textarea"
+          id="review-text"
+          placeholder="What did you like? Was there anything that could be improved?"
+          maxlength="500"
+          oninput="updateCharCount()"
+        ></textarea>
+        <div class="photo-section">
+          <div
+            class="photo-upload-box"
+            onclick="document.getElementById('photo-input').click()"
+          >
+            <svg viewBox="0 0 24 24">
+              <path
+                d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"
+              />
+              <circle cx="12" cy="13" r="4" />
+            </svg>
+            <span>UPLOAD</span>
+            <input
+              type="file"
+              id="photo-input"
+              accept="image/*"
+              multiple
+              style="display: none"
+              onchange="previewPhotos(this)"
+            />
+          </div>
+          <div class="photo-slot" id="slot-1"></div>
+          <div class="photo-slot" id="slot-2"></div>
+          <div class="photo-slot" id="slot-3"></div>
+        </div>
+        <p class="photo-hint">You can upload up to 4 photos.</p>
+        <button class="submit-btn" onclick="submitReview()">
+          Submit Review
+          <svg viewBox="0 0 24 24">
+            <line x1="22" y1="2" x2="11" y2="13" />
+            <polygon points="22 2 15 22 11 13 2 9 22 2" />
+          </svg>
+        </button>
+        <p class="consent-text">
+          By submitting, you agree to our <a href="#">Content Guidelines</a>.
+        </p>
+      </div>
+
+      <div class="need-section">
+        <div class="need-label">NEED SOMETHING ELSE?</div>
+        <div class="need-grid" id="need-grid"></div>
+      </div>
+    </main>
+
+    <!-- SUCCESS STATE -->
+    <div class="success-overlay" id="success-overlay" style="display: none">
+      <div class="success-content">
+        <div class="success-check">
+          <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12" /></svg>
+        </div>
+        <h2 class="success-title">Thank You for Your Review!</h2>
+        <p class="success-sub">
+          Your feedback has been successfully submitted and helps us maintain
+          high quality standards.
+        </p>
+        <div class="success-service-card">
+          <div class="success-service-icon">
+            <svg viewBox="0 0 24 24">
+              <rect x="2" y="7" width="20" height="12" rx="2" />
+              <path d="M17 11h1M6 11h6" />
+            </svg>
+          </div>
+          <div class="success-service-info">
+            <div class="success-service-name">Microwave Deep Cleaning</div>
+            <div class="success-service-provider">
+              <svg viewBox="0 0 24 24">
+                <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" />
+                <circle cx="12" cy="7" r="4" />
+              </svg>
+              Provider: <strong>Sam Bhav</strong>
+            </div>
+          </div>
+          <div>
+            <div class="success-stars" id="success-stars">★★★★☆</div>
+            <div class="submitted-label">SUBMITTED</div>
+          </div>
+        </div>
+        <a href="bookings.html" class="success-btn-primary">
+          Back to My Bookings
+          <svg viewBox="0 0 24 24">
+            <rect x="3" y="4" width="18" height="18" rx="2" />
+            <path d="M16 2v4M8 2v4M3 10h18" />
+          </svg>
+        </a>
+        <a href="services.html" class="success-btn-secondary">
+          Explore Other Services
+          <svg viewBox="0 0 24 24">
+            <circle cx="11" cy="11" r="8" />
+            <line x1="21" y1="21" x2="16.65" y2="16.65" />
+          </svg>
+        </a>
+        <div class="success-interest-label">
+          YOU MIGHT ALSO BE INTERESTED IN
+        </div>
+        <div class="success-suggestions" id="success-suggestions"></div>
+      </div>
+    </div>
+
+    <footer class="footer" id="review-footer">
+      <span>© 2026 Tatku United Inc. All rights reserved.</span>
+      <div class="footer-links">
+        <a href="#">Terms of Service</a>
+        <a href="#">Privacy Policy</a>
+        <a href="#">Contact Support</a>
+      </div>
+    </footer>
+
+    <script src="../../js/customer/review.js"></script>
+  </body>
+</html>

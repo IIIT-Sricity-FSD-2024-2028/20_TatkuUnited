@@ -1,0 +1,524 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tatku United — Reliable Home Services</title>
+    <link rel="stylesheet" href="../css/landing_page.css" />
+  </head>
+  <body>
+    <!-- Progress Bar -->
+    <div class="progress-bar" id="progressBar" style="width: 0%"></div>
+
+    <!-- Custom Cursor -->
+    <div class="cursor" id="cursor"></div>
+    <div class="cursor-ring" id="cursorRing"></div>
+
+    <!-- Particles Canvas -->
+    <canvas id="particles-canvas"></canvas>
+
+    <!-- ── NAV ── -->
+    <nav id="navbar">
+      <a href="#" class="nav-logo">
+        <div class="nav-logo-icon">TU</div>
+        Tatku United
+      </a>
+      <ul class="nav-links">
+        <li><a href="#hero">Home</a></li>
+        <li><a href="#services">Services</a></li>
+        <li><a href="#how">How It Works</a></li>
+        <li><a href="#smarter">About</a></li>
+      </ul>
+      <div class="nav-actions">
+        <button class="btn-ghost">Login</button>
+        <button class="btn-primary">Get Started</button>
+      </div>
+    </nav>
+
+    <!-- ── HERO ── -->
+    <section id="hero">
+      <div class="grid-dots"></div>
+      <div class="hero-content">
+        <div class="hero-badge">AI Home Services Platform</div>
+        <h1 class="hero-title">
+          Reliable Home<br />
+          Services, <span class="accent">Delivered<br />On Time</span>
+        </h1>
+        <p class="hero-desc">
+          Book trusted professionals for repairs, cleaning, and maintenance in
+          just a few clicks. Quality service, guaranteed.
+        </p>
+        <div class="hero-cta">
+          <a href="#services" class="btn-hero">
+            <svg
+              width="16"
+              height="16"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              stroke-width="2.5"
+            >
+              <path d="M13 10V3L4 14h7v7l9-11h-7z" />
+            </svg>
+            Explore Services
+          </a>
+          <button class="btn-hero-ghost">
+            How It Works
+            <svg
+              width="16"
+              height="16"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M17 8l4 4m0 0l-4 4m4-4H3"
+              />
+            </svg>
+          </button>
+        </div>
+        <div class="hero-trust">
+          <div class="trust-item">
+            <svg
+              width="16"
+              height="16"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              stroke-width="2.5"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"
+              />
+            </svg>
+            Trusted by 10,000+ households
+          </div>
+          <div class="trust-item">
+            <svg
+              width="16"
+              height="16"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              stroke-width="2.5"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+              />
+            </svg>
+            Verified professionals
+          </div>
+          <div class="trust-item">
+            <svg
+              width="16"
+              height="16"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              stroke-width="2.5"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+            Affordable & reliable
+          </div>
+        </div>
+      </div>
+      <div class="hero-visual">
+        <div class="deco-circle-1"></div>
+        <div class="deco-circle-2"></div>
+        <div class="floating-badge">✓ Service Confirmed</div>
+        <div class="booking-card">
+          <div class="booking-header">
+            <div class="booking-icon">
+              <svg
+                width="20"
+                height="20"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                />
+              </svg>
+            </div>
+            <div>
+              <div class="booking-title">Service Booked</div>
+              <div class="booking-sub">AC Repair • Tomorrow, 10 AM</div>
+            </div>
+          </div>
+          <div class="booking-row">
+            <span class="booking-label">Technician assigned</span>
+            <span class="status-badge status-confirmed">✓ Confirmed</span>
+          </div>
+          <div class="booking-row">
+            <span class="booking-label">Quality guaranteed</span>
+            <span class="status-badge status-insured">✓ Insured</span>
+          </div>
+          <div class="booking-row">
+            <span class="booking-label">Transparent pricing</span>
+            <span class="status-badge status-hidden">→ No hidden fees</span>
+          </div>
+        </div>
+        <div class="rating-pill">
+          <span class="rating-stars">★★★★★</span>
+          <span>4.9</span>
+          <span style="color: var(--silver); font-weight: 400; font-size: 12px"
+            >Customer rating</span
+          >
+        </div>
+      </div>
+    </section>
+
+    <!-- ── SERVICES ── -->
+    <section id="services">
+      <div class="section-header">
+        <div class="section-label reveal">Our Services</div>
+        <h2 class="section-title reveal">Popular Services</h2>
+        <p class="section-desc reveal">
+          Browse from a wide range of home services delivered by verified
+          professionals.
+        </p>
+      </div>
+      <div class="services-grid">
+        <div class="service-card reveal reveal-delay-1">
+          <div class="service-icon-wrap">❄️</div>
+          <div class="service-name">AC Repair</div>
+          <div class="service-rating">
+            <span class="star">★</span> 4.8
+            <span style="color: var(--silver)">(2.1k reviews)</span>
+          </div>
+          <div class="service-price">From $49</div>
+        </div>
+        <div class="service-card reveal reveal-delay-2">
+          <div class="service-icon-wrap">🔧</div>
+          <div class="service-name">Plumbing</div>
+          <div class="service-rating">
+            <span class="star">★</span> 4.7
+            <span style="color: var(--silver)">(1.8k reviews)</span>
+          </div>
+          <div class="service-price">From $39</div>
+        </div>
+        <div class="service-card reveal reveal-delay-3">
+          <div class="service-icon-wrap">🧹</div>
+          <div class="service-name">Home Cleaning</div>
+          <div class="service-rating">
+            <span class="star">★</span> 4.9
+            <span style="color: var(--silver)">(3.2k reviews)</span>
+          </div>
+          <div class="service-price">From $35</div>
+        </div>
+        <div class="service-card reveal reveal-delay-1">
+          <div class="service-icon-wrap">🔩</div>
+          <div class="service-name">Appliance Repair</div>
+          <div class="service-rating">
+            <span class="star">★</span> 4.6
+            <span style="color: var(--silver)">(980 reviews)</span>
+          </div>
+          <div class="service-price">From $55</div>
+        </div>
+        <div class="service-card reveal reveal-delay-2">
+          <div class="service-icon-wrap">⚡</div>
+          <div class="service-name">Electrical Work</div>
+          <div class="service-rating">
+            <span class="star">★</span> 4.8
+            <span style="color: var(--silver)">(1.4k reviews)</span>
+          </div>
+          <div class="service-price">From $45</div>
+        </div>
+        <div class="service-card reveal reveal-delay-3">
+          <div class="service-icon-wrap">🦟</div>
+          <div class="service-name">Pest Control</div>
+          <div class="service-rating">
+            <span class="star">★</span> 4.7
+            <span style="color: var(--silver)">(762 reviews)</span>
+          </div>
+          <div class="service-price">From $40</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── HOW IT WORKS ── -->
+    <section id="how">
+      <div class="section-header">
+        <div class="section-label reveal">Simple Process</div>
+        <h2 class="section-title reveal">How It Works</h2>
+        <p class="section-desc reveal">
+          Getting your home serviced is as easy as 1–2–3.
+        </p>
+      </div>
+      <div class="steps-row">
+        <div class="step-card reveal reveal-delay-1">
+          <div class="step-num">Step 01</div>
+          <div class="step-icon">🔍</div>
+          <div class="step-title">Browse Services</div>
+          <p class="step-desc">
+            Find the service you need from our curated list of trusted
+            providers.
+          </p>
+        </div>
+        <div class="step-card reveal reveal-delay-2">
+          <div class="step-num">Step 02</div>
+          <div class="step-icon">📅</div>
+          <div class="step-title">Book a Time Slot</div>
+          <p class="step-desc">
+            Choose a convenient date and time that works best for you.
+          </p>
+        </div>
+        <div class="step-card reveal reveal-delay-3">
+          <div class="step-num">Step 03</div>
+          <div class="step-icon">✅</div>
+          <div class="step-title">Service Delivered</div>
+          <p class="step-desc">
+            A verified professional arrives and completes the job on time.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── SMARTER WAY ── -->
+    <section id="smarter">
+      <div class="flow-card reveal">
+        <div class="flow-label">Our Collective System</div>
+        <div class="flow-step">
+          <div class="flow-step-icon">👤</div>
+          <div>
+            <div class="flow-step-text">Customer Request</div>
+            <div class="flow-step-sub">You book a service</div>
+          </div>
+        </div>
+        <div class="flow-connector"></div>
+        <div class="flow-step">
+          <div class="flow-step-icon">🤖</div>
+          <div>
+            <div class="flow-step-text">Smart Assignment</div>
+            <div class="flow-step-sub">System matches the best provider</div>
+          </div>
+        </div>
+        <div class="flow-connector"></div>
+        <div class="flow-step">
+          <div class="flow-step-icon">🏠</div>
+          <div>
+            <div class="flow-step-text">Service Delivered</div>
+            <div class="flow-step-sub">Reliable, on-time completion</div>
+          </div>
+        </div>
+      </div>
+      <div class="smarter-right">
+        <div class="section-label reveal" style="justify-content: flex-start">
+          Why We're Different
+        </div>
+        <h2 class="section-title reveal" style="text-align: left">
+          A Smarter Way to Deliver Services
+        </h2>
+        <p
+          class="reveal"
+          style="
+            font-size: 16px;
+            line-height: 1.7;
+            color: var(--gray);
+            margin-top: 12px;
+          "
+        >
+          Unlike traditional platforms, Tatku United automatically assigns
+          service providers from trusted collectives, ensuring reliable
+          scheduling and fair work distribution.
+        </p>
+        <div class="smarter-features reveal">
+          <div class="feature-item">
+            <div class="feature-check">✓</div>
+            <div class="feature-text">
+              Automated provider matching for faster service
+            </div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-check">✓</div>
+            <div class="feature-text">
+              Fair workload distribution across professionals
+            </div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-check">✓</div>
+            <div class="feature-text">
+              Quality guaranteed through collective accountability
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── STATS ── -->
+    <div style="padding: 0 5%">
+      <div class="stats-row">
+        <div class="stat-item reveal reveal-delay-1">
+          <span class="stat-num" data-count="10000">0</span>
+          <div class="stat-label">Households Served</div>
+        </div>
+        <div class="stat-item reveal reveal-delay-2">
+          <span class="stat-num" data-count="500">0</span>
+          <div class="stat-label">Verified Professionals</div>
+        </div>
+        <div class="stat-item reveal reveal-delay-3">
+          <span class="stat-num" data-count="98">0</span>
+          <div class="stat-label">Satisfaction Rate %</div>
+        </div>
+        <div class="stat-item reveal reveal-delay-4">
+          <span class="stat-num" data-count="6">0</span>
+          <div class="stat-label">Service Categories</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── TESTIMONIALS ── -->
+    <section id="testimonials">
+      <div class="section-header">
+        <div class="section-label reveal">Testimonials</div>
+        <h2 class="section-title reveal">What Our Customers Say</h2>
+      </div>
+      <div class="testi-grid">
+        <div class="testi-card reveal reveal-delay-1">
+          <div class="testi-stars">★★★★★</div>
+          <p class="testi-text">
+            "Very smooth booking experience and the technician arrived exactly
+            on time. We will definitely use again."
+          </p>
+          <div class="testi-author">
+            <div class="testi-avatar avatar-sj">SJ</div>
+            <div>
+              <div class="testi-name">Sarah Johnson</div>
+              <div class="testi-role">AC Repair Customer</div>
+            </div>
+          </div>
+        </div>
+        <div class="testi-card reveal reveal-delay-2">
+          <div class="testi-stars">★★★★★</div>
+          <p class="testi-text">
+            "Excellent plumbing service. The professional was knowledgeable and
+            fixed the issue quickly. Great value."
+          </p>
+          <div class="testi-author">
+            <div class="testi-avatar avatar-mc">MC</div>
+            <div>
+              <div class="testi-name">Michael Chen</div>
+              <div class="testi-role">Plumbing Customer</div>
+            </div>
+          </div>
+        </div>
+        <div class="testi-card reveal reveal-delay-3">
+          <div class="testi-stars">★★★★★</div>
+          <p class="testi-text">
+            "I love how easy it is to book services. The cleaning team was
+            thorough and my apartment has never looked better."
+          </p>
+          <div class="testi-author">
+            <div class="testi-avatar avatar-ps">PS</div>
+            <div>
+              <div class="testi-name">Priya Sharma</div>
+              <div class="testi-role">Home Cleaning Customer</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── CTA ── -->
+    <section id="cta">
+      <div class="cta-inner reveal">
+        <div class="cta-deco-1"></div>
+        <div class="cta-deco-2"></div>
+        <h2 class="cta-title">Book Your First Service Today</h2>
+        <p class="cta-desc">
+          Join thousands of happy customers who trust Tatku United for reliable,
+          affordable home services.
+        </p>
+        <a href="#services" class="btn-cta">
+          Get Started
+          <svg
+            width="16"
+            height="16"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            stroke-width="2.5"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M17 8l4 4m0 0l-4 4m4-4H3"
+            />
+          </svg>
+        </a>
+      </div>
+    </section>
+
+    <!-- ── FOOTER ── -->
+    <footer>
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <a href="#" class="nav-logo" style="text-decoration: none">
+            <div class="nav-logo-icon">TU</div>
+            Tatku United
+          </a>
+          <p class="footer-tagline">
+            Connecting you with trusted home service professionals.
+          </p>
+        </div>
+        <div>
+          <div class="footer-col-title">Company</div>
+          <ul class="footer-links">
+            <li><a href="#">About</a></li>
+            <li><a href="#">Careers</a></li>
+            <li><a href="#">Blog</a></li>
+            <li><a href="#">Press</a></li>
+          </ul>
+        </div>
+        <div>
+          <div class="footer-col-title">Services</div>
+          <ul class="footer-links">
+            <li><a href="#">AC Repair</a></li>
+            <li><a href="#">Plumbing</a></li>
+            <li><a href="#">Cleaning</a></li>
+            <li><a href="#">Electrical</a></li>
+          </ul>
+        </div>
+        <div>
+          <div class="footer-col-title">Help Center</div>
+          <ul class="footer-links">
+            <li><a href="#">FAQs</a></li>
+            <li><a href="#">Support</a></li>
+            <li><a href="#">Safety</a></li>
+            <li><a href="#">Terms</a></li>
+          </ul>
+        </div>
+        <div>
+          <div class="footer-col-title">Contact</div>
+          <ul class="footer-links">
+            <li><a href="#">hello@tatku.com</a></li>
+            <li><a href="#">+1 (555) 123-4567</a></li>
+            <li><a href="#">New York, NY</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>© 2025 Tatku United. All rights reserved.</span>
+        <span>Made with ♥ for homeowners</span>
+      </div>
+    </footer>
+
+    <script src="../js/landing_page.js"></script>
+  </body>
+</html>

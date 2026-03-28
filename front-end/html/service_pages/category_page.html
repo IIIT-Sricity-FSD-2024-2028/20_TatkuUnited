@@ -1,0 +1,508 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Kitchen Cleaning – Tatku United</title>
+    <link rel="stylesheet" href="../../css/service_pages/category_page.css" />
+  </head>
+  <body>
+    <!-- NAVBAR -->
+    <nav class="navbar">
+      <div class="nav-inner">
+        <a href="service_discovery.html" class="logo">
+          <span class="logo-badge">TU</span>
+          <span class="logo-name">Tatku United</span>
+        </a>
+        <ul class="nav-links">
+          <li><a href="#">Home</a></li>
+          <li><a href="service_discovery.html">Services</a></li>
+          <li><a href="#">About</a></li>
+        </ul>
+        <div class="nav-auth">
+          <a href="#" class="btn-login">Login</a>
+          <a href="#" class="btn-register">Register</a>
+        </div>
+        <button class="hamburger" id="hamburger" aria-label="Toggle menu">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+      <div class="mobile-menu" id="mobileMenu">
+        <ul>
+          <li><a href="#">Home</a></li>
+          <li><a href="service_discovery.html">Services</a></li>
+          <li><a href="#">About</a></li>
+          <li><a href="#">Login</a></li>
+          <li><a href="#">Register</a></li>
+        </ul>
+      </div>
+    </nav>
+
+    <!-- HERO / CATEGORY HEADER -->
+    <section class="cat-hero">
+      <div class="container">
+        <div class="cat-hero-grid">
+          <div class="cat-hero-left">
+            <h1 class="cat-title">Kitchen Cleaning</h1>
+            <div class="cat-meta">
+              <span class="star-icon">
+                <svg viewBox="0 0 20 20" fill="#f5a623">
+                  <path
+                    d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"
+                  />
+                </svg>
+              </span>
+              <span class="cat-rating">4.85</span>
+              <span class="cat-bookings">(3.14 M bookings)</span>
+            </div>
+
+            <h2 class="select-label">Select a service</h2>
+            <div class="sub-services-grid" id="subServicesGrid">
+              <button class="sub-service-card active" data-service="cabinets">
+                <div class="sub-service-img">
+                  <img
+                    src="https://vontobels.com/wp-content/uploads/2020/04/How-to-Clean-Kitchen-Cabinets.jpg"
+                    alt="Cabinets and tiles"
+                  />
+                </div>
+                <span>Cabinets and tiles</span>
+              </button>
+              <button class="sub-service-card" data-service="chimney">
+                <div class="sub-service-img">
+                  <img
+                    src="https://chimneysolutionsindiana.com/wp-content/uploads/2016/03/4L6A5532.jpg"
+                    alt="Chimney Cleaning"
+                  />
+                </div>
+                <span>Chimney Cleaning</span>
+              </button>
+              <button class="sub-service-card" data-service="complete">
+                <div class="sub-service-img">
+                  <img
+                    src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTphA18cTQruqFq7WuMJH7oQ4Zcg0JVUrcLwg&s"
+                    alt="Complete kitchen cleaning"
+                  />
+                </div>
+                <span>Complete kitchen cleaning</span>
+              </button>
+              <button class="sub-service-card" data-service="appliance">
+                <div class="sub-service-img">
+                  <img
+                    src="https://www.thespruce.com/thmb/Ev_1xJaqyI3Do7tG7Yz2KH0G15M=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/clean-small-kitchen-appliances-4153520-05-58415d047a2a49dd87b1e8a1bdb3d6ed.jpg"
+                    alt="Appliance cleaning"
+                  />
+                </div>
+                <span>Appliance cleaning</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="cat-hero-right">
+            <div class="cat-hero-img-wrap">
+              <img
+                src="https://images.unsplash.com/photo-1556911220-bff31c812dba?w=700&q=80"
+                alt="Kitchen Cleaning Professional"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- EXPLORE SERVICES -->
+    <section class="section explore-section">
+      <div class="container">
+        <div class="explore-layout">
+          <!-- LEFT: Service list -->
+          <div class="explore-main">
+            <h2 class="section-heading">Explore services</h2>
+
+            <!-- Service Item 1 -->
+            <div class="explore-item" id="microwave">
+              <div class="explore-item-info">
+                <div class="item-title-row">
+                  <h3>Microwave cleaning</h3>
+                </div>
+                <div class="item-meta">
+                  <span class="star-icon sm">
+                    <svg viewBox="0 0 20 20" fill="#f5a623">
+                      <path
+                        d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"
+                      />
+                    </svg>
+                  </span>
+                  <span class="item-rating">4.85</span>
+                  <span class="item-reviews">(3.14k reviews)</span>
+                </div>
+                <div class="item-price-row">
+                  <span class="item-price">₹249</span>
+                  <span class="item-duration">
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                    >
+                      <circle cx="12" cy="12" r="10" />
+                      <path d="M12 6v6l4 2" />
+                    </svg>
+                    20 mins
+                  </span>
+                </div>
+                <ul class="item-bullets">
+                  <li>
+                    Deep Cleaning: Removal of grease, and food grime from the
+                    microwave.
+                  </li>
+                  <li>
+                    Component Cleaning: Thorough cleaning interior components.
+                  </li>
+                  <li>
+                    Exterior Maintenance: Wiping down the exterior casing and
+                    control panel.
+                  </li>
+                </ul>
+                <a href="service_page.html" class="item-view-details"
+                  >View details</a
+                >
+              </div>
+              <div class="explore-item-cta">
+                <div class="item-img-box">
+                  <img
+                    src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSjwznfCSNc7EHqepSNN_MKb-GS0aJnVTSTyA&s"
+                    alt="Microwave cleaning"
+                  />
+                </div>
+                <button class="btn-book-item">Add to Cart</button>
+              </div>
+            </div>
+
+            <!-- Service Item 2 -->
+            <div class="explore-item" id="gasstove">
+              <div class="explore-item-info">
+                <div class="item-title-row">
+                  <h3>Gas stove cleaning</h3>
+                </div>
+                <div class="item-meta">
+                  <span class="star-icon sm">
+                    <svg viewBox="0 0 20 20" fill="#f5a623">
+                      <path
+                        d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"
+                      />
+                    </svg>
+                  </span>
+                  <span class="item-rating">4.73</span>
+                  <span class="item-reviews">(2.19k reviews)</span>
+                </div>
+                <div class="item-price-row">
+                  <span class="item-price">₹149</span>
+                  <span class="item-duration">
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                    >
+                      <circle cx="12" cy="12" r="10" />
+                      <path d="M12 6v6l4 2" />
+                    </svg>
+                    30 mins
+                  </span>
+                </div>
+                <ul class="item-bullets">
+                  <li>
+                    Burners &amp; Components: Burner caps and heads are soaked
+                    in soapy water.
+                  </li>
+                  <li>
+                    Surface Cleaning: Stove surface is cleaned using
+                    professional tools.
+                  </li>
+                  <li>
+                    Crevice/Knob Cleaning: Specialized brushes are used to clean
+                    hard-to-reach areas.
+                  </li>
+                </ul>
+                <a href="service_page.html" class="item-view-details"
+                  >View details</a
+                >
+              </div>
+              <div class="explore-item-cta">
+                <div class="item-img-box">
+                  <img
+                    src="https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=300&q=80"
+                    alt="Gas stove cleaning"
+                  />
+                </div>
+                <button class="btn-book-item">Add to Cart</button>
+              </div>
+            </div>
+
+            <!-- Service Item 3 -->
+            <div class="explore-item" id="appliance-pkg">
+              <div class="explore-item-info">
+                <div class="item-title-row">
+                  <h3>Appliance cleaning package</h3>
+                </div>
+                <div class="item-meta">
+                  <span class="star-icon sm">
+                    <svg viewBox="0 0 20 20" fill="#f5a623">
+                      <path
+                        d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"
+                      />
+                    </svg>
+                  </span>
+                  <span class="item-rating">4.48</span>
+                  <span class="item-reviews">(7.1k reviews)</span>
+                </div>
+                <div class="item-price-row">
+                  <span class="item-price">Starts at ₹849</span>
+                  <span class="item-price-original">₹1249</span>
+                  <span class="item-duration">
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                    >
+                      <circle cx="12" cy="12" r="10" />
+                      <path d="M12 6v6l4 2" />
+                    </svg>
+                    ~2 hours
+                  </span>
+                </div>
+                <ul class="item-bullets">
+                  <li>
+                    Chimney &amp; Hood: Degreasing, cleaning filters, and
+                    polishing the outer mesh.
+                  </li>
+                  <li>
+                    Refrigerator: Interior cleaning (trays, shelves) to remove
+                    food spills.
+                  </li>
+                  <li>Microwave/OTG: Cleaning the exterior to remove oil.</li>
+                  <li>Gas Stove/Hob: Cleaning burner knobs</li>
+                </ul>
+                <a href="service_page.html" class="item-view-details"
+                  >View details</a
+                >
+              </div>
+              <div class="explore-item-cta">
+                <div class="item-img-box">
+                  <img
+                    src="https://blog.service.works/wp-content/uploads/2023/07/Kitchen-Appliances.jpg"
+                    alt="Appliance cleaning package"
+                  />
+                </div>
+                <button class="btn-book-item">Add to Cart</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- RIGHT: Sidebar -->
+          <aside class="explore-sidebar">
+            <div class="sidebar-card promise-card">
+              <h3>Tatku United Promise</h3>
+              <div class="promise-badge">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                </svg>
+                <div>
+                  <strong>Quality</strong>
+                  <span>Assured</span>
+                </div>
+              </div>
+              <ul class="promise-list">
+                <li>
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2.5"
+                  >
+                    <path d="M20 6L9 17l-5-5" />
+                  </svg>
+                  Transparent Pricing
+                </li>
+                <li>
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2.5"
+                  >
+                    <path d="M20 6L9 17l-5-5" />
+                  </svg>
+                  Hassle Free Booking
+                </li>
+                <li>
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2.5"
+                  >
+                    <path d="M20 6L9 17l-5-5" />
+                  </svg>
+                  Verified Professionals
+                </li>
+              </ul>
+            </div>
+
+            <div class="sidebar-card offer-card">
+              <div class="offer-left">
+                <div class="offer-icon">
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <path
+                      d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"
+                    />
+                    <line x1="7" y1="7" x2="7.01" y2="7" />
+                  </svg>
+                </div>
+              </div>
+              <div class="offer-right">
+                <strong>Get 30% off</strong>
+                <span>On first order</span>
+                <a href="#" class="offer-link">View more offers</a>
+              </div>
+            </div>
+          </aside>
+        </div>
+      </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="footer">
+      <div class="container">
+        <div class="footer-grid">
+          <div class="footer-brand">
+            <a href="service_discovery.html" class="logo">
+              <span class="logo-badge">TU</span>
+              <span class="logo-name">Tatku United</span>
+            </a>
+            <p>
+              Revolutionizing local services through high-efficiency collective
+              scheduling and professional excellence.
+            </p>
+            <div class="footer-socials">
+              <a href="#" aria-label="Website">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <circle cx="12" cy="12" r="10" />
+                  <path
+                    d="M2 12h20M12 2a15.3 15.3 0 010 20M12 2a15.3 15.3 0 000 20"
+                  />
+                </svg>
+              </a>
+              <a href="#" aria-label="Email">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <rect x="2" y="4" width="20" height="16" rx="2" />
+                  <path d="M22 7l-10 7L2 7" />
+                </svg>
+              </a>
+              <a href="#" aria-label="Social">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <rect x="2" y="2" width="20" height="20" rx="5" />
+                  <circle cx="12" cy="12" r="4" />
+                  <circle cx="17.5" cy="6.5" r="0.5" fill="currentColor" />
+                </svg>
+              </a>
+            </div>
+          </div>
+          <div class="footer-col">
+            <h4>COMPANY</h4>
+            <ul>
+              <li><a href="#">About Us</a></li>
+              <li><a href="#">Our Collective Model</a></li>
+              <li><a href="#">Careers</a></li>
+              <li><a href="#">Press Kit</a></li>
+            </ul>
+          </div>
+          <div class="footer-col">
+            <h4>SERVICES</h4>
+            <ul>
+              <li><a href="#">AC Repair</a></li>
+              <li><a href="#">Electrical</a></li>
+              <li><a href="category_page.html">Cleaning</a></li>
+              <li><a href="#">Plumbing</a></li>
+            </ul>
+          </div>
+          <div class="footer-col footer-contact">
+            <h4>CONTACT</h4>
+            <ul>
+              <li>
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" />
+                  <circle cx="12" cy="10" r="3" />
+                </svg>
+                123 Collective Way, SF, CA
+              </li>
+              <li>
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path
+                    d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 10.81 19.79 19.79 0 01.01 2.22 2 2 0 012 .04h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.91 7.91a16 16 0 006.29 6.29l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"
+                  />
+                </svg>
+                +1 (555) 123-4567
+              </li>
+              <li>
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <rect x="2" y="4" width="20" height="16" rx="2" />
+                  <path d="M22 7l-10 7L2 7" />
+                </svg>
+                hello@servicecollective.com
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>
+          © 2026 Service Collective. All rights reserved. Designed for
+          professional reliability.
+        </p>
+      </div>
+    </footer>
+
+    <script src="../../js/service_pages/category_page.js"></script>
+  </body>
+</html>
