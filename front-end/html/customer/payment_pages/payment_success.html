@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tatku United — Payment Successful</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="../../../css/customer/payment_pages/payment_success.css" />
+</head>
+
+<body>
+  <!-- ── Navbar ── -->
+  <nav class="navbar">
+    <a href="#" class="brand">
+      <div class="brand-logo">TU</div>
+      <span class="brand-name">Tatku United</span>
+    </a>
+    <ul class="nav-links">
+      <li><a href="#">Home</a></li>
+      <li><a href="#">Services</a></li>
+      <li><a href="#">Bookings</a></li>
+    </ul>
+    <div class="nav-right">
+      <button class="user-btn" aria-label="Account">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+          <circle cx="12" cy="7" r="4" />
+        </svg>
+      </button>
+    </div>
+  </nav>
+
+  <!-- ══════════════════════════════════
+       BACKGROUND PAGE (blurred behind)
+  ══════════════════════════════════ -->
+  <div class="bg-page" aria-hidden="true">
+    <div class="bg-top-cards">
+      <div class="bg-card" style="width: 17%; height: 80px; margin-left: 5%"></div>
+      <div class="bg-card" style="width: 22%; height: 80px"></div>
+      <div class="bg-card" style="width: 17%; height: 80px"></div>
+      <div class="bg-card" style="width: 22%; height: 80px; margin-right: 5%"></div>
+    </div>
+
+    <div class="bg-main-grid">
+      <!-- Left wide card (Booking Summary) -->
+      <div class="bg-summary-card">
+        <div class="bg-summary-title">Booking Summary</div>
+
+        <div class="bg-summary-row">
+          <span class="bg-lbl">Total Amount</span>
+          <span class="bg-val">#TKU-88291</span>
+        </div>
+        <div class="bg-summary-row">
+          <span class="bg-lbl">Payment Method</span>
+          <span class="bg-val">$1,240.00</span>
+        </div>
+        <div class="bg-summary-row">
+          <span class="bg-lbl">Date</span>
+          <span class="bg-val">Visa ending in 4242</span>
+        </div>
+        <div class="bg-summary-row">
+          <span class="bg-lbl"></span>
+          <span class="bg-val">May 24, 2024</span>
+        </div>
+
+        <div class="bg-notice">Your booking is almost complete. Pl…</div>
+      </div>
+
+      <!-- Right side cards -->
+      <div class="bg-side-col">
+        <div class="bg-side-card" style="height: 180px"></div>
+        <div class="bg-side-card" style="height: 80px; margin-top: 16px"></div>
+      </div>
+    </div>
+
+    <div class="bg-bottom-card"></div>
+  </div>
+
+  <!-- ══════════════════════════════════
+       OVERLAY (darkens background)
+  ══════════════════════════════════ -->
+  <div class="page-overlay"></div>
+
+  <!-- ══════════════════════════════════
+       SUCCESS MODAL
+  ══════════════════════════════════ -->
+  <div class="modal-centerer">
+    <div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <!-- Animated check icon -->
+      <div class="check-wrap" id="checkWrap">
+        <div class="check-ring"></div>
+        <div class="check-circle">
+          <svg class="check-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"
+            stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12" />
+          </svg>
+        </div>
+      </div>
+
+      <h1 class="modal-title" id="modalTitle">Payment Successful!</h1>
+
+      <p class="modal-sub" id="modalSub">
+        Securing your booking and verifying<br />transaction
+      </p>
+
+      <!-- Verification progress bar -->
+      <div class="verify-bar-wrap" id="verifyBarWrap">
+        <div class="verify-bar" id="verifyBar"></div>
+      </div>
+
+      <!-- Booking details (revealed after progress completes) -->
+      <div class="booking-details" id="bookingDetails">
+        <div class="detail-row">
+          <span class="detail-label">Booking ID</span>
+          <span class="detail-val mono">#TKU-88291</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Amount Paid</span>
+          <span class="detail-val mono">₹1,240.00</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Payment</span>
+          <span class="detail-val">Visa ending in 4242</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Date</span>
+          <span class="detail-val">May 24, 2024</span>
+        </div>
+      </div>
+
+      <button class="btn-receipt" id="receiptBtn">View Receipt</button>
+
+      <div class="modal-links">
+        <a href="#" class="mlink">Back to Home</a>
+        <span class="mlink-sep">·</span>
+        <a href="#" class="mlink">My Bookings</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════
+       RECEIPT PANEL
+  ══════════════════════════════════ -->
+  <div class="receipt-overlay" id="receiptOverlay">
+    <div class="receipt-panel" id="receiptPanel">
+      <div class="rp-header">
+        <div class="rp-brand">
+          <div class="rp-logo">TU</div>
+          <span>Tatku United</span>
+        </div>
+        <button class="rp-close" id="receiptClose" aria-label="Close">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
+      </div>
+
+      <div class="rp-success-chip">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <polyline points="20 6 9 17 4 12" />
+        </svg>
+        Payment Confirmed
+      </div>
+
+      <div class="rp-big-amount">₹1,240.00</div>
+
+      <div class="rp-divider"><span>RECEIPT DETAILS</span></div>
+
+      <div class="rp-rows">
+        <div class="rp-row">
+          <span>Booking ID</span>
+          <strong class="mono">#TKU-88291</strong>
+        </div>
+        <div class="rp-row">
+          <span>Service</span>
+          <strong>Home Services Package</strong>
+        </div>
+        <div class="rp-row">
+          <span>Payment Method</span>
+          <strong>Visa ending in 4242</strong>
+        </div>
+        <div class="rp-row">
+          <span>Transaction Date</span>
+          <strong>May 24, 2024</strong>
+        </div>
+        <div class="rp-row">
+          <span>Status</span>
+          <strong class="status-paid">✓ Paid</strong>
+        </div>
+      </div>
+
+      <button class="btn-download" id="downloadBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+          <polyline points="7 10 12 15 17 10" />
+          <line x1="12" y1="15" x2="12" y2="3" />
+        </svg>
+        Download Receipt
+      </button>
+
+      <p class="rp-secure">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+        </svg>
+        Secured by Tatku United Payments
+      </p>
+    </div>
+  </div>
+
+  <!-- ── Footer ── -->
+  <footer class="footer">
+    <p>© 2026 Tatku United Inc. All rights reserved.</p>
+    <div class="footer-links">
+      <a href="#">Terms of Service</a>
+      <a href="#">Privacy Policy</a>
+      <a href="#">Contact Support</a>
+    </div>
+  </footer>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <script src="../../../js/customer/payment_pages/payment_success.js"></script>
+</body>
+
+</html>
