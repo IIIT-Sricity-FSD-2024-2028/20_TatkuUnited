@@ -111,8 +111,15 @@
         showAlert('✓ Login successful! Redirecting…', 'success');
         /* Simulate redirect after short delay */
         setTimeout(function () {
-          /* In a real app: window.location.href = '/dashboard'; */
-          console.log('Navigating to dashboard for role:', role);
+        /* Role-based redirect */
+          const roleRoutes = {
+            customer:           '../customer/home.html',
+            unit_manager:       '../unit_manager/dashboard.html',
+            collective_manager: '../collective_manager/dashboard.html',
+            service_provider:   '../provider/dashboard.html',
+            admin:              '../admin/admin_dashboard.html',
+          };
+          window.location.href = roleRoutes[role] || '../customer/home.html';
         }, 1200);
       } else {
         showAlert('Invalid email or password. Please try again.', 'error');

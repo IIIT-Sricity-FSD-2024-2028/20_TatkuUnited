@@ -1,9 +1,9 @@
 const skills = [
-  { name: 'Cloud Architecture', category: 'Technical', providers: 24, proficiency: 4.2 },
-  { name: 'Strategic Planning',  category: 'Leadership', providers: 12, proficiency: 4.9 },
-  { name: 'Data Analysis',       category: 'Technical',  providers: 45, proficiency: 3.5 },
-  { name: 'Crisis Management',   category: 'Soft Skills', providers: 8, proficiency: 4.0 },
-  { name: 'Cybersecurity',       category: 'Technical',  providers: 6,  proficiency: 3.8 },
+  { name: 'Cloud Architecture', providers: 24, proficiency: 4.2 },
+  { name: 'Strategic Planning', providers: 12, proficiency: 4.9 },
+  { name: 'Data Analysis', providers: 45, proficiency: 3.5 },
+  { name: 'Crisis Management', providers: 8, proficiency: 4.0 },
+  { name: 'Cybersecurity', providers: 6, proficiency: 3.8 },
 ];
 
 const catClass = { 'Technical': 'technical', 'Leadership': 'leadership', 'Soft Skills': 'soft' };
@@ -21,7 +21,6 @@ function renderSkills() {
     const tr = document.createElement('tr');
     tr.innerHTML = `
       <td><strong>${s.name}</strong></td>
-      <td><span class="cat-pill ${catClass[s.category]}">${s.category}</span></td>
       <td>${s.providers}</td>
       <td><span class="stars">${stars(s.proficiency)}</span> <strong>${s.proficiency.toFixed(1)}</strong></td>
       <td><button class="action-link">Edit Library</button></td>
@@ -32,8 +31,8 @@ function renderSkills() {
 
 const allocProviders = [
   { initials: 'JD', name: 'Jordan Miller', role: 'Senior Systems Analyst', tags: ['AWS', 'Python'], color: '#2563eb' },
-  { initials: 'SC', name: 'Sarah Chen',    role: 'Solutions Architect',    tags: ['Strategic Planning', 'Go'], color: '#0d9488' },
-  { initials: 'MT', name: 'Marcus Taylor', role: 'Data Scientist',         tags: ['SQL', 'PyTorch'], color: '#7c3aed' },
+  { initials: 'SC', name: 'Sarah Chen', role: 'Solutions Architect', tags: ['Strategic Planning', 'Go'], color: '#0d9488' },
+  { initials: 'MT', name: 'Marcus Taylor', role: 'Data Scientist', tags: ['SQL', 'PyTorch'], color: '#7c3aed' },
 ];
 
 function renderAlloc() {

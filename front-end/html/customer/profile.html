@@ -20,7 +20,7 @@
     </a>
     <div class="nav-links">
       <a href="home.html" class="nav-link">Home</a>
-      <a href="services.html" class="nav-link">Services</a>
+      <a href="../service_pages/service_discovery.html" class="nav-link">Services</a>
       <a href="bookings.html" class="nav-link">Bookings</a>
     </div>
     <div class="nav-right">
@@ -141,35 +141,6 @@
             <button class="btn-link" onclick="openPwdModal()">
               Change Password
             </button>
-          </div>
-          <div class="sec-divider"></div>
-          <div class="security-row">
-            <div>
-              <div class="sec-label">Two-Factor Authentication</div>
-              <div class="sec-sub">Add an extra layer of security</div>
-            </div>
-            <label class="toggle">
-              <input type="checkbox" id="tfa" onchange="
-                    showToast('2FA ' + (this.checked ? 'enabled' : 'disabled'))
-                  " />
-              <span class="toggle-track"></span>
-            </label>
-          </div>
-          <div class="sec-divider"></div>
-          <div class="security-row">
-            <div>
-              <div class="sec-label">Login Notifications</div>
-              <div class="sec-sub">Get notified on new sign-ins</div>
-            </div>
-            <label class="toggle">
-              <input type="checkbox" id="login-notif" checked onchange="
-                    showToast(
-                      'Login notifications ' +
-                        (this.checked ? 'enabled' : 'disabled'),
-                    )
-                  " />
-              <span class="toggle-track"></span>
-            </label>
           </div>
         </div>
       </div>
