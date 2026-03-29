@@ -6,7 +6,7 @@ function updateCartBadge() {
 
 const bookings = [
   { id: 'TU-92834', status: 'pending', statusLabel: 'Pending', name: 'Microwave Deep Cleaning', category: 'Cleaning', provider: 'Sambhav', date: 'Dec 28, 2026', time: '10:00 AM', address: '21/229, Indira Nagar, Lucknow', price: '₹1,200', duration: '2 hours', description: 'Complete deep cleaning of microwave including interior, exterior, and turntable.', iconBg: '#fef3c7', icon: `<svg viewBox="0 0 24 24" style="stroke:#d97706"><rect x="2" y="7" width="20" height="12" rx="2"/><path d="M17 11h1M6 11h6"/></svg>`, timeline: [{ label: 'Booking Placed', sub: 'Dec 20, 2026', done: true }, { label: 'Provider Assigned', sub: 'Awaiting assignment', done: false }, { label: 'Service Completed', sub: '—', done: false }], actions: ['reschedule', 'cancel'] },
-  { id: 'TU-92833', status: 'assigned', statusLabel: 'Assigned', name: 'Full Pipe Inspection', category: 'Plumbing', provider: 'elHuman', date: 'Mar 25, 2026', time: '02:30 PM', address: '21/229, Indira Nagar, Lucknow', price: '₹2,500', duration: '3 hours', description: 'Full inspection of all pipes, checking for leaks, blockages, and pressure issues.', iconBg: '#f0fdfa', icon: `<svg viewBox="0 0 24 24" style="stroke:#0d9488"><path d="M12 2a5 5 0 015 5v3H7V7a5 5 0 015-5z"/><rect x="7" y="10" width="10" height="10" rx="2"/></svg>`, timeline: [{ label: 'Booking Placed', sub: 'Mar 10, 2026', done: true }, { label: 'Provider Assigned', sub: 'elHuman confirmed', done: true }, { label: 'Service Completed', sub: '—', done: false }], actions: ['track'] },
+  { id: 'TU-92833', status: 'assigned', statusLabel: 'Assigned', name: 'Full Pipe Inspection', category: 'Plumbing', provider: 'elHuman', date: 'Mar 25, 2026', time: '02:30 PM', address: '21/229, Indira Nagar, Lucknow', price: '₹2,500', duration: '3 hours', description: 'Full inspection of all pipes, checking for leaks, blockages, and pressure issues.', iconBg: '#f0fdfa', icon: `<svg viewBox="0 0 24 24" style="stroke:#0d9488"><path d="M12 2a5 5 0 015 5v3H7V7a5 5 0 015-5z"/><rect x="7" y="10" width="10" height="10" rx="2"/></svg>`, timeline: [{ label: 'Booking Placed', sub: 'Mar 10, 2026', done: true }, { label: 'Provider Assigned', sub: 'elHuman confirmed', done: true }, { label: 'Service Completed', sub: '—', done: false }], actions: ['reschedule', 'track'] },
   { id: 'TU-92832', status: 'inprogress', statusLabel: 'In Progress', name: 'Smart Home Setup', category: 'Electrical', provider: "elHumann't", date: 'Mar 27, 2026', time: '11:00 AM', address: '21/229, Indira Nagar, Lucknow', price: '₹4,800', duration: '4 hours', description: 'Installation and configuration of smart home devices including lights, locks, and thermostat.', iconBg: '#eff6ff', icon: `<svg viewBox="0 0 24 24" style="stroke:#2563eb"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>`, liveStatus: 'Technician is on-site', timeline: [{ label: 'Booking Placed', sub: 'Mar 20, 2026', done: true }, { label: 'Provider Assigned', sub: "elHumann't confirmed", done: true }, { label: 'In Progress', sub: 'Technician on-site now', done: true }, { label: 'Service Completed', sub: '—', done: false }], actions: ['track'] },
   { id: 'TU-92831', status: 'completed', statusLabel: 'Completed', name: 'Kitchen Counter Resurfacing', category: 'Carpentry', provider: 'TheResurface', date: 'Dec 20, 2025', time: '09:00 AM', address: '21/229, Indira Nagar, Lucknow', price: '₹6,500', duration: '5 hours', description: 'Full resurfacing of kitchen countertop with premium laminate finish.', iconBg: '#f0fdf4', icon: `<svg viewBox="0 0 24 24" style="stroke:#16a34a"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>`, timeline: [{ label: 'Booking Placed', sub: 'Dec 10, 2025', done: true }, { label: 'Provider Assigned', sub: 'TheResurface confirmed', done: true }, { label: 'Service Completed', sub: 'Dec 20, 2025', done: true }], actions: ['invoice', 'review', 'rebook'] },
   { id: 'TU-92830', status: 'cancelled', statusLabel: 'Cancelled', name: 'Garden Lawn Mowing', category: 'Gardening', provider: 'John Lemon', date: 'Dec 15, 2025', time: '11:30 AM', address: '21/229, Indira Nagar, Lucknow', price: '₹800', duration: '1.5 hours', description: 'Standard lawn mowing and trimming service.', iconBg: '#fee2e2', icon: `<svg viewBox="0 0 24 24" style="stroke:#ef4444"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>`, timeline: [{ label: 'Booking Placed', sub: 'Dec 5, 2025', done: true }, { label: 'Cancelled', sub: 'Dec 8, 2025 — by customer', done: true }], actions: ['rebook'] },
@@ -66,7 +66,7 @@ function openDrawer(id) {
     review:     `<button class="drawer-btn drawer-btn-review" onclick="window.location='review.html'">⭐ Leave a Review</button>`,
     invoice:    `<button class="drawer-btn drawer-btn-outline">View Invoice</button>`,
     rebook:     `<button class="drawer-btn drawer-btn-orange" onclick="window.location='schedule.html?service=${encodeURIComponent(b.name)}&price=${encodeURIComponent(b.price)}'">Rebook This Service</button>`,
-    reschedule: `<button class="drawer-btn drawer-btn-outline">Reschedule</button>`,
+    reschedule: `<button class="drawer-btn drawer-btn-outline" onclick="openRescheduleModal('${b.id}')"><svg viewBox="0 0 24 24" style="width:16px;height:16px;display:inline-block;vertical-align:middle;margin-right:6px"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>Reschedule</button>`,
     cancel:     `<button class="drawer-btn drawer-btn-danger">Cancel Booking</button>`,
   };
 
@@ -124,3 +124,57 @@ function closeDrawer(e) { if (e.target === document.getElementById('drawer-overl
 renderFilters();
 renderBookings();
 updateCartBadge();
+
+// ===== RESCHEDULE MODAL =====
+let reschedulingBookingId = null;
+
+function getDateConstraints() {
+  const today = new Date();
+  const maxDate = new Date();
+  maxDate.setDate(today.getDate() + 7);
+  const fmt = d => d.toISOString().split('T')[0];
+  return { min: fmt(today), max: fmt(maxDate) };
+}
+
+function openRescheduleModal(bookingId) {
+  reschedulingBookingId = bookingId;
+  const b = bookings.find(x => x.id === bookingId);
+  if (!b) return;
+  document.getElementById('reschedule-service-name').textContent = b.name + ' (#' + b.id + ')';
+  const dateInput = document.getElementById('reschedule-date');
+  const { min, max } = getDateConstraints();
+  dateInput.min = min;
+  dateInput.max = max;
+  dateInput.value = '';
+  document.getElementById('reschedule-time').selectedIndex = 0;
+  document.getElementById('reschedule-modal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeRescheduleModalBtn() {
+  document.getElementById('reschedule-modal').classList.remove('open');
+  document.body.style.overflow = '';
+  reschedulingBookingId = null;
+}
+function closeRescheduleModal(e) { if (e.target === document.getElementById('reschedule-modal')) closeRescheduleModalBtn(); }
+
+function saveReschedule() {
+  if (!reschedulingBookingId) return;
+  const newDate = document.getElementById('reschedule-date').value;
+  const newTime = document.getElementById('reschedule-time').value;
+  const { min, max } = getDateConstraints();
+  if (!newDate) { alert('Please select a date.'); return; }
+  if (newDate < min || newDate > max) { alert('Please select a date within 1 week from today.'); return; }
+  const b = bookings.find(x => x.id === reschedulingBookingId);
+  if (b) {
+    const formattedDate = new Date(newDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    b.date = formattedDate;
+    b.time = newTime;
+  }
+  closeRescheduleModalBtn();
+  // Close the drawer too
+  closeDrawerBtn();
+  renderBookings();
+  // Show success feedback
+  alert('Booking rescheduled to ' + b.date + ' at ' + b.time);
+}

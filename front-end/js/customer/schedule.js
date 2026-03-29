@@ -16,6 +16,14 @@ document.getElementById('svc-location').textContent = serviceLocation;
 
 let currentMode = 'instant';
 
+function getDateConstraints() {
+  const today = new Date();
+  const maxDate = new Date();
+  maxDate.setDate(today.getDate() + 7);
+  const fmt = d => d.toISOString().split('T')[0];
+  return { min: fmt(today), max: fmt(maxDate) };
+}
+
 function setMode(mode) {
   currentMode = mode;
   const isInstant = mode === 'instant';
@@ -24,15 +32,28 @@ function setMode(mode) {
   document.getElementById('scheduled-fields').style.display = isInstant ? 'none' : 'flex';
   document.getElementById('info-text').textContent = isInstant
     ? 'Your service will be assigned to an available provider immediately.'
-    : 'Choose your preferred date and time slot for the service.';
+    : 'Choose your preferred date and time slot (within 1 week from today).';
   const banner = document.getElementById('info-banner');
   banner.style.background = isInstant ? 'var(--green-light)' : 'var(--primary-light)';
   banner.style.borderColor = isInstant ? '#6ee7b7' : '#bfdbfe';
   banner.style.color = isInstant ? '#065f46' : '#1e3a8a';
   banner.querySelector('svg').style.stroke = isInstant ? '#059669' : 'var(--primary)';
+  if (!isInstant) {
+    const { min, max } = getDateConstraints();
+    const dateInput = document.getElementById('sched-date');
+    dateInput.min = min;
+    dateInput.max = max;
+    if (dateInput.value && (dateInput.value < min || dateInput.value > max)) dateInput.value = '';
+  }
 }
 
 function addToCart() {
+  if (currentMode === 'scheduled') {
+    const dateVal = document.getElementById('sched-date').value;
+    const { min, max } = getDateConstraints();
+    if (!dateVal) { alert('Please select a date.'); return; }
+    if (dateVal < min || dateVal > max) { alert('Please select a date within 1 week from today.'); return; }
+  }
   const cart = getCart();
   const item = {
     id: Date.now(),
