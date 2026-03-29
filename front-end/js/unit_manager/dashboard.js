@@ -1,3 +1,7 @@
+document.getElementById("logout-btn").addEventListener("click", () => {
+  Auth.logout();
+});
+
 // Bar chart data
 const chartData = [
   { label: 'Mon', earnings: 65, fees: 15 },
