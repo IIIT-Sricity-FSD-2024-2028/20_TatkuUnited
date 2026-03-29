@@ -1,14 +1,14 @@
 // ---- DATA ----
-const days = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 const lineData = [4800, 5400, 4200, 5600, 6200, 8800, 7200];
-const barData  = [42, 55, 48, 62, 70, 85, 68];
+const barData = [42, 55, 48, 62, 70, 85, 68];
 
 const categories = [
-  { name: 'Cleaning',    color: '#3b82f6', bookings: 448, revenue: 16887 },
-  { name: 'Plumbing',   color: '#22c55e', bookings: 321, revenue: 12062 },
-  { name: 'Electrical', color: '#f59e0b', bookings: 257, revenue:  9650 },
-  { name: 'Painting',   color: '#ef4444', bookings: 154, revenue:  5790 },
-  { name: 'Landscaping',color: '#8b5cf6', bookings: 104, revenue:  3861 },
+  { name: 'Cleaning', color: '#3b82f6', bookings: 448, revenue: 16887 },
+  { name: 'Plumbing', color: '#22c55e', bookings: 321, revenue: 12062 },
+  { name: 'Electrical', color: '#f59e0b', bookings: 257, revenue: 9650 },
+  { name: 'Painting', color: '#ef4444', bookings: 154, revenue: 5790 },
+  { name: 'Landscaping', color: '#8b5cf6', bookings: 104, revenue: 3861 },
 ];
 
 // ---- LINE CHART ----
@@ -39,7 +39,7 @@ function drawLine() {
     ctx.fillStyle = '#9ca3af';
     ctx.font = '10px Segoe UI, system-ui, sans-serif';
     ctx.textAlign = 'right';
-    ctx.fillText('$' + (v/1000).toFixed(1) + 'k', pad.left - 6, y + 4);
+    ctx.fillText('$' + (v / 1000).toFixed(1) + 'k', pad.left - 6, y + 4);
   });
 
   // line
