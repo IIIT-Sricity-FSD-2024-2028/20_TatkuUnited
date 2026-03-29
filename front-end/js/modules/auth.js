@@ -74,7 +74,7 @@ window.Auth = (() => {
     const providers = AppStore.getTable("service_providers") || [];
     providers.forEach(sp => {
       registry.push({
-        id: sp.sp_id,
+        id: sp.service_provider_id,
         name: sp.name,
         email: sp.email,
         password: sp.password,
@@ -92,7 +92,7 @@ window.Auth = (() => {
     customers.forEach(c => {
       registry.push({
         id: c.customer_id,
-        name: c.name,
+        name: c.full_name || c.name,
         email: c.email,
         password: c.password,
         role: "customer",
