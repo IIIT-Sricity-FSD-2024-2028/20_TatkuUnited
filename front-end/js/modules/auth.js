@@ -18,9 +18,9 @@ window.Auth = (() => {
   /* ─── Hard-coded superuser ─── */
   const SUPERUSER = {
     id: "SUPER001",
-    name: "System Admin",
+    name: "System super user",
     email: "super_user@fsd.com",
-    password: "Admin@1234",
+    password: "super user@1234",
     role: "superuser",
     scopeId: null,
     unitId: null,
