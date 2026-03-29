@@ -13,7 +13,11 @@
 }
 
 body {
-  font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+  font-family:
+    "Segoe UI",
+    system-ui,
+    -apple-system,
+    sans-serif;
   background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
   min-height: 100vh;
   display: flex;
@@ -85,7 +89,9 @@ body {
   font-size: 0.95rem;
   color: #111827;
   background: #f9fafb;
-  transition: border-color 0.15s, box-shadow 0.15s;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
   outline: none;
 }
 
@@ -148,7 +154,9 @@ body {
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.15s, transform 0.1s;
+  transition:
+    background 0.15s,
+    transform 0.1s;
   letter-spacing: 0.2px;
 }
 
@@ -182,6 +190,7 @@ body {
   display: grid;
   grid-template-columns: 1fr;
   gap: 0.6rem;
+  width: 100%;
 }
 
 @media (min-width: 400px) {
@@ -192,7 +201,7 @@ body {
 
 @media (min-width: 520px) {
   .demo-grid {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 
@@ -208,9 +217,13 @@ body {
   background: #f9fafb;
   cursor: pointer;
   text-align: left;
-  transition: transform 0.15s, box-shadow 0.15s, background 0.15s;
+  transition:
+    transform 0.15s,
+    box-shadow 0.15s,
+    background 0.15s;
   border-left-width: 4px;
   font-family: inherit;
+  min-width: 0;
 }
 
 .demo-tile:hover {
