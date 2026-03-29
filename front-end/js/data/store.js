@@ -167,7 +167,7 @@
             })
             .then(function (raw) {
                 AppStore.data = JSON.parse(JSON.stringify(raw));
-                sessionStorage.setItem("fsd_session_alive", "1");
+                // NOTE: fsd_session_alive is set ONLY by Auth.login(), not here.
                 _resolve();
             })
             .catch(function (err) {

@@ -1,57 +1,50 @@
-'use strict';
+/* =============================================================================
+   TATKU UNITED — LOGOUT PAGE SCRIPT
+   front-end/js/auth_pages/logout.js
+   This file must clear session storage before anything else runs.
+   ============================================================================= */
 
-(function () {
-  /* ── Clear any stored session data ── */
-  try {
-    sessionStorage.removeItem('registeredRole');
-    sessionStorage.removeItem('userEmail');
-  } catch (e) { /* ignore */ }
+/* ── Step 1: Clear session immediately when logout page loads ── */
+/* Session is already cleared by the time this page loads (Auth.logout()
+   removes fsd_session + fsd_session_alive before redirecting here).
+   "Login Again" just navigates to the login page cleanly. */
+document.getElementById("login-again").addEventListener("click", () => {
+  window.location.href = "/front-end/html/auth_pages/login.html";
+});
 
-  /* ── Optional: auto-redirect countdown ── */
-  var AUTO_REDIRECT = false;  // Set to true to enable
-  var REDIRECT_SECONDS = 10;
-  var REDIRECT_URL = '#';     // Replace with homepage URL
+localStorage.removeItem("fsd_session");
+localStorage.removeItem("fsd_store");
+sessionStorage.removeItem("fsd_session_alive");
 
-  var redirectNote  = document.getElementById('redirect-note');
-  var countdownEl   = document.getElementById('countdown');
-  var cancelBtn     = document.getElementById('cancel-redirect');
-  var countdownTimer;
-  var remaining = REDIRECT_SECONDS;
+/* ── Step 2: Auto-redirect countdown (optional UI) ── */
+const redirectNote = document.getElementById("redirect-note");
+const countdownEl = document.getElementById("countdown");
+const cancelBtn = document.getElementById("cancel-redirect");
 
-  if (AUTO_REDIRECT) {
-    redirectNote.style.display = 'flex';
+if (redirectNote && countdownEl) {
+  redirectNote.style.display = "block";
 
-    countdownTimer = setInterval(function () {
-      remaining--;
-      countdownEl.textContent = remaining;
+  let seconds = 10;
+  let cancelled = false;
 
-      if (remaining <= 0) {
-        clearInterval(countdownTimer);
-        window.location.href = REDIRECT_URL;
-      }
-    }, 1000);
-
-    cancelBtn.addEventListener('click', function () {
-      clearInterval(countdownTimer);
-      redirectNote.style.display = 'none';
-    });
-  }
-
-  /* ── "Go to Homepage" link ── */
-  var ghostBtn = document.querySelector('.btn-ghost');
-  if (ghostBtn) {
-    ghostBtn.addEventListener('click', function (e) {
-      e.preventDefault();
-      /* In production: window.location.href = '/'; */
-      console.log('Navigating to homepage…');
-    });
-  }
-
-  /* ── Keyboard: press Enter to login again ── */
-  document.addEventListener('keydown', function (e) {
-    if (e.key === 'Enter') {
-      var loginBtn = document.querySelector('.btn-primary');
-      if (loginBtn) loginBtn.click();
+  const timer = setInterval(() => {
+    if (cancelled) {
+      clearInterval(timer);
+      return;
     }
-  });
-})();
+    seconds--;
+    countdownEl.textContent = seconds;
+
+    if (seconds <= 0) {
+      clearInterval(timer);
+      window.location.replace("../../html/landing_page.html");
+    }
+  }, 1000);
+
+  if (cancelBtn) {
+    cancelBtn.addEventListener("click", () => {
+      cancelled = true;
+      redirectNote.style.display = "none";
+    });
+  }
+}

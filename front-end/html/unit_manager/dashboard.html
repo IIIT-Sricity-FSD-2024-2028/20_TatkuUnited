@@ -1,420 +1,323 @@
 ﻿<!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Unit Manager â€” Dashboard</title>
-    <link rel="stylesheet" href="../../css/unit_manager/dashboard.css" />
-  </head>
-  <body>
-    <!-- Sidebar -->
-    <aside class="sidebar">
-      <div class="brand">
-        <div class="brand-avatar">TU</div>
-        <div class="brand-info">
-          <span class="brand-name">Unit Manager</span>
-          <span class="brand-id">ID: 8821-XP</span>
-        </div>
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Unit Manager â€” Dashboard</title>
+  <link rel="stylesheet" href="../../css/unit_manager/dashboard.css" />
+</head>
+
+<body>
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-avatar">TU</div>
+      <div class="brand-info">
+        <span class="brand-name">Unit Manager</span>
+        <span class="brand-id">ID: 8821-XP</span>
       </div>
-      <nav class="nav">
-        <a href="dashboard.html" class="nav-item active">
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-          >
-            <rect x="3" y="3" width="7" height="7" />
-            <rect x="14" y="3" width="7" height="7" />
-            <rect x="14" y="14" width="7" height="7" />
-            <rect x="3" y="14" width="7" height="7" />
-          </svg>
-          Dashboard
-        </a>
-        <a href="providers.html" class="nav-item">
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-          >
-            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-            <circle cx="9" cy="7" r="4" />
-            <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-            <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-          </svg>
-          Manage Providers
-        </a>
-        <a href="skills.html" class="nav-item">
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-          >
-            <path
-              d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"
-            />
-          </svg>
-          Manage Skills
-        </a>
-        <a href="revenue.html" class="nav-item">
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-          >
-            <line x1="12" y1="1" x2="12" y2="23" />
-            <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
-          </svg>
-          Revenue Reports
-        </a>
-      </nav>
-        <a href="notifications.html" class="nav-item">
+    </div>
+    <nav class="nav">
+      <a href="dashboard.html" class="nav-item active">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="3" width="7" height="7" />
+          <rect x="14" y="3" width="7" height="7" />
+          <rect x="14" y="14" width="7" height="7" />
+          <rect x="3" y="14" width="7" height="7" />
+        </svg>
+        Dashboard
+      </a>
+      <a href="providers.html" class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+          <circle cx="9" cy="7" r="4" />
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+          <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+        </svg>
+        Manage Providers
+      </a>
+      <a href="skills.html" class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path
+            d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
+        </svg>
+        Manage Skills
+      </a>
+      <a href="revenue.html" class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="12" y1="1" x2="12" y2="23" />
+          <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+        </svg>
+        Revenue Reports
+      </a>
+    </nav>
+    <a href="notifications.html" class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+        <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+      </svg>
+      Notifications
+    </a>
+    <a href="profile.html" class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+        <circle cx="12" cy="7" r="4" />
+      </svg>
+      My Profile
+    </a>
+    </nav>
+    <div class="sidebar-footer">
+      <a href="../auth_pages/logout.html" class="logout-link" id="logout-btn"
+        onclick="return confirm('Are you sure you want to logout?');">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+          <polyline points="16 17 21 12 16 7" />
+          <line x1="21" y1="12" x2="9" y2="12" />
+        </svg>
+        Logout
+      </a>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <div class="main">
+    <!-- Topbar -->
+    <header class="topbar">
+      <div class="search-wrap">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8" />
+          <line x1="21" y1="21" x2="16.65" y2="16.65" />
+        </svg>
+        <input type="text" placeholder="Search reports, transactions, or providers..." />
+      </div>
+      <div class="topbar-actions">
+        <button class="notif-btn" id="notifBtn" onclick="window.location.href = 'notifications.html'">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
             <path d="M13.73 21a2 2 0 0 1-3.46 0" />
           </svg>
-          Notifications
-        </a>
-        <a href="profile.html" class="nav-item">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-            <circle cx="12" cy="7" r="4" />
-          </svg>
-          My Profile
-        </a>
-      </nav>
-      <div class="sidebar-footer">
-        <a href="../auth_pages/logout.html" class="logout-link" id="logout-btn" onclick="return confirm('Are you sure you want to logout?');">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-            <polyline points="16 17 21 12 16 7" />
-            <line x1="21" y1="12" x2="9" y2="12" />
-          </svg>
-          Logout
-        </a>
+          <span class="notif-dot"></span>
+        </button>
+        <a href="profile.html" class="user-avatar" title="My Profile">TU</a>
       </div>
-    </aside>
+    </header>
 
-    <!-- Main -->
-    <div class="main">
-      <!-- Topbar -->
-      <header class="topbar">
-        <div class="search-wrap">
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-          >
-            <circle cx="11" cy="11" r="8" />
-            <line x1="21" y1="21" x2="16.65" y2="16.65" />
-          </svg>
-          <input
-            type="text"
-            placeholder="Search reports, transactions, or providers..."
-          />
+    <!-- Content -->
+    <main class="content">
+      <div class="page-header">
+        <div>
+          <h1>Dashboard Overview</h1>
+          <p>Real-time insights for your unit's performance today.</p>
         </div>
-        <div class="topbar-actions">
-          <button
-            class="notif-btn"
-            id="notifBtn"
-            onclick="window.location.href = 'notifications.html'"
-          >
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-            >
-              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
-              <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+        <div class="page-actions">
+          <button class="btn-outline">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+              <line x1="16" y1="2" x2="16" y2="6" />
+              <line x1="8" y1="2" x2="8" y2="6" />
+              <line x1="3" y1="10" x2="21" y2="10" />
             </svg>
-            <span class="notif-dot"></span>
+            Last 30 Days
           </button>
-          <a href="profile.html" class="user-avatar" title="My Profile">TU</a>
+          <button class="btn-primary">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+              <polyline points="7 10 12 15 17 10" />
+              <line x1="12" y1="15" x2="12" y2="3" />
+            </svg>
+            Download Report
+          </button>
         </div>
-      </header>
+      </div>
 
-      <!-- Content -->
-      <main class="content">
-        <div class="page-header">
-          <div>
-            <h1>Dashboard Overview</h1>
-            <p>Real-time insights for your unit's performance today.</p>
+      <!-- Stat Cards -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon blue">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="5" y="2" width="14" height="20" rx="2" ry="2" />
+              <line x1="12" y1="18" x2="12.01" y2="18" />
+            </svg>
           </div>
-          <div class="page-actions">
-            <button class="btn-outline">
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-              >
-                <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-                <line x1="16" y1="2" x2="16" y2="6" />
-                <line x1="8" y1="2" x2="8" y2="6" />
-                <line x1="3" y1="10" x2="21" y2="10" />
-              </svg>
-              Last 30 Days
-            </button>
-            <button class="btn-primary">
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-              >
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                <polyline points="7 10 12 15 17 10" />
-                <line x1="12" y1="15" x2="12" y2="3" />
-              </svg>
-              Download Report
-            </button>
+          <div class="stat-body">
+            <span class="stat-label">Total Bookings</span>
+            <span class="stat-value">1,284</span>
           </div>
+          <span class="stat-badge up">â†‘ +12.5%</span>
         </div>
-
-        <!-- Stat Cards -->
-        <div class="stats-grid">
-          <div class="stat-card">
-            <div class="stat-icon blue">
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-              >
-                <rect x="5" y="2" width="14" height="20" rx="2" ry="2" />
-                <line x1="12" y1="18" x2="12.01" y2="18" />
-              </svg>
-            </div>
-            <div class="stat-body">
-              <span class="stat-label">Total Bookings</span>
-              <span class="stat-value">1,284</span>
-            </div>
-            <span class="stat-badge up">â†‘ +12.5%</span>
+        <div class="stat-card">
+          <div class="stat-icon teal">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon
+                points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+            </svg>
           </div>
-          <div class="stat-card">
-            <div class="stat-icon teal">
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-              >
-                <polygon
-                  points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"
-                />
-              </svg>
-            </div>
-            <div class="stat-body">
-              <span class="stat-label">Avg Provider Rating</span>
-              <span class="stat-value">4.8 <small>/ 5.0</small></span>
-            </div>
-            <span class="stat-badge up">â†‘ +0.2%</span>
+          <div class="stat-body">
+            <span class="stat-label">Avg Provider Rating</span>
+            <span class="stat-value">4.8 <small>/ 5.0</small></span>
           </div>
-          <div class="stat-card">
-            <div class="stat-icon amber">
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-              >
-                <circle cx="12" cy="12" r="10" />
-                <line x1="12" y1="8" x2="12" y2="12" />
-                <line x1="12" y1="16" x2="12.01" y2="16" />
-              </svg>
-            </div>
-            <div class="stat-body">
-              <span class="stat-label">Unit Revenue</span>
-              <span class="stat-value">â‚¹42,500</span>
-            </div>
-            <span class="stat-badge down">â†“ -3.1%</span>
-          </div>
+          <span class="stat-badge up">â†‘ +0.2%</span>
         </div>
-
-        <!-- Middle Row -->
-        <div class="mid-row">
-          <!-- Revenue Insights -->
-          <div class="card chart-card">
-            <div class="card-head">
-              <div>
-                <h2>Revenue Insights</h2>
-                <p>Daily earnings vs. platform fees</p>
-              </div>
-              <div class="legend">
-                <span class="legend-dot blue"></span><span>Earnings</span>
-                <span class="legend-dot grey"></span><span>Fees</span>
-              </div>
-            </div>
-            <div class="bar-chart" id="barChart"></div>
+        <div class="stat-card">
+          <div class="stat-icon amber">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10" />
+              <line x1="12" y1="8" x2="12" y2="12" />
+              <line x1="12" y1="16" x2="12.01" y2="16" />
+            </svg>
           </div>
-
-          <!-- Provider Capacity -->
-          <div class="card capacity-card">
-            <h2>Provider Capacity</h2>
-            <div class="capacity-list">
-              <div class="cap-item">
-                <div class="cap-label">
-                  <span>Active</span
-                  ><span class="cap-nums"
-                    ><strong>130</strong> <em>65%</em></span
-                  >
-                </div>
-                <div class="cap-bar">
-                  <div class="cap-fill green" style="width: 65%"></div>
-                </div>
-              </div>
-              <div class="cap-item">
-                <div class="cap-label">
-                  <span>On-Job</span
-                  ><span class="cap-nums"
-                    ><strong>84</strong> <em>42%</em></span
-                  >
-                </div>
-                <div class="cap-bar">
-                  <div class="cap-fill blue" style="width: 42%"></div>
-                </div>
-              </div>
-              <div class="cap-item">
-                <div class="cap-label">
-                  <span>Idle</span
-                  ><span class="cap-nums"
-                    ><strong>46</strong> <em>23%</em></span
-                  >
-                </div>
-                <div class="cap-bar">
-                  <div class="cap-fill amber" style="width: 23%"></div>
-                </div>
-              </div>
-              <div class="cap-item">
-                <div class="cap-label">
-                  <span>Unavailable</span
-                  ><span class="cap-nums"
-                    ><strong>24</strong> <em>12%</em></span
-                  >
-                </div>
-                <div class="cap-bar">
-                  <div class="cap-fill grey" style="width: 12%"></div>
-                </div>
-              </div>
-            </div>
-            <div class="status-badge-card">
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-              >
-                <circle cx="12" cy="12" r="10" />
-                <line x1="12" y1="8" x2="12" y2="12" />
-                <line x1="12" y1="16" x2="12.01" y2="16" />
-              </svg>
-              <div>
-                <strong>Unit Status: Optimal</strong>
-                <p>
-                  Your current provider supply meets 98% of estimated peak
-                  demand for the next 4 hours.
-                </p>
-              </div>
-            </div>
-
-            <div class="training-card">
-              <div class="training-text">
-                <h3>Training Module</h3>
-                <p>
-                  New 'Customer Communication' training is now available for
-                  your top-performing providers.
-                </p>
-                <button class="btn-white">Assign Now</button>
-              </div>
-              <svg
-                class="training-icon"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.5"
-              >
-                <path d="M22 10v6M2 10l10-5 10 5-10 5z" />
-                <path d="M6 12v5c3 3 9 3 12 0v-5" />
-              </svg>
-            </div>
+          <div class="stat-body">
+            <span class="stat-label">Unit Revenue</span>
+            <span class="stat-value">â‚¹42,500</span>
           </div>
+          <span class="stat-badge down">â†“ -3.1%</span>
         </div>
+      </div>
 
-        <!-- Priority Alerts -->
-        <div class="card alerts-card">
+      <!-- Middle Row -->
+      <div class="mid-row">
+        <!-- Revenue Insights -->
+        <div class="card chart-card">
           <div class="card-head">
-            <h2>Priority Alerts</h2>
-            <a href="#" class="view-all">View All</a>
-          </div>
-          <div class="alert-item red">
-            <div class="alert-icon-wrap red">
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-              >
-                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                <circle cx="12" cy="7" r="4" />
-                <line x1="18" y1="8" x2="23" y2="13" />
-                <line x1="23" y1="8" x2="18" y2="13" />
-              </svg>
+            <div>
+              <h2>Revenue Insights</h2>
+              <p>Daily earnings vs. platform fees</p>
             </div>
-            <div class="alert-body">
-              <div class="alert-top">
-                <strong>No-Show Detected</strong>
-                <span class="alert-time">2 mins ago</span>
-              </div>
-              <p>
-                Provider ID #1042 failed to arrive at Booking #B-9921 on time.
-              </p>
-              <div class="alert-btns">
-                <button class="btn-danger">Reassign Job</button>
-                <button class="btn-ghost">Call Provider</button>
-              </div>
+            <div class="legend">
+              <span class="legend-dot blue"></span><span>Earnings</span>
+              <span class="legend-dot grey"></span><span>Fees</span>
             </div>
           </div>
-          <div class="alert-item amber">
-            <div class="alert-icon-wrap amber">
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-              >
-                <path
-                  d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"
-                />
-                <line x1="12" y1="9" x2="12" y2="13" />
-                <line x1="12" y1="17" x2="12.01" y2="17" />
-              </svg>
+          <div class="bar-chart" id="barChart"></div>
+        </div>
+
+        <!-- Provider Capacity -->
+        <div class="card capacity-card">
+          <h2>Provider Capacity</h2>
+          <div class="capacity-list">
+            <div class="cap-item">
+              <div class="cap-label">
+                <span>Active</span><span class="cap-nums"><strong>130</strong> <em>65%</em></span>
+              </div>
+              <div class="cap-bar">
+                <div class="cap-fill green" style="width: 65%"></div>
+              </div>
             </div>
-            <div class="alert-body">
-              <div class="alert-top">
-                <strong>Rating Alert</strong>
-                <span class="alert-time">1 hour ago</span>
+            <div class="cap-item">
+              <div class="cap-label">
+                <span>On-Job</span><span class="cap-nums"><strong>84</strong> <em>42%</em></span>
               </div>
+              <div class="cap-bar">
+                <div class="cap-fill blue" style="width: 42%"></div>
+              </div>
+            </div>
+            <div class="cap-item">
+              <div class="cap-label">
+                <span>Idle</span><span class="cap-nums"><strong>46</strong> <em>23%</em></span>
+              </div>
+              <div class="cap-bar">
+                <div class="cap-fill amber" style="width: 23%"></div>
+              </div>
+            </div>
+            <div class="cap-item">
+              <div class="cap-label">
+                <span>Unavailable</span><span class="cap-nums"><strong>24</strong> <em>12%</em></span>
+              </div>
+              <div class="cap-bar">
+                <div class="cap-fill grey" style="width: 12%"></div>
+              </div>
+            </div>
+          </div>
+          <div class="status-badge-card">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10" />
+              <line x1="12" y1="8" x2="12" y2="12" />
+              <line x1="12" y1="16" x2="12.01" y2="16" />
+            </svg>
+            <div>
+              <strong>Unit Status: Optimal</strong>
               <p>
-                Provider ID #2281 received a 1.0 star rating. Immediate review
-                recommended.
+                Your current provider supply meets 98% of estimated peak
+                demand for the next 4 hours.
               </p>
-              <div class="alert-btns">
-                <button class="btn-warning">Investigate</button>
-                <button class="btn-ghost">Dismiss</button>
-              </div>
+            </div>
+          </div>
+
+          <div class="training-card">
+            <div class="training-text">
+              <h3>Training Module</h3>
+              <p>
+                New 'Customer Communication' training is now available for
+                your top-performing providers.
+              </p>
+              <button class="btn-white">Assign Now</button>
+            </div>
+            <svg class="training-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M22 10v6M2 10l10-5 10 5-10 5z" />
+              <path d="M6 12v5c3 3 9 3 12 0v-5" />
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- Priority Alerts -->
+      <div class="card alerts-card">
+        <div class="card-head">
+          <h2>Priority Alerts</h2>
+          <a href="#" class="view-all">View All</a>
+        </div>
+        <div class="alert-item red">
+          <div class="alert-icon-wrap red">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+              <circle cx="12" cy="7" r="4" />
+              <line x1="18" y1="8" x2="23" y2="13" />
+              <line x1="23" y1="8" x2="18" y2="13" />
+            </svg>
+          </div>
+          <div class="alert-body">
+            <div class="alert-top">
+              <strong>No-Show Detected</strong>
+              <span class="alert-time">2 mins ago</span>
+            </div>
+            <p>
+              Provider ID #1042 failed to arrive at Booking #B-9921 on time.
+            </p>
+            <div class="alert-btns">
+              <button class="btn-danger">Reassign Job</button>
+              <button class="btn-ghost">Call Provider</button>
             </div>
           </div>
         </div>
-      </main>
-    </div>
+        <div class="alert-item amber">
+          <div class="alert-icon-wrap amber">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+              <line x1="12" y1="9" x2="12" y2="13" />
+              <line x1="12" y1="17" x2="12.01" y2="17" />
+            </svg>
+          </div>
+          <div class="alert-body">
+            <div class="alert-top">
+              <strong>Rating Alert</strong>
+              <span class="alert-time">1 hour ago</span>
+            </div>
+            <p>
+              Provider ID #2281 received a 1.0 star rating. Immediate review
+              recommended.
+            </p>
+            <div class="alert-btns">
+              <button class="btn-warning">Investigate</button>
+              <button class="btn-ghost">Dismiss</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
 
-    <script src="../../js/unit_manager/dashboard.js"></script>
-  </body>
+  <script src="../../js/unit_manager/dashboard.js"></script>
+</body>
+
 </html>
-
-
