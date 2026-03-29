@@ -1,4 +1,4 @@
-/* system_monitoring.js */
+﻿/* system_monitoring.js */
 const EVENTS = [
   { time: '10:34 AM', type: 'Provider Registration', typeClass: 'green', desc: 'New provider submitted documents',  module: 'User System' },
   { time: '10:21 AM', type: 'Assignment Failure',    typeClass: 'red',   desc: 'No provider available',             module: 'Scheduling Engine' },

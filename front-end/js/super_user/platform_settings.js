@@ -1,4 +1,4 @@
-/* platform_settings.js */
+﻿/* platform_settings.js */
 document.addEventListener('DOMContentLoaded', () => {
   const saveBtn = document.getElementById('save-btn');
   if (!saveBtn) return;
@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
       maxAdvance:         document.getElementById('max-advance')?.value,
       minNotice:          document.getElementById('min-notice')?.value,
       cancelWindow:       document.getElementById('cancel-window')?.value,
-      adminApproval:      document.getElementById('admin-approval')?.checked,
+      super_userApproval: document.getElementById('super_user-approval')?.checked,
       docVerification:    document.getElementById('doc-verification')?.checked,
       notifBooking:       document.getElementById('notif-booking')?.checked,
       notifProvider:      document.getElementById('notif-provider')?.checked,

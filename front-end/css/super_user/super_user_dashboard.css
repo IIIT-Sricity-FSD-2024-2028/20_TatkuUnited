@@ -1,4 +1,4 @@
-/* ── Reset ── */
+﻿/* ── Reset ── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
@@ -250,7 +250,7 @@ body {
 .link-btn:hover { text-decoration: underline; }
 
 /* ── ADMIN ACTIONS GRID ── */
-.admin-actions-grid {
+.super_user-actions-grid {
   display: grid;
   grid-template-columns: repeat(3,1fr);
   gap: 14px;
@@ -354,8 +354,8 @@ body {
 .alert-item--red .alert-action { color: var(--red); }
 .alert-action:hover { text-decoration: underline; }
 
-/* Admin action list */
-.admin-action-list { padding: 4px 0; }
+/* Super User action list */
+.super_user-action-list { padding: 4px 0; }
 .aa-item { display: flex; align-items: flex-start; gap: 12px; padding: 12px 18px; }
 .aa-item + .aa-item { border-top: 1px solid var(--border); }
 .aa-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; margin-top: 5px; }

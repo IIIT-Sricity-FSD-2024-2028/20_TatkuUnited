@@ -1,4 +1,4 @@
-/* dashboard.js */
+﻿/* dashboard.js */
 const EVENTS = [
   { time: '10:45:22 AM', type: 'system',   typeLabel: 'SYSTEM',   desc: 'Service assignment failure: Database timeout during routing calculation.', status: 'unresolved',    statusLabel: 'Unresolved' },
   { time: '10:32:05 AM', type: 'security', typeLabel: 'SECURITY', desc: 'Flagged Account: Multiple login failures from IP 192.168.1.45.',            status: 'investigating', statusLabel: 'Investigating' },
@@ -6,7 +6,7 @@ const EVENTS = [
   { time: '09:58:12 AM', type: 'action',   typeLabel: 'ACTION',   desc: 'Account suspended: User ID #9822 for policy violations.',                   status: 'completed',     statusLabel: 'Completed' },
 ];
 
-const ADMIN_ACTIONS = [
+const SUPER_USER_ACTIONS = [
   { dot: 'blue',   title: 'Account suspended',  desc: 'Admin_Mark suspended User #892',        time: '2 mins ago' },
   { dot: 'green',  title: 'Provider verified',  desc: "Admin_Sarah approved 'QuickTransport'", time: '15 mins ago' },
   { dot: 'yellow', title: 'Settings updated',   desc: 'System threshold modified (Queue: 45s)', time: '1 hour ago' },
@@ -26,10 +26,10 @@ function renderEvents() {
   `).join('');
 }
 
-function renderAdminActions() {
-  const el = document.getElementById('admin-action-list');
+function renderSuperUserActions() {
+  const el = document.getElementById('super_user-action-list');
   if (!el) return;
-  el.innerHTML = ADMIN_ACTIONS.map(a => `
+  el.innerHTML = SUPER_USER_ACTIONS.map(a => `
     <div class="aa-item">
       <div class="aa-dot aa-dot--${a.dot}"></div>
       <div>
@@ -43,5 +43,5 @@ function renderAdminActions() {
 
 document.addEventListener('DOMContentLoaded', () => {
   renderEvents();
-  renderAdminActions();
+  renderSuperUserActions();
 });
