@@ -1,9 +1,9 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Profile – Tatku United</title>
+    <title>Profile â€“ Tatku United</title>
     <link rel="stylesheet" href="../../css/provider/profile.css" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link
@@ -53,7 +53,7 @@
         </a>
       </nav>
       <div class="sidebar-footer">
-        <a href="#" class="nav-item logout">
+        <a href="../auth_pages/logout.html" class="nav-item logout" onclick="return confirm('Are you sure you want to logout?');">
           <svg viewBox="0 0 24 24">
             <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" />
             <polyline points="16,17 21,12 16,7" />
@@ -188,7 +188,7 @@
                   <div class="add-skill-select-wrap">
                     <svg viewBox="0 0 24 24" width="15" height="15" ><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/></svg>
                     <select id="new-skill-select" class="skill-select">
-                      <option value="">— Choose a skill —</option>
+                      <option value="">â€” Choose a skill â€”</option>
                       <option value="Plumbing">Plumbing</option>
                       <option value="HVAC">HVAC</option>
                       <option value="Electrical">Electrical</option>
@@ -222,7 +222,7 @@
                 </div>
                 <div class="upload-zone-text">
                   <span class="upload-zone-title">Click to upload or drag &amp; drop</span>
-                  <span class="upload-zone-sub">PDF, DOC, DOCX &nbsp;·&nbsp; Max 5 MB &nbsp;·&nbsp; Single file</span>
+                  <span class="upload-zone-sub">PDF, DOC, DOCX &nbsp;Â·&nbsp; Max 5 MB &nbsp;Â·&nbsp; Single file</span>
                 </div>
               </div>
               <div class="upload-file-list" id="resume-list"></div>
@@ -243,7 +243,7 @@
                 </div>
                 <div class="upload-zone-text">
                   <span class="upload-zone-title">Click to upload or drag &amp; drop</span>
-                  <span class="upload-zone-sub">PDF, JPG, PNG &nbsp;·&nbsp; Max 5 MB per file &nbsp;·&nbsp; Multiple allowed</span>
+                  <span class="upload-zone-sub">PDF, JPG, PNG &nbsp;Â·&nbsp; Max 5 MB per file &nbsp;Â·&nbsp; Multiple allowed</span>
                 </div>
               </div>
               <div class="upload-file-list" id="certs-list"></div>
@@ -302,7 +302,7 @@
               />
             </div>
           </div>
-          <div class="work-hours-preview" id="work-hours-preview">Active window: 8:00 AM – 6:00 PM (10h)</div>
+          <div class="work-hours-preview" id="work-hours-preview">Active window: 8:00 AM â€“ 6:00 PM (10h)</div>
           <div class="card-footer">
             <button class="btn-save-section" onclick="saveWorkHours()">Save Work Hours</button>
           </div>
@@ -375,3 +375,5 @@
     <script src="../../js/provider/profile.js"></script>
   </body>
 </html>
+
+

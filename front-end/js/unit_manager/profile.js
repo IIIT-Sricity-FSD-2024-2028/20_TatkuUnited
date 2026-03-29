@@ -1,10 +1,10 @@
-// ── Unit Manager Profile JS ──
+﻿// â”€â”€ Unit Manager Profile JS â”€â”€
 
 const activities = [
   { title: 'Provider reassigned', desc: 'ID #1042 moved to Emergency Unit for the day', time: '2 hours ago', color: 'amber' },
   { title: 'New provider onboarded', desc: 'Ramesh Kumar joined Plumbing Unit Alpha', time: '1 day ago', color: 'green' },
-  { title: 'Rating flagged', desc: 'Provider #2281 received a 1-star review — under review', time: '2 days ago', color: 'amber' },
-  { title: 'Revenue milestone', desc: 'Unit exceeded ₹50,000 monthly target', time: '3 days ago', color: 'teal' },
+  { title: 'Rating flagged', desc: 'Provider #2281 received a 1-star review â€” under review', time: '2 days ago', color: 'amber' },
+  { title: 'Revenue milestone', desc: 'Unit exceeded â‚¹50,000 monthly target', time: '3 days ago', color: 'teal' },
   { title: 'Profile updated', desc: 'Operating zone updated to North Bangalore', time: '5 days ago', color: '' },
 ];
 
@@ -80,11 +80,7 @@ function showToast(msg) {
   toastTimer = setTimeout(() => toast.classList.remove('show'), 3000);
 }
 
-document.getElementById('logout-btn').addEventListener('click', function (e) {
-  e.preventDefault();
-  if (confirm('Are you sure you want to logout?')) {
-    window.location.href = '../../html/auth_pages/login.html';
-  }
-});
+
 
 document.addEventListener('DOMContentLoaded', renderActivities);
+

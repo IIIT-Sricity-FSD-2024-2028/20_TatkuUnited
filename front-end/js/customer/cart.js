@@ -6,6 +6,14 @@ function updateCartBadge() {
 }
 function parsePrice(p) { return parseInt((p || '0').replace(/[^\d]/g, '')) || 0; }
 
+function getDateConstraints() {
+  const today = new Date();
+  const maxDate = new Date();
+  maxDate.setDate(today.getDate() + 7);
+  const fmt = d => d.toISOString().split('T')[0];
+  return { min: fmt(today), max: fmt(maxDate) };
+}
+
 const svcIcon = `<svg viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/></svg>`;
 
 let editingItemId = null;
@@ -20,7 +28,15 @@ function openEditModal(itemId) {
   // Pre-fill current values
   const dateInput = document.getElementById('modal-date');
   const timeSelect = document.getElementById('modal-time');
-  if (item.date && item.date !== 'ASAP') dateInput.value = item.date;
+  // Apply 1-week constraint
+  const { min, max } = getDateConstraints();
+  dateInput.min = min;
+  dateInput.max = max;
+  if (item.date && item.date !== 'ASAP') {
+    dateInput.value = (item.date >= min && item.date <= max) ? item.date : '';
+  } else {
+    dateInput.value = '';
+  }
   // Match time option
   const opts = Array.from(timeSelect.options);
   const match = opts.findIndex(o => o.value === item.time);
@@ -37,12 +53,15 @@ function closeEditModal(e) { if (e.target === document.getElementById('edit-moda
 
 function saveScheduleEdit() {
   if (!editingItemId) return;
+  const newDate = document.getElementById('modal-date').value;
+  const { min, max } = getDateConstraints();
+  if (!newDate) { alert('Please select a date.'); return; }
+  if (newDate < min || newDate > max) { alert('Please select a date within 1 week from today.'); return; }
   const cart = getCart();
   const item = cart.find(i => i.id === editingItemId);
   if (item) {
-    const newDate = document.getElementById('modal-date').value;
     const newTime = document.getElementById('modal-time').value;
-    item.date = newDate || item.date;
+    item.date = newDate;
     item.time = newTime;
     saveCart(cart);
   }

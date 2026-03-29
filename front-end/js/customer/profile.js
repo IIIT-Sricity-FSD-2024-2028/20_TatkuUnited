@@ -139,10 +139,16 @@ function openPwdModal() { document.getElementById('pwd-modal').classList.add('op
 function closePwdModalBtn() { document.getElementById('pwd-modal').classList.remove('open'); document.body.style.overflow = ''; }
 function closePwdModal(e) { if (e.target === document.getElementById('pwd-modal')) closePwdModalBtn(); }
 
-// ===== DANGER =====
+// ===== DANGER & LOGOUT =====
 function confirmDelete() {
   if (confirm('Are you sure you want to permanently delete your account? This action cannot be undone.')) {
     showToast('Account deletion request submitted.');
+  }
+}
+
+function confirmLogout() {
+  if (confirm('Are you sure you want to log out?')) {
+    window.location.href = '../auth_pages/logout.html';
   }
 }
 

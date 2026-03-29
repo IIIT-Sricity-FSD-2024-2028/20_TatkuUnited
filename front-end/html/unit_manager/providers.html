@@ -1,9 +1,9 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Unit Manager — Manage Providers</title>
+    <title>Unit Manager â€” Manage Providers</title>
     <link rel="stylesheet" href="../../css/unit_manager/providers.css" />
   </head>
   <body>
@@ -86,7 +86,7 @@
         </a>
       </nav>
       <div class="sidebar-footer">
-        <a href="#" class="logout-link" id="logout-btn">
+        <a href="../auth_pages/logout.html" class="logout-link" id="logout-btn" onclick="return confirm('Are you sure you want to logout?');">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
             <polyline points="16 17 21 12 16 7" />
@@ -280,7 +280,7 @@
             </tbody>
           </table>
           <div class="table-footer">
-            <span id="showingText">Showing 1 – 4 of 24 providers</span>
+            <span id="showingText">Showing 1 â€“ 4 of 24 providers</span>
             <div class="pagination">
               <button class="pg-btn" disabled>&#8249;</button>
               <button class="pg-btn active">1</button>
@@ -345,3 +345,5 @@
     <script src="../../js/unit_manager/providers.js"></script>
   </body>
 </html>
+
+

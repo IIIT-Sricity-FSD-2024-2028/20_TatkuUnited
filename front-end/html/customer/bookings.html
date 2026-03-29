@@ -1,9 +1,9 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>My Bookings – Tatku United</title>
+    <title>My Bookings â€“ Tatku United</title>
     <link rel="stylesheet" href="../../css/customer/bookings.css" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link
@@ -84,7 +84,7 @@
     </main>
 
     <footer class="footer">
-      <span>© 2026 Tatku United Inc. All rights reserved.</span>
+      <span>Â© 2026 Tatku United Inc. All rights reserved.</span>
       <div class="footer-links">
         <a href="#">Terms of Service</a>
         <a href="#">Privacy Policy</a>
@@ -109,6 +109,49 @@
       </div>
     </div>
 
+    <!-- RESCHEDULE MODAL -->
+    <div class="modal-overlay" id="reschedule-modal" onclick="closeRescheduleModal(event)">
+      <div class="modal">
+        <button class="modal-close" onclick="closeRescheduleModalBtn()">
+          <svg viewBox="0 0 24 24">
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
+        <div class="modal-header">
+          <svg viewBox="0 0 24 24">
+            <rect x="3" y="4" width="18" height="18" rx="2" />
+            <path d="M16 2v4M8 2v4M3 10h18" />
+          </svg>
+          <h2 class="modal-title">Reschedule Booking</h2>
+        </div>
+        <p class="modal-service-name" id="reschedule-service-name"></p>
+        <p class="modal-hint" id="reschedule-hint">Select a new date within 1 week from today</p>
+        <div class="modal-fields">
+          <div class="form-field">
+            <label>New Date</label>
+            <input type="date" id="reschedule-date" />
+          </div>
+          <div class="form-field">
+            <label>New Time Slot</label>
+            <select id="reschedule-time">
+              <option>08:00 AM â€“ 10:00 AM</option>
+              <option>10:00 AM â€“ 12:00 PM</option>
+              <option>12:00 PM â€“ 02:00 PM</option>
+              <option>02:00 PM â€“ 04:00 PM</option>
+              <option>04:00 PM â€“ 06:00 PM</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="modal-btn-cancel" onclick="closeRescheduleModalBtn()">Cancel</button>
+          <button class="modal-btn-save" onclick="saveReschedule()">Reschedule</button>
+        </div>
+      </div>
+    </div>
+
     <script src="../../js/customer/bookings.js"></script>
   </body>
 </html>
+
+

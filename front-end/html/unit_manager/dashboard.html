@@ -1,9 +1,9 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Unit Manager — Dashboard</title>
+    <title>Unit Manager â€” Dashboard</title>
     <link rel="stylesheet" href="../../css/unit_manager/dashboard.css" />
   </head>
   <body>
@@ -87,7 +87,7 @@
         </a>
       </nav>
       <div class="sidebar-footer">
-        <a href="#" class="logout-link" id="logout-btn">
+        <a href="../auth_pages/logout.html" class="logout-link" id="logout-btn" onclick="return confirm('Are you sure you want to logout?');">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
             <polyline points="16 17 21 12 16 7" />
@@ -194,7 +194,7 @@
               <span class="stat-label">Total Bookings</span>
               <span class="stat-value">1,284</span>
             </div>
-            <span class="stat-badge up">↑ +12.5%</span>
+            <span class="stat-badge up">â†‘ +12.5%</span>
           </div>
           <div class="stat-card">
             <div class="stat-icon teal">
@@ -213,7 +213,7 @@
               <span class="stat-label">Avg Provider Rating</span>
               <span class="stat-value">4.8 <small>/ 5.0</small></span>
             </div>
-            <span class="stat-badge up">↑ +0.2%</span>
+            <span class="stat-badge up">â†‘ +0.2%</span>
           </div>
           <div class="stat-card">
             <div class="stat-icon amber">
@@ -230,9 +230,9 @@
             </div>
             <div class="stat-body">
               <span class="stat-label">Unit Revenue</span>
-              <span class="stat-value">₹42,500</span>
+              <span class="stat-value">â‚¹42,500</span>
             </div>
-            <span class="stat-badge down">↓ -3.1%</span>
+            <span class="stat-badge down">â†“ -3.1%</span>
           </div>
         </div>
 
@@ -416,3 +416,5 @@
     <script src="../../js/unit_manager/dashboard.js"></script>
   </body>
 </html>
+
+
