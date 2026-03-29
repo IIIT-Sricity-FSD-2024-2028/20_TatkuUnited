@@ -1,4 +1,4 @@
-﻿// â”€â”€ Admin Notifications JS â”€â”€
+﻿// ── Admin Notifications JS ──
 
 const allNotifications = [
   {
@@ -41,7 +41,7 @@ const allNotifications = [
     id: 5, category: 'revenue', read: false, urgent: false, color: 'green',
     priority: 'info',
     title: 'Platform Revenue Milestone',
-    desc: 'Tatku United has crossed â‚¹50 Lakhs in total platform revenue for March 2026. Monthly record!',
+    desc: 'Tatku United has crossed ₹50 Lakhs in total platform revenue for March 2026. Monthly record!',
     time: '4 hours ago',
     icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>`,
     actions: [{ label: 'View Report', cls: 'primary' }],
@@ -50,7 +50,7 @@ const allNotifications = [
     id: 6, category: 'system', read: true, urgent: false, color: 'blue',
     priority: 'info',
     title: 'Scheduled Maintenance Reminder',
-    desc: 'Platform maintenance window is scheduled for 30 March 2026, 2:00 AM â€“ 4:00 AM IST. All active sessions will be terminated.',
+    desc: 'Platform maintenance window is scheduled for 30 March 2026, 2:00 AM – 4:00 AM IST. All active sessions will be terminated.',
     time: '8 hours ago',
     icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33"/></svg>`,
     actions: [{ label: 'Configure', cls: 'primary' }, { label: 'Notify Users', cls: 'ghost' }],
@@ -139,7 +139,7 @@ function renderNotifications() {
         <div class="notif-meta">${n.time} &bull; ${n.category}</div>
         ${n.actions.length ? `<div class="notif-actions">${n.actions.map(a => `<button class="nbtn ${a.cls}" onclick="handleAction(${n.id},'${a.label}')">${a.label}</button>`).join('')}</div>` : ''}
       </div>
-      <button class="notif-dismiss" onclick="dismiss(${n.id})" title="Dismiss">Ã—</button>
+      <button class="notif-dismiss" onclick="dismiss(${n.id})" title="Dismiss">×</button>
     </div>
   `).join('');
   updateBadge();
@@ -189,4 +189,5 @@ document.addEventListener('DOMContentLoaded', () => {
   renderTabs();
   renderNotifications();
 });
+
 

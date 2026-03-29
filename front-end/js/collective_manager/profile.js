@@ -1,4 +1,4 @@
-﻿// â”€â”€ Collective Manager Profile JS â”€â”€
+﻿// ── Collective Manager Profile JS ──
 
 const units = [
   { name: 'Plumbing Unit Alpha', count: 40, status: 'Active', color: 'green' },
@@ -12,7 +12,7 @@ const units = [
 const activities = [
   { title: 'New unit created', desc: 'Carpentry Zeta unit added to your collective', time: '1 hour ago', color: 'green' },
   { title: 'Provider admitted', desc: '3 new providers approved to Plumbing Unit Alpha', time: '4 hours ago', color: '' },
-  { title: 'Revenue milestone', desc: 'Collective hit â‚¹4.5L for March 2026', time: '1 day ago', color: 'teal' },
+  { title: 'Revenue milestone', desc: 'Collective hit ₹4.5L for March 2026', time: '1 day ago', color: 'teal' },
   { title: 'Alert resolved', desc: 'HVAC Unit Delta capacity issue addressed', time: '2 days ago', color: 'amber' },
   { title: 'Skill updated', desc: '"Tile Grouting" added to Carpentry Zeta', time: '3 days ago', color: '' },
 ];
@@ -102,4 +102,5 @@ document.addEventListener('DOMContentLoaded', () => {
   renderUnits();
   renderActivities();
 });
+
 
