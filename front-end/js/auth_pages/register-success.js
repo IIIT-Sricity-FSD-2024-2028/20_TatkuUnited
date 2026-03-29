@@ -12,7 +12,7 @@
       service_provider: 'Service Provider',
       unit_manager: 'Unit Manager',
       collective_manager: 'Collective Manager',
-      admin: 'Admin'
+      super_user: 'Super User'
     };
     var label = roleLabels[role] || role;
     var desc = document.querySelector('.success-desc');

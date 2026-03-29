@@ -8,7 +8,7 @@ window.Auth = (() => {
 
   /* ─── Role → Dashboard URL map ─── */
   const ROLE_DASHBOARDS = {
-    superuser: "/front-end/html/admin/admin_dashboard.html",
+    superuser: "/front-end/html/super_user/super_user_dashboard.html",
     collective_manager: "/front-end/html/collective_manager/dashboard.html",
     unit_manager: "/front-end/html/unit_manager/dashboard.html",
     provider: "/front-end/html/provider/dashboard.html",
@@ -18,9 +18,9 @@ window.Auth = (() => {
   /* ─── Hard-coded superuser ─── */
   const SUPERUSER = {
     id: "SUPER001",
-    name: "System Admin",
-    email: "admin@fsd.com",
-    password: "Admin@1234",
+    name: "System super user",
+    email: "super_user@fsd.com",
+    password: "super user@1234",
     role: "superuser",
     scopeId: null,
     unitId: null,

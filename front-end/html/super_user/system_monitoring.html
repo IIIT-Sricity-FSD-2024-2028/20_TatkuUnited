@@ -1,19 +1,18 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Dashboard – Tatku United</title>
+    <title>System Monitoring – Tatku United</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
       href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="../../css/admin/admin_dashboard.css" />
+    <link rel="stylesheet" href="../../css/super_user/system_monitoring.css" />
   </head>
   <body>
-    <!-- SIDEBAR -->
     <aside class="sidebar">
       <div class="sidebar-logo">
         <div class="logo-avatar">TU</div>
@@ -21,7 +20,7 @@
       </div>
       <div class="sidebar-section-label">OPERATIONAL PANEL</div>
       <nav class="sidebar-nav">
-        <a href="admin_dashboard.html" class="nav-item active">
+        <a href="super_user_dashboard.html" class="nav-item">
           <svg
             viewBox="0 0 24 24"
             fill="none"
@@ -62,6 +61,18 @@
           </svg>
           Collective &amp; Unit
         </a>
+        <a href="manage_skills.html" class="nav-item">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path d="M12 20h9" />
+            <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+          </svg>
+          Manage Skills
+        </a>
       </nav>
       <div class="sidebar-section-label">SYSTEM CONTROLS</div>
       <nav class="sidebar-nav">
@@ -79,7 +90,7 @@
           </svg>
           Platform Settings
         </a>
-        <a href="system_monitoring.html" class="nav-item">
+        <a href="system_monitoring.html" class="nav-item active">
           <svg
             viewBox="0 0 24 24"
             fill="none"
@@ -120,9 +131,7 @@
       </div>
     </aside>
 
-    <!-- MAIN -->
     <div class="main-wrapper">
-      <!-- TOPBAR -->
       <header class="topbar">
         <div class="search-bar">
           <svg
@@ -146,8 +155,8 @@
           </a>
           <div class="topbar-user">
             <div class="user-info">
-              <span class="user-name">Admin User</span>
-              <span class="user-role">SUPER ADMIN</span>
+              <span class="user-name">Super User</span>
+              <span class="user-role">SUPER USER</span>
             </div>
             <a href="profile.html" class="user-avatar" title="My Profile">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -159,54 +168,133 @@
         </div>
       </header>
 
-      <!-- CONTENT -->
       <main class="content">
-        <div class="content-left">
-          <!-- Page Title -->
-          <div class="page-header">
-            <h1>System Status Overview</h1>
-            <p>Real-time operational health and key metrics.</p>
+        <div>
+          <h1 class="page-title">System Monitoring</h1>
+          <p class="page-subtitle">
+            Monitor system health and platform operations in real-time.
+          </p>
+        </div>
+
+        <!-- KPI Cards -->
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <div class="kpi-label-row">
+              <span class="kpi-label">SYSTEM STATUS</span>
+              <svg
+                class="kpi-icon-inline kpi-icon--green"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                <polyline points="22 4 12 14.01 9 11.01" />
+              </svg>
+            </div>
+            <div class="kpi-value">Operational</div>
+            <div class="kpi-sub kpi-sub--green">Uptime: 99.98%</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label-row">
+              <span class="kpi-label">ACTIVE SESSIONS</span>
+              <svg
+                class="kpi-icon-inline kpi-icon--blue"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <circle cx="12" cy="8" r="4" />
+                <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
+              </svg>
+            </div>
+            <div class="kpi-value">184</div>
+            <div class="kpi-sub kpi-sub--green">+5.2% from last hour</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label-row">
+              <span class="kpi-label">SYSTEM ERRORS (24H)</span>
+              <svg
+                class="kpi-icon-inline kpi-icon--red"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <circle cx="12" cy="12" r="10" />
+                <line x1="12" y1="8" x2="12" y2="12" />
+                <line x1="12" y1="16" x2="12.01" y2="16" />
+              </svg>
+            </div>
+            <div class="kpi-value">3</div>
+            <div class="kpi-sub kpi-sub--red">-2 occurrences</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label-row">
+              <span class="kpi-label">FAILED ASSIGNMENTS</span>
+              <svg
+                class="kpi-icon-inline kpi-icon--orange"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <rect x="2" y="7" width="20" height="14" rx="2" />
+                <path d="M16 3H8" />
+              </svg>
+            </div>
+            <div class="kpi-value">5</div>
+            <div class="kpi-sub kpi-sub--green">-1% improvement</div>
+          </div>
+        </div>
+
+        <!-- Middle Row: Performance + Critical Alerts -->
+        <div class="mid-row">
+          <div class="perf-card">
+            <h2 class="card-title">System Performance</h2>
+            <!-- API Response Time -->
+            <div class="perf-metric">
+              <div class="perf-metric-header">
+                <span class="perf-metric-label">API Response Time</span>
+                <span class="perf-metric-value perf-metric-value--blue"
+                  >320 ms</span
+                >
+              </div>
+              <div class="api-bars" id="api-bars"></div>
+            </div>
+            <!-- Server Load -->
+            <div class="perf-metric">
+              <div class="perf-metric-header">
+                <span class="perf-metric-label">Server Load (CPU)</span>
+                <span class="perf-metric-value">45%</span>
+              </div>
+              <div class="progress-track">
+                <div
+                  class="progress-fill progress-fill--green"
+                  style="width: 45%"
+                ></div>
+              </div>
+            </div>
+            <!-- Memory Usage -->
+            <div class="perf-metric">
+              <div class="perf-metric-header">
+                <span class="perf-metric-label">Memory Usage</span>
+                <span class="perf-metric-value">62%</span>
+              </div>
+              <div class="progress-track">
+                <div
+                  class="progress-fill progress-fill--orange"
+                  style="width: 62%"
+                ></div>
+              </div>
+            </div>
           </div>
 
-          <!-- Status Cards -->
-          <div class="status-cards">
-            <div class="status-card">
-              <div class="sc-icon sc-icon--green">
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                >
-                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
-                  <polyline points="22 4 12 14.01 9 11.01" />
-                </svg>
-              </div>
-              <div class="sc-label">STATUS</div>
-              <div class="sc-title">System Status</div>
-              <div class="sc-value sc-value--green">Operational</div>
-              <div class="sc-sub">All services are running normally</div>
-            </div>
-            <div class="status-card status-card--active">
-              <div class="sc-icon sc-icon--blue">
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                >
-                  <circle cx="12" cy="12" r="10" />
-                  <circle cx="12" cy="10" r="3" />
-                  <path d="M7 20.662V19a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v1.662" />
-                </svg>
-              </div>
-              <div class="sc-label">REAL-TIME</div>
-              <div class="sc-title">Active Sessions</div>
-              <div class="sc-value">184</div>
-              <div class="sc-badge sc-badge--blue">+12% from last hour</div>
-            </div>
-            <div class="status-card">
-              <div class="sc-icon sc-icon--red">
+          <div class="alerts-card">
+            <h2 class="card-title">Critical Alerts</h2>
+            <div class="crit-alert crit-alert--red">
+              <div class="crit-alert-icon">
                 <svg
                   viewBox="0 0 24 24"
                   fill="none"
@@ -218,13 +306,13 @@
                   <line x1="12" y1="16" x2="12.01" y2="16" />
                 </svg>
               </div>
-              <div class="sc-label">CRITICAL</div>
-              <div class="sc-title">System Errors</div>
-              <div class="sc-value sc-value--red">3</div>
-              <div class="sc-sub">Requires investigation</div>
+              <div>
+                <div class="crit-alert-title">Scheduling engine failure</div>
+                <div class="crit-alert-desc">Critical Error: Queue blocked</div>
+              </div>
             </div>
-            <div class="status-card">
-              <div class="sc-icon sc-icon--orange">
+            <div class="crit-alert crit-alert--orange">
+              <div class="crit-alert-icon">
                 <svg
                   viewBox="0 0 24 24"
                   fill="none"
@@ -238,91 +326,15 @@
                   <line x1="12" y1="17" x2="12.01" y2="17" />
                 </svg>
               </div>
-              <div class="sc-label">ATTENTION</div>
-              <div class="sc-title">Failed Assignments</div>
-              <div class="sc-value">5</div>
-              <div class="sc-badge sc-badge--green">+2% success rate</div>
-            </div>
-          </div>
-
-          <!-- Pending Admin Actions -->
-          <div class="section-card">
-            <h2 class="section-title">Pending Administrative Actions</h2>
-            <div class="admin-actions-grid">
-              <div class="action-tile action-tile--yellow">
-                <div class="action-tile-icon">
-                  <svg
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                  >
-                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-                  </svg>
+              <div>
+                <div class="crit-alert-title">Provider assignment timeout</div>
+                <div class="crit-alert-desc">
+                  Warning: High latency detected
                 </div>
-                <div class="action-tile-num">6</div>
-                <div class="action-tile-label">PROVIDER<br />VERIFICATIONS</div>
-              </div>
-              <div class="action-tile action-tile--teal">
-                <div class="action-tile-icon">
-                  <svg
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                  >
-                    <path
-                      d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"
-                    />
-                  </svg>
-                </div>
-                <div class="action-tile-num">4</div>
-                <div class="action-tile-label">OPEN<br />COMPLAINTS</div>
-              </div>
-              <div class="action-tile action-tile--blue">
-                <div class="action-tile-icon">
-                  <svg
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                  >
-                    <circle cx="12" cy="12" r="10" />
-                    <line x1="4.93" y1="4.93" x2="19.07" y2="19.07" />
-                  </svg>
-                </div>
-                <div class="action-tile-num">2</div>
-                <div class="action-tile-label">FLAGGED<br />ACCOUNTS</div>
               </div>
             </div>
-          </div>
-
-          <!-- Recent System Events -->
-          <div class="section-card">
-            <div class="section-card-header">
-              <h2 class="section-title">Recent System Events</h2>
-              <a href="#" class="link-btn">View All Logs</a>
-            </div>
-            <table class="events-table">
-              <thead>
-                <tr>
-                  <th>TIME</th>
-                  <th>TYPE</th>
-                  <th>EVENT DESCRIPTION</th>
-                  <th>STATUS</th>
-                </tr>
-              </thead>
-              <tbody id="events-tbody"></tbody>
-            </table>
-          </div>
-        </div>
-
-        <!-- RIGHT SIDEBAR -->
-        <aside class="right-panel">
-          <!-- System Alerts -->
-          <div class="right-card">
-            <div class="right-card-header">
-              <div class="right-card-title">
+            <div class="crit-alert crit-alert--blue">
+              <div class="crit-alert-icon">
                 <svg
                   viewBox="0 0 24 24"
                   fill="none"
@@ -333,51 +345,56 @@
                   <line x1="12" y1="8" x2="12" y2="12" />
                   <line x1="12" y1="16" x2="12.01" y2="16" />
                 </svg>
-                System Alerts
               </div>
-              <span class="alert-count">2</span>
-            </div>
-            <div class="alert-item alert-item--red">
-              <div class="alert-title">Service assignment failure</div>
-              <div class="alert-desc">
-                Retry attempt failed for Request #A-421. Manual intervention
-                required.
+              <div>
+                <div class="crit-alert-title">High API response time</div>
+                <div class="crit-alert-desc">Info: Spike in traffic</div>
               </div>
-              <a href="#" class="alert-action">TROUBLESHOOT</a>
-            </div>
-            <div class="alert-item alert-item--yellow">
-              <div class="alert-title">Provider verification pending</div>
-              <div class="alert-desc">
-                3 new applications are older than 24 hours.
-              </div>
-              <a href="#" class="alert-action">OPEN QUEUE</a>
             </div>
           </div>
+        </div>
 
-          <!-- Recent Admin Actions -->
-          <div class="right-card">
-            <div class="right-card-header">
-              <div class="right-card-title">
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                >
-                  <circle cx="12" cy="12" r="10" />
-                  <polyline points="12 6 12 12 16 14" />
-                </svg>
-                Recent Admin Actions
-              </div>
-            </div>
-            <div class="admin-action-list" id="admin-action-list"></div>
-            <button class="download-log-btn">Download Action Log</button>
+        <!-- Recent System Events -->
+        <div class="section-card">
+          <div class="section-card-header">
+            <h2 class="card-title">Recent System Events</h2>
+            <a href="#" class="link-btn">Download CSV</a>
           </div>
-        </aside>
+          <table class="mon-table">
+            <thead>
+              <tr>
+                <th>TIME</th>
+                <th>EVENT TYPE</th>
+                <th>DESCRIPTION</th>
+                <th>MODULE</th>
+              </tr>
+            </thead>
+            <tbody id="events-tbody"></tbody>
+          </table>
+        </div>
+
+        <!-- System Logs Preview -->
+        <div class="section-card">
+          <div class="section-card-header">
+            <h2 class="card-title">System Logs Preview</h2>
+            <button class="btn-secondary">View Full Logs</button>
+          </div>
+          <table class="mon-table mon-table--logs">
+            <thead>
+              <tr>
+                <th>TIMESTAMP</th>
+                <th>SERVICE</th>
+                <th>EVENT</th>
+                <th>STATUS</th>
+              </tr>
+            </thead>
+            <tbody id="logs-tbody"></tbody>
+          </table>
+        </div>
       </main>
     </div>
 
-    <script src="../../js/admin/admin_dashboard.js"></script>
+    <script src="../../js/super_user/system_monitoring.js"></script>
   </body>
 </html>
 
