@@ -1168,9 +1168,12 @@ footer {
 }
 .footer-grid {
   display: grid;
-  grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
-  gap: 48px;
+  grid-template-columns: 1fr auto auto;
+  row-gap: 48px;
+  column-gap: 96px;
   margin-bottom: 48px;
+  align-items: start;
+  padding-right: 10%;
 }
 .footer-brand .nav-logo {
   color: #fff;

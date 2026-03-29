@@ -27,11 +27,6 @@ svg { display: block; fill: none; stroke: currentColor; stroke-width: 1.75; stro
 .sidebar-footer { padding: 0 12px; }
 .logout { color: var(--text-3); }
 .logout:hover { background: #fff1f0; color: var(--accent-red); }
-.support-box { margin: 14px 12px 0; padding: 14px; background: var(--primary-light); border-radius: var(--radius-sm); border: 1.5px solid #bfdbfe; }
-.support-label { font-size: 9.5px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--primary); margin-bottom: 5px; }
-.support-text { font-size: 12px; color: var(--text-2); line-height: 1.4; margin-bottom: 10px; }
-.support-btn { width: 100%; padding: 7px; background: var(--primary); color: #fff; border: none; border-radius: var(--radius-sm); font-family: var(--font); font-size: 12px; font-weight: 700; cursor: pointer; transition: background .15s; }
-.support-btn:hover { background: var(--primary-dark); }
 
 .main-wrap { margin-left: var(--sidebar-w); flex: 1; min-height: 100vh; display: flex; flex-direction: column; }
 .topbar { height: var(--topbar-h); background: var(--surface); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 28px; position: sticky; top: 0; z-index: 40; }
@@ -56,6 +51,7 @@ svg { display: block; fill: none; stroke: currentColor; stroke-width: 1.75; stro
 .form-card:nth-child(2) { animation-delay: .07s; }
 .form-card:nth-child(3) { animation-delay: .13s; }
 .form-card:nth-child(4) { animation-delay: .19s; }
+.form-card:nth-child(5) { animation-delay: .25s; }
 
 .card-section-head {
   display: flex; align-items: center; gap: 10px;
@@ -81,25 +77,110 @@ svg { display: block; fill: none; stroke: currentColor; stroke-width: 1.75; stro
 .phone-prefix { padding: 10px 12px; font-size: 13.5px; font-weight: 600; color: var(--text-2); background: var(--border); border-right: 1.5px solid var(--border); white-space: nowrap; }
 .phone-field input { border: none; background: transparent; padding-left: 10px; flex: 1; outline: none; font-family: var(--font); font-size: 13.5px; }
 
-.tags-field {
-  display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
-  padding: 8px 12px; border: 1.5px solid var(--border); border-radius: var(--radius-sm);
-  background: var(--surface-2); min-height: 46px; transition: border-color .15s;
+/* ── Skills & Expertise (approval-based) ───────────────────────────── */
+.skills-list {
+  display: flex; flex-direction: column; gap: 8px;
+  padding: 10px 0 4px;
 }
-.tags-field:focus-within { border-color: var(--primary); background: var(--surface); }
-.skill-tag {
-  display: flex; align-items: center; gap: 6px;
-  padding: 4px 10px; border-radius: 999px;
+
+.skill-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 9px 14px; border-radius: var(--radius-sm);
+  background: var(--surface-2); border: 1.5px solid var(--border);
+  transition: border-color .15s;
+}
+.skill-row:hover { border-color: #bfdbfe; }
+
+.skill-badge {
+  display: inline-flex; align-items: center; gap: 7px;
   background: var(--primary-light); color: var(--primary);
-  font-size: 12.5px; font-weight: 600; border: 1px solid #bfdbfe;
+  font-size: 12.5px; font-weight: 600; padding: 4px 12px;
+  border-radius: 999px; border: 1px solid #bfdbfe;
 }
-.skill-tag button {
-  background: none; border: none; cursor: pointer; color: var(--primary);
-  font-size: 14px; line-height: 1; padding: 0; margin-top: -1px;
-  font-weight: 700;
+.skill-badge svg { stroke: var(--primary); flex-shrink: 0; }
+
+.skill-row.pending-remove .skill-badge {
+  background: #fff7ed; color: var(--accent-orange); border-color: #fcd34d;
 }
-.skill-tag button:hover { color: var(--accent-red); }
-.tag-input { border: none; background: transparent; outline: none; font-family: var(--font); font-size: 13px; color: var(--text-2); min-width: 80px; flex: 1; }
+.skill-row.pending-remove .skill-badge svg { stroke: var(--accent-orange); }
+
+.btn-request-remove {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 5px 12px; border-radius: var(--radius-sm);
+  border: 1.5px solid #fca5a5; background: #fff1f0; color: var(--accent-red);
+  font-family: var(--font); font-size: 12px; font-weight: 600; cursor: pointer;
+  transition: all .15s; white-space: nowrap;
+}
+.btn-request-remove svg { stroke: var(--accent-red); flex-shrink: 0; }
+.btn-request-remove:hover { background: var(--accent-red); color: #fff; border-color: var(--accent-red); }
+.btn-request-remove:hover svg { stroke: #fff; }
+.btn-request-remove:disabled {
+  background: #f1f5f9; color: var(--text-3); border-color: var(--border);
+  cursor: not-allowed;
+}
+.btn-request-remove:disabled svg { stroke: var(--text-3); }
+
+.pending-badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 4px 10px; border-radius: 999px;
+  background: #fff7ed; color: var(--accent-orange);
+  font-size: 11.5px; font-weight: 600; border: 1px solid #fcd34d;
+  animation: fadeSlideUp .2s ease;
+}
+
+/* ── Add New Skill toggle & panel ───────────────────────────────────── */
+.btn-add-skill-toggle {
+  display: inline-flex; align-items: center; gap: 7px; margin-top: 12px;
+  padding: 8px 16px; border-radius: var(--radius-sm);
+  border: 1.5px dashed var(--primary); background: var(--primary-light);
+  color: var(--primary); font-family: var(--font); font-size: 13px; font-weight: 700;
+  cursor: pointer; transition: all .17s;
+}
+.btn-add-skill-toggle svg { stroke: var(--primary); flex-shrink: 0; transition: transform .25s; }
+.btn-add-skill-toggle:hover { background: #dbeafe; }
+.btn-add-skill-toggle.open svg { transform: rotate(45deg); }
+
+.add-skill-panel {
+  display: none; flex-direction: column; gap: 10px;
+  margin-top: 10px; padding: 14px 16px;
+  border: 1.5px solid #bfdbfe; border-radius: var(--radius-sm);
+  background: var(--primary-light);
+  animation: fadeSlideUp .2s ease;
+}
+.add-skill-panel.open { display: flex; }
+
+.add-skill-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+
+.add-skill-select-wrap {
+  position: relative; display: flex; align-items: center; flex: 1; min-width: 180px; gap: 8px;
+}
+.add-skill-select-wrap .select-icon {
+  position: absolute; left: 12px; stroke: var(--primary); pointer-events: none; flex-shrink: 0;
+}
+.skill-select {
+  width: 100%; padding: 9px 14px 9px 36px;
+  border: 1.5px solid #bfdbfe; border-radius: var(--radius-sm);
+  font-family: var(--font); font-size: 13.5px; color: var(--text-1);
+  background: var(--surface); outline: none; cursor: pointer; transition: border-color .15s;
+  appearance: none; -webkit-appearance: none;
+}
+.skill-select:focus { border-color: var(--primary); }
+
+.btn-request-verify {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 9px 18px; border-radius: var(--radius-sm);
+  border: none; background: var(--primary); color: #fff;
+  font-family: var(--font); font-size: 13px; font-weight: 700;
+  cursor: pointer; transition: background .15s; white-space: nowrap;
+  flex-shrink: 0;
+}
+.btn-request-verify svg { stroke: #fff; flex-shrink: 0; }
+.btn-request-verify:hover { background: var(--primary-dark); }
+.btn-request-verify:disabled { background: var(--text-3); cursor: not-allowed; }
+
+.add-skill-hint {
+  font-size: 12px; color: var(--primary); opacity: .75; line-height: 1.5; margin: 0;
+}
 
 .card-footer { margin-top: 18px; display: flex; justify-content: flex-end; padding-top: 16px; border-top: 1px solid var(--border); }
 .btn-save-section {
@@ -109,6 +190,155 @@ svg { display: block; fill: none; stroke: currentColor; stroke-width: 1.75; stro
 }
 .btn-save-section:hover { background: var(--primary-dark); }
 
+/* ── Resume & Certificates Upload ────────────────────────────────────── */
+.upload-zone {
+  display: flex; align-items: center; gap: 16px;
+  padding: 18px 20px; border: 2px dashed var(--border);
+  border-radius: var(--radius-sm); background: var(--surface-2);
+  cursor: pointer; transition: border-color .18s, background .18s;
+  user-select: none;
+}
+.upload-zone:hover, .upload-zone.drag-over {
+  border-color: var(--primary); background: var(--primary-light);
+}
+.upload-zone.drag-over { border-style: solid; }
+
+.upload-zone-icon {
+  width: 48px; height: 48px; border-radius: var(--radius-sm);
+  background: var(--primary-light); border: 1px solid #bfdbfe;
+  display: grid; place-items: center; flex-shrink: 0; transition: background .18s;
+}
+.upload-zone-icon svg { stroke: var(--primary); }
+.upload-zone:hover .upload-zone-icon,
+.upload-zone.drag-over .upload-zone-icon { background: #dbeafe; }
+
+.upload-zone-text { display: flex; flex-direction: column; gap: 3px; }
+.upload-zone-title { font-size: 13.5px; font-weight: 700; color: var(--text-1); }
+.upload-zone-sub   { font-size: 12px; color: var(--text-3); }
+
+.upload-file-list {
+  display: flex; flex-direction: column; gap: 6px; margin-top: 8px;
+}
+
+.upload-file-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 12px; border-radius: var(--radius-sm);
+  background: var(--surface-2); border: 1.5px solid var(--border);
+  animation: fadeSlideUp .2s ease;
+}
+.upload-file-icon {
+  width: 32px; height: 32px; border-radius: 6px; flex-shrink: 0;
+  background: var(--primary-light); border: 1px solid #bfdbfe;
+  display: grid; place-items: center;
+}
+.upload-file-icon svg { stroke: var(--primary); }
+.upload-file-info { flex: 1; min-width: 0; }
+.upload-file-name {
+  font-size: 13px; font-weight: 600; color: var(--text-1);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.upload-file-size { font-size: 11.5px; color: var(--text-3); margin-top: 1px; }
+.upload-file-status {
+  font-size: 11.5px; font-weight: 600; color: var(--accent-green);
+  display: flex; align-items: center; gap: 4px; flex-shrink: 0;
+}
+.upload-file-status svg { stroke: var(--accent-green); }
+.btn-remove-file {
+  width: 26px; height: 26px; border-radius: 50%; flex-shrink: 0;
+  border: 1px solid var(--border); background: var(--surface);
+  display: grid; place-items: center; cursor: pointer;
+  color: var(--text-3); transition: all .15s;
+}
+.btn-remove-file svg { stroke: var(--text-3); transition: stroke .15s; }
+.btn-remove-file:hover { background: #fee2e2; border-color: #fca5a5; }
+.btn-remove-file:hover svg { stroke: var(--accent-red); }
+
+
+.work-hours-desc {
+  font-size: 13px; color: var(--text-2); line-height: 1.6;
+  margin-bottom: 20px;
+  padding: 12px 14px;
+  background: var(--primary-light);
+  border: 1px solid #bfdbfe;
+  border-radius: var(--radius-sm);
+}
+
+.work-hours-grid {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+}
+
+.work-time-field {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.work-time-field label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-2);
+}
+
+.work-time-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.work-time-icon--start { background: #d1fae5; color: var(--accent-green); }
+.work-time-icon--start svg { stroke: var(--accent-green); }
+.work-time-icon--end { background: #fee2e2; color: var(--accent-red); }
+.work-time-icon--end svg { stroke: var(--accent-red); }
+
+.time-input {
+  padding: 10px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-1);
+  background: var(--surface-2);
+  outline: none;
+  transition: border-color .15s, background .15s;
+  width: 100%;
+  cursor: pointer;
+}
+.time-input:focus {
+  border-color: var(--primary);
+  background: var(--surface);
+}
+
+.work-time-divider {
+  display: flex;
+  align-items: center;
+  padding-bottom: 10px;
+  color: var(--text-3);
+  flex-shrink: 0;
+}
+.work-time-divider svg { stroke: var(--text-3); }
+
+.work-hours-preview {
+  margin-top: 14px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--accent-green);
+  padding: 8px 14px;
+  background: #f0fdf4;
+  border: 1px solid #a7f3d0;
+  border-radius: var(--radius-sm);
+  transition: color .2s, background .2s;
+}
+
+/* ── Security ────────────────────────────────────────────────────────── */
 .security-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 4px 0; }
 .sec-label { font-size: 14px; font-weight: 600; color: var(--text-1); margin-bottom: 3px; }
 .sec-sub { font-size: 12.5px; color: var(--text-3); }
