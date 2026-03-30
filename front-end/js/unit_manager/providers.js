@@ -1,109 +1,416 @@
-let providers = [
-  { id: 'PRV-89021', name: 'Warshith',      specialty: 'Specialist',  status: 'Active',      rating: 4.2, perf: 92, perfLabel: 'OPTIMAL',   perfClass: 'optimal' },
-  { id: 'PRV-89044', name: 'Prajwal',       specialty: 'Technician',  status: 'On-Job',      rating: 5.0, perf: 98, perfLabel: 'EXCELLENT',  perfClass: 'excellent' },
-  { id: 'PRV-89052', name: 'Marcus Wright', specialty: 'Logistics',   status: 'Idle',        rating: 3.5, perf: 65, perfLabel: 'WARNING',    perfClass: 'warning' },
-  { id: 'PRV-89078', name: 'Elena Rodriguez',specialty:'Specialist',  status: 'Unavailable', rating: 4.5, perf: 88, perfLabel: 'SOLID',      perfClass: 'solid' },
-  { id: 'PRV-89031', name: 'David Kim',     specialty: 'Analyst',     status: 'Active',      rating: 4.8, perf: 95, perfLabel: 'EXCELLENT',  perfClass: 'excellent' },
-  { id: 'PRV-89063', name: 'Aisha Patel',   specialty: 'Technician',  status: 'On-Job',      rating: 4.1, perf: 80, perfLabel: 'SOLID',      perfClass: 'solid' },
-];
+/*
+ * providers.js — Unit Manager: Manage Providers
+ * Uses shared AppStore persistence (same strategy as collective manager).
+ */
 
-let currentFilter = 'all';
+(function () {
+  "use strict";
 
-function statusClass(s) {
-  return { 'Active':'active','On-Job':'on-job','Idle':'idle','Unavailable':'unavailable' }[s] || 'idle';
-}
+  var providers = [];
+  var currentFilter = "all";
+  var ROWS_PER_PAGE = 5;
+  var currentPage = 1;
+  var session = null;
 
-function stars(r) {
-  let s = '';
-  for (let i = 1; i <= 5; i++) s += i <= Math.floor(r) ? '★' : (r - i > -1 ? '★' : '☆');
-  return s;
-}
-
-function initials(name) {
-  return name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
-}
-
-function avatarColors(name) {
-  const colors = ['#3b82f6','#0d9488','#7c3aed','#d97706','#dc2626','#16a34a'];
-  return colors[name.charCodeAt(0) % colors.length];
-}
-
-function renderTable() {
-  const query = document.getElementById('tableSearch').value.toLowerCase();
-  const tbody = document.getElementById('providerBody');
-  tbody.innerHTML = '';
-
-  const filtered = providers.filter(p => {
-    const matchFilter = currentFilter === 'all' || p.status === currentFilter;
-    const matchSearch = p.name.toLowerCase().includes(query) ||
-                        p.id.toLowerCase().includes(query) ||
-                        p.specialty.toLowerCase().includes(query);
-    return matchFilter && matchSearch;
-  });
-
-  document.getElementById('showingText').textContent =
-    `Showing 1 – ${filtered.length} of ${providers.length} providers`;
-
-  if (filtered.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:30px;color:var(--text-secondary)">No providers match your search.</td></tr>';
-    return;
+  function statusCycle(id) {
+    var n = 0;
+    for (var i = 0; i < id.length; i++) n += id.charCodeAt(i);
+    return ["Active", "On-Job", "Idle"][n % 3];
   }
 
-  filtered.forEach(p => {
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td>
-        <div class="provider-cell">
-          <div class="provider-avatar" style="background:${avatarColors(p.name)}">${initials(p.name)}</div>
-          <div>
-            <div class="provider-name">${p.name}</div>
-            <div class="provider-meta">ID: ${p.id} &bull; ${p.specialty}</div>
-          </div>
-        </div>
-      </td>
-      <td><span class="status-pill ${statusClass(p.status)}">${p.status}</span></td>
-      <td>
-        <span class="stars">${stars(p.rating)}</span>
-        <span class="rating-val">${p.rating.toFixed(1)}</span>
-      </td>
-      <td>
-        <div class="perf-wrap">
-          <div class="perf-bar-bg"><div class="perf-bar ${p.perfClass}" style="width:${p.perf}%"></div></div>
-          <div class="perf-label">${p.perf}% ${p.perfLabel}</div>
-        </div>
-      </td>
-      <td><button class="action-link">View Profile</button></td>
-    `;
-    tbody.appendChild(tr);
+  function deriveStatus(sp) {
+    if (!sp.is_active) return "Unavailable";
+    return statusCycle(sp.service_provider_id || "SP000");
+  }
+
+  function statusClass(s) {
+    return (
+      {
+        Active: "active",
+        "On-Job": "on-job",
+        Idle: "idle",
+        Unavailable: "unavailable",
+      }[s] || "idle"
+    );
+  }
+
+  function perfMeta(score) {
+    if (score >= 95) return { label: "EXCELLENT", cls: "excellent" };
+    if (score >= 85) return { label: "OPTIMAL", cls: "optimal" };
+    if (score >= 75) return { label: "SOLID", cls: "solid" };
+    if (score >= 60) return { label: "WARNING", cls: "warning" };
+    return { label: "CRITICAL", cls: "critical" };
+  }
+
+  function buildStars(rating) {
+    var out = "";
+    for (var i = 1; i <= 5; i++) out += i <= Math.floor(rating) ? "★" : "☆";
+    return out;
+  }
+
+  function getInitials(name) {
+    return (
+      String(name || "")
+        .split(" ")
+        .map(function (w) {
+          return w[0] || "";
+        })
+        .join("")
+        .slice(0, 2)
+        .toUpperCase() || "UM"
+    );
+  }
+
+  function avatarColor(name) {
+    var palette = [
+      "#3b82f6",
+      "#0d9488",
+      "#7c3aed",
+      "#d97706",
+      "#dc2626",
+      "#16a34a",
+    ];
+    return palette[String(name || "A").charCodeAt(0) % palette.length];
+  }
+
+  function getFirstSkillForProvider(spId, skillMap, relations) {
+    var rel = relations.find(function (r) {
+      return r.service_provider_id === spId;
+    });
+    if (!rel) return "General";
+    return skillMap[rel.skill_id] || "General";
+  }
+
+  function loadProvidersFromStore() {
+    var allSkills = AppStore.getTable("skills") || [];
+    var allProviderSkills = AppStore.getTable("provider_skills") || [];
+    var allProviders = AppStore.getTable("service_providers") || [];
+
+    var skillMap = {};
+    allSkills.forEach(function (s) {
+      skillMap[s.skill_id] = s.skill_name;
+    });
+
+    providers = allProviders
+      .filter(function (sp) {
+        return sp.unit_id === session.unitId;
+      })
+      .map(function (sp) {
+        var ratingVal = typeof sp.rating === "number" ? sp.rating : 4.0;
+        var perf = Math.max(55, Math.min(99, Math.round(ratingVal * 20)));
+        var p = perfMeta(perf);
+        return {
+          id: sp.service_provider_id,
+          name: sp.name,
+          specialty: getFirstSkillForProvider(
+            sp.service_provider_id,
+            skillMap,
+            allProviderSkills,
+          ),
+          status: deriveStatus(sp),
+          rating: ratingVal,
+          perf: perf,
+          perfLabel: p.label,
+          perfClass: p.cls,
+        };
+      });
+  }
+
+  function updateBadges() {
+    var activeCount = providers.filter(function (p) {
+      return p.status === "Active";
+    }).length;
+    var onJobCount = providers.filter(function (p) {
+      return p.status === "On-Job";
+    }).length;
+    document.getElementById("countActive").textContent = activeCount;
+    document.getElementById("countOnJob").textContent = onJobCount;
+  }
+
+  function renderPagination(totalRows) {
+    var container = document.getElementById("pagination");
+    container.innerHTML = "";
+
+    var totalPages = Math.max(1, Math.ceil(totalRows / ROWS_PER_PAGE));
+    if (currentPage > totalPages) currentPage = totalPages;
+
+    function makeBtn(label, page, disabled, active) {
+      var btn = document.createElement("button");
+      btn.className = "pg-btn" + (active ? " active" : "");
+      btn.textContent = label;
+      btn.disabled = disabled;
+      if (!disabled) {
+        btn.addEventListener("click", function () {
+          currentPage = page;
+          renderTable();
+        });
+      }
+      return btn;
+    }
+
+    container.appendChild(
+      makeBtn("‹", currentPage - 1, currentPage === 1, false),
+    );
+    for (var i = 1; i <= totalPages; i++) {
+      container.appendChild(makeBtn(String(i), i, false, i === currentPage));
+    }
+    container.appendChild(
+      makeBtn("›", currentPage + 1, currentPage === totalPages, false),
+    );
+  }
+
+  function createRow(p) {
+    var tr = document.createElement("tr");
+    tr.innerHTML =
+      "<td>" +
+      '  <div class="provider-cell">' +
+      '    <div class="provider-avatar" style="background:' +
+      avatarColor(p.name) +
+      '">' +
+      getInitials(p.name) +
+      "</div>" +
+      "    <div>" +
+      '      <div class="provider-name">' +
+      p.name +
+      "</div>" +
+      '      <div class="provider-meta">ID: ' +
+      p.id +
+      " &bull; " +
+      p.specialty +
+      "</div>" +
+      "    </div>" +
+      "  </div>" +
+      "</td>" +
+      '<td><span class="status-pill ' +
+      statusClass(p.status) +
+      '">' +
+      p.status +
+      "</span></td>" +
+      '<td><span class="stars">' +
+      buildStars(p.rating) +
+      '</span> <span class="rating-val">' +
+      p.rating.toFixed(1) +
+      "</span></td>" +
+      "<td>" +
+      '  <button class="action-link" onclick="viewProfile(\'' +
+      p.id +
+      "')\">View Profile</button>" +
+      '  <button class="action-link delete-link" onclick="deleteProvider(\'' +
+      p.id +
+      "')\">Remove</button>" +
+      "</td>";
+    return tr;
+  }
+
+  function renderTable() {
+    var query = (document.getElementById("tableSearch").value || "")
+      .toLowerCase()
+      .trim();
+    var tbody = document.getElementById("providerBody");
+    tbody.innerHTML = "";
+
+    var filtered = providers.filter(function (p) {
+      var matchFilter = currentFilter === "all" || p.status === currentFilter;
+      var matchSearch =
+        p.name.toLowerCase().indexOf(query) !== -1 ||
+        p.id.toLowerCase().indexOf(query) !== -1 ||
+        p.specialty.toLowerCase().indexOf(query) !== -1;
+      return matchFilter && matchSearch;
+    });
+
+    updateBadges();
+
+    var totalRows = filtered.length;
+    var start = (currentPage - 1) * ROWS_PER_PAGE;
+    var pageSlice = filtered.slice(start, start + ROWS_PER_PAGE);
+
+    var from = totalRows === 0 ? 0 : start + 1;
+    var to = Math.min(start + ROWS_PER_PAGE, totalRows);
+    document.getElementById("showingText").textContent =
+      "Showing " + from + " – " + to + " of " + totalRows + " providers";
+
+    if (pageSlice.length === 0) {
+      tbody.innerHTML =
+        '<tr><td colspan="4" style="text-align:center;padding:30px;color:var(--text-secondary)">No providers match your search or filter.</td></tr>';
+      renderPagination(totalRows);
+      return;
+    }
+
+    var fragment = document.createDocumentFragment();
+    pageSlice.forEach(function (p) {
+      fragment.appendChild(createRow(p));
+    });
+    tbody.appendChild(fragment);
+    renderPagination(totalRows);
+  }
+
+  window.filterProviders = function () {
+    currentPage = 1;
+    renderTable();
+  };
+
+  window.setFilter = function (btn, filter) {
+    document.querySelectorAll(".filter-tab").forEach(function (b) {
+      b.classList.remove("active");
+    });
+    btn.classList.add("active");
+    currentFilter = filter;
+    currentPage = 1;
+    renderTable();
+  };
+
+  window.openModal = function () {
+    document.getElementById("modalOverlay").classList.add("open");
+    document.getElementById("newName").value = "";
+    document.getElementById("newSpecialty").selectedIndex = 0;
+    document.getElementById("newStatus").selectedIndex = 0;
+    document.getElementById("newName").focus();
+  };
+
+  window.closeModal = function () {
+    document.getElementById("modalOverlay").classList.remove("open");
+  };
+
+  function ensureSkillByName(skillName) {
+    var allSkills = AppStore.getTable("skills") || [];
+    var existing = allSkills.find(function (s) {
+      return (
+        String(s.skill_name || "").toLowerCase() ===
+        String(skillName || "").toLowerCase()
+      );
+    });
+    if (existing) return existing.skill_id;
+
+    var newSkillId = AppStore.nextId("SKL");
+    allSkills.push({
+      skill_id: newSkillId,
+      skill_name: skillName,
+      description: "Created from Unit Manager provider form",
+    });
+    return newSkillId;
+  }
+
+  window.addProvider = function () {
+    var nameInput = document.getElementById("newName");
+    var name = (nameInput.value || "").trim();
+    if (!name) {
+      nameInput.focus();
+      nameInput.style.borderColor = "#dc2626";
+      setTimeout(function () {
+        nameInput.style.borderColor = "";
+      }, 1500);
+      return;
+    }
+
+    var specialty = document.getElementById("newSpecialty").value || "General";
+    var status = document.getElementById("newStatus").value || "Active";
+
+    var newProviderId = AppStore.nextId("SP");
+    var allProviders = AppStore.getTable("service_providers") || [];
+    var isActive = status !== "Unavailable";
+
+    allProviders.unshift({
+      service_provider_id: newProviderId,
+      name: name,
+      password: "Password@123",
+      phone: "",
+      email: name.toLowerCase().replace(/\s+/g, ".") + "@mail.com",
+      dob: null,
+      address: "",
+      pfp_url: "",
+      gender: null,
+      rating: 4,
+      rating_count: 1,
+      is_active: isActive,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      unit_id: session.unitId,
+      home_sector_id: null,
+    });
+
+    var skillId = ensureSkillByName(specialty);
+    var providerSkills = AppStore.getTable("provider_skills") || [];
+    providerSkills.push({
+      service_provider_id: newProviderId,
+      skill_id: skillId,
+      verification_status: "Verified",
+      verified_at: new Date().toISOString(),
+    });
+
+    AppStore.save();
+    loadProvidersFromStore();
+    closeModal();
+    currentPage = 1;
+    renderTable();
+  };
+
+  window.deleteProvider = function (id) {
+    var p = providers.find(function (x) {
+      return x.id === id;
+    });
+    if (!p) return;
+
+    if (!confirm('Remove "' + p.name + '" from this unit?')) return;
+
+    var allProviders = AppStore.getTable("service_providers") || [];
+    var row = allProviders.find(function (sp) {
+      return sp.service_provider_id === id;
+    });
+    if (!row) return;
+
+    row.unit_id = null;
+    row.is_active = false;
+    row.updated_at = new Date().toISOString();
+
+    AppStore.save();
+    loadProvidersFromStore();
+
+    var totalAfter = providers.filter(function (x) {
+      return currentFilter === "all" || x.status === currentFilter;
+    }).length;
+    var maxPage = Math.max(1, Math.ceil(totalAfter / ROWS_PER_PAGE));
+    if (currentPage > maxPage) currentPage = maxPage;
+
+    renderTable();
+  };
+
+  window.viewProfile = function (id) {
+    var p = providers.find(function (x) {
+      return x.id === id;
+    });
+    if (!p) return;
+    alert(
+      "Provider Profile\n\n" +
+        "Name:        " +
+        p.name +
+        "\n" +
+        "ID:          " +
+        p.id +
+        "\n" +
+        "Skill:       " +
+        p.specialty +
+        "\n" +
+        "Status:      " +
+        p.status +
+        "\n" +
+        "Rating:      " +
+        p.rating.toFixed(1) +
+        "\n" +
+        "Performance: " +
+        p.perf +
+        "% " +
+        p.perfLabel,
+    );
+  };
+
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape") closeModal();
   });
-}
 
-function filterProviders() { renderTable(); }
-
-function setFilter(btn, filter) {
-  document.querySelectorAll('.filter-tab').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  currentFilter = filter;
-  renderTable();
-}
-
-function openModal() {
-  document.getElementById('modalOverlay').classList.add('open');
-}
-function closeModal() {
-  document.getElementById('modalOverlay').classList.remove('open');
-}
-
-function addProvider() {
-  const name = document.getElementById('newName').value.trim();
-  if (!name) { alert('Please enter a name.'); return; }
-  const specialty = document.getElementById('newSpecialty').value;
-  const status = document.getElementById('newStatus').value;
-  const id = 'PRV-' + (89000 + providers.length + 10);
-  providers.unshift({ id, name, specialty, status, rating: 4.0, perf: 70, perfLabel: 'SOLID', perfClass: 'solid' });
-  closeModal();
-  document.getElementById('newName').value = '';
-  renderTable();
-}
-
-renderTable();
+  AppStore.ready.then(function () {
+    session = Auth.requireSession(["unit_manager"]);
+    if (!session) return;
+    loadProvidersFromStore();
+    renderTable();
+  });
+})();
