@@ -212,9 +212,61 @@ function renderActivity() {
 }
 
 // ===== PASSWORD MODAL =====
-function openPwdModal() { document.getElementById('pwd-modal').classList.add('open'); document.body.style.overflow = 'hidden'; }
-function closePwdModalBtn() { document.getElementById('pwd-modal').classList.remove('open'); document.body.style.overflow = ''; }
+function openPwdModal() { 
+  document.getElementById('pwd-modal').classList.add('open'); 
+  document.body.style.overflow = 'hidden'; 
+}
+function closePwdModalBtn() { 
+  document.getElementById('pwd-modal').classList.remove('open'); 
+  document.body.style.overflow = ''; 
+  const c = document.getElementById('pwd-current');
+  const n = document.getElementById('pwd-new');
+  const cn = document.getElementById('pwd-confirm');
+  if(c) c.value = '';
+  if(n) n.value = '';
+  if(cn) cn.value = '';
+}
 function closePwdModal(e) { if (e.target === document.getElementById('pwd-modal')) closePwdModalBtn(); }
+
+function savePassword() {
+  const currentVal = document.getElementById('pwd-current').value;
+  const newVal = document.getElementById('pwd-new').value;
+  const confirmVal = document.getElementById('pwd-confirm').value;
+
+  const session = Auth.getSession();
+  if (!session) return;
+  
+  const allCustomers = AppStore.getTable('customers') || [];
+  const me = allCustomers.find(c => c.customer_id === session.id);
+  
+  if (!me) {
+    showProfileToast('Error tracking user profile details');
+    return;
+  }
+  
+  if (currentVal !== me.password) {
+    showProfileToast('Current password is incorrect');
+    return;
+  }
+  
+  if (newVal.length < 8) {
+    showProfileToast('New password must be strictly at least 8 characters');
+    return;
+  }
+  
+  if (newVal !== confirmVal) {
+    showProfileToast('Your new passwords do not perfectly match');
+    return;
+  }
+  
+  CRUD.updateRecord('customers', 'customer_id', session.id, { password: newVal });
+  
+  const registryEntry = (window.AuthRegistry || []).find(u => u.id === session.id);
+  if (registryEntry) registryEntry.password = newVal;
+
+  closePwdModalBtn();
+  showProfileToast('Password successfully updated!');
+}
 
 // ===== DANGER & LOGOUT =====
 function confirmDelete() {
@@ -267,13 +319,11 @@ AppStore.ready.then(() => {
   if (dobInput && me.dob) dobInput.value = me.dob;
 
   // Load preferences
-  if (me.preferences) {
-    preferences = me.preferences;
-    const prefEmail = document.getElementById('pref-email');
-    const prefSms = document.getElementById('pref-sms');
-    if (prefEmail) prefEmail.checked = !!preferences.email;
-    if (prefSms) prefSms.checked = !!preferences.sms;
-  }
+  preferences = me.hasOwnProperty('preferences') && me.preferences ? me.preferences : { email: true, sms: true };
+  const prefEmail = document.getElementById('pref-email');
+  const prefSms = document.getElementById('pref-sms');
+  if (prefEmail) prefEmail.checked = !!preferences.email;
+  if (prefSms) prefSms.checked = !!preferences.sms;
 
   renderAddresses();
   renderPayments();
