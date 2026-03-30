@@ -32,12 +32,6 @@
             <span>Track all your appointments in one place</span>
           </div>
         </div>
-<<<<<<< HEAD
-
-        <div class="bottom-links">
-          <a href="../legal/privacy-policy.html">Privacy Policy</a>
-          <a href="../legal/terms-of-service.html">Terms of Service</a>
-=======
         <div class="feature-item">
           <div>
             <strong>Direct Messaging</strong>
@@ -55,13 +49,12 @@
             <strong>Secure Payments</strong>
             <span>Fast, safe, and transparent payouts</span>
           </div>
->>>>>>> 75507eaed5bd269bdafb5bbd17d2abedc076d381
         </div>
       </div>
 
       <div class="bottom-links">
-        <a href="#">Privacy Policy</a>
-        <a href="#">Terms of Service</a>
+        <a href="../legal/privacy-policy.html">Privacy Policy</a>
+        <a href="../legal/terms-of-service.html">Terms of Service</a>
       </div>
     </div>
   </div>
@@ -179,289 +172,6 @@
             </svg>
           </button>
         </div>
-<<<<<<< HEAD
-
-        <!-- STEP 2: Personal info -->
-        <div class="step-panel" id="step-2">
-          <div class="step-title">Your personal information</div>
-
-          <div class="field-group">
-            <label for="fullname">Full Name</label>
-            <div class="input-wrapper">
-              <input
-                type="text"
-                id="fullname"
-                name="fullname"
-                placeholder="Enter your full name"
-                autocomplete="name"
-              />
-              <span class="input-icon">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                  <circle
-                    cx="12"
-                    cy="8"
-                    r="4"
-                    stroke="currentColor"
-                    stroke-width="1.5"
-                  />
-                  <path
-                    d="M4 20c0-4 3.6-7 8-7s8 3 8 7"
-                    stroke="currentColor"
-                    stroke-width="1.5"
-                    stroke-linecap="round"
-                  />
-                </svg>
-              </span>
-            </div>
-            <span class="field-error" id="fullname-error"></span>
-          </div>
-
-          <div class="field-group">
-            <label for="email">Email Address</label>
-            <div class="input-wrapper">
-              <input
-                type="email"
-                id="email"
-                name="email"
-                placeholder="name@example.com"
-                autocomplete="email"
-              />
-              <span class="input-icon" id="email-icon">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                  <rect
-                    x="2"
-                    y="4"
-                    width="20"
-                    height="16"
-                    rx="3"
-                    stroke="currentColor"
-                    stroke-width="1.5"
-                  />
-                  <path
-                    d="M2 8l10 6 10-6"
-                    stroke="currentColor"
-                    stroke-width="1.5"
-                  />
-                </svg>
-              </span>
-            </div>
-            <span class="field-error" id="email-error"></span>
-          </div>
-
-          <div class="field-group">
-            <label for="phone">Phone Number</label>
-            <div class="phone-wrapper">
-              <div class="phone-prefix">
-                <select id="country-code">
-                  <option value="+1">🇺🇸 +1</option>
-                  <option value="+44">🇬🇧 +44</option>
-                  <option value="+91" selected>🇮🇳 +91</option>
-                  <option value="+61">🇦🇺 +61</option>
-                  <option value="+971">🇦🇪 +971</option>
-                  <option value="+65">🇸🇬 +65</option>
-                </select>
-              </div>
-              <input
-                type="tel"
-                id="phone"
-                name="phone"
-                placeholder="555-0123"
-                autocomplete="tel"
-              />
-            </div>
-            <span class="field-error" id="phone-error"></span>
-          </div>
-
-          <div class="btn-row">
-            <button class="btn-secondary" id="back-1">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                <path
-                  d="M15 18l-6-6 6-6"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                />
-              </svg>
-              Back
-            </button>
-            <button class="btn-primary flex-1" id="next-2">
-              Continue
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                <path
-                  d="M9 18l6-6-6-6"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                />
-              </svg>
-            </button>
-          </div>
-        </div>
-
-        <!-- STEP 3: Credentials -->
-        <div class="step-panel" id="step-3">
-          <div class="step-title">Set your password</div>
-
-          <div class="field-group">
-            <label for="password">Password</label>
-            <div class="input-wrapper">
-              <input
-                type="password"
-                id="password"
-                name="password"
-                placeholder="Min. 8 characters"
-                autocomplete="new-password"
-              />
-              <button
-                type="button"
-                class="toggle-password"
-                id="toggle-pwd"
-                aria-label="Toggle password"
-              >
-                <svg
-                  class="eye-open"
-                  width="18"
-                  height="18"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                >
-                  <path
-                    d="M1 12S5 4 12 4s11 8 11 8-4 8-11 8S1 12 1 12z"
-                    stroke="currentColor"
-                    stroke-width="1.5"
-                  />
-                  <circle
-                    cx="12"
-                    cy="12"
-                    r="3"
-                    stroke="currentColor"
-                    stroke-width="1.5"
-                  />
-                </svg>
-                <svg
-                  class="eye-closed"
-                  width="18"
-                  height="18"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  style="display: none"
-                >
-                  <path
-                    d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19M1 1l22 22"
-                    stroke="currentColor"
-                    stroke-width="1.5"
-                    stroke-linecap="round"
-                  />
-                </svg>
-              </button>
-            </div>
-            <div class="strength-bar" id="strength-bar">
-              <div class="strength-fill" id="strength-fill"></div>
-            </div>
-            <span class="strength-label" id="strength-label"></span>
-            <span class="field-error" id="password-error"></span>
-          </div>
-
-          <div class="field-group">
-            <label for="confirm-password">Confirm Password</label>
-            <div class="input-wrapper">
-              <input
-                type="password"
-                id="confirm-password"
-                name="confirm-password"
-                placeholder="Re-enter your password"
-                autocomplete="new-password"
-              />
-              <button
-                type="button"
-                class="toggle-password"
-                id="toggle-cpwd"
-                aria-label="Toggle confirm password"
-              >
-                <svg
-                  class="eye-open"
-                  width="18"
-                  height="18"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                >
-                  <path
-                    d="M1 12S5 4 12 4s11 8 11 8-4 8-11 8S1 12 1 12z"
-                    stroke="currentColor"
-                    stroke-width="1.5"
-                  />
-                  <circle
-                    cx="12"
-                    cy="12"
-                    r="3"
-                    stroke="currentColor"
-                    stroke-width="1.5"
-                  />
-                </svg>
-                <svg
-                  class="eye-closed"
-                  width="18"
-                  height="18"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  style="display: none"
-                >
-                  <path
-                    d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19M1 1l22 22"
-                    stroke="currentColor"
-                    stroke-width="1.5"
-                    stroke-linecap="round"
-                  />
-                </svg>
-              </button>
-            </div>
-            <span class="field-error" id="confirm-error"></span>
-          </div>
-
-          <div class="field-group">
-            <label class="checkbox-label">
-              <input type="checkbox" id="terms" />
-              <span class="checkbox-custom"></span>
-              <span
-                >By signing up, I agree to the
-                <a href="../legal/terms-of-service.html">Terms of Service</a> and
-                <a href="../legal/privacy-policy.html">Privacy Policy</a>.</span
-              >
-            </label>
-            <span class="field-error" id="terms-error"></span>
-          </div>
-
-          <div class="btn-row">
-            <button class="btn-secondary" id="back-2">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                <path
-                  d="M15 18l-6-6 6-6"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                />
-              </svg>
-              Back
-            </button>
-            <button class="btn-primary flex-1" id="submit-btn">
-              <span class="btn-text" id="submit-text">Create Account</span>
-              <span
-                class="btn-spinner"
-                id="spinner"
-                style="display: none"
-              ></span>
-            </button>
-          </div>
-        </div>
-
-        <p class="switch-link">
-          Already have an account? <a href="login.html">Login here</a>
-        </p>
-=======
->>>>>>> 75507eaed5bd269bdafb5bbd17d2abedc076d381
       </div>
 
       <!-- STEP 3: Credentials -->
@@ -517,8 +227,8 @@
             <input type="checkbox" id="terms" />
             <span class="checkbox-custom"></span>
             <span>By signing up, I agree to the
-              <a href="#">Terms of Service</a> and
-              <a href="#">Privacy Policy</a>.</span>
+              <a href="../legal/terms-of-service.html">Terms of Service</a> and
+              <a href="../legal/privacy-policy.html">Privacy Policy</a>.</span>
           </label>
           <span class="field-error" id="terms-error"></span>
         </div>
