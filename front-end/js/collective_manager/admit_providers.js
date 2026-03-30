@@ -98,32 +98,19 @@ AppStore.ready.then(() => {
 
   /* ── 4. Generate skill requests ── */
   const skillRequests = [];
-  let requestId = 1;
-  myProviders.forEach(provider => {
-    if (AppStore.data.dismissed_providers.includes(provider.service_provider_id)) return;
 
-    const providerSkills = allProviderSkills
-      .filter(ps => ps.service_provider_id === provider.service_provider_id)
-      .map(ps => ps.skill_id);
-    const availableSkills = allSkills.filter(skill => !providerSkills.includes(skill.skill_id));
-    if (availableSkills.length > 0) {
-      const skill = availableSkills[0]; 
-      const docs = allProviderDocuments.filter(d => d.service_provider_id === provider.service_provider_id);
-      const hasResume = docs.some(d => d.doc_type === 'RESUME');
-      const hasCert = docs.some(d => d.doc_type === 'CERTIFICATE');
-      skillRequests.push({
-        id: requestId++,
-        initials: provider.name.split(' ').map(n => n[0]).join('').toUpperCase(),
-        name: provider.name,
-        skill: skill.skill_name,
-        phone: provider.phone,
-        email: provider.email,
-        location: provider.address,
-        documents: hasResume || hasCert ? { resume: hasResume, cert: hasCert } : null,
-        provider_id: provider.service_provider_id,
-        skill_id: skill.skill_id
-      });
-    }
+  // Inject a dummy skill request
+  skillRequests.push({
+    id: 999,
+    initials: "JD",
+    name: "John Dummy",
+    skill: "Advanced Plumbing",
+    phone: "+919876543210",
+    email: "john.dummy@mail.com",
+    location: "Chennai City",
+    documents: { resume: true, cert: true },
+    provider_id: "SP_DUMMY_SKILL",
+    skill_id: "SKL999"
   });
 
   // Limit to 4
