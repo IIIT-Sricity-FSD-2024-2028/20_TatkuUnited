@@ -153,6 +153,7 @@ window.Auth = (() => {
     localStorage.removeItem("fsd_session");
     localStorage.removeItem("fsd_store");
     sessionStorage.removeItem("fsd_session_alive");
+    sessionStorage.removeItem("fsd_ui_state");
     window.location.replace("/front-end/html/auth_pages/logout.html");
   }
 

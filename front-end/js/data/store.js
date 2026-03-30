@@ -55,8 +55,8 @@
     // ── AppStore.save ─────────────────────────────────────────────────────────────
     AppStore.save = function () {
         try {
-            localStorage.setItem("fsd_store", JSON.stringify(AppStore.data));
-            localStorage.setItem("fsd_store_saved_at", new Date().toISOString());
+            sessionStorage.setItem("fsd_store", JSON.stringify(AppStore.data));
+            sessionStorage.setItem("fsd_store_saved_at", new Date().toISOString());
         } catch (err) {
             console.error("[AppStore] save() failed:", err);
         }
@@ -64,12 +64,12 @@
 
     // ── AppStore.restore ──────────────────────────────────────────────────────────
     AppStore.restore = function () {
-        // Always try to load from the most-recent saved state in localStorage.
+        // Always try to load from the most-recent saved state in sessionStorage.
         // fsd_store is explicitly removed by Auth.logout(), so there is no risk
         // of bleeding stale cross-session data. The old fsd_session_alive guard
         // prevented this from working on pre-login pages (e.g. register).
         try {
-            var raw = localStorage.getItem("fsd_store");
+            var raw = sessionStorage.getItem("fsd_store");
             if (raw) {
                 AppStore.data = JSON.parse(raw);
                 return true;
@@ -154,7 +154,7 @@
     });
 
     if (AppStore.restore()) {
-        // Same session — data already loaded from localStorage
+        // Same session — data already loaded from sessionStorage
         _resolve();
     } else {
         // New session — fetch from mockData.json
@@ -176,5 +176,159 @@
                 _resolve();
             });
     }
+
+    // ── Unified Session State (added for provider UI persistence) ──────────────
+    window.initData = function () {
+        return new Promise(function (resolve) {
+            var expectedId = 'SP001';
+            try {
+                var sess = sessionStorage.getItem('fsd_session') || localStorage.getItem('fsd_session');
+                if (sess) {
+                    var p = JSON.parse(sess);
+                    if (p.role === 'provider' && p.id) expectedId = p.id;
+                }
+            } catch (e) { }
+
+            var existing = sessionStorage.getItem("fsd_ui_state");
+            if (existing) {
+                var parsedExisting = JSON.parse(existing);
+                if (parsedExisting.provider && parsedExisting.provider.service_provider_id === expectedId) {
+                    resolve();
+                    return;
+                }
+            }
+            AppStore.ready.then(function () {
+                var providerId = expectedId;
+
+                var jobs = [];
+                var allJA = AppStore.getTable('job_assignments') || [];
+                var allBK = AppStore.getTable('bookings') || [];
+                var allCUS = AppStore.getTable('customers') || [];
+                var allSVC = AppStore.getTable('services') || [];
+                var allCAT = AppStore.getTable('categories') || [];
+                var allBS = AppStore.getTable('booking_services') || [];
+
+                var allSP = AppStore.getTable('service_providers') || [];
+                var allWH = AppStore.getTable('provider_working_hours') || [];
+                var allUV = AppStore.getTable('provider_unavailability') || [];
+
+                var allSkills = AppStore.getTable('skills') || [];
+                var allProviderSkills = AppStore.getTable('provider_skills') || [];
+
+                var providerProfile = allSP.find(function (sp) { return sp.service_provider_id === providerId; }) || {};
+
+                providerProfile.skills = [];
+                var mySkills = allProviderSkills.filter(function (ps) { return ps.service_provider_id === providerId; });
+                mySkills.forEach(function (ps) {
+                    var skillObj = allSkills.find(s => s.skill_id === ps.skill_id);
+                    if (skillObj) {
+                        providerProfile.skills.push(skillObj.skill_name);
+                    }
+                });
+
+                var providerWH = allWH.filter(function (wh) { return wh.service_provider_id === providerId && wh.is_working; });
+                var workStart = providerWH.length > 0 ? providerWH[0].hour_start : '08:00';
+                var workEnd = providerWH.length > 0 ? providerWH[0].hour_end : '18:00';
+
+                var unavailMap = {};
+                allUV.forEach(function (uv) {
+                    if (uv.service_provider_id === providerId) {
+                        if (!unavailMap[uv.date]) unavailMap[uv.date] = [];
+                        unavailMap[uv.date].push({ from: uv.hour_start, to: uv.hour_end });
+                    }
+                });
+
+                allJA.forEach(function (ja) {
+                    if (ja.service_provider_id === providerId) {
+                        var bkg = allBK.find(b => b.booking_id === ja.booking_id) || {};
+                        var cus = allCUS.find(c => c.customer_id === bkg.customer_id) || {};
+
+                        var bsList = allBS.filter(bs => bs.booking_id === bkg.booking_id);
+                        var serviceName = 'General Service';
+                        var catName = 'General';
+                        if (bsList.length > 0) {
+                            var svc = allSVC.find(s => s.service_id === bsList[0].service_id);
+                            if (svc) {
+                                serviceName = svc.service_name;
+                                var cat = allCAT.find(c => c.category_id === svc.category_id);
+                                if (cat) catName = cat.category_name;
+                            }
+                        }
+
+                        var statusMap = {
+                            "ASSIGNED": "assigned",
+                            "IN_PROGRESS": "inprogress",
+                            "COMPLETED": "completed",
+                            "CANCELLED": "cancelled",
+                            "PENDING": "pending"
+                        };
+                        var uiStatus = statusMap[ja.status] || "assigned";
+                        var labelMap = { assigned: "Assigned", inprogress: "In Progress", completed: "Completed", pending: "Pending Confirmation", cancelled: "Cancelled" };
+
+                        var totalPrice = 0;
+                        if (bsList && bsList.length > 0) {
+                            totalPrice = bsList.reduce(function (acc, bs) { return acc + (bs.price_at_booking || 0); }, 0);
+                        }
+
+                        jobs.push({
+                            id: ja.assignment_id,
+                            service: serviceName,
+                            category: catName,
+                            customer: cus.full_name || cus.name || 'Unknown User',
+                            address: bkg.service_address || 'Unknown Address',
+                            phone: cus.phone || '+91 0000000000',
+                            date: ja.scheduled_date,
+                            time: ja.hour_start + ' - ' + ja.hour_end,
+                            startTime: ja.hour_start,
+                            endTime: ja.hour_end,
+                            status: uiStatus,
+                            statusLabel: labelMap[uiStatus],
+                            description: ja.notes || 'Complete service according to standards.',
+                            price: totalPrice
+                        });
+                    }
+                });
+
+                jobs.sort(function (a, b) {
+                    if (a.date !== b.date) return a.date > b.date ? 1 : -1;
+                    return a.startTime > b.startTime ? 1 : -1;
+                });
+
+                var totalCompletedCount = jobs.filter(function (j) { return j.status === 'completed'; }).length;
+                var totalCompletedSum = jobs.filter(function (j) { return j.status === 'completed'; }).reduce(function (acc, j) { return acc + (j.price || 0); }, 0);
+                var totalPendingSum = jobs.filter(function (j) { return j.status === 'inprogress' || j.status === 'assigned' || j.status === 'pending'; }).reduce(function (acc, j) { return acc + (j.price || 0); }, 0);
+                var avgTicket = totalCompletedCount > 0 ? Math.round(totalCompletedSum / totalCompletedCount) : 0;
+
+                var state = {
+                    provider: providerProfile,
+                    workingHours: { start: workStart, end: workEnd },
+                    jobs: jobs,
+                    unavailability: unavailMap,
+                    stats: [
+                        { label: 'Completed Jobs', value: totalCompletedCount },
+                        { label: 'Avg. Ticket', value: '₹' + avgTicket.toLocaleString('en-IN') },
+                        { label: 'Pending Payout', value: '₹' + totalPendingSum.toLocaleString('en-IN') },
+                        { label: 'Cancelled', value: jobs.filter(function (j) { return j.status === 'cancelled'; }).length }
+                    ],
+                    notifications: [
+                        { id: 101, type: 'job', category: 'Jobs', unread: true, title: 'New Job Assigned', time: '2 hours ago', desc: 'You have been assigned a new service request. Please check your schedule.', actions: [{ label: 'View Job Details', cls: 'btn-primary-action', href: 'assigned-jobs.html' }, { label: 'Dismiss', cls: 'btn-dismiss', action: 'dismiss' }] },
+                        { id: 102, type: 'payment', category: 'Payments', unread: true, title: 'Payment Processing', time: '5 hours ago', desc: 'Your latest payout has been initiated and will reflect shortly.', actions: [{ label: 'View Earnings', cls: 'btn-outline-action', href: 'earnings.html' }] },
+                        { id: 103, type: 'account', category: 'Account', unread: false, title: 'Identity Verification Required', time: 'Yesterday', desc: 'Please upload the renewed document to avoid service interruption.', actions: [{ label: 'Update Profile', cls: 'btn-orange-action', href: 'profile.html' }] }
+                    ]
+                };
+
+                sessionStorage.setItem('fsd_ui_state', JSON.stringify(state));
+                resolve();
+            });
+        });
+    };
+
+    window.getData = function () {
+        return JSON.parse(sessionStorage.getItem('fsd_ui_state'));
+    };
+
+    window.setData = function (data) {
+        sessionStorage.setItem('fsd_ui_state', JSON.stringify(data));
+    };
 
 }());

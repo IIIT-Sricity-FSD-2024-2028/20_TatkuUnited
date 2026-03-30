@@ -3,10 +3,14 @@ const DEFAULT_START = '08:00';
 const DEFAULT_END = '18:00';
 
 function getWorkHours() {
-  return {
-    start: localStorage.getItem('workStart') || DEFAULT_START,
-    end: localStorage.getItem('workEnd') || DEFAULT_END,
-  };
+  const data = window.getData ? window.getData() : null;
+  if (data && data.workingHours) {
+    return {
+      start: data.workingHours.start || DEFAULT_START,
+      end: data.workingHours.end || DEFAULT_END,
+    };
+  }
+  return { start: DEFAULT_START, end: DEFAULT_END };
 }
 
 function initWorkHours() {
@@ -71,12 +75,57 @@ function saveWorkHours() {
 
   localStorage.setItem('workStart', start);
   localStorage.setItem('workEnd', end);
+
+  if (window.getData) {
+    const data = window.getData();
+    if (data) {
+      if (!data.workingHours) data.workingHours = {};
+      data.workingHours.start = start;
+      data.workingHours.end = end;
+      window.setData(data);
+    }
+  }
+
   updateWorkHoursPreview();
   showToast('Work hours saved!');
 }
 
-// ── Profile sections ─────────────────────────────────────────────────────────
 function saveSection(section) {
+  if (window.getData) {
+    const data = window.getData();
+    if (data && data.provider) {
+      if (section === 'personal') {
+        const nameEl = document.getElementById('full-name');
+        const emailEl = document.getElementById('email');
+        const phoneEl = document.getElementById('phone');
+        const addrEl = document.getElementById('address');
+        
+        if (nameEl) data.provider.name = nameEl.value;
+        if (emailEl) data.provider.email = emailEl.value;
+        if (phoneEl) data.provider.phone = '+91 ' + phoneEl.value;
+        if (addrEl) data.provider.address = addrEl.value;
+        
+        // Update topbar instantly
+        document.querySelectorAll('.user-chip span').forEach(el => el.textContent = data.provider.name || 'Provider');
+      } else if (section === 'professional') {
+        const skillsRows = document.querySelectorAll('.skill-row');
+        data.provider.skills = Array.from(skillsRows)
+           .filter(row => !row.classList.contains('pending-remove'))
+           .map(row => row.getAttribute('data-skill'));
+
+        // Serialize File objects generically for JSON mock-storage safety
+        data.provider.resumeFiles = uploadedFiles['resume-list'].map(f => ({ name: f.name, size: f.size, type: f.type || 'application/pdf' }));
+        data.provider.certFiles = uploadedFiles['certs-list'].map(f => ({ name: f.name, size: f.size, type: f.type || 'application/pdf' }));
+
+        const serviceCatEl = document.getElementById('service-cat');
+        const experienceEl = document.getElementById('experience');
+        if (serviceCatEl) data.provider.service_category = serviceCatEl.value;
+        if (experienceEl) data.provider.experience = experienceEl.value;
+      }
+      
+      window.setData(data);
+    }
+  }
   showToast(section === 'personal' ? 'Personal info saved!' : 'Professional details saved!');
 }
 
@@ -218,22 +267,27 @@ function requestVerifySkill() {
     return;
   }
 
+  const list = document.getElementById('skills-list');
+  if (list && !document.querySelector(`.skill-row[data-skill="${skill}"]`)) {
+    const el = document.createElement('div');
+    el.className = 'skill-row new-skill-anim';
+    el.setAttribute('data-skill', skill);
+    el.innerHTML = `<span class="skill-badge" style="background:var(--primary-light); color:var(--primary); border:none;"><svg viewBox="0 0 24 24" width="13" height="13"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> ${skill}</span><button class="btn-remove-skill" title="Remove" onclick="requestRemoveSkill(this, '${skill}')"><svg viewBox="0 0 24 24" width="12" height="12"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>`;
+    list.appendChild(el);
+  }
+
   const btn = document.getElementById('btn-request-verify');
   btn.disabled = true;
-  btn.textContent = 'Request Sent ✓';
+  btn.textContent = 'Added ✓';
 
-  // In the future: POST /api/skill-verification-requests { skill }
-  showToast(`Verification request sent for "${skill}" — a manager will review it shortly.`);
-
-  // Reset after a moment
   setTimeout(() => {
-    select.value = '';
+    btn.innerHTML = `<svg viewBox="0 0 24 24" width="13" height="13"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg> Request Verification`;
     btn.disabled = false;
-    btn.innerHTML = `
-      <svg viewBox="0 0 24 24" width="13" height="13"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-      Request Verification
-    `;
-  }, 3000);
+    select.value = '';
+    toggleAddSkill();
+  }, 1000);
+
+  showToast(`Skill "${skill}" added. Remember to save changes!`);
 }
 
 function showPasswordModal() {
@@ -287,4 +341,80 @@ function showToast(msg, isError = false) {
 }
 
 // ── Init ─────────────────────────────────────────────────────────────────────
-document.addEventListener('DOMContentLoaded', initWorkHours);
+document.addEventListener('DOMContentLoaded', () => {
+  if (window.initData) {
+    window.initData().then(() => {
+      const data = window.getData();
+      if (!data || !data.provider) return;
+
+      const sp = data.provider;
+      
+      // Topbar styling
+      document.querySelectorAll('.user-chip span').forEach(el => el.textContent = sp.name || 'Provider');
+      if (sp.pfp_url) {
+        document.querySelectorAll('.user-avatar').forEach(el => {
+          el.innerHTML = `<img src="${sp.pfp_url}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
+        });
+      }
+
+      // Fill Personal Information
+      const nameEl = document.getElementById('full-name');
+      const emailEl = document.getElementById('email');
+      const phoneEl = document.getElementById('phone');
+      const addrEl = document.getElementById('address');
+
+      if (nameEl) nameEl.value = sp.name || '';
+      if (emailEl) emailEl.value = sp.email || '';
+      if (phoneEl) {
+        // Simple extraction of phone excluding +91 if needed, assuming the mockdata is just 10 digits
+        let rawPhone = sp.phone || '';
+        if (rawPhone.startsWith('+91')) rawPhone = rawPhone.replace('+91', '').trim();
+        phoneEl.value = rawPhone;
+      }
+      if (addrEl) addrEl.value = sp.address || '';
+
+      // Fill Professional Details
+      const serviceCatEl = document.getElementById('service-cat');
+      const experienceEl = document.getElementById('experience');
+      if (serviceCatEl) serviceCatEl.value = sp.service_category || 'Home Cleaning';
+      if (experienceEl) experienceEl.value = sp.experience || '8';
+
+      // Fill Skills Data
+      const skillsList = document.getElementById('skills-list');
+      if (skillsList && sp.skills) {
+        skillsList.innerHTML = sp.skills.map(skill => `
+          <div class="skill-row" data-skill="${skill}">
+            <span class="skill-badge">
+              <svg viewBox="0 0 24 24" width="13" height="13">
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+              ${skill}
+            </span>
+            <button class="btn-remove-skill" title="Remove" onclick="requestRemoveSkill(this, '${skill}')">
+              <svg viewBox="0 0 24 24" width="12" height="12"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </div>
+        `).join('');
+      }
+
+      // Fill Files Data
+      if (sp.resumeFiles && sp.resumeFiles.length > 0) {
+        sp.resumeFiles.forEach(f => {
+          uploadedFiles['resume-list'].push(f);
+          renderFileItem(f, 'resume-list');
+        });
+      }
+      if (sp.certFiles && sp.certFiles.length > 0) {
+        sp.certFiles.forEach(f => {
+          uploadedFiles['certs-list'].push(f);
+          renderFileItem(f, 'certs-list');
+        });
+      }
+
+      // Work hours
+      initWorkHours();
+    });
+  } else {
+    initWorkHours();
+  }
+});
