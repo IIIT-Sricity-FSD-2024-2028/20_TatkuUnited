@@ -191,19 +191,19 @@
           </div>
           <div class="profile-hero-info">
             <h1 class="profile-name" id="hero-name"></h1>
-            <p class="profile-role">Unit Manager</p>
+            <p class="profile-role" id="hero-role">Unit Manager</p>
             <p class="profile-email" id="hero-email"></p>
             <div class="profile-stats">
               <div class="profile-stat">
-                <span class="stat-num">24</span>
+                <span class="stat-num" id="hero-stat-providers">0</span>
                 <span class="stat-lbl">Providers Managed</span>
               </div>
               <div class="profile-stat">
-                <span class="stat-num">4.7 ★</span>
+                <span class="stat-num" id="hero-stat-rating">0.0 ★</span>
                 <span class="stat-lbl">Unit Rating</span>
               </div>
               <div class="profile-stat">
-                <span class="stat-num">98%</span>
+                <span class="stat-num" id="hero-stat-success">0%</span>
                 <span class="stat-lbl">Job Success Rate</span>
               </div>
             </div>
@@ -242,8 +242,9 @@
                   <input
                     type="email"
                     id="email"
+                    readonly
+                    class="readonly-field"
                     autocomplete="off"
-                    oninput="syncEmail()"
                   />
                 </div>
                 <div class="form-field">
@@ -340,118 +341,11 @@
                   Change Password
                 </button>
               </div>
-              <div class="divider"></div>
-              <div class="security-row">
-                <div>
-                  <div class="sec-label">Two-Factor Authentication</div>
-                  <div class="sec-sub">
-                    Secure your account with phone verification
-                  </div>
-                </div>
-                <label class="toggle">
-                  <input
-                    type="checkbox"
-                    id="toggle-2fa"
-                    onchange="
-                      saveToggle('twoFA', this.checked);
-                      showToast(
-                        'Two-factor authentication ' +
-                          (this.checked ? 'enabled' : 'disabled'),
-                      );
-                    "
-                  />
-                  <span class="toggle-track"></span>
-                </label>
-              </div>
             </div>
           </div>
 
           <!-- RIGHT COLUMN -->
           <div class="profile-right">
-            <!-- Preferences -->
-            <div class="card">
-              <div class="card-head">
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                >
-                  <circle cx="12" cy="12" r="3" />
-                  <path
-                    d="M19.07 4.93l-1.41 1.41M4.93 4.93l1.41 1.41M12 2v2M12 20v2M20 12h2M2 12h2M19.07 19.07l-1.41-1.41M4.93 19.07l1.41-1.41"
-                  />
-                </svg>
-                Preferences
-              </div>
-              <div class="pref-list">
-                <div class="pref-row">
-                  <div>
-                    <div class="pref-label">Email Notifications</div>
-                    <div class="pref-sub">Daily unit reports & alerts</div>
-                  </div>
-                  <label class="toggle">
-                    <input
-                      type="checkbox"
-                      id="toggle-email"
-                      onchange="
-                        saveToggle('emailNotif', this.checked);
-                        showToast(
-                          'Email notifications ' +
-                            (this.checked ? 'enabled' : 'disabled'),
-                        );
-                      "
-                    />
-                    <span class="toggle-track"></span>
-                  </label>
-                </div>
-                <div class="pref-row">
-                  <div>
-                    <div class="pref-label">SMS Alerts</div>
-                    <div class="pref-sub">
-                      Urgent provider no-shows & issues
-                    </div>
-                  </div>
-                  <label class="toggle">
-                    <input
-                      type="checkbox"
-                      id="toggle-sms"
-                      onchange="
-                        saveToggle('smsAlerts', this.checked);
-                        showToast(
-                          'SMS alerts ' +
-                            (this.checked ? 'enabled' : 'disabled'),
-                        );
-                      "
-                    />
-                    <span class="toggle-track"></span>
-                  </label>
-                </div>
-                <div class="pref-row">
-                  <div>
-                    <div class="pref-label">Weekly Performance Summary</div>
-                    <div class="pref-sub">
-                      Unit metrics delivered every Monday
-                    </div>
-                  </div>
-                  <label class="toggle">
-                    <input
-                      type="checkbox"
-                      id="toggle-weekly"
-                      onchange="
-                        saveToggle('weeklySummary', this.checked);
-                        showToast(
-                          'Weekly summary ' +
-                            (this.checked ? 'enabled' : 'disabled'),
-                        );
-                      "
-                    />
-                    <span class="toggle-track"></span>
-                  </label>
-                </div>
-              </div>
-            </div>
-
             <!-- Performance Summary -->
             <div class="card">
               <div class="card-head">
@@ -469,30 +363,46 @@
                 <div class="perf-item">
                   <div class="perf-label">Total Providers</div>
                   <div class="perf-bar-wrap">
-                    <div class="perf-bar" style="width: 80%"></div>
+                    <div
+                      class="perf-bar"
+                      id="perf-total-bar"
+                      style="width: 0%"
+                    ></div>
                   </div>
-                  <div class="perf-value">24</div>
+                  <div class="perf-value" id="perf-total-value">0</div>
                 </div>
                 <div class="perf-item">
                   <div class="perf-label">Active This Month</div>
                   <div class="perf-bar-wrap">
-                    <div class="perf-bar teal" style="width: 75%"></div>
+                    <div
+                      class="perf-bar teal"
+                      id="perf-active-month-bar"
+                      style="width: 0%"
+                    ></div>
                   </div>
-                  <div class="perf-value">18</div>
+                  <div class="perf-value" id="perf-active-month-value">0</div>
                 </div>
                 <div class="perf-item">
                   <div class="perf-label">Avg Customer Rating</div>
                   <div class="perf-bar-wrap">
-                    <div class="perf-bar green" style="width: 94%"></div>
+                    <div
+                      class="perf-bar green"
+                      id="perf-rating-bar"
+                      style="width: 0%"
+                    ></div>
                   </div>
-                  <div class="perf-value">4.7</div>
+                  <div class="perf-value" id="perf-rating-value">0.0</div>
                 </div>
                 <div class="perf-item">
                   <div class="perf-label">Completion Rate</div>
                   <div class="perf-bar-wrap">
-                    <div class="perf-bar green" style="width: 98%"></div>
+                    <div
+                      class="perf-bar green"
+                      id="perf-completion-bar"
+                      style="width: 0%"
+                    ></div>
                   </div>
-                  <div class="perf-value">98%</div>
+                  <div class="perf-value" id="perf-completion-value">0%</div>
                 </div>
               </div>
             </div>
