@@ -77,24 +77,6 @@ AppStore.ready.then(() => {
   if (!AppStore.data.dismissed_providers) {
       AppStore.data.dismissed_providers = [];
   }
-  if (!AppStore.data.recently_approved) {
-      const initialApproved = [];
-      const approvedProviders = myProviders.slice(0, 4);
-      const dates = ['Mar 8, 2026', 'Mar 7, 2026', 'Mar 6, 2026', 'Mar 5, 2026'];
-      approvedProviders.forEach((p, i) => {
-        const unit = myUnits.find(u => u.unit_id === p.unit_id);
-        const skill = allSkills[Math.floor(Math.random() * allSkills.length)];
-        initialApproved.push({
-          initials: p.name.split(' ').map(n => n[0]).join('').toUpperCase(),
-          name: p.name,
-          unit: unit ? unit.unit_name : 'General Unit',
-          skill: skill.skill_name,
-          date: dates[i]
-        });
-      });
-      AppStore.data.recently_approved = initialApproved;
-      AppStore.save();
-  }
 
   /* ── 4. Generate skill requests ── */
   // Find skills they don't have and create a request for one
@@ -173,26 +155,17 @@ AppStore.ready.then(() => {
     `;
 
     card.querySelector('.btn-verify').addEventListener('click', () => {
-      // Add the skill to provider_skills
+      // Add the skill to provider_skills with verification metadata
       const providerSkill = {
         service_provider_id: req.provider_id,
-        skill_id: req.skill_id
+        skill_id: req.skill_id,
+        verification_status: "Verified",
+        verified_at: new Date().toISOString()
       };
       AppStore.data.provider_skills.push(providerSkill);
       // Mark as dismissed so it doesn't regenerate a new fake request
       AppStore.data.dismissed_providers.push(req.provider_id);
       
-      // Inject into recently approved
-      const realProvider = allProviders.find(p => p.service_provider_id === req.provider_id);
-      const unit = realProvider ? myUnits.find(u => u.unit_id === realProvider.unit_id) : null;
-      AppStore.data.recently_approved.unshift({
-        initials: req.initials,
-        name: req.name,
-        unit: unit ? unit.unit_name : 'General Unit',
-        skill: req.skill,
-        date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-      });
-
       AppStore.save();
       showToast(`✓ ${req.name}'s ${req.skill} skill verified`);
       removeCard(card);
@@ -218,7 +191,33 @@ AppStore.ready.then(() => {
   // ===== BUILD APPROVED CARDS =====
   function buildApprovedCards() {
     const grid = document.getElementById('approvedGrid');
-    AppStore.data.recently_approved.forEach((p, i) => {
+    
+    // Sort provider skills by verified_at descending
+    const verifiedSkills = [...AppStore.data.provider_skills]
+      .filter(ps => ps.verification_status === "Verified" && ps.verified_at)
+      .sort((a, b) => new Date(b.verified_at) - new Date(a.verified_at));
+
+    // Map to view models and filter down to top 4 belonging to myProviders
+    const recentDisplay = [];
+    for (const ps of verifiedSkills) {
+      if (recentDisplay.length >= 4) break;
+      const provider = myProviders.find(p => p.service_provider_id === ps.service_provider_id);
+      if (!provider) continue; // Skip if provider isn't in my collective
+      
+      const unit = myUnits.find(u => u.unit_id === provider.unit_id);
+      const skill = allSkills.find(s => s.skill_id === ps.skill_id);
+      const dt = new Date(ps.verified_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+      
+      recentDisplay.push({
+        initials: provider.name.split(' ').map(n => n[0]).join('').toUpperCase(),
+        name: provider.name,
+        unit: unit ? unit.unit_name : 'General Unit',
+        skill: skill ? skill.skill_name : 'Unknown Skill',
+        date: dt
+      });
+    }
+
+    recentDisplay.forEach((p, i) => {
       const color = colors[(i + 2) % colors.length];
       const card = document.createElement('div');
       card.className = 'approved-card';

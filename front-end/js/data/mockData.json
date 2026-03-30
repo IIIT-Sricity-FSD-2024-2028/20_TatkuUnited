@@ -771,55 +771,81 @@
   "provider_skills": [
     {
       "service_provider_id": "SP001",
-      "skill_id": "SKL002"
+      "skill_id": "SKL002",
+      "verification_status": "Verified",
+      "verified_at": "2026-03-25T10:00:00Z"
     },
     {
       "service_provider_id": "SP001",
-      "skill_id": "SKL005"
+      "skill_id": "SKL005",
+      "verification_status": "Verified",
+      "verified_at": "2026-03-26T11:00:00Z"
     },
     {
       "service_provider_id": "SP002",
-      "skill_id": "SKL001"
+      "skill_id": "SKL001",
+      "verification_status": "Verified",
+      "verified_at": "2026-03-27T09:30:00Z"
     },
     {
       "service_provider_id": "SP002",
-      "skill_id": "SKL003"
+      "skill_id": "SKL003",
+      "verification_status": "Verified",
+      "verified_at": "2026-03-27T14:15:00Z"
     },
     {
       "service_provider_id": "SP003",
-      "skill_id": "SKL003"
+      "skill_id": "SKL003",
+      "verification_status": "Verified",
+      "verified_at": "2026-03-28T08:00:00Z"
     },
     {
       "service_provider_id": "SP004",
-      "skill_id": "SKL004"
+      "skill_id": "SKL004",
+      "verification_status": "Verified",
+      "verified_at": "2026-03-28T16:45:00Z"
     },
     {
       "service_provider_id": "SP004",
-      "skill_id": "SKL001"
+      "skill_id": "SKL001",
+      "verification_status": "Verified",
+      "verified_at": "2026-03-29T10:20:00Z"
     },
     {
       "service_provider_id": "SP005",
-      "skill_id": "SKL005"
+      "skill_id": "SKL005",
+      "verification_status": "Verified",
+      "verified_at": "2026-03-29T11:10:00Z"
     },
     {
       "service_provider_id": "SP005",
-      "skill_id": "SKL002"
+      "skill_id": "SKL002",
+      "verification_status": "Verified",
+      "verified_at": "2026-03-29T13:40:00Z"
     },
     {
       "service_provider_id": "SP006",
-      "skill_id": "SKL002"
+      "skill_id": "SKL002",
+      "verification_status": "Verified",
+      "verified_at": "2026-03-29T15:00:00Z"
     },
     {
       "service_provider_id": "SP007",
-      "skill_id": "SKL003"
+      "skill_id": "SKL003",
+      "verification_status": "Verified",
+      "verified_at": "2026-03-30T09:00:00Z"
     },
     {
       "service_provider_id": "SP008",
-      "skill_id": "SKL003"
+      "skill_id": "SKL003",
+      "verification_status": "Verified",
+      "verified_at": "2026-03-30T10:30:00Z"
     },
     {
       "service_provider_id": "SP008",
-      "skill_id": "SKL006"
+      "skill_id": "SKL006",
+      "verification_status": "Verified",
+      "verified_at": "2026-03-30T11:00:00Z"
     }
   ],
   "customers": [
