@@ -143,7 +143,16 @@
               Saved Addresses
             </div>
             <div class="addresses-list" id="addresses-list"></div>
-            <button class="btn-add-address" onclick="addAddress()">
+            
+            <div id="add-address-form" style="display:none; margin-top:16px; background:var(--bg-2); padding:12px; border-radius:8px;">
+              <input type="text" id="new-address-input" placeholder="Enter full address details..." style="width:100%; border:1px solid var(--border); padding:8px 12px; border-radius:6px; font-family:inherit; font-size:14px; margin-bottom:12px;">
+              <div style="display:flex; gap:8px;">
+                <button class="btn-save" style="flex:1; padding:8px; font-size:13px;" onclick="saveNewAddress()">Save Address</button>
+                <button style="flex:1; padding:8px; font-size:13px; border:none; border-radius:6px; background:var(--border); color:var(--text-1); cursor:pointer;" onclick="document.getElementById('add-address-form').style.display='none'">Cancel</button>
+              </div>
+            </div>
+
+            <button class="btn-add-address" id="btn-add-address" onclick="document.getElementById('add-address-form').style.display='block'" style="margin-top:16px;">
               <svg viewBox="0 0 24 24">
                 <line x1="12" y1="5" x2="12" y2="19" />
                 <line x1="5" y1="12" x2="19" y2="12" />
@@ -208,8 +217,8 @@
                 <label class="toggle">
                   <input
                     type="checkbox"
-                    checked
-                    onchange="showToast('Email notifications updated')"
+                    id="pref-email"
+                    onchange="updatePreference('email', this.checked)"
                   />
                   <span class="toggle-track"></span>
                 </label>
@@ -222,8 +231,8 @@
                 <label class="toggle">
                   <input
                     type="checkbox"
-                    checked
-                    onchange="showToast('SMS reminders updated')"
+                    id="pref-sms"
+                    onchange="updatePreference('sms', this.checked)"
                   />
                   <span class="toggle-track"></span>
                 </label>
@@ -309,15 +318,15 @@
         <div class="modal-fields">
           <div class="form-field">
             <label>Current Password</label
-            ><input type="password" placeholder="Enter current password" />
+            ><input type="password" id="pwd-current" placeholder="Enter current password" />
           </div>
           <div class="form-field">
             <label>New Password</label
-            ><input type="password" placeholder="Min. 8 characters" />
+            ><input type="password" id="pwd-new" placeholder="Min. 8 characters" />
           </div>
           <div class="form-field">
             <label>Confirm New Password</label
-            ><input type="password" placeholder="Re-enter new password" />
+            ><input type="password" id="pwd-confirm" placeholder="Re-enter new password" />
           </div>
         </div>
         <div class="modal-btns">
@@ -326,10 +335,7 @@
           </button>
           <button
             class="modal-btn-save"
-            onclick="
-              closePwdModalBtn();
-              showToast('Password updated successfully!');
-            "
+            onclick="savePassword()"
           >
             Update Password
           </button>
@@ -345,10 +351,15 @@
       <div class="footer-links">
         <a href="../legal/terms-of-service.html">Terms of Service</a>
         <a href="../legal/privacy-policy.html">Privacy Policy</a>
-        <a href="#">Contact Support</a>
+        <a href="home.html">Contact Support</a>
       </div>
     </footer>
 
+    <script src="../../js/data/store.js"></script>
+    <script src="../../js/modules/auth.js"></script>
+    <script src="../../js/modules/crud.js"></script>
+    <script src="../../js/utils/validation.js"></script>
+    <script src="../../js/utils/helpers.js"></script>
     <script src="../../js/customer/profile.js"></script>
   </body>
 </html>

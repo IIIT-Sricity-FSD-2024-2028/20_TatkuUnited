@@ -46,7 +46,6 @@ function renderSuccessSuggestions() {
 }
 
 function submitReview() {
-  // Update success card stars
   document.getElementById('success-stars').innerHTML =
     `<span style="color:var(--orange)">${'★'.repeat(currentRating)}</span><span style="color:#d1d5db">${'☆'.repeat(5 - currentRating)}</span>`;
   renderSuccessSuggestions();
@@ -63,5 +62,10 @@ function submitReview() {
   }, 300);
 }
 
-renderNeed();
-updateCartBadge();
+AppStore.ready.then(() => {
+  const session = Auth.requireSession(['customer']);
+  if (!session) return;
+
+  renderNeed();
+  updateCartBadge();
+});
