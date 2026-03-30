@@ -16,14 +16,14 @@
 <body>
   <!-- ── Navbar ── -->
   <nav class="navbar">
-    <a href="#" class="brand">
+    <a href="../home.html" class="brand">
       <div class="brand-logo">TU</div>
       <span class="brand-name">Tatku United</span>
     </a>
     <ul class="nav-links">
-      <li><a href="#">Home</a></li>
-      <li><a href="#">Services</a></li>
-      <li><a href="#">Bookings</a></li>
+      <li><a href="../home.html">Home</a></li>
+      <li><a href="../../service_pages/service_discovery.html">Services</a></li>
+      <li><a href="../bookings.html">Bookings</a></li>
     </ul>
     <div class="nav-right">
       <button class="user-btn" aria-label="Account">
@@ -136,9 +136,9 @@
       <button class="btn-receipt" id="receiptBtn">View Receipt</button>
 
       <div class="modal-links">
-        <a href="#" class="mlink">Back to Home</a>
+        <a href="../home.html" class="mlink">Back to Home</a>
         <span class="mlink-sep">·</span>
-        <a href="#" class="mlink">My Bookings</a>
+        <a href="../bookings.html" class="mlink">My Bookings</a>
       </div>
     </div>
   </div>
@@ -219,14 +219,19 @@
     <div class="footer-links">
       <a href="../../legal/terms-of-service.html">Terms of Service</a>
       <a href="../../legal/privacy-policy.html">Privacy Policy</a>
-      <a href="#">Contact Support</a>
+      <a href="../home.html">Contact Support</a>
     </div>
   </footer>
 
   <!-- Toast -->
   <div class="toast" id="toast"></div>
 
-  <script src="../../../js/customer/payment_pages/payment_success.js"></script>
+    <script src="../../../js/data/store.js"></script>
+    <script src="../../../js/modules/auth.js"></script>
+    <script src="../../../js/modules/crud.js"></script>
+    <script src="../../../js/utils/validation.js"></script>
+    <script src="../../../js/utils/helpers.js"></script>
+    <script src="../../../js/customer/payment_pages/payment_success.js"></script>
 </body>
 
 </html>

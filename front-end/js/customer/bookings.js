@@ -4,18 +4,20 @@ function updateCartBadge() {
   document.querySelectorAll('.cart-count').forEach(el => { el.textContent = count; el.style.display = count > 0 ? 'grid' : 'none'; });
 }
 
-const bookings = [
-  { id: 'TU-92834', status: 'pending', statusLabel: 'Pending', name: 'Microwave Deep Cleaning', category: 'Cleaning', provider: 'Sambhav', date: 'Dec 28, 2026', time: '10:00 AM', address: '21/229, Indira Nagar, Lucknow', price: '₹1,200', duration: '2 hours', description: 'Complete deep cleaning of microwave including interior, exterior, and turntable.', iconBg: '#fef3c7', icon: `<svg viewBox="0 0 24 24" style="stroke:#d97706"><rect x="2" y="7" width="20" height="12" rx="2"/><path d="M17 11h1M6 11h6"/></svg>`, timeline: [{ label: 'Booking Placed', sub: 'Dec 20, 2026', done: true }, { label: 'Provider Assigned', sub: 'Awaiting assignment', done: false }, { label: 'Service Completed', sub: '—', done: false }], actions: ['reschedule', 'cancel'] },
-  { id: 'TU-92833', status: 'assigned', statusLabel: 'Assigned', name: 'Full Pipe Inspection', category: 'Plumbing', provider: 'elHuman', date: 'Mar 25, 2026', time: '02:30 PM', address: '21/229, Indira Nagar, Lucknow', price: '₹2,500', duration: '3 hours', description: 'Full inspection of all pipes, checking for leaks, blockages, and pressure issues.', iconBg: '#f0fdfa', icon: `<svg viewBox="0 0 24 24" style="stroke:#0d9488"><path d="M12 2a5 5 0 015 5v3H7V7a5 5 0 015-5z"/><rect x="7" y="10" width="10" height="10" rx="2"/></svg>`, timeline: [{ label: 'Booking Placed', sub: 'Mar 10, 2026', done: true }, { label: 'Provider Assigned', sub: 'elHuman confirmed', done: true }, { label: 'Service Completed', sub: '—', done: false }], actions: ['reschedule', 'track'] },
-  { id: 'TU-92832', status: 'inprogress', statusLabel: 'In Progress', name: 'Smart Home Setup', category: 'Electrical', provider: "elHumann't", date: 'Mar 27, 2026', time: '11:00 AM', address: '21/229, Indira Nagar, Lucknow', price: '₹4,800', duration: '4 hours', description: 'Installation and configuration of smart home devices including lights, locks, and thermostat.', iconBg: '#eff6ff', icon: `<svg viewBox="0 0 24 24" style="stroke:#2563eb"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>`, liveStatus: 'Technician is on-site', timeline: [{ label: 'Booking Placed', sub: 'Mar 20, 2026', done: true }, { label: 'Provider Assigned', sub: "elHumann't confirmed", done: true }, { label: 'In Progress', sub: 'Technician on-site now', done: true }, { label: 'Service Completed', sub: '—', done: false }], actions: ['track'] },
-  { id: 'TU-92831', status: 'completed', statusLabel: 'Completed', name: 'Kitchen Counter Resurfacing', category: 'Carpentry', provider: 'TheResurface', date: 'Dec 20, 2025', time: '09:00 AM', address: '21/229, Indira Nagar, Lucknow', price: '₹6,500', duration: '5 hours', description: 'Full resurfacing of kitchen countertop with premium laminate finish.', iconBg: '#f0fdf4', icon: `<svg viewBox="0 0 24 24" style="stroke:#16a34a"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>`, timeline: [{ label: 'Booking Placed', sub: 'Dec 10, 2025', done: true }, { label: 'Provider Assigned', sub: 'TheResurface confirmed', done: true }, { label: 'Service Completed', sub: 'Dec 20, 2025', done: true }], actions: ['invoice', 'review', 'rebook'] },
-  { id: 'TU-92830', status: 'cancelled', statusLabel: 'Cancelled', name: 'Garden Lawn Mowing', category: 'Gardening', provider: 'John Lemon', date: 'Dec 15, 2025', time: '11:30 AM', address: '21/229, Indira Nagar, Lucknow', price: '₹800', duration: '1.5 hours', description: 'Standard lawn mowing and trimming service.', iconBg: '#fee2e2', icon: `<svg viewBox="0 0 24 24" style="stroke:#ef4444"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>`, timeline: [{ label: 'Booking Placed', sub: 'Dec 5, 2025', done: true }, { label: 'Cancelled', sub: 'Dec 8, 2025 — by customer', done: true }], actions: ['rebook'] },
-  { id: 'TU-92829', status: 'pending', statusLabel: 'Pending', name: 'Exterior Window Wash', category: 'Cleaning', provider: 'Paul McWashney', date: 'Nov 02, 2025', time: '08:00 AM', address: '21/229, Indira Nagar, Lucknow', price: '₹1,500', duration: '2.5 hours', description: 'Complete exterior window washing for a 2-floor building.', iconBg: '#eff6ff', icon: `<svg viewBox="0 0 24 24" style="stroke:#3b82f6"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18"/></svg>`, timeline: [{ label: 'Booking Placed', sub: 'Oct 25, 2025', done: true }, { label: 'Provider Assigned', sub: 'Awaiting assignment', done: false }, { label: 'Service Completed', sub: '—', done: false }], actions: ['reschedule', 'cancel'] },
-];
+/* ── These must be in global scope for onclick handlers in HTML ── */
+let bookings = [];
+let activeFilter = 'All';
+let sortDesc = true;
+let reschedulingBookingId = null;
+
+function toggleSort() {
+  sortDesc = !sortDesc;
+  document.getElementById('sort-label').textContent = sortDesc ? 'Sort: Newest' : 'Sort: Oldest';
+  renderBookings();
+}
 
 const badgeMap = { upcoming: 'badge-upcoming', inprogress: 'badge-inprogress', completed: 'badge-completed', pending: 'badge-pending', cancelled: 'badge-cancelled', assigned: 'badge-assigned' };
 const filters = ['All', 'Pending', 'Assigned', 'In Progress', 'Completed', 'Cancelled'];
-let activeFilter = 'All';
 
 function renderFilters() {
   document.getElementById('filter-tabs').innerHTML = filters.map(f => `<button class="filter-tab ${f === activeFilter ? 'active' : ''}" onclick="setFilter('${f}')">${f}</button>`).join('');
@@ -23,7 +25,39 @@ function renderFilters() {
 function setFilter(f) { activeFilter = f; renderFilters(); renderBookings(); }
 
 function renderBookings() {
-  const filtered = activeFilter === 'All' ? bookings : bookings.filter(b => b.statusLabel === activeFilter || b.status === activeFilter.toLowerCase().replace(' ', ''));
+  let filtered = activeFilter === 'All' ? bookings : bookings.filter(b => b.statusLabel === activeFilter || b.status === activeFilter.toLowerCase().replace(' ', ''));
+  
+  const startVal = document.getElementById('filter-start')?.value;
+  const endVal = document.getElementById('filter-end')?.value;
+  
+  if (startVal) {
+    const sDate = new Date(startVal);
+    sDate.setHours(0,0,0,0);
+    filtered = filtered.filter(b => new Date(b.rawDateISO) >= sDate);
+  }
+  
+  if (endVal) {
+    const eDate = new Date(endVal);
+    eDate.setHours(23,59,59,999);
+    filtered = filtered.filter(b => new Date(b.rawDateISO) <= eDate);
+  }
+  
+  filtered.sort((a, b) => {
+    const d1 = new Date(a.rawDateISO).getTime();
+    const d2 = new Date(b.rawDateISO).getTime();
+    return sortDesc ? d2 - d1 : d1 - d2;
+  });
+  if (filtered.length === 0) {
+    document.getElementById('bookings-list').innerHTML = `
+      <div class="empty-state" style="text-align: center; padding: 4rem 1rem; color: var(--text-2);">
+        <svg viewBox="0 0 24 24" style="width:48px;height:48px;stroke:currentColor;fill:none;stroke-width:1;margin:0 auto 1rem;"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+        <h3 style="margin-bottom:0.5rem;color:var(--text-1)">No bookings found</h3>
+        <p>You don't have any bookings matching this filter.</p>
+      </div>
+    `;
+    document.getElementById('pagination').innerHTML = '';
+    return;
+  }
   document.getElementById('bookings-list').innerHTML = filtered.map((b, i) => `
     <div class="booking-row ${b.status === 'cancelled' ? 'cancelled' : ''}" style="animation-delay:${i * 0.06}s" onclick="openDrawer('${b.id}')">
       <div class="booking-row-icon" style="background:${b.iconBg}">${b.icon}</div>
@@ -67,7 +101,7 @@ function openDrawer(id) {
     invoice:    `<button class="drawer-btn drawer-btn-outline">View Invoice</button>`,
     rebook:     `<button class="drawer-btn drawer-btn-orange" onclick="window.location='schedule.html?service=${encodeURIComponent(b.name)}&price=${encodeURIComponent(b.price)}'">Rebook This Service</button>`,
     reschedule: `<button class="drawer-btn drawer-btn-outline" onclick="openRescheduleModal('${b.id}')"><svg viewBox="0 0 24 24" style="width:16px;height:16px;display:inline-block;vertical-align:middle;margin-right:6px"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>Reschedule</button>`,
-    cancel:     `<button class="drawer-btn drawer-btn-danger">Cancel Booking</button>`,
+    cancel:     `<button class="drawer-btn drawer-btn-danger" onclick="cancelBooking('${b.id}')">Cancel Booking</button>`,
   };
 
   document.getElementById('drawer-content').innerHTML = `
@@ -121,13 +155,16 @@ function openDrawer(id) {
 function closeDrawerBtn() { document.getElementById('drawer-overlay').classList.remove('open'); document.body.style.overflow = ''; }
 function closeDrawer(e) { if (e.target === document.getElementById('drawer-overlay')) closeDrawerBtn(); }
 
-renderFilters();
-renderBookings();
-updateCartBadge();
+function cancelBooking(id) {
+  const b = bookings.find(x => x.id === id);
+  if (!b) return;
+  CRUD.updateRecord('bookings', 'booking_id', id, { status: 'CANCELLED' });
+  closeDrawerBtn();
+  loadBookings();
+  showToast('Booking cancelled successfully.', 'success');
+}
 
 // ===== RESCHEDULE MODAL =====
-let reschedulingBookingId = null;
-
 function getDateConstraints() {
   const today = new Date();
   const maxDate = new Date();
@@ -163,18 +200,166 @@ function saveReschedule() {
   const newDate = document.getElementById('reschedule-date').value;
   const newTime = document.getElementById('reschedule-time').value;
   const { min, max } = getDateConstraints();
-  if (!newDate) { alert('Please select a date.'); return; }
-  if (newDate < min || newDate > max) { alert('Please select a date within 1 week from today.'); return; }
-  const b = bookings.find(x => x.id === reschedulingBookingId);
-  if (b) {
-    const formattedDate = new Date(newDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-    b.date = formattedDate;
-    b.time = newTime;
-  }
+  if (!newDate) { showToast('Please select a date.', 'error'); return; }
+  if (newDate < min || newDate > max) { showToast('Please select a date within 1 week from today.', 'error'); return; }
+  
+  const dateTimeISO = new Date(newDate + 'T' + (newTime ? newTime.split(' ')[0] + ':00' : '10:00:00')).toISOString();
+  CRUD.updateRecord('bookings', 'booking_id', reschedulingBookingId, { scheduled_at: dateTimeISO });
+  
   closeRescheduleModalBtn();
-  // Close the drawer too
   closeDrawerBtn();
-  renderBookings();
-  // Show success feedback
-  alert('Booking rescheduled to ' + b.date + ' at ' + b.time);
+  loadBookings();
+  showToast('Booking rescheduled successfully', 'success');
 }
+
+let currentSession = null;
+
+function seedMockBookingsIfNeeded(session) {
+  if (localStorage.getItem('tu_demo_seeded')) return;
+  
+  const mockBookings = [
+    {
+      booking_id: AppStore.nextId('BKG'),
+      customer_id: session.id,
+      booking_type: 'SCHEDULED',
+      status: 'PENDING',
+      service_address: '21/229, Indira Nagar, Lucknow',
+      service_name: 'Deep Home Cleaning',
+      price: '2500',
+      provider_id: null,
+      scheduled_at: new Date(Date.now() + 86400000 * 3).toISOString(), // 3 days from now
+      created_at: new Date(Date.now() - 86400000 * 1).toISOString(),
+    },
+    {
+      booking_id: AppStore.nextId('BKG'),
+      customer_id: session.id,
+      booking_type: 'SCHEDULED',
+      status: 'ASSIGNED',
+      service_address: '21/229, Indira Nagar, Lucknow',
+      service_name: 'AC Precision Repair',
+      price: '850',
+      provider_id: 'SP001',
+      scheduled_at: new Date(Date.now() + 86400000 * 1).toISOString(), // 1 day from now
+      created_at: new Date(Date.now() - 86400000 * 2).toISOString(),
+    },
+    {
+      booking_id: AppStore.nextId('BKG'),
+      customer_id: session.id,
+      booking_type: 'INSTANT',
+      status: 'IN_PROGRESS',
+      service_address: '21/229, Indira Nagar, Lucknow',
+      service_name: 'Emergency Plumbing Fix',
+      price: '450',
+      provider_id: 'SP002',
+      scheduled_at: new Date().toISOString(), // Today
+      created_at: new Date(Date.now() - 3600000 * 2).toISOString(), // 2 hours ago
+    },
+    {
+      booking_id: AppStore.nextId('BKG'),
+      customer_id: session.id,
+      booking_type: 'SCHEDULED',
+      status: 'COMPLETED',
+      service_address: '21/229, Indira Nagar, Lucknow',
+      service_name: 'Smart Lock Installation',
+      price: '1100',
+      provider_id: 'SP003',
+      scheduled_at: new Date(Date.now() - 86400000 * 5).toISOString(), // 5 days ago
+      created_at: new Date(Date.now() - 86400000 * 7).toISOString(),
+    },
+    {
+      booking_id: AppStore.nextId('BKG'),
+      customer_id: session.id,
+      booking_type: 'SCHEDULED',
+      status: 'CANCELLED',
+      service_address: '21/229, Indira Nagar, Lucknow',
+      service_name: 'Garden Trimming',
+      price: '600',
+      provider_id: null,
+      scheduled_at: new Date(Date.now() - 86400000 * 2).toISOString(), // 2 days ago
+      created_at: new Date(Date.now() - 86400000 * 4).toISOString(),
+    }
+  ];
+  
+  mockBookings.forEach(b => CRUD.createRecord('bookings', b));
+  localStorage.setItem('tu_demo_seeded', 'true');
+  
+  // Reload page to reflect newly created AppStore rows correctly in rendering
+  window.location.reload();
+}
+
+function loadBookings() {
+  if (!currentSession) return;
+  const allBookings = AppStore.getTable('bookings') || [];
+  bookings = allBookings
+    .filter(b => b.customer_id === currentSession.id)
+    .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+    .map(b => {
+      const dateObj = new Date(b.scheduled_at);
+      const rawStatus = (b.status || 'PENDING').toUpperCase();
+      
+      const statusMap = {
+        'PENDING': { label: 'Pending', css: 'pending', badge: 'badge-pending' },
+        'ASSIGNED': { label: 'Assigned', css: 'assigned', badge: 'badge-assigned' },
+        'IN_PROGRESS': { label: 'In Progress', css: 'inprogress', badge: 'badge-inprogress' },
+        'COMPLETED': { label: 'Completed', css: 'completed', badge: 'badge-completed' },
+        'CANCELLED': { label: 'Cancelled', css: 'cancelled', badge: 'badge-cancelled' },
+      };
+      const sObj = statusMap[rawStatus] || statusMap['PENDING'];
+      
+      let actions = [];
+      if (rawStatus === 'PENDING') actions = ['reschedule', 'cancel'];
+      else if (rawStatus === 'ASSIGNED') actions = ['reschedule', 'track'];
+      else if (rawStatus === 'IN_PROGRESS') actions = ['track'];
+      else if (rawStatus === 'COMPLETED') actions = ['invoice', 'review', 'rebook'];
+      else if (rawStatus === 'CANCELLED') actions = ['rebook'];
+
+      const allProviders = AppStore.getTable('service_providers') || [];
+      
+      let providerName = 'Awaiting assignment';
+      if (b.provider_id) {
+        const found = allProviders.find(p => p.service_provider_id === b.provider_id);
+        providerName = found ? found.name : 'Tatku Provider';
+      } else if (['COMPLETED', 'IN_PROGRESS', 'ASSIGNED'].includes(rawStatus)) {
+        providerName = 'Tatku Professional';
+      }
+
+      const providerTimelineSub = rawStatus === 'CANCELLED' ? 'by customer' : (providerName !== 'Awaiting assignment' ? 'Provider Assigned' : 'Awaiting assignment');
+      const providerTimelineDone = rawStatus !== 'PENDING';
+      const isEnded = ['COMPLETED', 'CANCELLED'].includes(rawStatus);
+      
+      return {
+        id: b.booking_id,
+        status: sObj.css,
+        statusLabel: sObj.label,
+        name: b.service_name || 'Home Service',
+        category: 'Service',
+        provider: providerName,
+        liveStatus: rawStatus === 'IN_PROGRESS' ? 'Job in progress/tracked' : null,
+        rawDateISO: b.scheduled_at,
+        date: dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+        time: dateObj.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+        address: b.service_address || 'Address not provided',
+        price: '₹' + (b.price || '0').toLocaleString('en-IN'),
+        duration: '2 hours',
+        description: 'Service booked on ' + new Date(b.created_at).toLocaleDateString(),
+        iconBg: '#eff6ff', 
+        icon: `<svg viewBox="0 0 24 24" style="stroke:#3b82f6"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18"/></svg>`,
+        timeline: [
+          { label: 'Booking Placed', sub: new Date(b.created_at).toLocaleDateString(), done: true },
+          { label: rawStatus === 'CANCELLED' ? 'Cancelled' : 'Provider Assigned', sub: providerTimelineSub, done: providerTimelineDone },
+          { label: 'Service Completed', sub: rawStatus === 'COMPLETED' ? 'Delivered' : '—', done: rawStatus === 'COMPLETED' }
+        ],
+        actions: actions
+      };
+    });
+  renderFilters();
+  renderBookings();
+  updateCartBadge();
+}
+
+AppStore.ready.then(() => {
+  currentSession = Auth.requireSession(['customer']);
+  if (!currentSession) return;
+  seedMockBookingsIfNeeded(currentSession);
+  loadBookings();
+});

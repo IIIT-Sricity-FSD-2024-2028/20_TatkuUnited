@@ -17,7 +17,7 @@
 
   <!-- ── Navbar ── -->
   <nav class="navbar">
-    <a href="cart.html" class="brand">
+    <a href="../home.html" class="brand">
       <div class="brand-logo">TU</div>
       <span class="brand-name">Tatku United</span>
     </a>
@@ -26,14 +26,14 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
           <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
         </svg>
-        <a href="#">Home</a>
+        <a href="../home.html">Home</a>
       </li>
       <li>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
           <rect x="2" y="7" width="20" height="14" rx="2" />
           <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2" />
         </svg>
-        <a href="#">Services</a>
+        <a href="../../service_pages/service_discovery.html">Services</a>
       </li>
       <li>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
@@ -42,7 +42,7 @@
           <line x1="8" y1="2" x2="8" y2="6" />
           <line x1="3" y1="10" x2="21" y2="10" />
         </svg>
-        <a href="#">Bookings</a>
+        <a href="../bookings.html">Bookings</a>
       </li>
     </ul>
     <button class="user-btn" aria-label="Account">
@@ -234,7 +234,7 @@
     <div class="footer-links">
       <a href="../../legal/terms-of-service.html">Terms of Service</a>
       <a href="../../legal/privacy-policy.html">Privacy Policy</a>
-      <a href="#">Contact Support</a>
+      <a href="../home.html">Contact Support</a>
     </div>
   </footer>
 
@@ -249,13 +249,18 @@
       <h2 class="modal-title">Booking Confirmed!</h2>
       <p class="modal-sub">Your services have been booked successfully. You'll receive a confirmation SMS shortly.</p>
       <div class="modal-ref">Booking ID: <strong id="bookingId">TU-2026-XXXX</strong></div>
-      <a href="#" class="btn-modal">View My Bookings</a>
+      <a href="../bookings.html" class="btn-modal">View My Bookings</a>
     </div>
   </div>
 
   <div class="toast" id="toast"></div>
 
-  <script src="../../../js/customer/payment_pages/checkout.js"></script>
+    <script src="../../../js/data/store.js"></script>
+    <script src="../../../js/modules/auth.js"></script>
+    <script src="../../../js/modules/crud.js"></script>
+    <script src="../../../js/utils/validation.js"></script>
+    <script src="../../../js/utils/helpers.js"></script>
+    <script src="../../../js/customer/payment_pages/checkout.js"></script>
 </body>
 
 </html>
