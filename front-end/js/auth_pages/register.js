@@ -108,8 +108,8 @@
       selectedRole = card.getAttribute('data-role');
       roleValue.value = selectedRole;
 
-      // Show provider type only for service providers
-      typeGroup.style.display = selectedRole === 'service_provider' ? 'block' : 'none';
+      // Show provider type only for service providers (element is optional)
+      if (typeGroup) typeGroup.style.display = selectedRole === 'service_provider' ? 'block' : 'none';
     });
   });
 
@@ -244,20 +244,108 @@
 
     if (!valid) return;
 
-    /* Loading state */
+    /* ── Show loading state ── */
     submitBtn.disabled = true;
     submitText.style.display = 'none';
     spinner.style.display = 'inline-block';
 
-    /* Simulate API call */
-    setTimeout(function () {
+    /* ── Wait for AppStore, then create the user ── */
+    if (!window.AppStore || !AppStore.ready || typeof AppStore.ready.then !== 'function') {
+      showAlert('Unable to access the data store. Please refresh and try again.', 'error');
       submitBtn.disabled = false;
       submitText.style.display = 'inline';
       spinner.style.display = 'none';
+      return;
+    }
 
-      /* On success redirect to success page */
+    AppStore.ready
+      .then(function () {
+        var fullname    = fullnameInput.value.trim();
+        var email       = emailInput.value.trim().toLowerCase();
+        var countryCode = document.getElementById('country-code').value;
+        var phone       = countryCode + phoneInput.value.trim();
+        var now         = new Date().toISOString();
+
+      /* ── Duplicate e-mail check across every user table ── */
+      var userTables  = ['collective_managers', 'unit_managers', 'service_providers', 'customers'];
+      var emailTaken  = email === 'admin@fsd.com' ||
+        userTables.some(function (tbl) {
+          return (AppStore.getTable(tbl) || []).some(function (row) {
+            return (row.email || '').toLowerCase() === email;
+          });
+        });
+
+      if (emailTaken) {
+        submitBtn.disabled = false;
+        submitText.style.display = 'inline';
+        spinner.style.display = 'none';
+        showAlert('An account with this email already exists. Please log in or use a different email.', 'error');
+        goToStep(2);
+        return;
+      }
+
+      /* ── Build and insert the new record ── */
+      if (selectedRole === 'customer') {
+        var newId  = AppStore.nextId('CUS');
+        var record = {
+          customer_id:    newId,
+          full_name:      fullname,
+          name:           fullname,   /* kept for auth-registry compat */
+          password:       password,
+          phone:          phone,
+          email:          email,
+          dob:            null,
+          address:        '',
+          pfp_url:        null,
+          latitude:       null,
+          longitude:      null,
+          rating:         0,
+          notes:          '',
+          is_active:      true,
+          home_sector_id: null,
+          created_at:     now,
+          updated_at:     now
+        };
+        AppStore.getTable('customers').push(record);
+
+      } else {
+        /* service_provider — created inactive until assigned to a unit by admin */
+        var newId  = AppStore.nextId('SP');
+        var record = {
+          service_provider_id: newId,
+          name:                fullname,
+          password:            password,
+          phone:               phone,
+          email:               email,
+          dob:                 null,
+          address:             '',
+          pfp_url:             null,
+          gender:              null,
+          is_active:           false,
+          created_at:          now,
+          updated_at:          now,
+          unit_id:             null,
+          home_sector_id:      null
+        };
+        AppStore.getTable('service_providers').push(record);
+      }
+
+      /* ── Persist to localStorage ── */
+      AppStore.save();
+
+      /* ── Tag role so the success page can personalise the message ── */
+      sessionStorage.setItem('registeredRole', selectedRole);
+
+      /* ── Redirect ── */
       window.location.href = 'register-success.html';
-    }, 1800);
+    })
+    .catch(function (err) {
+      console.error('[Register] AppStore ready failed:', err);
+      submitBtn.disabled = false;
+      submitText.style.display = 'inline';
+      spinner.style.display = 'none';
+      showAlert('Could not complete registration. Please try again later.', 'error');
+    });
   });
 
   /* ── Real-time email validation ── */

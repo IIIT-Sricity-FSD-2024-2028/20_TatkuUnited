@@ -8,7 +8,7 @@ window.Auth = (() => {
 
   /* ─── Role → Dashboard URL map ─── */
   const ROLE_DASHBOARDS = {
-    superuser: "/front-end/html/admin/admin_dashboard.html",
+    superuser: "/front-end/html/super_user/super_user_dashboard.html",
     collective_manager: "/front-end/html/collective_manager/dashboard.html",
     unit_manager: "/front-end/html/unit_manager/dashboard.html",
     provider: "/front-end/html/provider/dashboard.html",
@@ -18,9 +18,10 @@ window.Auth = (() => {
   /* ─── Hard-coded superuser ─── */
   const SUPERUSER = {
     id: "SUPER001",
-    name: "System Admin",
-    email: "admin@fsd.com",
-    password: "Admin@1234",
+    name: "System super user",
+    phone: "+919999999999",
+    email: "super_user@fsd.com",
+    password: "super user@1234",
     role: "superuser",
     scopeId: null,
     unitId: null,
@@ -74,7 +75,7 @@ window.Auth = (() => {
     const providers = AppStore.getTable("service_providers") || [];
     providers.forEach(sp => {
       registry.push({
-        id: sp.sp_id,
+        id: sp.service_provider_id,
         name: sp.name,
         email: sp.email,
         password: sp.password,
@@ -92,7 +93,7 @@ window.Auth = (() => {
     customers.forEach(c => {
       registry.push({
         id: c.customer_id,
-        name: c.name,
+        name: c.full_name || c.name,
         email: c.email,
         password: c.password,
         role: "customer",
@@ -140,8 +141,7 @@ window.Auth = (() => {
       loginAt: Date.now(),
     };
 
-    localStorage.setItem("fsd_session", JSON.stringify(session));
-    sessionStorage.setItem("fsd_session_alive", "1");
+    sessionStorage.setItem("fsd_session", JSON.stringify(session));
 
     return { success: true, session };
   }
@@ -150,9 +150,7 @@ window.Auth = (() => {
      Auth.logout()
      ========================================================================= */
   function logout() {
-    localStorage.removeItem("fsd_session");
-    localStorage.removeItem("fsd_store");
-    sessionStorage.removeItem("fsd_session_alive");
+    sessionStorage.removeItem("fsd_session");
     window.location.replace("/front-end/html/auth_pages/logout.html");
   }
 
@@ -160,20 +158,14 @@ window.Auth = (() => {
      Auth.requireSession(allowedRoles)
      ========================================================================= */
   function requireSession(allowedRoles) {
-    /* 1. Parse session from localStorage */
+    /* 1. Parse session from sessionStorage */
     let session = null;
     try {
-      const raw = localStorage.getItem("fsd_session");
+      const raw = sessionStorage.getItem("fsd_session");
       if (!raw) throw new Error("no session");
       session = JSON.parse(raw);
       if (!session || !session.role) throw new Error("invalid session");
     } catch (_) {
-      window.location.replace("/front-end/html/auth_pages/login.html");
-      return null;
-    }
-
-    /* 2. Check tab-scoped alive flag */
-    if (!sessionStorage.getItem("fsd_session_alive")) {
       window.location.replace("/front-end/html/auth_pages/login.html");
       return null;
     }
@@ -196,7 +188,7 @@ window.Auth = (() => {
      ========================================================================= */
   function getSession() {
     try {
-      const raw = localStorage.getItem("fsd_session");
+      const raw = sessionStorage.getItem("fsd_session");
       if (!raw) return null;
       return JSON.parse(raw) || null;
     } catch (_) {
@@ -208,7 +200,7 @@ window.Auth = (() => {
      Auth.isLoggedIn()
      ========================================================================= */
   function isLoggedIn() {
-    return !!getSession() && !!sessionStorage.getItem("fsd_session_alive");
+    return !!getSession();
   }
 
   /* =========================================================================
@@ -250,6 +242,13 @@ window.Auth = (() => {
   /* ─── Initialise registry once AppStore is ready ─── */
   AppStore.ready.then(() => {
     _buildRegistry();
+  });
+
+  /* ─── Bfcache Back-Button Reload ─── */
+  window.addEventListener("pageshow", (e) => {
+    if (e.persisted && !getSession()) {
+      window.location.reload();
+    }
   });
 
   /* ─── Public API ─── */

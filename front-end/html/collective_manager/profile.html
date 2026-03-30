@@ -1,9 +1,9 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Profile â€“ Collective Manager | Tatku United</title>
+    <title>Profile – Collective Manager | Tatku United</title>
     <link rel="stylesheet" href="../../css/collective_manager/profile.css" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link
@@ -49,13 +49,7 @@
           </svg>
           Manage Units
         </a>
-        <a href="manage_skills.html" class="nav-item">
-          <svg viewBox="0 0 24 24">
-            <path d="M12 20h9" />
-            <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
-          </svg>
-          Manage Skills
-        </a>
+
         <a href="notifications.html" class="nav-item">
           <svg viewBox="0 0 24 24">
             <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
@@ -102,7 +96,7 @@
             </svg>
             <span class="notif-dot"></span>
           </button>
-          <a href="profile.html" class="avatar active-avatar" title="My Profile">CM</a>
+          <a href="profile.html" class="avatar active-avatar" title="My Profile" id="topbar-avatar">CM</a>
         </div>
       </header>
 
@@ -121,20 +115,20 @@
             <input type="file" id="avatar-input" accept="image/*" style="display:none" onchange="updateAvatar(this)" />
           </div>
           <div class="profile-hero-info">
-            <h1 class="profile-name" id="hero-name">Priya Nair</h1>
+            <h1 class="profile-name" id="hero-name">—</h1>
             <p class="profile-role">Collective Manager</p>
-            <p class="profile-email" id="hero-email">priya.nair@tatku.com</p>
+            <p class="profile-email" id="hero-email">—</p>
             <div class="profile-stats">
               <div class="profile-stat">
-                <span class="stat-num">6</span>
+                <span class="stat-num" id="stat-units">—</span>
                 <span class="stat-lbl">Units Managed</span>
               </div>
               <div class="profile-stat">
-                <span class="stat-num">248</span>
+                <span class="stat-num" id="stat-providers">—</span>
                 <span class="stat-lbl">Total Providers</span>
               </div>
               <div class="profile-stat">
-                <span class="stat-num">â‚¹4.5L</span>
+                <span class="stat-num">—</span>
                 <span class="stat-lbl">Monthly Revenue</span>
               </div>
             </div>
@@ -156,22 +150,22 @@
               <div class="card-grid">
                 <div class="form-field">
                   <label>Full Name</label>
-                  <input type="text" id="full-name" value="Priya Nair" oninput="syncName()" />
+                  <input type="text" id="full-name" value="" oninput="syncName()" />
                 </div>
                 <div class="form-field">
                   <label>Email Address</label>
-                  <input type="email" id="email" value="priya.nair@tatku.com" oninput="syncEmail()" />
+                  <input type="email" id="email" value="" oninput="syncEmail()" />
                 </div>
                 <div class="form-field">
                   <label>Phone Number</label>
                   <div class="phone-row">
                     <span class="phone-code">+91</span>
-                    <input type="tel" id="phone" value="9812345678" />
+                    <input type="tel" id="phone" value="" />
                   </div>
                 </div>
                 <div class="form-field">
                   <label>Date of Birth</label>
-                  <input type="date" id="dob" value="1988-09-14" />
+                  <input type="date" id="dob" value="" />
                 </div>
               </div>
               <div class="card-footer">
@@ -190,11 +184,11 @@
               <div class="card-grid">
                 <div class="form-field">
                   <label>Collective Name</label>
-                  <input type="text" id="collective-name" value="South Zone Collective" />
+                  <input type="text" id="collective-name" value="" />
                 </div>
                 <div class="form-field">
                   <label>Collective ID</label>
-                  <input type="text" id="collective-id" value="COL-SZ-001" readonly class="readonly-field" />
+                  <input type="text" id="collective-id" value="" readonly class="readonly-field" />
                 </div>
                 <div class="form-field">
                   <label>Primary Service Domain</label>
@@ -206,7 +200,7 @@
                 </div>
                 <div class="form-field">
                   <label>Region</label>
-                  <input type="text" id="region" value="South Bangalore" />
+                  <input type="text" id="region" value="" />
                 </div>
               </div>
               <div class="card-footer">
@@ -229,64 +223,13 @@
                 </div>
                 <button class="btn-link" onclick="openPwdModal()">Change Password</button>
               </div>
-              <div class="divider"></div>
-              <div class="security-row">
-                <div>
-                  <div class="sec-label">Two-Factor Authentication</div>
-                  <div class="sec-sub">Extra layer of protection for your account</div>
-                </div>
-                <label class="toggle">
-                  <input type="checkbox" checked onchange="showToast('Two-factor authentication updated')" />
-                  <span class="toggle-track"></span>
-                </label>
-              </div>
+               
             </div>
           </div>
 
           <!-- RIGHT -->
           <div class="profile-right">
-            <!-- Preferences -->
-            <div class="card">
-              <div class="card-head">
-                <svg viewBox="0 0 24 24">
-                  <circle cx="12" cy="12" r="3" />
-                  <path d="M19.07 4.93l-1.41 1.41M4.93 4.93l1.41 1.41M12 2v2M12 20v2M20 12h2M2 12h2M19.07 19.07l-1.41-1.41M4.93 19.07l1.41-1.41" />
-                </svg>
-                Preferences
-              </div>
-              <div class="pref-list">
-                <div class="pref-row">
-                  <div>
-                    <div class="pref-label">Email Notifications</div>
-                    <div class="pref-sub">Collective performance & unit reports</div>
-                  </div>
-                  <label class="toggle">
-                    <input type="checkbox" checked onchange="showToast('Email notifications updated')" />
-                    <span class="toggle-track"></span>
-                  </label>
-                </div>
-                <div class="pref-row">
-                  <div>
-                    <div class="pref-label">Critical Alerts (SMS)</div>
-                    <div class="pref-sub">Urgent unit or provider escalations</div>
-                  </div>
-                  <label class="toggle">
-                    <input type="checkbox" checked onchange="showToast('SMS alerts updated')" />
-                    <span class="toggle-track"></span>
-                  </label>
-                </div>
-                <div class="pref-row">
-                  <div>
-                    <div class="pref-label">Monthly Revenue Reports</div>
-                    <div class="pref-sub">Auto-emailed on the 1st of each month</div>
-                  </div>
-                  <label class="toggle">
-                    <input type="checkbox" checked onchange="showToast('Monthly reports updated')" />
-                    <span class="toggle-track"></span>
-                  </label>
-                </div>
-              </div>
-            </div>
+           
 
             <!-- Units Overview -->
             <div class="card">
@@ -300,17 +243,7 @@
               <div class="unit-list" id="unit-list"></div>
             </div>
 
-            <!-- Recent Activity -->
-            <div class="card">
-              <div class="card-head">
-                <svg viewBox="0 0 24 24">
-                  <circle cx="12" cy="12" r="10" />
-                  <polyline points="12 6 12 12 16 14" />
-                </svg>
-                Recent Activity
-              </div>
-              <div class="activity-list" id="activity-list"></div>
-            </div>
+            
 
             <!-- Danger Zone -->
             <div class="card danger-card">
@@ -367,8 +300,11 @@
     <!-- Toast -->
     <div class="toast" id="toast"></div>
 
+    <script src="../../js/data/store.js"></script>
+    <script src="../../js/modules/auth.js"></script>
     <script src="../../js/collective_manager/profile.js"></script>
   </body>
 </html>
+
 
 

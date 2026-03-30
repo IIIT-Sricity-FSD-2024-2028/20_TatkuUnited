@@ -18,21 +18,21 @@ var PROFILE_KEY = 'um_profile_v2';
 
 var DEFAULTS = {
   /* Personal */
-  fullName:     'Arun Kumar',
-  email:        'arun.kumar@tatku.com',
-  phone:        '9876543210',
-  dob:          '1990-03-22',
+  fullName: 'Arun Kumar',
+  email: 'arun.kumar@tatku.com',
+  phone: '9876543210',
+  dob: '1990-03-22',
   /* Unit */
-  unitName:     'Plumbing Unit Alpha',
-  serviceCat:   'Plumbing',
-  zone:         'North Bangalore',
+  unitName: 'Plumbing Unit Alpha',
+  serviceCat: 'Plumbing',
+  zone: 'North Bangalore',
   /* Toggles */
-  emailNotif:   true,
-  smsAlerts:    true,
-  weeklySummary:false,
-  twoFA:        true,
+  emailNotif: true,
+  smsAlerts: true,
+  weeklySummary: false,
+  twoFA: true,
   /* Avatar */
-  avatar:       null
+  avatar: null
 };
 
 function loadProfile() {
@@ -51,7 +51,7 @@ function loadProfile() {
         return out;
       }
     }
-  } catch (e) {}
+  } catch (e) { }
   return cloneDefaults();
 }
 
@@ -65,7 +65,7 @@ function cloneDefaults() {
 function persistProfile() {
   try {
     localStorage.setItem(PROFILE_KEY, JSON.stringify(profile));
-  } catch (e) {}
+  } catch (e) { }
 }
 
 /* Live in-memory profile — loaded once, mutated on save, written to LS */
@@ -78,11 +78,11 @@ var profile = loadProfile();
 function populateFields() {
   /* Text inputs */
   setInput('full-name', profile.fullName);
-  setInput('email',     profile.email);
-  setInput('phone',     profile.phone);
-  setInput('dob',       profile.dob);
+  setInput('email', profile.email);
+  setInput('phone', profile.phone);
+  setInput('dob', profile.dob);
   setInput('unit-name', profile.unitName);
-  setInput('zone',      profile.zone);
+  setInput('zone', profile.zone);
 
   /* Service category <select> */
   var cat = document.getElementById('service-cat');
@@ -96,13 +96,13 @@ function populateFields() {
   }
 
   /* Toggles */
-  setToggle('toggle-email',  profile.emailNotif);
-  setToggle('toggle-sms',    profile.smsAlerts);
+  setToggle('toggle-email', profile.emailNotif);
+  setToggle('toggle-sms', profile.smsAlerts);
   setToggle('toggle-weekly', profile.weeklySummary);
-  setToggle('toggle-2fa',    profile.twoFA);
+  setToggle('toggle-2fa', profile.twoFA);
 
   /* Hero section */
-  document.getElementById('hero-name').textContent  = profile.fullName;
+  document.getElementById('hero-name').textContent = profile.fullName;
   document.getElementById('hero-email').textContent = profile.email;
 
   /* Avatar */
@@ -141,10 +141,10 @@ window.syncEmail = function () {
 window.saveSection = function (section) {
 
   if (section === 'personal') {
-    var name  = (document.getElementById('full-name').value || '').trim();
+    var name = (document.getElementById('full-name').value || '').trim();
     var email = (document.getElementById('email').value || '').trim();
     var phone = (document.getElementById('phone').value || '').trim();
-    var dob   = (document.getElementById('dob').value || '').trim();
+    var dob = (document.getElementById('dob').value || '').trim();
 
     /* Validation */
     if (!name) { showToast('Name cannot be empty.', 'error'); return; }
@@ -157,13 +157,13 @@ window.saveSection = function (section) {
 
     /* Update profile + persist */
     profile.fullName = name;
-    profile.email    = email;
-    profile.phone    = phone;
-    profile.dob      = dob;
+    profile.email = email;
+    profile.phone = phone;
+    profile.dob = dob;
     persistProfile();
 
     /* Update hero */
-    document.getElementById('hero-name').textContent  = name;
+    document.getElementById('hero-name').textContent = name;
     document.getElementById('hero-email').textContent = email;
     renderAvatar(profile.avatar, name);
 
@@ -172,15 +172,15 @@ window.saveSection = function (section) {
 
   if (section === 'unit') {
     var unitName = (document.getElementById('unit-name').value || '').trim();
-    var sel      = document.getElementById('service-cat');
-    var svcCat   = sel ? sel.options[sel.selectedIndex].text : profile.serviceCat;
-    var zone     = (document.getElementById('zone').value || '').trim();
+    var sel = document.getElementById('service-cat');
+    var svcCat = sel ? sel.options[sel.selectedIndex].text : profile.serviceCat;
+    var zone = (document.getElementById('zone').value || '').trim();
 
     if (!unitName) { showToast('Unit name cannot be empty.', 'error'); return; }
 
-    profile.unitName   = unitName;
+    profile.unitName = unitName;
     profile.serviceCat = svcCat;
-    profile.zone       = zone;
+    profile.zone = zone;
     persistProfile();
 
     showToast('Unit details saved \u2713', 'success');
@@ -215,7 +215,7 @@ function renderAvatar(src, name) {
   if (src) {
     av.innerHTML = '<img src="' + src + '" alt="avatar" style="width:100%;height:100%;object-fit:cover;border-radius:50%">';
   } else {
-    av.innerHTML  = '';
+    av.innerHTML = '';
     av.textContent = initials(name);
   }
 }
@@ -286,9 +286,9 @@ function wirePasswordBtn() {
   if (!btn) return;
   btn.removeAttribute('onclick');
   btn.addEventListener('click', function () {
-    var inputs  = modal.querySelectorAll('input[type="password"]');
+    var inputs = modal.querySelectorAll('input[type="password"]');
     var current = inputs[0] ? inputs[0].value : '';
-    var newPwd  = inputs[1] ? inputs[1].value : '';
+    var newPwd = inputs[1] ? inputs[1].value : '';
     var confirm = inputs[2] ? inputs[2].value : '';
 
     if (!current) { showPwdError('Enter your current password.'); return; }
@@ -311,11 +311,11 @@ function wirePasswordBtn() {
    ───────────────────────────────────────────── */
 
 var ACTIVITIES = [
-  { title: 'Provider reassigned',    desc: 'ID #1042 moved to Emergency Unit for the day',           time: '2 hours ago', color: 'amber' },
-  { title: 'New provider onboarded', desc: 'Ramesh Kumar joined Plumbing Unit Alpha',                 time: '1 day ago',   color: 'green' },
-  { title: 'Rating flagged',         desc: 'Provider #2281 received a 1-star review \u2014 under review', time: '2 days ago',  color: 'amber' },
-  { title: 'Revenue milestone',      desc: 'Unit exceeded \u20b950,000 monthly target',               time: '3 days ago',  color: 'teal'  },
-  { title: 'Profile updated',        desc: 'Operating zone updated to North Bangalore',               time: '5 days ago',  color: ''      }
+  { title: 'Provider reassigned', desc: 'ID #1042 moved to Emergency Unit for the day', time: '2 hours ago', color: 'amber' },
+  { title: 'New provider onboarded', desc: 'Ramesh Kumar joined Plumbing Unit Alpha', time: '1 day ago', color: 'green' },
+  { title: 'Rating flagged', desc: 'Provider #2281 received a 1-star review \u2014 under review', time: '2 days ago', color: 'amber' },
+  { title: 'Revenue milestone', desc: 'Unit exceeded \u20b950,000 monthly target', time: '3 days ago', color: 'teal' },
+  { title: 'Profile updated', desc: 'Operating zone updated to North Bangalore', time: '5 days ago', color: '' }
 ];
 
 function renderActivities() {
@@ -326,12 +326,12 @@ function renderActivities() {
     var a = ACTIVITIES[i];
     html +=
       '<div class="act-item">' +
-        '<div class="act-dot ' + a.color + '"></div>' +
-        '<div class="act-body">' +
-          '<div class="act-title">' + a.title + '</div>' +
-          '<div class="act-desc">'  + a.desc  + '</div>' +
-          '<div class="act-time">'  + a.time  + '</div>' +
-        '</div>' +
+      '<div class="act-dot ' + a.color + '"></div>' +
+      '<div class="act-body">' +
+      '<div class="act-title">' + a.title + '</div>' +
+      '<div class="act-desc">' + a.desc + '</div>' +
+      '<div class="act-time">' + a.time + '</div>' +
+      '</div>' +
       '</div>';
   }
   list.innerHTML = html;
@@ -354,13 +354,13 @@ window.confirmDelete = function () {
   box.innerHTML =
     '<h3 style="margin:0 0 10px;color:#f87171;font-size:1rem">\u26A0\uFE0F Deactivate Account</h3>' +
     '<p style="color:#94a3b8;font-size:.88rem;margin:0 0 20px;line-height:1.6">' +
-      'This will permanently remove all data and unit assignments. ' +
-      '<strong style="color:#f1f5f9">This cannot be undone.</strong></p>' +
+    'This will permanently remove all data and unit assignments. ' +
+    '<strong style="color:#f1f5f9">This cannot be undone.</strong></p>' +
     '<div style="display:flex;gap:10px;justify-content:flex-end">' +
-      '<button id="_delCancel" style="padding:8px 18px;border-radius:8px;border:1px solid #334155;' +
-        'background:transparent;color:#94a3b8;cursor:pointer;font-family:inherit">Cancel</button>' +
-      '<button id="_delConfirm" style="padding:8px 18px;border-radius:8px;border:none;' +
-        'background:#dc2626;color:#fff;cursor:pointer;font-weight:500;font-family:inherit">Deactivate</button>' +
+    '<button id="_delCancel" style="padding:8px 18px;border-radius:8px;border:1px solid #334155;' +
+    'background:transparent;color:#94a3b8;cursor:pointer;font-family:inherit">Cancel</button>' +
+    '<button id="_delConfirm" style="padding:8px 18px;border-radius:8px;border:none;' +
+    'background:#dc2626;color:#fff;cursor:pointer;font-weight:500;font-family:inherit">Deactivate</button>' +
     '</div>';
 
   overlay.appendChild(box);

@@ -1,4 +1,14 @@
 {
+    "rating_computation_note": {
+        "source": "job_assignments.assignment_score",
+        "inclusion_rule": "Only non-null assignment_score values are counted",
+        "service_average_rule": "Average of assignment scores for bookings that include the service",
+        "provider_average_rule": "Average of assignment scores for assignments handled by the provider",
+        "unit_average_rule": "Average of assignment scores for all providers in that unit",
+        "category_average_rule": "Average of assignment scores for services in the category",
+        "fallback_average_rule": "If average_rating is missing, fill it with the mean of all available non-null average_rating values (currently 4.73)",
+        "updated_on": "2026-03-29"
+    },
     "collectives": [
         {
             "collective_id": "COL001",
@@ -54,7 +64,8 @@
         {
             "unit_id": "UNT001",
             "unit_name": "Electronics Repair",
-            "rating": 4.5,
+            "rating": 5,
+            "rating_count": 1,
             "is_active": true,
             "created_at": "2023-02-01T00:00:00Z",
             "collective_id": "COL001"
@@ -62,7 +73,8 @@
         {
             "unit_id": "UNT002",
             "unit_name": "Plumbing Services",
-            "rating": 4.2,
+            "rating": null,
+            "rating_count": 0,
             "is_active": true,
             "created_at": "2023-04-10T00:00:00Z",
             "collective_id": "COL001"
@@ -70,7 +82,8 @@
         {
             "unit_id": "UNT003",
             "unit_name": "Domestic Cleaning",
-            "rating": 3.9,
+            "rating": null,
+            "rating_count": 0,
             "is_active": false,
             "created_at": "2023-06-05T00:00:00Z",
             "collective_id": "COL002"
@@ -78,7 +91,8 @@
         {
             "unit_id": "UNT004",
             "unit_name": "Carpentry & Furniture",
-            "rating": 4.1,
+            "rating": null,
+            "rating_count": 0,
             "is_active": true,
             "created_at": "2023-08-15T00:00:00Z",
             "collective_id": "COL002"
@@ -86,7 +100,8 @@
         {
             "unit_id": "UNT005",
             "unit_name": "Painting & Waterproofing",
-            "rating": 4.3,
+            "rating": null,
+            "rating_count": 0,
             "is_active": true,
             "created_at": "2023-09-01T00:00:00Z",
             "collective_id": "COL003"
@@ -94,7 +109,8 @@
         {
             "unit_id": "UNT006",
             "unit_name": "Pest Control",
-            "rating": 4.0,
+            "rating": null,
+            "rating_count": 0,
             "is_active": true,
             "created_at": "2023-10-20T00:00:00Z",
             "collective_id": "COL003"
@@ -102,7 +118,8 @@
         {
             "unit_id": "UNT007",
             "unit_name": "AC & Appliance Repair",
-            "rating": 4.6,
+            "rating": 4,
+            "rating_count": 1,
             "is_active": true,
             "created_at": "2023-11-05T00:00:00Z",
             "collective_id": "COL004"
@@ -110,7 +127,8 @@
         {
             "unit_id": "UNT008",
             "unit_name": "Electrical Services",
-            "rating": 4.4,
+            "rating": 5,
+            "rating_count": 1,
             "is_active": true,
             "created_at": "2024-01-10T00:00:00Z",
             "collective_id": "COL004"
@@ -118,7 +136,8 @@
         {
             "unit_id": "UNT009",
             "unit_name": "Deep Cleaning Specialists",
-            "rating": 4.7,
+            "rating": null,
+            "rating_count": 0,
             "is_active": true,
             "created_at": "2024-02-01T00:00:00Z",
             "collective_id": "COL005"
@@ -126,7 +145,8 @@
         {
             "unit_id": "UNT010",
             "unit_name": "Gardening & Landscaping",
-            "rating": 3.8,
+            "rating": null,
+            "rating_count": 0,
             "is_active": true,
             "created_at": "2024-03-15T00:00:00Z",
             "collective_id": "COL005"
@@ -152,8 +172,8 @@
             "resolution": 10,
             "state": "Tamil Nadu",
             "region": "North",
-            "centroid_lat": 13.1500,
-            "centroid_lng": 80.2400,
+            "centroid_lat": 13.15,
+            "centroid_lng": 80.24,
             "density_tier": "MEDIUM",
             "is_active": true
         },
@@ -165,7 +185,7 @@
             "state": "Tamil Nadu",
             "region": "South",
             "centroid_lat": 12.9716,
-            "centroid_lng": 80.1600,
+            "centroid_lng": 80.16,
             "density_tier": "LOW",
             "is_active": false
         },
@@ -176,8 +196,8 @@
             "resolution": 10,
             "state": "Tamil Nadu",
             "region": "West",
-            "centroid_lat": 13.0500,
-            "centroid_lng": 80.1900,
+            "centroid_lat": 13.05,
+            "centroid_lng": 80.19,
             "density_tier": "MEDIUM",
             "is_active": true
         },
@@ -188,8 +208,8 @@
             "resolution": 10,
             "state": "Tamil Nadu",
             "region": "East",
-            "centroid_lat": 13.1100,
-            "centroid_lng": 80.3000,
+            "centroid_lat": 13.11,
+            "centroid_lng": 80.3,
             "density_tier": "HIGH",
             "is_active": true
         },
@@ -200,8 +220,8 @@
             "resolution": 10,
             "state": "Tamil Nadu",
             "region": "South West",
-            "centroid_lat": 12.9900,
-            "centroid_lng": 80.2100,
+            "centroid_lat": 12.99,
+            "centroid_lng": 80.21,
             "density_tier": "HIGH",
             "is_active": true
         }
@@ -211,7 +231,7 @@
             "cm_id": "CM001",
             "name": "Suresh Patel",
             "password": "Password@123",
-            "phone": "9988776655",
+            "phone": "+919988776655",
             "email": "suresh@collective.com",
             "pfp_url": "https://i.pravatar.cc/150?img=11",
             "is_active": true,
@@ -223,7 +243,7 @@
             "cm_id": "CM002",
             "name": "Meena Iyer",
             "password": "Password@123",
-            "phone": "9977665544",
+            "phone": "+919977665544",
             "email": "meena@collective.com",
             "pfp_url": "https://i.pravatar.cc/150?img=23",
             "is_active": true,
@@ -235,7 +255,7 @@
             "cm_id": "CM003",
             "name": "Aryan Kapoor",
             "password": "Password@123",
-            "phone": "9966554433",
+            "phone": "+919966554433",
             "email": "aryan@collective.com",
             "pfp_url": "https://i.pravatar.cc/150?img=33",
             "is_active": false,
@@ -247,7 +267,7 @@
             "cm_id": "CM004",
             "name": "Lakshmi Rajan",
             "password": "Password@123",
-            "phone": "9955443322",
+            "phone": "+919955443322",
             "email": "lakshmi@collective.com",
             "pfp_url": "https://i.pravatar.cc/150?img=44",
             "is_active": true,
@@ -259,7 +279,7 @@
             "cm_id": "CM005",
             "name": "Vijay Menon",
             "password": "Password@123",
-            "phone": "9944332211",
+            "phone": "+919944332211",
             "email": "vijay@collective.com",
             "pfp_url": "https://i.pravatar.cc/150?img=55",
             "is_active": true,
@@ -273,7 +293,7 @@
             "um_id": "UM001",
             "name": "Karan Mehta",
             "password": "Password@123",
-            "phone": "9955443322",
+            "phone": "+919955443322",
             "email": "karan.m@unit.com",
             "pfp_url": "https://i.pravatar.cc/150?img=12",
             "is_active": true,
@@ -285,7 +305,7 @@
             "um_id": "UM002",
             "name": "Deepa Nair",
             "password": "Password@123",
-            "phone": "9944332211",
+            "phone": "+919944332211",
             "email": "deepa.n@unit.com",
             "pfp_url": "https://i.pravatar.cc/150?img=25",
             "is_active": true,
@@ -297,7 +317,7 @@
             "um_id": "UM003",
             "name": "Rahul Sharma",
             "password": "Password@123",
-            "phone": "9933221100",
+            "phone": "+919933221100",
             "email": "rahul.s@unit.com",
             "pfp_url": "https://i.pravatar.cc/150?img=36",
             "is_active": true,
@@ -309,7 +329,7 @@
             "um_id": "UM004",
             "name": "Anita Desai",
             "password": "Password@123",
-            "phone": "9922110099",
+            "phone": "+919922110099",
             "email": "anita.d@unit.com",
             "pfp_url": "https://i.pravatar.cc/150?img=47",
             "is_active": true,
@@ -321,7 +341,7 @@
             "um_id": "UM005",
             "name": "Sanjay Pillai",
             "password": "Password@123",
-            "phone": "9911009988",
+            "phone": "+919911009988",
             "email": "sanjay.p@unit.com",
             "pfp_url": "https://i.pravatar.cc/150?img=57",
             "is_active": true,
@@ -333,13 +353,37 @@
             "um_id": "UM006",
             "name": "Preethi Subramanian",
             "password": "Password@123",
-            "phone": "9900998877",
+            "phone": "+919900998877",
             "email": "preethi.s@unit.com",
             "pfp_url": "https://i.pravatar.cc/150?img=60",
             "is_active": false,
             "created_at": "2024-02-02T00:00:00Z",
             "updated_at": "2024-04-01T00:00:00Z",
             "unit_id": "UNT009"
+        },
+        {
+            "um_id": "UM007",
+            "name": "Rajesh Kumar",
+            "password": "Password@123",
+            "phone": "+919899887766",
+            "email": "rajesh.k@unit.com",
+            "pfp_url": "https://i.pravatar.cc/150?img=68",
+            "is_active": true,
+            "created_at": "2024-03-10T00:00:00Z",
+            "updated_at": "2024-03-10T00:00:00Z",
+            "unit_id": null
+        },
+        {
+            "um_id": "UM008",
+            "name": "Priya Venkatesan",
+            "password": "Password@123",
+            "phone": "+919888776655",
+            "email": "priya.v@unit.com",
+            "pfp_url": "https://i.pravatar.cc/150?img=72",
+            "is_active": true,
+            "created_at": "2024-03-15T00:00:00Z",
+            "updated_at": "2024-03-15T00:00:00Z",
+            "unit_id": null
         }
     ],
     "service_providers": [
@@ -347,15 +391,15 @@
             "service_provider_id": "SP001",
             "name": "Ravi Kumar",
             "password": "Password@123",
-            "phone": "9876543210",
+            "phone": "+919876543210",
             "email": "ravi.kumar@mail.com",
             "dob": "1990-04-12",
             "address": "12 Anna Nagar, Chennai",
             "pfp_url": "https://i.pravatar.cc/150?img=13",
             "gender": "Male",
+            "rating": 5,
+            "rating_count": 1,
             "is_active": true,
-            "rating": 4.5,
-            "performance_score": 92,
             "created_at": "2023-02-01T08:00:00Z",
             "updated_at": "2024-06-15T10:30:00Z",
             "unit_id": "UNT001",
@@ -365,15 +409,15 @@
             "service_provider_id": "SP002",
             "name": "Priya Sharma",
             "password": "Password@123",
-            "phone": "9871234560",
+            "phone": "+919871234560",
             "email": "priya.sharma@mail.com",
             "dob": "1995-09-23",
             "address": "45 T. Nagar, Chennai",
             "pfp_url": "https://i.pravatar.cc/150?img=26",
             "gender": "Female",
+            "rating": null,
+            "rating_count": 0,
             "is_active": true,
-            "rating": 4.2,
-            "performance_score": 85,
             "created_at": "2023-04-10T09:15:00Z",
             "updated_at": "2024-05-20T14:00:00Z",
             "unit_id": "UNT002",
@@ -383,15 +427,15 @@
             "service_provider_id": "SP003",
             "name": "Arjun Das",
             "password": "Password@123",
-            "phone": "9865432100",
+            "phone": "+919865432100",
             "email": "arjun.das@mail.com",
             "dob": "1988-01-07",
             "address": "78 Velachery, Chennai",
             "pfp_url": "https://i.pravatar.cc/150?img=37",
             "gender": "Male",
+            "rating": null,
+            "rating_count": 0,
             "is_active": false,
-            "rating": 3.5,
-            "performance_score": 64,
             "created_at": "2023-06-05T11:00:00Z",
             "updated_at": "2024-01-10T09:45:00Z",
             "unit_id": "UNT001",
@@ -401,15 +445,15 @@
             "service_provider_id": "SP004",
             "name": "Meera Krishnan",
             "password": "Password@123",
-            "phone": "9854321009",
+            "phone": "+919854321009",
             "email": "meera.k@mail.com",
             "dob": "1993-06-18",
             "address": "22 Adyar, Chennai",
             "pfp_url": "https://i.pravatar.cc/150?img=48",
             "gender": "Female",
+            "rating": null,
+            "rating_count": 0,
             "is_active": true,
-            "rating": 4.1,
-            "performance_score": 80,
             "created_at": "2023-08-20T10:00:00Z",
             "updated_at": "2024-04-10T11:00:00Z",
             "unit_id": "UNT004",
@@ -419,15 +463,15 @@
             "service_provider_id": "SP005",
             "name": "Sunil Babu",
             "password": "Password@123",
-            "phone": "9843210098",
+            "phone": "+919843210098",
             "email": "sunil.b@mail.com",
             "dob": "1985-12-30",
             "address": "5 Porur, Chennai",
             "pfp_url": "https://i.pravatar.cc/150?img=53",
             "gender": "Male",
+            "rating": 4,
+            "rating_count": 1,
             "is_active": true,
-            "rating": 4.8,
-            "performance_score": 96,
             "created_at": "2023-11-10T09:00:00Z",
             "updated_at": "2024-05-01T10:00:00Z",
             "unit_id": "UNT007",
@@ -437,15 +481,15 @@
             "service_provider_id": "SP006",
             "name": "Divya Rao",
             "password": "Password@123",
-            "phone": "9832109987",
+            "phone": "+919832109987",
             "email": "divya.r@mail.com",
             "dob": "1997-03-14",
             "address": "90 Sholinganallur, Chennai",
             "pfp_url": "https://i.pravatar.cc/150?img=62",
             "gender": "Female",
+            "rating": 5,
+            "rating_count": 1,
             "is_active": true,
-            "rating": 4.4,
-            "performance_score": 88,
             "created_at": "2024-01-15T08:30:00Z",
             "updated_at": "2024-06-01T09:00:00Z",
             "unit_id": "UNT008",
@@ -455,15 +499,15 @@
             "service_provider_id": "SP007",
             "name": "Tamil Selvan",
             "password": "Password@123",
-            "phone": "9821098876",
+            "phone": "+919821098876",
             "email": "tamil.s@mail.com",
             "dob": "1991-07-22",
             "address": "34 Perambur, Chennai",
             "pfp_url": "https://i.pravatar.cc/150?img=65",
             "gender": "Male",
+            "rating": null,
+            "rating_count": 0,
             "is_active": true,
-            "rating": 4.7,
-            "performance_score": 94,
             "created_at": "2024-02-10T07:45:00Z",
             "updated_at": "2024-06-10T12:00:00Z",
             "unit_id": "UNT009",
@@ -473,15 +517,15 @@
             "service_provider_id": "SP008",
             "name": "Nithya Lakshmi",
             "password": "Password@123",
-            "phone": "9810987765",
+            "phone": "+919810987765",
             "email": "nithya.l@mail.com",
             "dob": "1994-11-09",
             "address": "67 Chromepet, Chennai",
             "pfp_url": "https://i.pravatar.cc/150?img=68",
             "gender": "Female",
+            "rating": null,
+            "rating_count": 0,
             "is_active": true,
-            "rating": 4.9,
-            "performance_score": 98,
             "created_at": "2024-03-20T10:15:00Z",
             "updated_at": "2024-06-15T14:30:00Z",
             "unit_id": "UNT009",
@@ -741,55 +785,81 @@
     "provider_skills": [
         {
             "service_provider_id": "SP001",
-            "skill_id": "SKL002"
+            "skill_id": "SKL002",
+            "verification_status": "Verified",
+            "verified_at": "2026-03-25T10:00:00Z"
         },
         {
             "service_provider_id": "SP001",
-            "skill_id": "SKL005"
+            "skill_id": "SKL005",
+            "verification_status": "Verified",
+            "verified_at": "2026-03-26T11:00:00Z"
         },
         {
             "service_provider_id": "SP002",
-            "skill_id": "SKL001"
+            "skill_id": "SKL001",
+            "verification_status": "Verified",
+            "verified_at": "2026-03-27T09:30:00Z"
         },
         {
             "service_provider_id": "SP002",
-            "skill_id": "SKL003"
+            "skill_id": "SKL003",
+            "verification_status": "Verified",
+            "verified_at": "2026-03-27T14:15:00Z"
         },
         {
             "service_provider_id": "SP003",
-            "skill_id": "SKL003"
+            "skill_id": "SKL003",
+            "verification_status": "Verified",
+            "verified_at": "2026-03-28T08:00:00Z"
         },
         {
             "service_provider_id": "SP004",
-            "skill_id": "SKL004"
+            "skill_id": "SKL004",
+            "verification_status": "Verified",
+            "verified_at": "2026-03-28T16:45:00Z"
         },
         {
             "service_provider_id": "SP004",
-            "skill_id": "SKL001"
+            "skill_id": "SKL001",
+            "verification_status": "Verified",
+            "verified_at": "2026-03-29T10:20:00Z"
         },
         {
             "service_provider_id": "SP005",
-            "skill_id": "SKL005"
+            "skill_id": "SKL005",
+            "verification_status": "Verified",
+            "verified_at": "2026-03-29T11:10:00Z"
         },
         {
             "service_provider_id": "SP005",
-            "skill_id": "SKL002"
+            "skill_id": "SKL002",
+            "verification_status": "Verified",
+            "verified_at": "2026-03-29T13:40:00Z"
         },
         {
             "service_provider_id": "SP006",
-            "skill_id": "SKL002"
+            "skill_id": "SKL002",
+            "verification_status": "Verified",
+            "verified_at": "2026-03-29T15:00:00Z"
         },
         {
             "service_provider_id": "SP007",
-            "skill_id": "SKL003"
+            "skill_id": "SKL003",
+            "verification_status": "Verified",
+            "verified_at": "2026-03-30T09:00:00Z"
         },
         {
             "service_provider_id": "SP008",
-            "skill_id": "SKL003"
+            "skill_id": "SKL003",
+            "verification_status": "Verified",
+            "verified_at": "2026-03-30T10:30:00Z"
         },
         {
             "service_provider_id": "SP008",
-            "skill_id": "SKL006"
+            "skill_id": "SKL006",
+            "verification_status": "Verified",
+            "verified_at": "2026-03-30T11:00:00Z"
         }
     ],
     "customers": [
@@ -797,14 +867,14 @@
             "customer_id": "CUS001",
             "full_name": "Aditya Verma",
             "password": "Password@123",
-            "phone": "9812345678",
+            "phone": "+919812345678",
             "email": "aditya.v@gmail.com",
             "dob": "1992-03-15",
             "address": "14 Boat Club Road, Chennai",
             "pfp_url": "https://i.pravatar.cc/150?img=14",
-            "latitude": 13.0500,
-            "longitude": 80.2500,
-            "rating": 4.7,
+            "latitude": 13.05,
+            "longitude": 80.25,
+            "rating": 5,
             "notes": "Prefers morning slots",
             "is_active": true,
             "home_sector_id": "SEC001"
@@ -813,14 +883,14 @@
             "customer_id": "CUS002",
             "full_name": "Sneha Raj",
             "password": "Password@123",
-            "phone": "9823456789",
+            "phone": "+919823456789",
             "email": "sneha.raj@gmail.com",
             "dob": "1996-07-22",
             "address": "88 Kilpauk, Chennai",
             "pfp_url": "https://i.pravatar.cc/150?img=15",
-            "latitude": 13.0900,
-            "longitude": 80.2300,
-            "rating": 4.3,
+            "latitude": 13.09,
+            "longitude": 80.23,
+            "rating": 4,
             "notes": "",
             "is_active": true,
             "home_sector_id": "SEC002"
@@ -829,14 +899,14 @@
             "customer_id": "CUS003",
             "full_name": "Rohit Sen",
             "password": "Password@123",
-            "phone": "9834567890",
+            "phone": "+919834567890",
             "email": "rohit.sen@gmail.com",
             "dob": "1988-11-30",
             "address": "5 Velachery Main Road, Chennai",
             "pfp_url": "https://i.pravatar.cc/150?img=16",
-            "latitude": 12.9800,
-            "longitude": 80.2100,
-            "rating": 3.8,
+            "latitude": 12.98,
+            "longitude": 80.21,
+            "rating": 4,
             "notes": "Has a dog",
             "is_active": false,
             "home_sector_id": "SEC003"
@@ -845,14 +915,14 @@
             "customer_id": "CUS004",
             "full_name": "Kavitha Sundaram",
             "password": "Password@123",
-            "phone": "9845678901",
+            "phone": "+919845678901",
             "email": "kavitha.s@gmail.com",
             "dob": "1994-05-10",
             "address": "32 Nungambakkam, Chennai",
             "pfp_url": "https://i.pravatar.cc/150?img=17",
-            "latitude": 13.0600,
-            "longitude": 80.2450,
-            "rating": 4.9,
+            "latitude": 13.06,
+            "longitude": 80.245,
+            "rating": 5,
             "notes": "VIP customer",
             "is_active": true,
             "home_sector_id": "SEC001"
@@ -861,14 +931,14 @@
             "customer_id": "CUS005",
             "full_name": "Mohammed Faizal",
             "password": "Password@123",
-            "phone": "9856789012",
+            "phone": "+919856789012",
             "email": "faizal.m@gmail.com",
             "dob": "1990-08-25",
             "address": "77 Perambur, Chennai",
             "pfp_url": "https://i.pravatar.cc/150?img=18",
-            "latitude": 13.1200,
-            "longitude": 80.2600,
-            "rating": 4.1,
+            "latitude": 13.12,
+            "longitude": 80.26,
+            "rating": 4,
             "notes": "",
             "is_active": true,
             "home_sector_id": "SEC002"
@@ -877,14 +947,14 @@
             "customer_id": "CUS006",
             "full_name": "Pooja Iyer",
             "password": "Password@123",
-            "phone": "9867890123",
+            "phone": "+919867890123",
             "email": "pooja.i@gmail.com",
             "dob": "1999-01-14",
             "address": "45 Sholinganallur, Chennai",
             "pfp_url": "https://i.pravatar.cc/150?img=19",
-            "latitude": 12.9000,
-            "longitude": 80.2300,
-            "rating": 4.5,
+            "latitude": 12.9,
+            "longitude": 80.23,
+            "rating": 5,
             "notes": "Prefers female providers",
             "is_active": true,
             "home_sector_id": "SEC006"
@@ -893,14 +963,14 @@
             "customer_id": "CUS007",
             "full_name": "Dinesh Babu",
             "password": "Password@123",
-            "phone": "9878901234",
+            "phone": "+919878901234",
             "email": "dinesh.b@gmail.com",
             "dob": "1985-04-03",
             "address": "120 Chromepet, Chennai",
             "pfp_url": "https://i.pravatar.cc/150?img=20",
-            "latitude": 12.9500,
-            "longitude": 80.1400,
-            "rating": 3.5,
+            "latitude": 12.95,
+            "longitude": 80.14,
+            "rating": 4,
             "notes": "Late payments flag",
             "is_active": true,
             "home_sector_id": "SEC004"
@@ -909,14 +979,14 @@
             "customer_id": "CUS008",
             "full_name": "Ananya Krishnamurthy",
             "password": "Password@123",
-            "phone": "9889012345",
+            "phone": "+919889012345",
             "email": "ananya.k@gmail.com",
             "dob": "2000-09-18",
             "address": "9 Adyar, Chennai",
             "pfp_url": "https://i.pravatar.cc/150?img=21",
-            "latitude": 13.0050,
+            "latitude": 13.005,
             "longitude": 80.2574,
-            "rating": 4.8,
+            "rating": 5,
             "notes": "Regular subscriber",
             "is_active": true,
             "home_sector_id": "SEC005"
@@ -927,54 +997,66 @@
             "category_id": "CAT001",
             "category_name": "Home Cleaning",
             "description": "All home cleaning services",
-            "icon": "🧹",
+            "icon": "ðŸ§¹",
             "image_url": "https://placehold.co/400x200/4A90D9/white?text=Home+Cleaning",
             "is_available": true,
+            "average_rating": 4.87,
+            "rating_count": 1,
             "parent_id": null
         },
         {
             "category_id": "CAT002",
             "category_name": "Plumbing",
             "description": "Pipe and fixture repair services",
-            "icon": "🔧",
+            "icon": "ðŸ”§",
             "image_url": "https://placehold.co/400x200/E67E22/white?text=Plumbing",
             "is_available": true,
+            "average_rating": 4.73,
+            "rating_count": 0,
             "parent_id": null
         },
         {
             "category_id": "CAT003",
             "category_name": "Electrical",
             "description": "Wiring, appliances, and electrical repairs",
-            "icon": "⚡",
+            "icon": "âš¡",
             "image_url": "https://placehold.co/400x200/F1C40F/black?text=Electrical",
             "is_available": true,
+            "average_rating": 4.87,
+            "rating_count": 2,
             "parent_id": null
         },
         {
             "category_id": "CAT004",
             "category_name": "Carpentry",
             "description": "Furniture, woodwork, and custom fittings",
-            "icon": "🪚",
+            "icon": "ðŸªš",
             "image_url": "https://placehold.co/400x200/8B4513/white?text=Carpentry",
             "is_available": true,
+            "average_rating": 4.73,
+            "rating_count": 0,
             "parent_id": null
         },
         {
             "category_id": "CAT005",
             "category_name": "AC & Appliances",
             "description": "Air conditioner and home appliance services",
-            "icon": "❄️",
+            "icon": "â„ï¸",
             "image_url": "https://placehold.co/400x200/1ABC9C/white?text=AC+%26+Appliances",
             "is_available": true,
+            "average_rating": 4.47,
+            "rating_count": 1,
             "parent_id": null
         },
         {
             "category_id": "CAT006",
             "category_name": "Pest Control",
             "description": "Residential pest treatment and prevention",
-            "icon": "🐛",
+            "icon": "ðŸ›",
             "image_url": "https://placehold.co/400x200/2ECC71/white?text=Pest+Control",
             "is_available": false,
+            "average_rating": 4.73,
+            "rating_count": 0,
             "parent_id": null
         }
     ],
@@ -984,8 +1066,10 @@
             "service_name": "Standard Home Clean",
             "description": "Complete standard clean for up to 3BHK homes.",
             "image_url": "https://placehold.co/400x200/4A90D9/white?text=Standard+Clean",
-            "base_price": 499.00,
+            "base_price": 499,
             "estimated_duration_min": 120,
+            "average_rating": 5,
+            "rating_count": 1,
             "is_available": true,
             "category_id": "CAT001"
         },
@@ -994,8 +1078,10 @@
             "service_name": "Deep Home Clean",
             "description": "Intensive full-home deep clean including kitchen and bathrooms.",
             "image_url": "https://placehold.co/400x200/4A90D9/white?text=Deep+Clean",
-            "base_price": 899.00,
+            "base_price": 899,
             "estimated_duration_min": 240,
+            "average_rating": 4.73,
+            "rating_count": 0,
             "is_available": true,
             "category_id": "CAT001"
         },
@@ -1004,8 +1090,10 @@
             "service_name": "Pipe Leak Repair",
             "description": "Diagnose and repair pipe leaks with 30-day warranty.",
             "image_url": "https://placehold.co/400x200/E67E22/white?text=Pipe+Repair",
-            "base_price": 799.00,
+            "base_price": 799,
             "estimated_duration_min": 90,
+            "average_rating": 4.73,
+            "rating_count": 0,
             "is_available": true,
             "category_id": "CAT002"
         },
@@ -1014,8 +1102,10 @@
             "service_name": "Bathroom Fitting",
             "description": "Installation of bathroom fixtures, taps, and fittings.",
             "image_url": "https://placehold.co/400x200/E67E22/white?text=Bathroom+Fitting",
-            "base_price": 1299.00,
+            "base_price": 1299,
             "estimated_duration_min": 180,
+            "average_rating": 4.73,
+            "rating_count": 0,
             "is_available": true,
             "category_id": "CAT002"
         },
@@ -1024,8 +1114,10 @@
             "service_name": "Fan Installation",
             "description": "Ceiling and wall fan installation with safety check.",
             "image_url": "https://placehold.co/400x200/F1C40F/black?text=Fan+Installation",
-            "base_price": 299.00,
+            "base_price": 299,
             "estimated_duration_min": 45,
+            "average_rating": 5,
+            "rating_count": 2,
             "is_available": true,
             "category_id": "CAT003"
         },
@@ -1034,8 +1126,10 @@
             "service_name": "Full Home Wiring Audit",
             "description": "Complete electrical safety audit for the entire home.",
             "image_url": "https://placehold.co/400x200/F1C40F/black?text=Wiring+Audit",
-            "base_price": 1499.00,
+            "base_price": 1499,
             "estimated_duration_min": 300,
+            "average_rating": 4.73,
+            "rating_count": 0,
             "is_available": true,
             "category_id": "CAT003"
         },
@@ -1044,8 +1138,10 @@
             "service_name": "Furniture Assembly",
             "description": "Assembly of flat-pack and modular furniture.",
             "image_url": "https://placehold.co/400x200/8B4513/white?text=Furniture+Assembly",
-            "base_price": 599.00,
+            "base_price": 599,
             "estimated_duration_min": 120,
+            "average_rating": 4.73,
+            "rating_count": 0,
             "is_available": true,
             "category_id": "CAT004"
         },
@@ -1054,8 +1150,10 @@
             "service_name": "Custom Shelf Installation",
             "description": "Wall-mounted custom shelf design and installation.",
             "image_url": "https://placehold.co/400x200/8B4513/white?text=Shelf+Install",
-            "base_price": 899.00,
+            "base_price": 899,
             "estimated_duration_min": 150,
+            "average_rating": 4.73,
+            "rating_count": 0,
             "is_available": true,
             "category_id": "CAT004"
         },
@@ -1064,8 +1162,10 @@
             "service_name": "AC Service & Gas Refill",
             "description": "Full AC service including filter clean and gas top-up.",
             "image_url": "https://placehold.co/400x200/1ABC9C/white?text=AC+Service",
-            "base_price": 999.00,
+            "base_price": 999,
             "estimated_duration_min": 120,
+            "average_rating": 4.2,
+            "rating_count": 1,
             "is_available": true,
             "category_id": "CAT005"
         },
@@ -1074,8 +1174,10 @@
             "service_name": "Washing Machine Repair",
             "description": "Diagnosis and repair of all washing machine models.",
             "image_url": "https://placehold.co/400x200/1ABC9C/white?text=WM+Repair",
-            "base_price": 699.00,
+            "base_price": 699,
             "estimated_duration_min": 90,
+            "average_rating": 4.73,
+            "rating_count": 0,
             "is_available": true,
             "category_id": "CAT005"
         },
@@ -1084,8 +1186,10 @@
             "service_name": "Cockroach Treatment",
             "description": "Targeted gel-based cockroach treatment.",
             "image_url": "https://placehold.co/400x200/2ECC71/white?text=Cockroach+Treatment",
-            "base_price": 599.00,
+            "base_price": 599,
             "estimated_duration_min": 60,
+            "average_rating": 4.73,
+            "rating_count": 0,
             "is_available": false,
             "category_id": "CAT006"
         },
@@ -1094,10 +1198,386 @@
             "service_name": "Termite Control",
             "description": "Full home termite inspection and treatment.",
             "image_url": "https://placehold.co/400x200/2ECC71/white?text=Termite+Control",
-            "base_price": 1999.00,
+            "base_price": 1999,
             "estimated_duration_min": 180,
+            "average_rating": 4.73,
+            "rating_count": 0,
             "is_available": false,
             "category_id": "CAT006"
+        }
+    ],
+    "service_content": [
+        {
+            "service_id": "SVC001",
+            "how_it_works": [
+                {
+                    "step_title": "Pre-clean inspection",
+                    "step_description": "The professional reviews room condition, floor type, and high-touch surfaces before starting."
+                },
+                {
+                    "step_title": "Systematic room-wise cleaning",
+                    "step_description": "Dusting, sweeping, mopping, and surface wipe-down are done area by area for consistent quality."
+                },
+                {
+                    "step_title": "Final walkthrough",
+                    "step_description": "A quality check is performed with the customer to confirm completion and spot-fix missed areas."
+                }
+            ],
+            "what_is_covered": [
+                "Dusting of furniture tops, shelves, and reachable fixtures",
+                "Sweeping and mopping of floors in included rooms",
+                "Wipe-down of switches, handles, and common touch points",
+                "Basic kitchen counter and sink surface cleanup",
+                "Bathroom exterior surface wipe and mirror cleaning"
+            ],
+            "what_is_not_covered": [
+                "Deep stain removal from marble, granite, or wooden floors",
+                "Heavy-duty grease removal inside chimney ducts",
+                "Post-construction debris or cement removal",
+                "External window facade cleaning at height",
+                "Pest-control or disinfection fogging treatments"
+            ]
+        },
+        {
+            "service_id": "SVC002",
+            "how_it_works": [
+                {
+                    "step_title": "Deep-clean preparation",
+                    "step_description": "High-risk zones and stubborn stain areas are identified and treated with suitable agents."
+                },
+                {
+                    "step_title": "Intensive scrubbing and detailing",
+                    "step_description": "Kitchen, bathroom, and floor lines are deep-cleaned using targeted tools and chemical-safe products."
+                },
+                {
+                    "step_title": "Sanitization and closure",
+                    "step_description": "Final sanitization and dry pass are completed to leave the space ready for use."
+                }
+            ],
+            "what_is_covered": [
+                "Deep cleaning of bathroom tiles, fittings, and corners",
+                "Kitchen degreasing of slabs, backsplash, and sink zone",
+                "Detailed floor cleaning including corners and edges",
+                "Interior wipe-down of reachable cabinets and wardrobes",
+                "Final deodorization in major rooms"
+            ],
+            "what_is_not_covered": [
+                "Repair of damaged fittings, leaks, or broken tiles",
+                "Ceiling mold treatment requiring chemical restoration",
+                "Removing permanent paint or acid stains",
+                "Cleaning of false-ceiling internals and hidden ducts",
+                "Relocation of heavy appliances or furniture"
+            ]
+        },
+        {
+            "service_id": "SVC003",
+            "how_it_works": [
+                {
+                    "step_title": "Leak diagnosis",
+                    "step_description": "Pressure and visual checks are used to locate exact leak points in visible plumbing lines."
+                },
+                {
+                    "step_title": "Repair and sealing",
+                    "step_description": "Affected joints or sections are repaired/replaced and sealed for reliable water flow."
+                },
+                {
+                    "step_title": "Flow validation",
+                    "step_description": "Line is tested for pressure and leakage, followed by a brief usage guideline."
+                }
+            ],
+            "what_is_covered": [
+                "Leak detection for visible pipes and joints",
+                "Replacement of minor connectors and washers",
+                "Sealant application at identified leak points",
+                "Basic pressure test after repair",
+                "30-day service workmanship assurance"
+            ],
+            "what_is_not_covered": [
+                "Civil wall breaking for concealed pipelines",
+                "Major pipeline rerouting or redesign",
+                "Municipal supply issues outside home premises",
+                "Replacement of premium fittings unless provided",
+                "Damage restoration for already soaked walls/wood"
+            ]
+        },
+        {
+            "service_id": "SVC004",
+            "how_it_works": [
+                {
+                    "step_title": "Fixture compatibility check",
+                    "step_description": "Threads, pressure needs, and mounting points are verified before installation."
+                },
+                {
+                    "step_title": "Installation and alignment",
+                    "step_description": "Tap, shower, or fitting is installed with proper sealing and orientation."
+                },
+                {
+                    "step_title": "Leak and finish check",
+                    "step_description": "Connection points are tested under running water to ensure zero leakage."
+                }
+            ],
+            "what_is_covered": [
+                "Installation of compatible bathroom taps and fixtures",
+                "Thread sealing and connector tightening",
+                "Basic old fitting removal where feasible",
+                "Alignment and functional test",
+                "Work area cleanup after installation"
+            ],
+            "what_is_not_covered": [
+                "New pipeline routing through walls",
+                "Tiling/civil work after fitting changes",
+                "Electrical work for geyser circuits",
+                "High-end fixture custom fabrication",
+                "Procurement of unavailable spare parts"
+            ]
+        },
+        {
+            "service_id": "SVC005",
+            "how_it_works": [
+                {
+                    "step_title": "Mount and wiring check",
+                    "step_description": "Existing point stability and electrical readiness are verified before mounting."
+                },
+                {
+                    "step_title": "Fan installation",
+                    "step_description": "The fan is assembled, mounted, and connected using safe wiring practices."
+                },
+                {
+                    "step_title": "Operational safety test",
+                    "step_description": "Speed modes, regulator response, and balancing are checked before handover."
+                }
+            ],
+            "what_is_covered": [
+                "Standard ceiling/wall fan assembly and installation",
+                "Connection to existing electrical point",
+                "Balancing and wobble check",
+                "Regulator compatibility test",
+                "Basic safety validation post-installation"
+            ],
+            "what_is_not_covered": [
+                "Creating a new electrical point",
+                "False-ceiling structural reinforcement",
+                "Repair of damaged regulator board",
+                "Fan replacement due to manufacturing defects",
+                "Smart-home module integration"
+            ]
+        },
+        {
+            "service_id": "SVC006",
+            "how_it_works": [
+                {
+                    "step_title": "Circuit mapping",
+                    "step_description": "Major circuits, load points, and breaker behavior are documented room-wise."
+                },
+                {
+                    "step_title": "Safety audit",
+                    "step_description": "Earthing, MCB/RCCB response, and visible wiring conditions are tested and flagged."
+                },
+                {
+                    "step_title": "Report and recommendations",
+                    "step_description": "A summary of findings with severity and suggested next actions is shared."
+                }
+            ],
+            "what_is_covered": [
+                "Inspection of switchboards and distribution panel",
+                "Load balancing and overheat risk checks",
+                "Earthing continuity verification",
+                "Basic insulation and exposed wire checks",
+                "Actionable audit summary report"
+            ],
+            "what_is_not_covered": [
+                "Execution of rewiring during audit visit",
+                "Supply-board level utility faults",
+                "Wall breaking to trace hidden faults",
+                "Repair/replacement of all old fixtures",
+                "Third-party compliance certification issuance"
+            ]
+        },
+        {
+            "service_id": "SVC007",
+            "how_it_works": [
+                {
+                    "step_title": "Part verification",
+                    "step_description": "All package components and hardware are checked against assembly manual."
+                },
+                {
+                    "step_title": "Assembly and tightening",
+                    "step_description": "Furniture is assembled with alignment checks and safe screw torque."
+                },
+                {
+                    "step_title": "Stability check",
+                    "step_description": "Final structure is tested for balance and usage safety before completion."
+                }
+            ],
+            "what_is_covered": [
+                "Assembly of beds, tables, chairs, and wardrobes",
+                "Hardware fitting from provided kit",
+                "Basic alignment and leveling",
+                "Hinge and drawer movement check",
+                "Packaging cleanup at service end"
+            ],
+            "what_is_not_covered": [
+                "Custom carpentry or resizing wooden parts",
+                "Replacement of missing manufacturer hardware",
+                "Wall anchoring requiring drilling permissions",
+                "Repair of pre-damaged panels",
+                "Polish, paint, or veneer restoration"
+            ]
+        },
+        {
+            "service_id": "SVC008",
+            "how_it_works": [
+                {
+                    "step_title": "Site measurement",
+                    "step_description": "Wall dimensions, load capacity, and bracket positions are measured and marked."
+                },
+                {
+                    "step_title": "Bracket and shelf installation",
+                    "step_description": "Brackets are drilled and mounted, then shelves are installed and aligned."
+                },
+                {
+                    "step_title": "Level and load check",
+                    "step_description": "Installed shelf is checked for levelness and basic load stability."
+                }
+            ],
+            "what_is_covered": [
+                "Wall-mounted shelf installation at marked location",
+                "Bracket fixing and alignment",
+                "Standard drilling for masonry walls",
+                "Minor position correction during installation",
+                "Basic load test and cleanup"
+            ],
+            "what_is_not_covered": [
+                "Complex design carpentry for custom shelves",
+                "Glass/stone cutting at site",
+                "Rework due to design change after drilling",
+                "Repair of weak or hollow wall internals",
+                "Painting and touch-up of drill marks"
+            ]
+        },
+        {
+            "service_id": "SVC009",
+            "how_it_works": [
+                {
+                    "step_title": "System diagnostics",
+                    "step_description": "Cooling, airflow, and coil condition are checked to identify servicing needs."
+                },
+                {
+                    "step_title": "Service and gas top-up",
+                    "step_description": "Filters/coils are cleaned and refrigerant is topped up to recommended level."
+                },
+                {
+                    "step_title": "Performance validation",
+                    "step_description": "Post-service temperature drop and airflow are verified for stable operation."
+                }
+            ],
+            "what_is_covered": [
+                "Filter and indoor unit cleaning",
+                "Outdoor unit basic wash (accessible areas)",
+                "Refrigerant top-up within standard range",
+                "Cooling performance test after service",
+                "Minor drain-line blockage clearing"
+            ],
+            "what_is_not_covered": [
+                "Major compressor or PCB replacement",
+                "Complete refrigerant refill for empty systems",
+                "Copper piping replacement or extension",
+                "Scaffolding setup for unsafe heights",
+                "Electrical rewiring of dedicated AC circuit"
+            ]
+        },
+        {
+            "service_id": "SVC010",
+            "how_it_works": [
+                {
+                    "step_title": "Fault diagnosis",
+                    "step_description": "Error symptoms are inspected across power, drum, inlet, and drain cycles."
+                },
+                {
+                    "step_title": "Repair action",
+                    "step_description": "Minor repairs and adjustments are performed based on diagnosed component issues."
+                },
+                {
+                    "step_title": "Wash cycle verification",
+                    "step_description": "A test run verifies water flow, spin, and drain behavior before closure."
+                }
+            ],
+            "what_is_covered": [
+                "Inspection of inlet, drain, and motor behavior",
+                "Minor functional repair and calibration",
+                "Connector and hose condition checks",
+                "Noise and vibration basic correction",
+                "Post-repair operational test"
+            ],
+            "what_is_not_covered": [
+                "Replacement cost of major parts (drum, motor, PCB)",
+                "Body rust correction or repainting",
+                "Plumbing modifications for new machine position",
+                "Warranty claims processing with manufacturer",
+                "Damage due to voltage surge without stabilizer"
+            ]
+        },
+        {
+            "service_id": "SVC011",
+            "how_it_works": [
+                {
+                    "step_title": "Infestation assessment",
+                    "step_description": "Kitchen, drain, and corner hotspots are identified to map infestation intensity."
+                },
+                {
+                    "step_title": "Gel treatment",
+                    "step_description": "Targeted anti-cockroach gel is applied in safe micro-doses at key points."
+                },
+                {
+                    "step_title": "Prevention guidance",
+                    "step_description": "Customer receives hygiene and maintenance instructions to reduce recurrence."
+                }
+            ],
+            "what_is_covered": [
+                "Targeted treatment for kitchen and utility hotspots",
+                "Application of child-safe, odor-minimal gel",
+                "Coverage of common crevice zones",
+                "Post-treatment usage guidance",
+                "Follow-up recommendation window"
+            ],
+            "what_is_not_covered": [
+                "Full fumigation for severe multi-room infestations",
+                "Structural crack sealing/civil repair",
+                "Treatment for termites, bedbugs, or rodents",
+                "Commercial kitchen compliance certification",
+                "Long-term annual contract in one-time booking"
+            ]
+        },
+        {
+            "service_id": "SVC012",
+            "how_it_works": [
+                {
+                    "step_title": "Termite risk survey",
+                    "step_description": "Wooden structures and moisture-prone zones are inspected for termite traces."
+                },
+                {
+                    "step_title": "Chemical barrier treatment",
+                    "step_description": "Approved anti-termite solutions are applied to affected and perimeter areas."
+                },
+                {
+                    "step_title": "Monitoring plan",
+                    "step_description": "Technician provides follow-up timeline and prevention recommendations."
+                }
+            ],
+            "what_is_covered": [
+                "Inspection of major wooden furniture and frames",
+                "Localized treatment at detected infestation points",
+                "Perimeter spray/injection where feasible",
+                "Basic post-treatment care instructions",
+                "Service report with treated locations"
+            ],
+            "what_is_not_covered": [
+                "Large-scale soil drilling for full-building barriers",
+                "Replacement of damaged wood structures",
+                "Civil restoration of infested surfaces",
+                "Treatment in sealed inaccessible cavities",
+                "Permanent immunity against future infestations"
+            ]
         }
     ],
     "service_skills": [
@@ -1213,7 +1693,7 @@
             "package_id": "PKG001",
             "package_name": "Home Essentials Bundle",
             "description": "Standard cleaning + fan installation",
-            "price": 1999.00,
+            "price": 1999,
             "package_type": "STANDARD",
             "created_by_customer": false,
             "is_available": true,
@@ -1223,7 +1703,7 @@
             "package_id": "PKG002",
             "package_name": "Deep Clean + Plumbing",
             "description": "Deep home clean combined with pipe leak repair",
-            "price": 2499.00,
+            "price": 2499,
             "package_type": "CUSTOM",
             "created_by_customer": false,
             "is_available": true,
@@ -1233,7 +1713,7 @@
             "package_id": "PKG003",
             "package_name": "Full Home Maintenance",
             "description": "Complete home maintenance mega bundle",
-            "price": 3999.00,
+            "price": 3999,
             "package_type": "PREMIUM",
             "created_by_customer": false,
             "is_available": false,
@@ -1243,7 +1723,7 @@
             "package_id": "PKG004",
             "package_name": "New Home Setup",
             "description": "Wiring audit + furniture assembly + AC service",
-            "price": 3299.00,
+            "price": 3299,
             "package_type": "PREMIUM",
             "created_by_customer": false,
             "is_available": true,
@@ -1253,7 +1733,7 @@
             "package_id": "PKG005",
             "package_name": "Kavitha's Custom Bundle",
             "description": "Custom package created by customer Kavitha Sundaram",
-            "price": 1798.00,
+            "price": 1798,
             "package_type": "CUSTOM",
             "created_by_customer": true,
             "is_available": true,
@@ -1265,73 +1745,73 @@
             "package_id": "PKG001",
             "service_id": "SVC001",
             "quantity": 1,
-            "price_at_creation": 499.00
+            "price_at_creation": 499
         },
         {
             "package_id": "PKG001",
             "service_id": "SVC005",
             "quantity": 1,
-            "price_at_creation": 299.00
+            "price_at_creation": 299
         },
         {
             "package_id": "PKG002",
             "service_id": "SVC002",
             "quantity": 1,
-            "price_at_creation": 899.00
+            "price_at_creation": 899
         },
         {
             "package_id": "PKG002",
             "service_id": "SVC003",
             "quantity": 1,
-            "price_at_creation": 799.00
+            "price_at_creation": 799
         },
         {
             "package_id": "PKG003",
             "service_id": "SVC001",
             "quantity": 2,
-            "price_at_creation": 499.00
+            "price_at_creation": 499
         },
         {
             "package_id": "PKG003",
             "service_id": "SVC003",
             "quantity": 1,
-            "price_at_creation": 799.00
+            "price_at_creation": 799
         },
         {
             "package_id": "PKG003",
             "service_id": "SVC005",
             "quantity": 2,
-            "price_at_creation": 299.00
+            "price_at_creation": 299
         },
         {
             "package_id": "PKG004",
             "service_id": "SVC006",
             "quantity": 1,
-            "price_at_creation": 1499.00
+            "price_at_creation": 1499
         },
         {
             "package_id": "PKG004",
             "service_id": "SVC007",
             "quantity": 1,
-            "price_at_creation": 599.00
+            "price_at_creation": 599
         },
         {
             "package_id": "PKG004",
             "service_id": "SVC009",
             "quantity": 1,
-            "price_at_creation": 999.00
+            "price_at_creation": 999
         },
         {
             "package_id": "PKG005",
             "service_id": "SVC001",
             "quantity": 1,
-            "price_at_creation": 499.00
+            "price_at_creation": 499
         },
         {
             "package_id": "PKG005",
             "service_id": "SVC010",
             "quantity": 1,
-            "price_at_creation": 699.00
+            "price_at_creation": 699
         }
     ],
     "bookings": [
@@ -1339,14 +1819,14 @@
             "booking_id": "BKG001",
             "booking_type": "INSTANT",
             "service_address": "14 Boat Club Road, Chennai",
-            "service_lat": 13.0500,
-            "service_lng": 80.2500,
-            "scheduled_at": "2024-07-01T10:00:00Z",
+            "service_lat": 13.05,
+            "service_lng": 80.25,
+            "scheduled_at": "2026-03-29T03:48:22Z",
             "status": "COMPLETED",
             "failure_reason": null,
             "is_active": true,
-            "created_at": "2024-07-01T09:30:00Z",
-            "updated_at": "2024-07-01T12:30:00Z",
+            "created_at": "2026-03-29T03:18:22Z",
+            "updated_at": "2026-03-29T06:18:22Z",
             "customer_id": "CUS001",
             "package_id": "PKG001",
             "sector_id": "SEC001"
@@ -1355,14 +1835,14 @@
             "booking_id": "BKG002",
             "booking_type": "SCHEDULED",
             "service_address": "88 Kilpauk, Chennai",
-            "service_lat": 13.0900,
-            "service_lng": 80.2300,
-            "scheduled_at": "2024-07-05T09:00:00Z",
+            "service_lat": 13.09,
+            "service_lng": 80.23,
+            "scheduled_at": "2026-03-21T12:08:14Z",
             "status": "CONFIRMED",
             "failure_reason": null,
             "is_active": true,
-            "created_at": "2024-07-01T11:00:00Z",
-            "updated_at": "2024-07-02T08:00:00Z",
+            "created_at": "2026-03-17T14:08:14Z",
+            "updated_at": "2026-03-18T11:08:14Z",
             "customer_id": "CUS002",
             "package_id": "PKG002",
             "sector_id": "SEC002"
@@ -1371,14 +1851,14 @@
             "booking_id": "BKG003",
             "booking_type": "INSTANT",
             "service_address": "5 Velachery Main Road, Chennai",
-            "service_lat": 12.9800,
-            "service_lng": 80.2100,
-            "scheduled_at": "2024-07-10T14:00:00Z",
+            "service_lat": 12.98,
+            "service_lng": 80.21,
+            "scheduled_at": "2026-02-24T08:42:15Z",
             "status": "CANCELLED",
             "failure_reason": "Customer cancelled before provider dispatch",
             "is_active": false,
-            "created_at": "2024-07-10T13:30:00Z",
-            "updated_at": "2024-07-10T13:55:00Z",
+            "created_at": "2026-02-24T08:12:15Z",
+            "updated_at": "2026-02-24T08:37:15Z",
             "customer_id": "CUS003",
             "package_id": null,
             "sector_id": "SEC003"
@@ -1387,14 +1867,14 @@
             "booking_id": "BKG004",
             "booking_type": "SCHEDULED",
             "service_address": "32 Nungambakkam, Chennai",
-            "service_lat": 13.0600,
-            "service_lng": 80.2450,
-            "scheduled_at": "2026-04-15T11:00:00Z",
+            "service_lat": 13.06,
+            "service_lng": 80.245,
+            "scheduled_at": "2026-03-03T00:04:33Z",
             "status": "PENDING",
             "failure_reason": null,
             "is_active": true,
-            "created_at": "2026-04-10T09:00:00Z",
-            "updated_at": "2026-04-10T09:00:00Z",
+            "created_at": "2026-02-25T22:04:33Z",
+            "updated_at": "2026-02-25T22:04:33Z",
             "customer_id": "CUS004",
             "package_id": "PKG004",
             "sector_id": "SEC001"
@@ -1403,14 +1883,14 @@
             "booking_id": "BKG005",
             "booking_type": "INSTANT",
             "service_address": "77 Perambur, Chennai",
-            "service_lat": 13.1200,
-            "service_lng": 80.2600,
-            "scheduled_at": "2026-04-01T09:00:00Z",
+            "service_lat": 13.12,
+            "service_lng": 80.26,
+            "scheduled_at": "2026-02-07T19:07:44Z",
             "status": "IN_PROGRESS",
             "failure_reason": null,
             "is_active": true,
-            "created_at": "2026-04-01T08:45:00Z",
-            "updated_at": "2026-04-01T09:05:00Z",
+            "created_at": "2026-02-07T18:52:44Z",
+            "updated_at": "2026-02-07T19:12:44Z",
             "customer_id": "CUS005",
             "package_id": "PKG001",
             "sector_id": "SEC002"
@@ -1419,14 +1899,14 @@
             "booking_id": "BKG006",
             "booking_type": "INSTANT",
             "service_address": "45 Sholinganallur, Chennai",
-            "service_lat": 12.9000,
-            "service_lng": 80.2300,
-            "scheduled_at": "2024-08-12T15:00:00Z",
+            "service_lat": 12.9,
+            "service_lng": 80.23,
+            "scheduled_at": "2026-03-29T22:17:25Z",
             "status": "COMPLETED",
             "failure_reason": null,
             "is_active": true,
-            "created_at": "2024-08-12T14:30:00Z",
-            "updated_at": "2024-08-12T16:15:00Z",
+            "created_at": "2026-03-29T21:47:25Z",
+            "updated_at": "2026-03-29T23:32:25Z",
             "customer_id": "CUS006",
             "package_id": null,
             "sector_id": "SEC006"
@@ -1435,14 +1915,14 @@
             "booking_id": "BKG007",
             "booking_type": "SCHEDULED",
             "service_address": "120 Chromepet, Chennai",
-            "service_lat": 12.9500,
-            "service_lng": 80.1400,
-            "scheduled_at": "2026-04-20T10:00:00Z",
+            "service_lat": 12.95,
+            "service_lng": 80.14,
+            "scheduled_at": "2026-02-13T16:47:40Z",
             "status": "CONFIRMED",
             "failure_reason": null,
             "is_active": true,
-            "created_at": "2026-04-14T10:00:00Z",
-            "updated_at": "2026-04-14T11:00:00Z",
+            "created_at": "2026-02-07T16:47:40Z",
+            "updated_at": "2026-02-07T17:47:40Z",
             "customer_id": "CUS007",
             "package_id": "PKG002",
             "sector_id": "SEC004"
@@ -1451,14 +1931,14 @@
             "booking_id": "BKG008",
             "booking_type": "SCHEDULED",
             "service_address": "9 Adyar, Chennai",
-            "service_lat": 13.0050,
+            "service_lat": 13.005,
             "service_lng": 80.2574,
-            "scheduled_at": "2026-05-01T08:00:00Z",
+            "scheduled_at": "2026-03-18T23:56:12Z",
             "status": "PENDING",
             "failure_reason": null,
             "is_active": true,
-            "created_at": "2026-04-25T09:00:00Z",
-            "updated_at": "2026-04-25T09:00:00Z",
+            "created_at": "2026-03-13T00:56:12Z",
+            "updated_at": "2026-03-13T00:56:12Z",
             "customer_id": "CUS008",
             "package_id": "PKG005",
             "sector_id": "SEC005"
@@ -1467,14 +1947,14 @@
             "booking_id": "BKG009",
             "booking_type": "INSTANT",
             "service_address": "14 Boat Club Road, Chennai",
-            "service_lat": 13.0500,
-            "service_lng": 80.2500,
-            "scheduled_at": "2024-09-10T10:00:00Z",
+            "service_lat": 13.05,
+            "service_lng": 80.25,
+            "scheduled_at": "2026-02-04T20:12:12Z",
             "status": "COMPLETED",
             "failure_reason": null,
             "is_active": true,
-            "created_at": "2024-09-10T09:30:00Z",
-            "updated_at": "2024-09-10T12:00:00Z",
+            "created_at": "2026-02-04T19:42:12Z",
+            "updated_at": "2026-02-04T22:12:12Z",
             "customer_id": "CUS001",
             "package_id": null,
             "sector_id": "SEC001"
@@ -1483,14 +1963,14 @@
             "booking_id": "BKG010",
             "booking_type": "SCHEDULED",
             "service_address": "32 Nungambakkam, Chennai",
-            "service_lat": 13.0600,
-            "service_lng": 80.2450,
-            "scheduled_at": "2024-10-01T14:00:00Z",
+            "service_lat": 13.06,
+            "service_lng": 80.245,
+            "scheduled_at": "2026-03-03T08:10:29Z",
             "status": "CANCELLED",
             "failure_reason": "Customer requested cancellation",
             "is_active": false,
-            "created_at": "2024-09-28T10:00:00Z",
-            "updated_at": "2024-09-30T08:00:00Z",
+            "created_at": "2026-02-28T04:10:29Z",
+            "updated_at": "2026-03-02T02:10:29Z",
             "customer_id": "CUS004",
             "package_id": "PKG003",
             "sector_id": "SEC001"
@@ -1501,115 +1981,115 @@
             "booking_id": "BKG001",
             "service_id": "SVC001",
             "quantity": 1,
-            "price_at_booking": 499.00
+            "price_at_booking": 499
         },
         {
             "booking_id": "BKG001",
             "service_id": "SVC005",
             "quantity": 1,
-            "price_at_booking": 299.00
+            "price_at_booking": 299
         },
         {
             "booking_id": "BKG002",
             "service_id": "SVC002",
             "quantity": 1,
-            "price_at_booking": 899.00
+            "price_at_booking": 899
         },
         {
             "booking_id": "BKG002",
             "service_id": "SVC003",
             "quantity": 1,
-            "price_at_booking": 799.00
+            "price_at_booking": 799
         },
         {
             "booking_id": "BKG003",
             "service_id": "SVC003",
             "quantity": 1,
-            "price_at_booking": 799.00
+            "price_at_booking": 799
         },
         {
             "booking_id": "BKG004",
             "service_id": "SVC006",
             "quantity": 1,
-            "price_at_booking": 1499.00
+            "price_at_booking": 1499
         },
         {
             "booking_id": "BKG004",
             "service_id": "SVC007",
             "quantity": 1,
-            "price_at_booking": 599.00
+            "price_at_booking": 599
         },
         {
             "booking_id": "BKG004",
             "service_id": "SVC009",
             "quantity": 1,
-            "price_at_booking": 999.00
+            "price_at_booking": 999
         },
         {
             "booking_id": "BKG005",
             "service_id": "SVC001",
             "quantity": 1,
-            "price_at_booking": 499.00
+            "price_at_booking": 499
         },
         {
             "booking_id": "BKG005",
             "service_id": "SVC005",
             "quantity": 1,
-            "price_at_booking": 299.00
+            "price_at_booking": 299
         },
         {
             "booking_id": "BKG006",
             "service_id": "SVC005",
             "quantity": 1,
-            "price_at_booking": 299.00
+            "price_at_booking": 299
         },
         {
             "booking_id": "BKG007",
             "service_id": "SVC002",
             "quantity": 1,
-            "price_at_booking": 899.00
+            "price_at_booking": 899
         },
         {
             "booking_id": "BKG007",
             "service_id": "SVC003",
             "quantity": 1,
-            "price_at_booking": 799.00
+            "price_at_booking": 799
         },
         {
             "booking_id": "BKG008",
             "service_id": "SVC001",
             "quantity": 1,
-            "price_at_booking": 499.00
+            "price_at_booking": 499
         },
         {
             "booking_id": "BKG008",
             "service_id": "SVC010",
             "quantity": 1,
-            "price_at_booking": 699.00
+            "price_at_booking": 699
         },
         {
             "booking_id": "BKG009",
             "service_id": "SVC009",
             "quantity": 1,
-            "price_at_booking": 999.00
+            "price_at_booking": 999
         },
         {
             "booking_id": "BKG010",
             "service_id": "SVC001",
             "quantity": 2,
-            "price_at_booking": 499.00
+            "price_at_booking": 499
         },
         {
             "booking_id": "BKG010",
             "service_id": "SVC003",
             "quantity": 1,
-            "price_at_booking": 799.00
+            "price_at_booking": 799
         },
         {
             "booking_id": "BKG010",
             "service_id": "SVC005",
             "quantity": 2,
-            "price_at_booking": 299.00
+            "price_at_booking": 299
         }
     ],
     "job_assignments": [
@@ -1620,11 +2100,11 @@
             "hour_end": "12:00",
             "status": "COMPLETED",
             "version": 1,
-            "assignment_score": 4.8,
+            "assignment_score": 5,
             "notes": null,
-            "assigned_at": "2024-07-01T09:35:00Z",
-            "created_at": "2024-07-01T09:35:00Z",
-            "updated_at": "2024-07-01T12:30:00Z",
+            "assigned_at": "2026-03-29T03:23:22Z",
+            "created_at": "2026-03-29T03:23:22Z",
+            "updated_at": "2026-03-29T06:18:22Z",
             "booking_id": "BKG001",
             "service_provider_id": "SP001"
         },
@@ -1637,9 +2117,9 @@
             "version": 1,
             "assignment_score": null,
             "notes": null,
-            "assigned_at": "2024-07-02T08:00:00Z",
-            "created_at": "2024-07-02T08:00:00Z",
-            "updated_at": "2024-07-02T08:00:00Z",
+            "assigned_at": "2026-03-18T11:08:14Z",
+            "created_at": "2026-03-18T11:08:14Z",
+            "updated_at": "2026-03-18T11:08:14Z",
             "booking_id": "BKG002",
             "service_provider_id": "SP002"
         },
@@ -1652,9 +2132,9 @@
             "version": 1,
             "assignment_score": null,
             "notes": "Booking cancelled by customer",
-            "assigned_at": "2024-07-10T13:30:00Z",
-            "created_at": "2024-07-10T13:30:00Z",
-            "updated_at": "2024-07-10T13:55:00Z",
+            "assigned_at": "2026-02-24T08:12:15Z",
+            "created_at": "2026-02-24T08:12:15Z",
+            "updated_at": "2026-02-24T08:37:15Z",
             "booking_id": "BKG003",
             "service_provider_id": "SP003"
         },
@@ -1667,9 +2147,9 @@
             "version": 1,
             "assignment_score": null,
             "notes": null,
-            "assigned_at": "2026-04-10T09:05:00Z",
-            "created_at": "2026-04-10T09:05:00Z",
-            "updated_at": "2026-04-10T09:05:00Z",
+            "assigned_at": "2026-02-25T22:09:33Z",
+            "created_at": "2026-02-25T22:09:33Z",
+            "updated_at": "2026-02-25T22:09:33Z",
             "booking_id": "BKG004",
             "service_provider_id": "SP005"
         },
@@ -1682,9 +2162,9 @@
             "version": 1,
             "assignment_score": null,
             "notes": null,
-            "assigned_at": "2026-04-01T08:50:00Z",
-            "created_at": "2026-04-01T08:50:00Z",
-            "updated_at": "2026-04-01T09:05:00Z",
+            "assigned_at": "2026-02-07T18:57:44Z",
+            "created_at": "2026-02-07T18:57:44Z",
+            "updated_at": "2026-02-07T19:12:44Z",
             "booking_id": "BKG005",
             "service_provider_id": "SP001"
         },
@@ -1695,11 +2175,11 @@
             "hour_end": "16:00",
             "status": "COMPLETED",
             "version": 1,
-            "assignment_score": 4.5,
+            "assignment_score": 5,
             "notes": null,
-            "assigned_at": "2024-08-12T14:35:00Z",
-            "created_at": "2024-08-12T14:35:00Z",
-            "updated_at": "2024-08-12T16:15:00Z",
+            "assigned_at": "2026-03-29T21:52:25Z",
+            "created_at": "2026-03-29T21:52:25Z",
+            "updated_at": "2026-03-29T23:32:25Z",
             "booking_id": "BKG006",
             "service_provider_id": "SP006"
         },
@@ -1712,9 +2192,9 @@
             "version": 1,
             "assignment_score": null,
             "notes": null,
-            "assigned_at": "2026-04-14T11:05:00Z",
-            "created_at": "2026-04-14T11:05:00Z",
-            "updated_at": "2026-04-14T11:05:00Z",
+            "assigned_at": "2026-02-07T17:52:40Z",
+            "created_at": "2026-02-07T17:52:40Z",
+            "updated_at": "2026-02-07T17:52:40Z",
             "booking_id": "BKG007",
             "service_provider_id": "SP002"
         },
@@ -1727,9 +2207,9 @@
             "version": 1,
             "assignment_score": null,
             "notes": null,
-            "assigned_at": "2026-04-25T09:05:00Z",
-            "created_at": "2026-04-25T09:05:00Z",
-            "updated_at": "2026-04-25T09:05:00Z",
+            "assigned_at": "2026-03-13T01:01:12Z",
+            "created_at": "2026-03-13T01:01:12Z",
+            "updated_at": "2026-03-13T01:01:12Z",
             "booking_id": "BKG008",
             "service_provider_id": "SP007"
         },
@@ -1742,9 +2222,9 @@
             "version": 1,
             "assignment_score": 4.2,
             "notes": null,
-            "assigned_at": "2024-09-10T09:32:00Z",
-            "created_at": "2024-09-10T09:32:00Z",
-            "updated_at": "2024-09-10T12:00:00Z",
+            "assigned_at": "2026-02-04T19:44:12Z",
+            "created_at": "2026-02-04T19:44:12Z",
+            "updated_at": "2026-02-04T22:12:12Z",
             "booking_id": "BKG009",
             "service_provider_id": "SP005"
         },
@@ -1757,9 +2237,9 @@
             "version": 1,
             "assignment_score": null,
             "notes": "Customer cancelled before provider dispatch",
-            "assigned_at": "2024-09-28T10:05:00Z",
-            "created_at": "2024-09-28T10:05:00Z",
-            "updated_at": "2024-09-30T08:00:00Z",
+            "assigned_at": "2026-02-28T04:15:29Z",
+            "created_at": "2026-02-28T04:15:29Z",
+            "updated_at": "2026-03-02T02:10:29Z",
             "booking_id": "BKG010",
             "service_provider_id": "SP004"
         }
@@ -1771,11 +2251,11 @@
             "payment_method": "UPI",
             "idempotency_key": "idem-bkg001-001",
             "payment_status": "SUCCESS",
-            "amount": 1999.00,
+            "amount": 1999,
             "currency": "INR",
-            "refund_amount": 0.00,
+            "refund_amount": 0,
             "refund_reason": null,
-            "transaction_at": "2024-07-01T09:32:00Z",
+            "transaction_at": "2026-03-29T03:20:22Z",
             "verified_at": "2024-07-01T09:33:00Z",
             "booking_id": "BKG001"
         },
@@ -1785,11 +2265,11 @@
             "payment_method": "CARD",
             "idempotency_key": "idem-bkg002-001",
             "payment_status": "SUCCESS",
-            "amount": 2499.00,
+            "amount": 2499,
             "currency": "INR",
-            "refund_amount": 0.00,
+            "refund_amount": 0,
             "refund_reason": null,
-            "transaction_at": "2024-07-01T11:05:00Z",
+            "transaction_at": "2026-03-17T14:13:14Z",
             "verified_at": "2024-07-01T11:06:00Z",
             "booking_id": "BKG002"
         },
@@ -1799,11 +2279,11 @@
             "payment_method": "NETBANK",
             "idempotency_key": "idem-bkg003-001",
             "payment_status": "REFUNDED",
-            "amount": 0.00,
+            "amount": 0,
             "currency": "INR",
-            "refund_amount": 799.00,
+            "refund_amount": 799,
             "refund_reason": "Service cancelled by customer",
-            "transaction_at": "2024-07-10T13:32:00Z",
+            "transaction_at": "2026-02-24T08:14:15Z",
             "verified_at": "2024-07-11T10:00:00Z",
             "booking_id": "BKG003"
         },
@@ -1813,11 +2293,11 @@
             "payment_method": "WALLET",
             "idempotency_key": "idem-bkg004-001",
             "payment_status": "PENDING",
-            "amount": 3299.00,
+            "amount": 3299,
             "currency": "INR",
-            "refund_amount": 0.00,
+            "refund_amount": 0,
             "refund_reason": null,
-            "transaction_at": "2026-04-10T09:02:00Z",
+            "transaction_at": "2026-02-25T22:06:33Z",
             "verified_at": null,
             "booking_id": "BKG004"
         },
@@ -1827,11 +2307,11 @@
             "payment_method": "UPI",
             "idempotency_key": "idem-bkg005-001",
             "payment_status": "SUCCESS",
-            "amount": 1999.00,
+            "amount": 1999,
             "currency": "INR",
-            "refund_amount": 0.00,
+            "refund_amount": 0,
             "refund_reason": null,
-            "transaction_at": "2026-04-01T08:47:00Z",
+            "transaction_at": "2026-02-07T18:54:44Z",
             "verified_at": "2026-04-01T08:48:00Z",
             "booking_id": "BKG005"
         },
@@ -1841,11 +2321,11 @@
             "payment_method": "CARD",
             "idempotency_key": "idem-bkg006-001",
             "payment_status": "SUCCESS",
-            "amount": 299.00,
+            "amount": 299,
             "currency": "INR",
-            "refund_amount": 0.00,
+            "refund_amount": 0,
             "refund_reason": null,
-            "transaction_at": "2024-08-12T14:32:00Z",
+            "transaction_at": "2026-03-29T21:49:25Z",
             "verified_at": "2024-08-12T14:33:00Z",
             "booking_id": "BKG006"
         },
@@ -1855,11 +2335,11 @@
             "payment_method": "NETBANK",
             "idempotency_key": "idem-bkg007-001",
             "payment_status": "SUCCESS",
-            "amount": 2499.00,
+            "amount": 2499,
             "currency": "INR",
-            "refund_amount": 0.00,
+            "refund_amount": 0,
             "refund_reason": null,
-            "transaction_at": "2026-04-14T10:02:00Z",
+            "transaction_at": "2026-02-07T16:49:40Z",
             "verified_at": "2026-04-14T10:03:00Z",
             "booking_id": "BKG007"
         },
@@ -1869,11 +2349,11 @@
             "payment_method": "UPI",
             "idempotency_key": "idem-bkg010-001",
             "payment_status": "REFUNDED",
-            "amount": 0.00,
+            "amount": 0,
             "currency": "INR",
-            "refund_amount": 3999.00,
+            "refund_amount": 3999,
             "refund_reason": "Full refund on customer cancellation",
-            "transaction_at": "2024-09-28T10:02:00Z",
+            "transaction_at": "2026-02-28T04:12:29Z",
             "verified_at": "2024-09-30T09:00:00Z",
             "booking_id": "BKG010"
         }

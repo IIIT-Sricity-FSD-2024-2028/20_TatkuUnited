@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -15,7 +15,7 @@
 
       <!-- Header -->
       <div class="login-header">
-        <div class="login-logo">🔧</div>
+        <!-- <div class="login-logo">🔧</div> -->
         <h1 class="login-title">Tatku United</h1>
         <p class="login-subtitle">Sign in to your account</p>
       </div>
@@ -44,17 +44,22 @@
 
         <button type="submit" class="btn-login" id="btn-login">Sign In</button>
 
+        <p class="register-hint">Don't have an account? <a href="register.html" class="register-link">Register here</a>.</p>
+
       </form>
 
-      <!-- Demo Tiles -->
+      <!-- Demo drawer (hidden by default) -->
+      <input type="checkbox" id="toggle-demo" class="demo-toggle-input" />
+      <label for="toggle-demo" class="demo-toggle-btn" aria-expanded="false">Show quick demo users</label>
+
       <div class="demo-section">
         <p class="demo-heading">Quick Demo Login</p>
         <div class="demo-grid">
 
-          <button class="demo-tile demo-tile--superuser" data-email="admin@fsd.com" data-password="Admin@1234">
+          <button class="demo-tile demo-tile--superuser" data-email="super_user@fsd.com" data-password="super user@1234">
             <span class="demo-icon">🛡</span>
             <span class="demo-role">Super User</span>
-            <span class="demo-email">admin@fsd.com</span>
+            <span class="demo-email">super_user@fsd.com</span>
             <span class="demo-pw">••••••••</span>
           </button>
 

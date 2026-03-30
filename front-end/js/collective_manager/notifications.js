@@ -1,4 +1,4 @@
-﻿// â”€â”€ Collective Manager Notifications JS â”€â”€
+﻿// ── Collective Manager Notifications JS ──
 
 const allNotifications = [
   {
@@ -20,7 +20,7 @@ const allNotifications = [
   {
     id: 3, category: 'revenue', read: false, color: 'green',
     title: 'Revenue Milestone Reached',
-    desc: 'South Zone Collective crossed â‚¹4.5 Lakhs in revenue for March 2026 â€” 3 days ahead of target!',
+    desc: 'South Zone Collective crossed ₹4.5 Lakhs in revenue for March 2026 — 3 days ahead of target!',
     time: '2 hours ago',
     icon: `<svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>`,
     actions: [{ label: 'View Report', cls: 'primary' }],
@@ -52,7 +52,7 @@ const allNotifications = [
   {
     id: 7, category: 'provider', read: true, color: 'green',
     title: 'Top Provider Recognition',
-    desc: 'Ramesh Kumar from Plumbing Unit Alpha achieved the highest rating (4.98 â˜…) for March. Consider a reward.',
+    desc: 'Ramesh Kumar from Plumbing Unit Alpha achieved the highest rating (4.98 ★) for March. Consider a reward.',
     time: '2 days ago',
     icon: `<svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`,
     actions: [{ label: 'View Profile', cls: 'primary' }],
@@ -60,7 +60,7 @@ const allNotifications = [
   {
     id: 8, category: 'system', read: true, color: 'blue',
     title: 'System Maintenance Notice',
-    desc: 'Scheduled platform maintenance on 30th March 2026, 2:00 AM â€“ 4:00 AM IST. Plan accordingly.',
+    desc: 'Scheduled platform maintenance on 30th March 2026, 2:00 AM – 4:00 AM IST. Plan accordingly.',
     time: '3 days ago',
     icon: `<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93l-1.41 1.41M4.93 4.93l1.41 1.41M12 2v2M12 20v2M20 12h2M2 12h2"/></svg>`,
     actions: [],
@@ -127,7 +127,7 @@ function renderNotifications() {
         <div class="notif-meta">${n.time} &bull; ${n.category}</div>
         ${n.actions.length ? `<div class="notif-actions">${n.actions.map(a => `<button class="nbtn ${a.cls}" onclick="handleAction(${n.id},'${a.label}')">${a.label}</button>`).join('')}</div>` : ''}
       </div>
-      <button class="notif-dismiss" onclick="dismiss(${n.id})" title="Dismiss">Ã—</button>
+      <button class="notif-dismiss" onclick="dismiss(${n.id})" title="Dismiss">×</button>
     </div>
   `).join('');
   updateBadge();
@@ -176,4 +176,5 @@ document.addEventListener('DOMContentLoaded', () => {
   renderTabs();
   renderNotifications();
 });
+
 

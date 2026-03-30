@@ -1,4 +1,4 @@
-/* user_management.js */
+﻿/* user_management.js */
 const USERS = [
   { id: '#TK-9021', name: 'Jordan Smith',  initials: 'JS', color: '#2563eb', bg: '#eff6ff', email: 'jordan@example.com', phone: '+1 234 567 890', role: 'Customer', status: 'active',    statusLabel: 'Active',    joined: 'Mar 2, 2026', action: 'Suspend',    actionClass: 'red' },
   { id: '#TK-8842', name: 'Marcus Reed',   initials: 'MR', color: '#d97706', bg: '#fef9c3', email: 'mreed@provider.co', phone: '+1 987 654 321', role: 'Provider', status: 'suspended', statusLabel: 'Suspended', joined: 'Mar 1, 2026', action: 'Reactivate', actionClass: 'green' },

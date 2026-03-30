@@ -343,7 +343,70 @@ button {
   margin-bottom: 24px;
   letter-spacing: -0.02em;
 }
+/* ─── FILTERS ────────────────────────────── */
+.filters-section {
+  padding: 20px 0;
+  border-bottom: 1px solid var(--border);
+}
 
+.filters-wrapper {
+  display: flex;
+  gap: 24px;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.filter-group {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.filter-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+}
+
+.rating-filter-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.rating-filter-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 14px;
+  background: var(--white);
+  border: 1.5px solid var(--border);
+  border-radius: 20px;
+  cursor: pointer;
+  transition:
+    border-color 0.15s,
+    background 0.15s,
+    color 0.15s;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.rating-filter-btn:hover {
+  border-color: var(--blue);
+  color: var(--blue);
+}
+
+.rating-filter-btn.active {
+  border-color: var(--blue);
+  background: var(--blue-light);
+  color: var(--blue);
+}
+
+.rating-filter-btn svg {
+  display: inline;
+}
 /* ─── EXPLORE LAYOUT ─────────────────────── */
 .explore-layout {
   display: grid;
