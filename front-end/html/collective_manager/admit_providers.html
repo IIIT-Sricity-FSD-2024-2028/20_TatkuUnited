@@ -113,27 +113,38 @@
           <div>
             <h1 class="page-title">Incoming Provider Requests</h1>
             <p class="page-sub" id="pendingCount">
-              4 applications pending review
+              Pending review applications
             </p>
           </div>
         </div>
 
-        <div id="applicantsList"></div>
-
-        <div class="recent-section">
-          <div class="recent-header">
-            <div class="recent-icon">
-              <svg viewBox="0 0 24 24">
-                <circle cx="12" cy="12" r="10" />
-                <polyline points="12 6 12 12 16 14" />
-              </svg>
-            </div>
-            <div>
-              <h2 class="section-title">Recently Approved Providers</h2>
-              <p class="section-sub">Latest provider approvals</p>
-            </div>
+        <div class="requests-section">
+          <h2 class="sub-section-title">Skill Verification Requests</h2>
+          <div id="skillRequestsList"></div>
+          
+          <div class="pagination" id="skillPagination">
+            <button class="page-btn active">1</button>
+            <button class="page-btn">2</button>
+            <button class="page-btn">3</button>
+            <button class="page-btn next">
+              <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"></polyline></svg>
+            </button>
           </div>
-          <div class="approved-grid" id="approvedGrid"></div>
+        </div>
+
+        <div class="requests-section unit-requests-section">
+          <h2 class="sub-section-title">New Provider Unit Assignment Requests</h2>
+          <p class="section-desc">Assign units to newly registered providers so they can access their accounts.</p>
+          <div id="unitRequestsList"></div>
+
+          <div class="pagination" id="unitPagination">
+            <button class="page-btn active">1</button>
+            <button class="page-btn">2</button>
+            <button class="page-btn">3</button>
+            <button class="page-btn next">
+              <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"></polyline></svg>
+            </button>
+          </div>
         </div>
       </main>
     </div>

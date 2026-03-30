@@ -1,4 +1,4 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -6,6 +6,7 @@
     <title>Unit Manager — Manage Providers</title>
     <link rel="stylesheet" href="../../css/unit_manager/providers.css" />
   </head>
+
   <body>
     <!-- Sidebar -->
     <aside class="sidebar">
@@ -45,19 +46,6 @@
           </svg>
           Manage Providers
         </a>
-        <a href="skills.html" class="nav-item">
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-          >
-            <path
-              d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"
-            />
-          </svg>
-          Manage Skills
-        </a>
         <a href="revenue.html" class="nav-item">
           <svg
             viewBox="0 0 24 24"
@@ -71,14 +59,24 @@
           Revenue Reports
         </a>
         <a href="notifications.html" class="nav-item">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
             <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
             <path d="M13.73 21a2 2 0 0 1-3.46 0" />
           </svg>
           Notifications
         </a>
         <a href="profile.html" class="nav-item">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
             <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
             <circle cx="12" cy="7" r="4" />
           </svg>
@@ -86,8 +84,18 @@
         </a>
       </nav>
       <div class="sidebar-footer">
-        <a href="../auth_pages/logout.html" class="logout-link" id="logout-btn" onclick="return confirm('Are you sure you want to logout?');">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <a
+          href="../auth_pages/logout.html"
+          class="logout-link"
+          id="logout-btn"
+          onclick="return confirm('Are you sure you want to logout?');"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
             <polyline points="16 17 21 12 16 7" />
             <line x1="21" y1="12" x2="9" y2="12" />
@@ -158,7 +166,7 @@
             </svg>
             <div>
               <span class="sum-label">Active Now</span>
-              <strong>142</strong>
+              <strong id="countActive">0</strong>
             </div>
           </div>
           <div class="summary-badge blue">
@@ -173,7 +181,7 @@
             </svg>
             <div>
               <span class="sum-label">On-Job</span>
-              <strong>56</strong>
+              <strong id="countOnJob">0</strong>
             </div>
           </div>
         </div>
@@ -271,7 +279,6 @@
                 <th>Name & ID</th>
                 <th>Status</th>
                 <th>Rating</th>
-                <th>Performance Score</th>
                 <th>Actions</th>
               </tr>
             </thead>
@@ -280,13 +287,9 @@
             </tbody>
           </table>
           <div class="table-footer">
-            <span id="showingText">Showing 1 – 4 of 24 providers</span>
-            <div class="pagination">
-              <button class="pg-btn" disabled>&#8249;</button>
-              <button class="pg-btn active">1</button>
-              <button class="pg-btn">2</button>
-              <button class="pg-btn">3</button>
-              <button class="pg-btn">&#8250;</button>
+            <span id="showingText">Showing 1 â€“ 4 of 24 providers</span>
+            <div class="pagination" id="pagination">
+              <!-- Filled by JS -->
             </div>
           </div>
         </div>
@@ -342,9 +345,8 @@
       </div>
     </div>
 
+    <script src="../../js/data/store.js"></script>
+    <script src="../../js/modules/auth.js"></script>
     <script src="../../js/unit_manager/providers.js"></script>
   </body>
 </html>
-
-
-

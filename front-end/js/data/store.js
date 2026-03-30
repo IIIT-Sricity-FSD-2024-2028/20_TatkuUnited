@@ -157,7 +157,7 @@
         // Same session — data already loaded from sessionStorage
         _resolve();
     } else {
-        // New session — fetch from mockData.json
+        // First startup or missing local data — fetch from mockData.json
         fetch("../../js/data/mockData.json")
             .then(function (r) {
                 if (!r.ok) {
@@ -167,7 +167,10 @@
             })
             .then(function (raw) {
                 AppStore.data = JSON.parse(JSON.stringify(raw));
-                // NOTE: fsd_session_alive is set ONLY by Auth.login(), not here.
+                // Session logic is handled entirely by Auth.login() and requires no action here.
+                // Persist the fresh state immediately
+                AppStore.save();
+
                 _resolve();
             })
             .catch(function (err) {

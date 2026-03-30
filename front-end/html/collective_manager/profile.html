@@ -223,64 +223,13 @@
                 </div>
                 <button class="btn-link" onclick="openPwdModal()">Change Password</button>
               </div>
-              <div class="divider"></div>
-              <div class="security-row">
-                <div>
-                  <div class="sec-label">Two-Factor Authentication</div>
-                  <div class="sec-sub">Extra layer of protection for your account</div>
-                </div>
-                <label class="toggle">
-                  <input type="checkbox" checked onchange="showToast('Two-factor authentication updated')" />
-                  <span class="toggle-track"></span>
-                </label>
-              </div>
+               
             </div>
           </div>
 
           <!-- RIGHT -->
           <div class="profile-right">
-            <!-- Preferences -->
-            <div class="card">
-              <div class="card-head">
-                <svg viewBox="0 0 24 24">
-                  <circle cx="12" cy="12" r="3" />
-                  <path d="M19.07 4.93l-1.41 1.41M4.93 4.93l1.41 1.41M12 2v2M12 20v2M20 12h2M2 12h2M19.07 19.07l-1.41-1.41M4.93 19.07l1.41-1.41" />
-                </svg>
-                Preferences
-              </div>
-              <div class="pref-list">
-                <div class="pref-row">
-                  <div>
-                    <div class="pref-label">Email Notifications</div>
-                    <div class="pref-sub">Collective performance & unit reports</div>
-                  </div>
-                  <label class="toggle">
-                    <input type="checkbox" checked onchange="showToast('Email notifications updated')" />
-                    <span class="toggle-track"></span>
-                  </label>
-                </div>
-                <div class="pref-row">
-                  <div>
-                    <div class="pref-label">Critical Alerts (SMS)</div>
-                    <div class="pref-sub">Urgent unit or provider escalations</div>
-                  </div>
-                  <label class="toggle">
-                    <input type="checkbox" checked onchange="showToast('SMS alerts updated')" />
-                    <span class="toggle-track"></span>
-                  </label>
-                </div>
-                <div class="pref-row">
-                  <div>
-                    <div class="pref-label">Monthly Revenue Reports</div>
-                    <div class="pref-sub">Auto-emailed on the 1st of each month</div>
-                  </div>
-                  <label class="toggle">
-                    <input type="checkbox" checked onchange="showToast('Monthly reports updated')" />
-                    <span class="toggle-track"></span>
-                  </label>
-                </div>
-              </div>
-            </div>
+           
 
             <!-- Units Overview -->
             <div class="card">
@@ -294,17 +243,7 @@
               <div class="unit-list" id="unit-list"></div>
             </div>
 
-            <!-- Recent Activity -->
-            <div class="card">
-              <div class="card-head">
-                <svg viewBox="0 0 24 24">
-                  <circle cx="12" cy="12" r="10" />
-                  <polyline points="12 6 12 12 16 14" />
-                </svg>
-                Recent Activity
-              </div>
-              <div class="activity-list" id="activity-list"></div>
-            </div>
+            
 
             <!-- Danger Zone -->
             <div class="card danger-card">

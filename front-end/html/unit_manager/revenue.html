@@ -1,4 +1,4 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -6,6 +6,7 @@
     <title>Unit Manager — Revenue Reports</title>
     <link rel="stylesheet" href="../../css/unit_manager/revenue.css" />
   </head>
+
   <body>
     <aside class="sidebar">
       <div class="brand">
@@ -44,19 +45,6 @@
           </svg>
           Manage Providers
         </a>
-        <a href="skills.html" class="nav-item">
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-          >
-            <path
-              d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"
-            />
-          </svg>
-          Manage Skills
-        </a>
         <a href="revenue.html" class="nav-item active">
           <svg
             viewBox="0 0 24 24"
@@ -70,14 +58,24 @@
           Revenue Reports
         </a>
         <a href="notifications.html" class="nav-item">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
             <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
             <path d="M13.73 21a2 2 0 0 1-3.46 0" />
           </svg>
           Notifications
         </a>
         <a href="profile.html" class="nav-item">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
             <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
             <circle cx="12" cy="7" r="4" />
           </svg>
@@ -85,8 +83,18 @@
         </a>
       </nav>
       <div class="sidebar-footer">
-        <a href="../auth_pages/logout.html" class="logout-link" id="logout-btn" onclick="return confirm('Are you sure you want to logout?');">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <a
+          href="../auth_pages/logout.html"
+          class="logout-link"
+          id="logout-btn"
+          onclick="return confirm('Are you sure you want to logout?');"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
             <polyline points="16 17 21 12 16 7" />
             <line x1="21" y1="12" x2="9" y2="12" />
@@ -140,7 +148,7 @@
             <p>Real-time overview of financial performance for Unit 402.</p>
           </div>
           <div class="page-actions">
-            <button class="btn-outline">
+            <button class="btn-outline" id="btn30Days">
               <svg
                 viewBox="0 0 24 24"
                 fill="none"
@@ -154,7 +162,7 @@
               </svg>
               Last 30 Days
             </button>
-            <button class="btn-primary">
+            <button class="btn-primary" id="btnExportPDF">
               <svg
                 viewBox="0 0 24 24"
                 fill="none"
@@ -186,9 +194,9 @@
             </div>
             <div class="stat-body">
               <span class="stat-label">Total Revenue</span>
-              <span class="stat-value">₹12,450.00</span>
+              <span class="stat-value" id="statTotalRevenue">₹0.00</span>
             </div>
-            <span class="stat-badge up">↑ +12.5%</span>
+            <span class="stat-badge up" id="statRevenueBadge"></span>
           </div>
           <div class="stat-card">
             <div class="stat-icon amber">
@@ -204,9 +212,9 @@
             </div>
             <div class="stat-body">
               <span class="stat-label">Platform Fees</span>
-              <span class="stat-value">₹871.50</span>
+              <span class="stat-value" id="statTotalFees">₹0.00</span>
             </div>
-            <span class="stat-badge down">↓ -2.1%</span>
+            <span class="stat-badge" id="statFeesBadge"></span>
           </div>
           <div class="stat-card">
             <div class="stat-icon teal">
@@ -222,9 +230,9 @@
             </div>
             <div class="stat-body">
               <span class="stat-label">Net Earnings</span>
-              <span class="stat-value">₹11,578.50</span>
+              <span class="stat-value" id="statNetEarnings">₹0.00</span>
             </div>
-            <span class="stat-badge up">↑ +14.2%</span>
+            <span class="stat-badge up" id="statEarningsBadge"></span>
           </div>
         </div>
 
@@ -277,21 +285,17 @@
             <tbody id="txnBody"></tbody>
           </table>
           <div class="table-footer">
-            <span>Showing 1 to 4 of 124 transactions</span>
-            <div class="pagination">
-              <button class="pg-btn" disabled>Prev</button>
-              <button class="pg-btn active">1</button>
-              <button class="pg-btn">2</button>
-              <button class="pg-btn">Next</button>
+            <span id="txnShowingText">Showing transactions...</span>
+            <div class="pagination" id="txnPagination">
+              <!-- Filled by JS -->
             </div>
           </div>
         </div>
       </main>
     </div>
 
+    <script src="../../js/data/store.js"></script>
+    <script src="../../js/modules/auth.js"></script>
     <script src="../../js/unit_manager/revenue.js"></script>
   </body>
 </html>
-
-
-
