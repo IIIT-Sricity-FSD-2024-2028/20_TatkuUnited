@@ -95,7 +95,6 @@ AppStore.ready.then(() => {
       AppStore.data.service_providers.push(dummy);
       unassignedProviders.push(dummy);
   }
-
   /* ── 4. Generate skill requests ── */
   const skillRequests = [];
 
