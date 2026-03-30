@@ -1,255 +1,365 @@
 <!doctype html>
 <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Unit Manager — Manage Providers</title>
+    <link rel="stylesheet" href="../../css/unit_manager/providers.css" />
+  </head>
 
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Unit Manager — Manage Providers</title>
-  <link rel="stylesheet" href="../../css/unit_manager/providers.css" />
-</head>
-
-<body>
-  <!-- Sidebar -->
-  <aside class="sidebar">
-    <div class="brand">
-      <div class="brand-avatar">TU</div>
-      <div class="brand-info">
-        <span class="brand-name">Unit Manager</span>
-        <span class="brand-id">ID: 8821-XP</span>
+  <body>
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-avatar">TU</div>
+        <div class="brand-info">
+          <span class="brand-name">Unit Manager</span>
+          <span class="brand-id">ID: 8821-XP</span>
+        </div>
       </div>
-    </div>
-    <nav class="nav">
-      <a href="dashboard.html" class="nav-item">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <rect x="3" y="3" width="7" height="7" />
-          <rect x="14" y="3" width="7" height="7" />
-          <rect x="14" y="14" width="7" height="7" />
-          <rect x="3" y="14" width="7" height="7" />
-        </svg>
-        Dashboard
-      </a>
-      <a href="providers.html" class="nav-item active">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-          <circle cx="9" cy="7" r="4" />
-          <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-          <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-        </svg>
-        Manage Providers
-      </a>
-      <a href="skills.html" class="nav-item">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path
-            d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
-        </svg>
-        Manage Skills
-      </a>
-      <a href="revenue.html" class="nav-item">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <line x1="12" y1="1" x2="12" y2="23" />
-          <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
-        </svg>
-        Revenue Reports
-      </a>
-      <a href="notifications.html" class="nav-item">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
-          <path d="M13.73 21a2 2 0 0 1-3.46 0" />
-        </svg>
-        Notifications
-      </a>
-      <a href="profile.html" class="nav-item">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-          <circle cx="12" cy="7" r="4" />
-        </svg>
-        My Profile
-      </a>
-    </nav>
-    <div class="sidebar-footer">
-      <a href="../auth_pages/logout.html" class="logout-link" id="logout-btn"
-        onclick="return confirm('Are you sure you want to logout?');">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-          <polyline points="16 17 21 12 16 7" />
-          <line x1="21" y1="12" x2="9" y2="12" />
-        </svg>
-        Logout
-      </a>
-    </div>
-  </aside>
-
-  <div class="main">
-    <header class="topbar">
-      <div class="search-wrap">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="11" cy="11" r="8" />
-          <line x1="21" y1="21" x2="16.65" y2="16.65" />
-        </svg>
-        <input type="text" placeholder="Search reports, transactions, or providers..." />
-      </div>
-      <div class="topbar-actions">
-        <button class="notif-btn" onclick="window.location.href = 'notifications.html'">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <nav class="nav">
+        <a href="dashboard.html" class="nav-item">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <rect x="3" y="3" width="7" height="7" />
+            <rect x="14" y="3" width="7" height="7" />
+            <rect x="14" y="14" width="7" height="7" />
+            <rect x="3" y="14" width="7" height="7" />
+          </svg>
+          Dashboard
+        </a>
+        <a href="providers.html" class="nav-item active">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+            <circle cx="9" cy="7" r="4" />
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+            <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+          </svg>
+          Manage Providers
+        </a>
+        <a href="skills.html" class="nav-item">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path
+              d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"
+            />
+          </svg>
+          Manage Skills
+        </a>
+        <a href="revenue.html" class="nav-item">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <line x1="12" y1="1" x2="12" y2="23" />
+            <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+          </svg>
+          Revenue Reports
+        </a>
+        <a href="notifications.html" class="nav-item">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
             <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
             <path d="M13.73 21a2 2 0 0 1-3.46 0" />
           </svg>
-          <span class="notif-dot"></span>
-        </button>
-        <a href="profile.html" class="user-avatar" title="My Profile">TU</a>
-      </div>
-    </header>
-
-    <main class="content">
-      <div class="page-header">
-        <div>
-          <h1>Manage Providers</h1>
-          <p>
-            Monitor, assign, and review performance for all service providers
-            in your unit.
-          </p>
-        </div>
-      </div>
-
-      <!-- Summary Badges -->
-      <div class="summary-row">
-        <div class="summary-badge teal">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+          Notifications
+        </a>
+        <a href="profile.html" class="nav-item">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+            <circle cx="12" cy="7" r="4" />
           </svg>
-          <div>
-            <span class="sum-label">Active Now</span>
-            <strong id="countActive">0</strong>
-          </div>
-        </div>
-        <div class="summary-badge blue">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <rect x="2" y="7" width="20" height="14" rx="2" ry="2" />
-            <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
+          My Profile
+        </a>
+      </nav>
+      <div class="sidebar-footer">
+        <a
+          href="../auth_pages/logout.html"
+          class="logout-link"
+          id="logout-btn"
+          onclick="return confirm('Are you sure you want to logout?');"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+            <polyline points="16 17 21 12 16 7" />
+            <line x1="21" y1="12" x2="9" y2="12" />
           </svg>
-          <div>
-            <span class="sum-label">On-Job</span>
-            <strong id="countOnJob">0</strong>
-          </div>
-        </div>
+          Logout
+        </a>
       </div>
+    </aside>
 
-      <!-- Filters + Search -->
-      <div class="filter-bar">
-        <div class="search-wrap table-search">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+    <div class="main">
+      <header class="topbar">
+        <div class="search-wrap">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
             <circle cx="11" cy="11" r="8" />
             <line x1="21" y1="21" x2="16.65" y2="16.65" />
           </svg>
-          <input type="text" id="tableSearch" placeholder="Search by name, provider ID, or specialty..."
-            oninput="filterProviders()" />
+          <input
+            type="text"
+            placeholder="Search reports, transactions, or providers..."
+          />
         </div>
-        <div class="filter-tabs">
-          <button class="filter-tab active" data-filter="all" onclick="setFilter(this, 'all')">
-            All
+        <div class="topbar-actions">
+          <button
+            class="notif-btn"
+            onclick="window.location.href = 'notifications.html'"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+              <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+            </svg>
+            <span class="notif-dot"></span>
           </button>
-          <button class="filter-tab" data-filter="Active" onclick="setFilter(this, 'Active')">
-            Active
-          </button>
-          <button class="filter-tab" data-filter="On-Job" onclick="setFilter(this, 'On-Job')">
-            On-Job
-          </button>
-          <button class="filter-tab" data-filter="Idle" onclick="setFilter(this, 'Idle')">
-            Idle
-          </button>
-          <button class="filter-tab" data-filter="Unavailable" onclick="setFilter(this, 'Unavailable')">
-            Unavailable
-          </button>
+          <a href="profile.html" class="user-avatar" title="My Profile">TU</a>
         </div>
-        <button class="btn-outline">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <line x1="4" y1="6" x2="20" y2="6" />
-            <line x1="8" y1="12" x2="16" y2="12" />
-            <line x1="11" y1="18" x2="13" y2="18" />
-          </svg>
-          More Filters
-        </button>
-        <button class="btn-primary" onclick="openModal()">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-            <circle cx="8.5" cy="7" r="4" />
-            <line x1="20" y1="8" x2="20" y2="14" />
-            <line x1="23" y1="11" x2="17" y2="11" />
-          </svg>
-          Add New Provider
-        </button>
-      </div>
+      </header>
 
-      <!-- Table -->
-      <div class="card table-card">
-        <table class="data-table" id="providerTable">
-          <thead>
-            <tr>
-              <th>Name & ID</th>
-              <th>Status</th>
-              <th>Rating</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody id="providerBody">
-            <!-- Filled by JS -->
-          </tbody>
-        </table>
-        <div class="table-footer">
-          <span id="showingText">Showing 1 â€“ 4 of 24 providers</span>
-          <div class="pagination" id="pagination">
-            <!-- Filled by JS -->
+      <main class="content">
+        <div class="page-header">
+          <div>
+            <h1>Manage Providers</h1>
+            <p>
+              Monitor, assign, and review performance for all service providers
+              in your unit.
+            </p>
           </div>
         </div>
-      </div>
-    </main>
-  </div>
 
-  <!-- Add Provider Modal -->
-  <div class="modal-overlay" id="modalOverlay" onclick="closeModal()">
-    <div class="modal" onclick="event.stopPropagation()">
-      <div class="modal-head">
-        <h2>Add New Provider</h2>
-        <button class="modal-close" onclick="closeModal()">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <line x1="18" y1="6" x2="6" y2="18" />
-            <line x1="6" y1="6" x2="18" y2="18" />
-          </svg>
-        </button>
-      </div>
-      <div class="modal-body">
-        <div class="form-row">
-          <label>Full Name</label>
-          <input type="text" id="newName" placeholder="e.g. John Smith" />
+        <!-- Summary Badges -->
+        <div class="summary-row">
+          <div class="summary-badge teal">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+            </svg>
+            <div>
+              <span class="sum-label">Active Now</span>
+              <strong id="countActive">0</strong>
+            </div>
+          </div>
+          <div class="summary-badge blue">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <rect x="2" y="7" width="20" height="14" rx="2" ry="2" />
+              <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
+            </svg>
+            <div>
+              <span class="sum-label">On-Job</span>
+              <strong id="countOnJob">0</strong>
+            </div>
+          </div>
         </div>
-        <div class="form-row">
-          <label>Specialty</label>
-          <select id="newSpecialty">
-            <option>Specialist</option>
-            <option>Technician</option>
-            <option>Logistics</option>
-            <option>Analyst</option>
-          </select>
+
+        <!-- Filters + Search -->
+        <div class="filter-bar">
+          <div class="search-wrap table-search">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <circle cx="11" cy="11" r="8" />
+              <line x1="21" y1="21" x2="16.65" y2="16.65" />
+            </svg>
+            <input
+              type="text"
+              id="tableSearch"
+              placeholder="Search by name, provider ID, or specialty..."
+              oninput="filterProviders()"
+            />
+          </div>
+          <div class="filter-tabs">
+            <button
+              class="filter-tab active"
+              data-filter="all"
+              onclick="setFilter(this, 'all')"
+            >
+              All
+            </button>
+            <button
+              class="filter-tab"
+              data-filter="Active"
+              onclick="setFilter(this, 'Active')"
+            >
+              Active
+            </button>
+            <button
+              class="filter-tab"
+              data-filter="On-Job"
+              onclick="setFilter(this, 'On-Job')"
+            >
+              On-Job
+            </button>
+            <button
+              class="filter-tab"
+              data-filter="Idle"
+              onclick="setFilter(this, 'Idle')"
+            >
+              Idle
+            </button>
+            <button
+              class="filter-tab"
+              data-filter="Unavailable"
+              onclick="setFilter(this, 'Unavailable')"
+            >
+              Unavailable
+            </button>
+          </div>
+          <button class="btn-outline">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <line x1="4" y1="6" x2="20" y2="6" />
+              <line x1="8" y1="12" x2="16" y2="12" />
+              <line x1="11" y1="18" x2="13" y2="18" />
+            </svg>
+            More Filters
+          </button>
+          <button class="btn-primary" onclick="openModal()">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+              <circle cx="8.5" cy="7" r="4" />
+              <line x1="20" y1="8" x2="20" y2="14" />
+              <line x1="23" y1="11" x2="17" y2="11" />
+            </svg>
+            Add New Provider
+          </button>
         </div>
-        <div class="form-row">
-          <label>Initial Status</label>
-          <select id="newStatus">
-            <option>Active</option>
-            <option>Idle</option>
-            <option>Unavailable</option>
-          </select>
+
+        <!-- Table -->
+        <div class="card table-card">
+          <table class="data-table" id="providerTable">
+            <thead>
+              <tr>
+                <th>Name & ID</th>
+                <th>Status</th>
+                <th>Rating</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="providerBody">
+              <!-- Filled by JS -->
+            </tbody>
+          </table>
+          <div class="table-footer">
+            <span id="showingText">Showing 1 â€“ 4 of 24 providers</span>
+            <div class="pagination" id="pagination">
+              <!-- Filled by JS -->
+            </div>
+          </div>
         </div>
-      </div>
-      <div class="modal-foot">
-        <button class="btn-ghost" onclick="closeModal()">Cancel</button>
-        <button class="btn-primary" onclick="addProvider()">
-          Add Provider
-        </button>
+      </main>
+    </div>
+
+    <!-- Add Provider Modal -->
+    <div class="modal-overlay" id="modalOverlay" onclick="closeModal()">
+      <div class="modal" onclick="event.stopPropagation()">
+        <div class="modal-head">
+          <h2>Add New Provider</h2>
+          <button class="modal-close" onclick="closeModal()">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="form-row">
+            <label>Full Name</label>
+            <input type="text" id="newName" placeholder="e.g. John Smith" />
+          </div>
+          <div class="form-row">
+            <label>Specialty</label>
+            <select id="newSpecialty">
+              <option>Specialist</option>
+              <option>Technician</option>
+              <option>Logistics</option>
+              <option>Analyst</option>
+            </select>
+          </div>
+          <div class="form-row">
+            <label>Initial Status</label>
+            <select id="newStatus">
+              <option>Active</option>
+              <option>Idle</option>
+              <option>Unavailable</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-foot">
+          <button class="btn-ghost" onclick="closeModal()">Cancel</button>
+          <button class="btn-primary" onclick="addProvider()">
+            Add Provider
+          </button>
+        </div>
       </div>
     </div>
-  </div>
 
-  <script src="../../js/unit_manager/providers.js"></script>
-</body>
-
+    <script src="../../js/data/store.js"></script>
+    <script src="../../js/modules/auth.js"></script>
+    <script src="../../js/unit_manager/providers.js"></script>
+  </body>
 </html>

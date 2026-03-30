@@ -14,19 +14,10 @@
  */
 
 /* ─────────────────────────────────────────────
-   1. MOCK DATA  (mirrors mockData.json schema)
-   ───────────────────────────────────────────── */
+  1. LIVE DATA (from shared AppStore)
+  ───────────────────────────────────────────── */
 
-const ALL_TRANSACTIONS = [
-  { id: 'TXN001', method: 'UPI',         status: 'SUCCESS',  amount: 1999.00, refund: 0.00,    date: '2024-07-01T09:32:00Z', booking_id: 'BKG001' },
-  { id: 'TXN002', method: 'CARD',        status: 'SUCCESS',  amount: 2499.00, refund: 0.00,    date: '2024-07-01T11:05:00Z', booking_id: 'BKG002' },
-  { id: 'TXN003', method: 'Net Banking', status: 'REFUNDED', amount: 0.00,    refund: 799.00,  date: '2024-07-10T13:32:00Z', booking_id: 'BKG003' },
-  { id: 'TXN004', method: 'Wallet',      status: 'PENDING',  amount: 3299.00, refund: 0.00,    date: '2026-04-10T09:02:00Z', booking_id: 'BKG004' },
-  { id: 'TXN005', method: 'UPI',         status: 'SUCCESS',  amount: 1999.00, refund: 0.00,    date: '2026-04-01T08:47:00Z', booking_id: 'BKG005' },
-  { id: 'TXN006', method: 'CARD',        status: 'SUCCESS',  amount: 299.00,  refund: 0.00,    date: '2024-08-12T14:32:00Z', booking_id: 'BKG006' },
-  { id: 'TXN007', method: 'Net Banking', status: 'SUCCESS',  amount: 2499.00, refund: 0.00,    date: '2026-04-14T10:02:00Z', booking_id: 'BKG007' },
-  { id: 'TXN008', method: 'UPI',         status: 'REFUNDED', amount: 0.00,    refund: 3999.00, date: '2024-09-28T10:02:00Z', booking_id: 'BKG010' },
-];
+let ALL_TRANSACTIONS = [];
 
 /**
  * Use the LATEST transaction date as the "current date" reference.
@@ -35,9 +26,7 @@ const ALL_TRANSACTIONS = [
  * (The mock data spans 2024–2026; using real `new Date()` would
  *  return 0 results since most entries are far in the past or future.)
  */
-const LATEST_TXN_DATE = new Date(
-  Math.max(...ALL_TRANSACTIONS.map(t => new Date(t.date).getTime()))
-);
+let LATEST_TXN_DATE = new Date();
 
 /** SVG for the filter button — stored so we can rebuild innerHTML safely */
 const BTN30_SVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -54,9 +43,55 @@ const BTN30_SVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" st
 const FEE_RATE = 0.07;
 const PER_PAGE = 5;
 
-let activeTxns  = [...ALL_TRANSACTIONS];
-let txnPage     = 1;
+let activeTxns = [];
+let txnPage = 1;
 let is30DayMode = false;
+
+function mapMethod(m) {
+  return (
+    { UPI: "UPI", CARD: "CARD", NETBANK: "Net Banking", WALLET: "Wallet" }[m] ||
+    m ||
+    "Unknown"
+  );
+}
+
+function loadRevenueDataFromStore(session) {
+  const allAssignments = AppStore.getTable("job_assignments") || [];
+  const allProviders = AppStore.getTable("service_providers") || [];
+  const allTxns = AppStore.getTable("transactions") || [];
+
+  const unitProviderIds = new Set(
+    allProviders
+      .filter((p) => p.unit_id === session.unitId)
+      .map((p) => p.service_provider_id),
+  );
+
+  const unitBookingIds = new Set(
+    allAssignments
+      .filter((a) => unitProviderIds.has(a.service_provider_id))
+      .map((a) => a.booking_id),
+  );
+
+  ALL_TRANSACTIONS = allTxns
+    .filter((t) => unitBookingIds.has(t.booking_id))
+    .map((t) => ({
+      id: t.transaction_id,
+      method: mapMethod(t.payment_method),
+      status: t.payment_status,
+      amount: Number(t.amount || 0),
+      refund: Number(t.refund_amount || 0),
+      date: t.verified_at || t.transaction_at || new Date().toISOString(),
+      booking_id: t.booking_id,
+    }));
+
+  if (ALL_TRANSACTIONS.length) {
+    LATEST_TXN_DATE = new Date(
+      Math.max(...ALL_TRANSACTIONS.map((t) => new Date(t.date).getTime())),
+    );
+  }
+
+  activeTxns = [...ALL_TRANSACTIONS];
+}
 
 /* ─────────────────────────────────────────────
    3. HELPERS
@@ -64,50 +99,65 @@ let is30DayMode = false;
 
 /** Format number as ₹ Indian currency */
 function rupee(n) {
-  return '\u20b9' + Number(n).toLocaleString('en-IN', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  });
+  return (
+    "\u20b9" +
+    Number(n).toLocaleString("en-IN", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })
+  );
 }
 
 /** Format ISO date string to "01 Jul 2024" */
 function niceDate(iso) {
-  return new Date(iso).toLocaleDateString('en-IN', {
-    day: '2-digit', month: 'short', year: 'numeric',
+  return new Date(iso).toLocaleDateString("en-IN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
   });
 }
 
 /** Format ISO date string to "01 Jul 2024, 09:32 AM" */
 function niceDateTime(iso) {
-  return new Date(iso).toLocaleString('en-IN', {
-    day: '2-digit', month: 'short', year: 'numeric',
-    hour: '2-digit', minute: '2-digit',
+  return new Date(iso).toLocaleString("en-IN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
   });
 }
 
-function getSuccessTxns(txns) { return txns.filter(t => t.status === 'SUCCESS'); }
+function getSuccessTxns(txns) {
+  return txns.filter((t) => t.status === "SUCCESS");
+}
 
 /* ─────────────────────────────────────────────
    4. STAT CARDS
    ───────────────────────────────────────────── */
 
 function renderStatCards() {
-  const success      = getSuccessTxns(activeTxns);
+  const success = getSuccessTxns(activeTxns);
   const totalRevenue = success.reduce((s, t) => s + t.amount, 0);
   const platformFees = totalRevenue * FEE_RATE;
-  const netEarnings  = totalRevenue - platformFees;
-  const count        = success.length;
+  const netEarnings = totalRevenue - platformFees;
+  const count = success.length;
 
-  document.getElementById('statTotalRevenue').textContent = rupee(totalRevenue);
-  document.getElementById('statTotalFees').textContent    = rupee(platformFees);
-  document.getElementById('statNetEarnings').textContent  = rupee(netEarnings);
+  document.getElementById("statTotalRevenue").textContent = rupee(totalRevenue);
+  document.getElementById("statTotalFees").textContent = rupee(platformFees);
+  document.getElementById("statNetEarnings").textContent = rupee(netEarnings);
 
-  document.getElementById('statRevenueBadge').textContent =
-    count > 0 ? `\u2191 ${count} paid booking${count !== 1 ? 's' : ''}` : 'No data';
+  document.getElementById("statRevenueBadge").textContent =
+    count > 0
+      ? `\u2191 ${count} paid booking${count !== 1 ? "s" : ""}`
+      : "No data";
 
-  document.getElementById('statFeesBadge').textContent  = `${(FEE_RATE * 100).toFixed(0)}% platform cut`;
-  document.getElementById('statEarningsBadge').textContent =
-    totalRevenue > 0 ? `\u2191 ${((netEarnings / totalRevenue) * 100).toFixed(1)}% margin` : '\u2014';
+  document.getElementById("statFeesBadge").textContent =
+    `${(FEE_RATE * 100).toFixed(0)}% platform cut`;
+  document.getElementById("statEarningsBadge").textContent =
+    totalRevenue > 0
+      ? `\u2191 ${((netEarnings / totalRevenue) * 100).toFixed(1)}% margin`
+      : "\u2014";
 }
 
 /* ─────────────────────────────────────────────
@@ -118,10 +168,10 @@ function renderStatCards() {
 
 function buildMonthlyData(txns) {
   const map = {};
-  getSuccessTxns(txns).forEach(t => {
-    const d   = new Date(t.date);
-    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-    map[key]  = (map[key] || 0) + t.amount;
+  getSuccessTxns(txns).forEach((t) => {
+    const d = new Date(t.date);
+    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+    map[key] = (map[key] || 0) + t.amount;
   });
   return Object.entries(map)
     .sort(([a], [b]) => a.localeCompare(b))
@@ -129,112 +179,134 @@ function buildMonthlyData(txns) {
 }
 
 function drawChart() {
-  const canvas = document.getElementById('lineCanvas');
+  const canvas = document.getElementById("lineCanvas");
   if (!canvas) return;
 
   // Fallback chain for width — handles pre-layout timing
-  const W   = canvas.offsetWidth || canvas.parentElement.offsetWidth || 600;
-  const H   = 220;
+  const W = canvas.offsetWidth || canvas.parentElement.offsetWidth || 600;
+  const H = 220;
   const dpr = window.devicePixelRatio || 1;
-  canvas.width  = W * dpr;
+  canvas.width = W * dpr;
   canvas.height = H * dpr;
 
-  const ctx = canvas.getContext('2d');
+  const ctx = canvas.getContext("2d");
   ctx.scale(dpr, dpr);
   ctx.clearRect(0, 0, W, H);
 
-  const monthly   = buildMonthlyData(activeTxns);
-  const labels    = monthly.map(([k]) => {
-    const [yr, mo] = k.split('-');
-    return new Date(Number(yr), Number(mo) - 1)
-      .toLocaleString('en-IN', { month: 'short' }) + " '" + String(yr).slice(2);
+  const monthly = buildMonthlyData(activeTxns);
+  const labels = monthly.map(([k]) => {
+    const [yr, mo] = k.split("-");
+    return (
+      new Date(Number(yr), Number(mo) - 1).toLocaleString("en-IN", {
+        month: "short",
+      }) +
+      " '" +
+      String(yr).slice(2)
+    );
   });
-  const actual    = monthly.map(([, v]) => v);
-  const projected = actual.map(v => Math.round(v * 1.08));
+  const actual = monthly.map(([, v]) => v);
+  const projected = actual.map((v) => Math.round(v * 1.08));
 
   // Empty state
   if (actual.length === 0) {
-    ctx.fillStyle = 'rgba(148,163,184,0.6)';
-    ctx.font      = '14px Inter,sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText('No revenue data for this period', W / 2, H / 2);
-    document.getElementById('xLabels').innerHTML = '';
+    ctx.fillStyle = "rgba(148,163,184,0.6)";
+    ctx.font = "14px Inter,sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText("No revenue data for this period", W / 2, H / 2);
+    document.getElementById("xLabels").innerHTML = "";
     return;
   }
 
-  const PAD  = { top: 28, right: 24, bottom: 10, left: 64 };
-  const gW   = Math.max(W - PAD.left - PAD.right, 1);
-  const gH   = Math.max(H - PAD.top - PAD.bottom, 1);
-  const n    = actual.length;
+  const PAD = { top: 28, right: 24, bottom: 10, left: 64 };
+  const gW = Math.max(W - PAD.left - PAD.right, 1);
+  const gH = Math.max(H - PAD.top - PAD.bottom, 1);
+  const n = actual.length;
   const maxV = Math.max(...actual, ...projected) * 1.15 || 1000;
 
-  const xP = i => PAD.left + (n > 1 ? (i / (n - 1)) * gW : gW / 2);
-  const yP = v => PAD.top  + gH - (v / maxV) * gH;
+  const xP = (i) => PAD.left + (n > 1 ? (i / (n - 1)) * gW : gW / 2);
+  const yP = (v) => PAD.top + gH - (v / maxV) * gH;
 
   /* Grid + Y labels */
   for (let i = 0; i <= 4; i++) {
     const y = PAD.top + (gH / 4) * i;
     const v = Math.round(maxV - (maxV / 4) * i);
-    ctx.strokeStyle = 'rgba(148,163,184,0.15)';
-    ctx.lineWidth   = 1;
-    ctx.beginPath(); ctx.moveTo(PAD.left, y); ctx.lineTo(W - PAD.right, y); ctx.stroke();
-    ctx.fillStyle   = 'rgba(148,163,184,0.7)';
-    ctx.font        = '11px Inter,sans-serif';
-    ctx.textAlign   = 'right';
-    ctx.fillText(v >= 1000 ? '\u20b9' + (v / 1000).toFixed(1) + 'k' : '\u20b9' + v, PAD.left - 6, y + 4);
+    ctx.strokeStyle = "rgba(148,163,184,0.15)";
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(PAD.left, y);
+    ctx.lineTo(W - PAD.right, y);
+    ctx.stroke();
+    ctx.fillStyle = "rgba(148,163,184,0.7)";
+    ctx.font = "11px Inter,sans-serif";
+    ctx.textAlign = "right";
+    ctx.fillText(
+      v >= 1000 ? "\u20b9" + (v / 1000).toFixed(1) + "k" : "\u20b9" + v,
+      PAD.left - 6,
+      y + 4,
+    );
   }
 
   /* Projected dashed line */
   if (n > 1) {
     ctx.setLineDash([6, 4]);
-    ctx.strokeStyle = 'rgba(148,163,184,0.45)';
-    ctx.lineWidth   = 2;
+    ctx.strokeStyle = "rgba(148,163,184,0.45)";
+    ctx.lineWidth = 2;
     ctx.beginPath();
-    projected.forEach((v, i) => i === 0 ? ctx.moveTo(xP(i), yP(v)) : ctx.lineTo(xP(i), yP(v)));
+    projected.forEach((v, i) =>
+      i === 0 ? ctx.moveTo(xP(i), yP(v)) : ctx.lineTo(xP(i), yP(v)),
+    );
     ctx.stroke();
     ctx.setLineDash([]);
   }
 
   /* Actual area fill */
   const grad = ctx.createLinearGradient(0, PAD.top, 0, PAD.top + gH);
-  grad.addColorStop(0, 'rgba(37,99,235,0.22)');
-  grad.addColorStop(1, 'rgba(37,99,235,0.01)');
+  grad.addColorStop(0, "rgba(37,99,235,0.22)");
+  grad.addColorStop(1, "rgba(37,99,235,0.01)");
   ctx.fillStyle = grad;
   ctx.beginPath();
   ctx.moveTo(xP(0), yP(actual[0]));
-  actual.forEach((v, i) => { if (i > 0) ctx.lineTo(xP(i), yP(v)); });
+  actual.forEach((v, i) => {
+    if (i > 0) ctx.lineTo(xP(i), yP(v));
+  });
   ctx.lineTo(xP(n - 1), PAD.top + gH);
-  ctx.lineTo(xP(0),     PAD.top + gH);
-  ctx.closePath(); ctx.fill();
+  ctx.lineTo(xP(0), PAD.top + gH);
+  ctx.closePath();
+  ctx.fill();
 
   /* Actual line */
-  ctx.strokeStyle = '#2563eb'; ctx.lineWidth = 2.5;
+  ctx.strokeStyle = "#2563eb";
+  ctx.lineWidth = 2.5;
   ctx.beginPath();
-  actual.forEach((v, i) => i === 0 ? ctx.moveTo(xP(i), yP(v)) : ctx.lineTo(xP(i), yP(v)));
+  actual.forEach((v, i) =>
+    i === 0 ? ctx.moveTo(xP(i), yP(v)) : ctx.lineTo(xP(i), yP(v)),
+  );
   ctx.stroke();
 
   /* Dots */
   actual.forEach((v, i) => {
     ctx.beginPath();
     ctx.arc(xP(i), yP(v), 4.5, 0, Math.PI * 2);
-    ctx.fillStyle = i === n - 1 ? '#2563eb' : '#fff';
-    ctx.strokeStyle = '#2563eb'; ctx.lineWidth = 2.5;
-    ctx.fill(); ctx.stroke();
+    ctx.fillStyle = i === n - 1 ? "#2563eb" : "#fff";
+    ctx.strokeStyle = "#2563eb";
+    ctx.lineWidth = 2.5;
+    ctx.fill();
+    ctx.stroke();
 
     /* Amount label on the last dot */
     if (i === n - 1) {
-      ctx.fillStyle = '#2563eb';
-      ctx.font      = 'bold 11px Inter,sans-serif';
-      ctx.textAlign = 'center';
+      ctx.fillStyle = "#2563eb";
+      ctx.font = "bold 11px Inter,sans-serif";
+      ctx.textAlign = "center";
       ctx.fillText(rupee(v), xP(i), yP(v) - 10);
     }
   });
 
   /* X-axis month labels */
-  const xDiv = document.getElementById('xLabels');
-  xDiv.innerHTML = '';
-  labels.forEach(lbl => {
-    const s = document.createElement('span');
+  const xDiv = document.getElementById("xLabels");
+  xDiv.innerHTML = "";
+  labels.forEach((lbl) => {
+    const s = document.createElement("span");
     s.textContent = lbl;
     xDiv.appendChild(s);
   });
@@ -244,81 +316,100 @@ function drawChart() {
    6. TRANSACTION TABLE
    ───────────────────────────────────────────── */
 
-const STATUS_CSS = { SUCCESS: 'completed', PENDING: 'pending', REFUNDED: 'refunded', FAILED: 'failed' };
-const STATUS_LBL = { SUCCESS: 'COMPLETED', PENDING: 'PENDING', REFUNDED: 'REFUNDED', FAILED: 'FAILED' };
+const STATUS_CSS = {
+  SUCCESS: "completed",
+  PENDING: "pending",
+  REFUNDED: "refunded",
+  FAILED: "failed",
+};
+const STATUS_LBL = {
+  SUCCESS: "COMPLETED",
+  PENDING: "PENDING",
+  REFUNDED: "REFUNDED",
+  FAILED: "FAILED",
+};
 
 function buildRow(t) {
-  const tr = document.createElement('tr');
+  const tr = document.createElement("tr");
 
-  const amountCell = t.status === 'REFUNDED'
-    ? `<span style="color:#f59e0b">${rupee(t.refund)} refunded</span>`
-    : `<strong>${rupee(t.amount)}</strong>`;
+  const amountCell =
+    t.status === "REFUNDED"
+      ? `<span style="color:#f59e0b">${rupee(t.refund)} refunded</span>`
+      : `<strong>${rupee(t.amount)}</strong>`;
 
-  const feeCell = t.status === 'SUCCESS'
-    ? `<span class="fee-neg">-${rupee(t.amount * FEE_RATE)}</span>`
-    : t.status === 'REFUNDED'
-      ? `<span style="color:#16a34a">+${rupee(t.refund)}</span>`
-      : `<span style="opacity:.4">—</span>`;
+  const feeCell =
+    t.status === "SUCCESS"
+      ? `<span class="fee-neg">-${rupee(t.amount * FEE_RATE)}</span>`
+      : t.status === "REFUNDED"
+        ? `<span style="color:#16a34a">+${rupee(t.refund)}</span>`
+        : `<span style="opacity:.4">—</span>`;
 
   tr.innerHTML = `
     <td><span class="txn-id">${t.id}</span></td>
     <td>${niceDate(t.date)}</td>
     <td>${amountCell}</td>
     <td>${feeCell}</td>
-    <td><span class="status-pill ${STATUS_CSS[t.status] || 'pending'}">${STATUS_LBL[t.status] || t.status}</span></td>
+    <td><span class="status-pill ${STATUS_CSS[t.status] || "pending"}">${STATUS_LBL[t.status] || t.status}</span></td>
     <td><button class="more-btn" data-id="${t.id}" title="View details">&#8942;</button></td>
   `;
 
   /* Wire ⋮ button to detail panel */
-  tr.querySelector('.more-btn').addEventListener('click', () => showDetail(t));
+  tr.querySelector(".more-btn").addEventListener("click", () => showDetail(t));
 
   return tr;
 }
 
 function renderTransactions() {
-  const sorted = [...activeTxns].sort((a, b) => new Date(b.date) - new Date(a.date));
-  const total  = sorted.length;
-  const start  = (txnPage - 1) * PER_PAGE;
-  const slice  = sorted.slice(start, start + PER_PAGE);
+  const sorted = [...activeTxns].sort(
+    (a, b) => new Date(b.date) - new Date(a.date),
+  );
+  const total = sorted.length;
+  const start = (txnPage - 1) * PER_PAGE;
+  const slice = sorted.slice(start, start + PER_PAGE);
 
-  const tbody = document.getElementById('txnBody');
-  tbody.innerHTML = '';
+  const tbody = document.getElementById("txnBody");
+  tbody.innerHTML = "";
 
   if (slice.length === 0) {
     tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:30px;opacity:.5">
       No transactions found for this period.</td></tr>`;
   } else {
     const frag = document.createDocumentFragment();
-    slice.forEach(t => frag.appendChild(buildRow(t)));
+    slice.forEach((t) => frag.appendChild(buildRow(t)));
     tbody.appendChild(frag);
   }
 
   const from = total === 0 ? 0 : start + 1;
-  const to   = Math.min(start + PER_PAGE, total);
-  document.getElementById('txnShowingText').textContent =
-    `Showing ${from} \u2013 ${to} of ${total} transaction${total !== 1 ? 's' : ''}`;
+  const to = Math.min(start + PER_PAGE, total);
+  document.getElementById("txnShowingText").textContent =
+    `Showing ${from} \u2013 ${to} of ${total} transaction${total !== 1 ? "s" : ""}`;
 
   renderPagination(total);
 }
 
 function renderPagination(total) {
-  const container = document.getElementById('txnPagination');
-  container.innerHTML = '';
+  const container = document.getElementById("txnPagination");
+  container.innerHTML = "";
   const pages = Math.max(1, Math.ceil(total / PER_PAGE));
   if (txnPage > pages) txnPage = 1;
 
   const makeBtn = (label, page, disabled, active) => {
-    const b = document.createElement('button');
-    b.className   = 'pg-btn' + (active ? ' active' : '');
+    const b = document.createElement("button");
+    b.className = "pg-btn" + (active ? " active" : "");
     b.textContent = label;
-    b.disabled    = disabled;
-    if (!disabled) b.addEventListener('click', () => { txnPage = page; renderTransactions(); });
+    b.disabled = disabled;
+    if (!disabled)
+      b.addEventListener("click", () => {
+        txnPage = page;
+        renderTransactions();
+      });
     return b;
   };
 
-  container.appendChild(makeBtn('Prev', txnPage - 1, txnPage === 1, false));
-  for (let i = 1; i <= pages; i++) container.appendChild(makeBtn(String(i), i, false, i === txnPage));
-  container.appendChild(makeBtn('Next', txnPage + 1, txnPage === pages, false));
+  container.appendChild(makeBtn("Prev", txnPage - 1, txnPage === 1, false));
+  for (let i = 1; i <= pages; i++)
+    container.appendChild(makeBtn(String(i), i, false, i === txnPage));
+  container.appendChild(makeBtn("Next", txnPage + 1, txnPage === pages, false));
 }
 
 /* ─────────────────────────────────────────────
@@ -329,15 +420,23 @@ function renderPagination(total) {
 
 /* Inject the detail panel HTML once */
 (function injectDetailPanel() {
-  const panel = document.createElement('div');
-  panel.id = 'txnDetailPanel';
+  const panel = document.createElement("div");
+  panel.id = "txnDetailPanel";
   panel.style.cssText = [
-    'position:fixed', 'top:0', 'right:-380px', 'width:360px', 'height:100vh',
-    'background:var(--surface,#1e293b)', 'border-left:1px solid var(--border,#334155)',
-    'box-shadow:-8px 0 32px rgba(0,0,0,.35)', 'padding:28px 24px',
-    'transition:right .3s cubic-bezier(.4,0,.2,1)', 'z-index:1000',
-    'overflow-y:auto', 'font-family:Inter,sans-serif',
-  ].join(';');
+    "position:fixed",
+    "top:0",
+    "right:-380px",
+    "width:360px",
+    "height:100vh",
+    "background:var(--surface,#1e293b)",
+    "border-left:1px solid var(--border,#334155)",
+    "box-shadow:-8px 0 32px rgba(0,0,0,.35)",
+    "padding:28px 24px",
+    "transition:right .3s cubic-bezier(.4,0,.2,1)",
+    "z-index:1000",
+    "overflow-y:auto",
+    "font-family:Inter,sans-serif",
+  ].join(";");
 
   panel.innerHTML = `
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px">
@@ -350,37 +449,47 @@ function renderPagination(total) {
   document.body.appendChild(panel);
 
   /* Backdrop */
-  const backdrop = document.createElement('div');
-  backdrop.id = 'detailBackdrop';
+  const backdrop = document.createElement("div");
+  backdrop.id = "detailBackdrop";
   backdrop.style.cssText = [
-    'position:fixed', 'inset:0', 'background:rgba(0,0,0,.4)',
-    'z-index:999', 'display:none',
-  ].join(';');
+    "position:fixed",
+    "inset:0",
+    "background:rgba(0,0,0,.4)",
+    "z-index:999",
+    "display:none",
+  ].join(";");
   document.body.appendChild(backdrop);
 
   function closeDetail() {
-    panel.style.right = '-380px';
-    backdrop.style.display = 'none';
+    panel.style.right = "-380px";
+    backdrop.style.display = "none";
   }
 
-  panel.querySelector('#closeDetail').addEventListener('click', closeDetail);
-  backdrop.addEventListener('click', closeDetail);
-  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDetail(); });
+  panel.querySelector("#closeDetail").addEventListener("click", closeDetail);
+  backdrop.addEventListener("click", closeDetail);
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") closeDetail();
+  });
 })();
 
 function showDetail(t) {
-  const panel    = document.getElementById('txnDetailPanel');
-  const content  = document.getElementById('detailContent');
-  const statusColor = { SUCCESS: '#16a34a', PENDING: '#f59e0b', REFUNDED: '#3b82f6', FAILED: '#dc2626' };
+  const panel = document.getElementById("txnDetailPanel");
+  const content = document.getElementById("detailContent");
+  const statusColor = {
+    SUCCESS: "#16a34a",
+    PENDING: "#f59e0b",
+    REFUNDED: "#3b82f6",
+    FAILED: "#dc2626",
+  };
 
-  const displayAmount = t.status === 'REFUNDED'
-    ? rupee(t.refund) + ' (refunded)'
-    : rupee(t.amount);
+  const displayAmount =
+    t.status === "REFUNDED" ? rupee(t.refund) + " (refunded)" : rupee(t.amount);
 
-  const fee = t.status === 'SUCCESS' ? rupee(t.amount * FEE_RATE) : '—';
-  const net = t.status === 'SUCCESS' ? rupee(t.amount - t.amount * FEE_RATE) : '—';
+  const fee = t.status === "SUCCESS" ? rupee(t.amount * FEE_RATE) : "—";
+  const net =
+    t.status === "SUCCESS" ? rupee(t.amount - t.amount * FEE_RATE) : "—";
 
-  function row(label, value, valueStyle = '') {
+  function row(label, value, valueStyle = "") {
     return `
       <div style="display:flex;justify-content:space-between;align-items:flex-start;
         padding:12px 0;border-bottom:1px solid var(--border,#334155)">
@@ -393,28 +502,28 @@ function showDetail(t) {
     <div style="text-align:center;padding:16px 0 24px">
       <div style="font-size:1.6rem;font-weight:700;color:var(--text-primary,#f1f5f9)">${displayAmount}</div>
       <span style="display:inline-block;margin-top:8px;padding:3px 12px;border-radius:999px;
-        font-size:.75rem;font-weight:600;background:${statusColor[t.status] || '#94a3b8'}22;
-        color:${statusColor[t.status] || '#94a3b8'}">${STATUS_LBL[t.status] || t.status}</span>
+        font-size:.75rem;font-weight:600;background:${statusColor[t.status] || "#94a3b8"}22;
+        color:${statusColor[t.status] || "#94a3b8"}">${STATUS_LBL[t.status] || t.status}</span>
     </div>
-    ${row('Transaction ID', `<code style="font-size:.8rem">${t.id}</code>`)}
-    ${row('Booking Ref',    t.booking_id)}
-    ${row('Date & Time',    niceDateTime(t.date))}
-    ${row('Payment Method', t.method)}
-    ${row('Gross Amount',   t.status !== 'REFUNDED' ? rupee(t.amount) : '—')}
-    ${row('Platform Fee',   fee, 'color:#f59e0b')}
-    ${row('Net Earnings',   net, 'color:#16a34a')}
-    ${t.status === 'REFUNDED' ? row('Refund Amount', rupee(t.refund), 'color:#3b82f6') : ''}
+    ${row("Transaction ID", `<code style="font-size:.8rem">${t.id}</code>`)}
+    ${row("Booking Ref", t.booking_id)}
+    ${row("Date & Time", niceDateTime(t.date))}
+    ${row("Payment Method", t.method)}
+    ${row("Gross Amount", t.status !== "REFUNDED" ? rupee(t.amount) : "—")}
+    ${row("Platform Fee", fee, "color:#f59e0b")}
+    ${row("Net Earnings", net, "color:#16a34a")}
+    ${t.status === "REFUNDED" ? row("Refund Amount", rupee(t.refund), "color:#3b82f6") : ""}
   `;
 
-  document.getElementById('detailBackdrop').style.display = 'block';
-  panel.style.right = '0';
+  document.getElementById("detailBackdrop").style.display = "block";
+  panel.style.right = "0";
 }
 
 /* ─────────────────────────────────────────────
    8. LAST 30 DAYS FILTER
    ───────────────────────────────────────────── */
 
-document.getElementById('btn30Days').addEventListener('click', function () {
+document.getElementById("btn30Days").addEventListener("click", function () {
   is30DayMode = !is30DayMode;
 
   if (is30DayMode) {
@@ -426,13 +535,13 @@ document.getElementById('btn30Days').addEventListener('click', function () {
      */
     const cutoff = new Date(LATEST_TXN_DATE);
     cutoff.setDate(cutoff.getDate() - 30);
-    activeTxns = ALL_TRANSACTIONS.filter(t => new Date(t.date) >= cutoff);
-    this.innerHTML = BTN30_SVG + ' Last 30 Days ✓';
-    this.style.outline = '2px solid currentColor';
+    activeTxns = ALL_TRANSACTIONS.filter((t) => new Date(t.date) >= cutoff);
+    this.innerHTML = BTN30_SVG + " Last 30 Days ✓";
+    this.style.outline = "2px solid currentColor";
   } else {
     activeTxns = [...ALL_TRANSACTIONS];
-    this.innerHTML = BTN30_SVG + ' Last 30 Days';
-    this.style.outline = '';
+    this.innerHTML = BTN30_SVG + " Last 30 Days";
+    this.style.outline = "";
   }
 
   txnPage = 1;
@@ -448,10 +557,10 @@ document.getElementById('btn30Days').addEventListener('click', function () {
       then removes the stylesheet.
    ───────────────────────────────────────────── */
 
-document.getElementById('btnExportPDF').addEventListener('click', function () {
+document.getElementById("btnExportPDF").addEventListener("click", function () {
   /* Inject print-only style */
-  const style = document.createElement('style');
-  style.id    = 'printStyle';
+  const style = document.createElement("style");
+  style.id = "printStyle";
   style.textContent = `
     @media print {
       @page { margin: 18mm 14mm; size: A4 portrait; }
@@ -474,7 +583,7 @@ document.getElementById('btnExportPDF').addEventListener('click', function () {
   /* Remove the style tag after print dialog closes
      (either cancelled or sent to printer) */
   setTimeout(() => {
-    const el = document.getElementById('printStyle');
+    const el = document.getElementById("printStyle");
     if (el) el.remove();
   }, 1000);
 });
@@ -483,9 +592,15 @@ document.getElementById('btnExportPDF').addEventListener('click', function () {
    10. INITIAL RENDER
    ───────────────────────────────────────────── */
 
-renderStatCards();
-renderTransactions();
+AppStore.ready.then(() => {
+  const session = Auth.requireSession(["unit_manager"]);
+  if (!session) return;
 
-/* Draw chart one tick later so CSS layout has applied
-   and canvas.offsetWidth returns the real pixel width */
-setTimeout(drawChart, 0);
+  loadRevenueDataFromStore(session);
+  renderStatCards();
+  renderTransactions();
+
+  /* Draw chart one tick later so CSS layout has applied
+    and canvas.offsetWidth returns the real pixel width */
+  setTimeout(drawChart, 0);
+});
