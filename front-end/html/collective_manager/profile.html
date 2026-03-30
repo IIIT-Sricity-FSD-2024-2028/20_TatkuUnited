@@ -96,7 +96,7 @@
             </svg>
             <span class="notif-dot"></span>
           </button>
-          <a href="profile.html" class="avatar active-avatar" title="My Profile">CM</a>
+          <a href="profile.html" class="avatar active-avatar" title="My Profile" id="topbar-avatar">CM</a>
         </div>
       </header>
 
@@ -115,20 +115,20 @@
             <input type="file" id="avatar-input" accept="image/*" style="display:none" onchange="updateAvatar(this)" />
           </div>
           <div class="profile-hero-info">
-            <h1 class="profile-name" id="hero-name">Priya Nair</h1>
+            <h1 class="profile-name" id="hero-name">—</h1>
             <p class="profile-role">Collective Manager</p>
-            <p class="profile-email" id="hero-email">priya.nair@tatku.com</p>
+            <p class="profile-email" id="hero-email">—</p>
             <div class="profile-stats">
               <div class="profile-stat">
-                <span class="stat-num">6</span>
+                <span class="stat-num" id="stat-units">—</span>
                 <span class="stat-lbl">Units Managed</span>
               </div>
               <div class="profile-stat">
-                <span class="stat-num">248</span>
+                <span class="stat-num" id="stat-providers">—</span>
                 <span class="stat-lbl">Total Providers</span>
               </div>
               <div class="profile-stat">
-                <span class="stat-num">₹4.5L</span>
+                <span class="stat-num">—</span>
                 <span class="stat-lbl">Monthly Revenue</span>
               </div>
             </div>
@@ -150,22 +150,22 @@
               <div class="card-grid">
                 <div class="form-field">
                   <label>Full Name</label>
-                  <input type="text" id="full-name" value="Priya Nair" oninput="syncName()" />
+                  <input type="text" id="full-name" value="" oninput="syncName()" />
                 </div>
                 <div class="form-field">
                   <label>Email Address</label>
-                  <input type="email" id="email" value="priya.nair@tatku.com" oninput="syncEmail()" />
+                  <input type="email" id="email" value="" oninput="syncEmail()" />
                 </div>
                 <div class="form-field">
                   <label>Phone Number</label>
                   <div class="phone-row">
                     <span class="phone-code">+91</span>
-                    <input type="tel" id="phone" value="9812345678" />
+                    <input type="tel" id="phone" value="" />
                   </div>
                 </div>
                 <div class="form-field">
                   <label>Date of Birth</label>
-                  <input type="date" id="dob" value="1988-09-14" />
+                  <input type="date" id="dob" value="" />
                 </div>
               </div>
               <div class="card-footer">
@@ -184,11 +184,11 @@
               <div class="card-grid">
                 <div class="form-field">
                   <label>Collective Name</label>
-                  <input type="text" id="collective-name" value="South Zone Collective" />
+                  <input type="text" id="collective-name" value="" />
                 </div>
                 <div class="form-field">
                   <label>Collective ID</label>
-                  <input type="text" id="collective-id" value="COL-SZ-001" readonly class="readonly-field" />
+                  <input type="text" id="collective-id" value="" readonly class="readonly-field" />
                 </div>
                 <div class="form-field">
                   <label>Primary Service Domain</label>
@@ -200,7 +200,7 @@
                 </div>
                 <div class="form-field">
                   <label>Region</label>
-                  <input type="text" id="region" value="South Bangalore" />
+                  <input type="text" id="region" value="" />
                 </div>
               </div>
               <div class="card-footer">
@@ -361,6 +361,8 @@
     <!-- Toast -->
     <div class="toast" id="toast"></div>
 
+    <script src="../../js/data/store.js"></script>
+    <script src="../../js/modules/auth.js"></script>
     <script src="../../js/collective_manager/profile.js"></script>
   </body>
 </html>
