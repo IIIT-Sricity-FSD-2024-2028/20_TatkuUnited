@@ -8,7 +8,7 @@ window.Auth = (() => {
 
   /* ─── Role → Dashboard URL map ─── */
   const ROLE_DASHBOARDS = {
-    superuser: "/front-end/html/admin/admin_dashboard.html",
+    superuser: "/front-end/html/super_user/super_user_dashboard.html",
     collective_manager: "/front-end/html/collective_manager/dashboard.html",
     unit_manager: "/front-end/html/unit_manager/dashboard.html",
     provider: "/front-end/html/provider/dashboard.html",
@@ -18,9 +18,9 @@ window.Auth = (() => {
   /* ─── Hard-coded superuser ─── */
   const SUPERUSER = {
     id: "SUPER001",
-    name: "System Admin",
-    email: "admin@fsd.com",
-    password: "Admin@1234",
+    name: "System super user",
+    email: "super_user@fsd.com",
+    password: "super user@1234",
     role: "superuser",
     scopeId: null,
     unitId: null,
@@ -74,7 +74,7 @@ window.Auth = (() => {
     const providers = AppStore.getTable("service_providers") || [];
     providers.forEach(sp => {
       registry.push({
-        id: sp.sp_id,
+        id: sp.service_provider_id,
         name: sp.name,
         email: sp.email,
         password: sp.password,
@@ -92,7 +92,7 @@ window.Auth = (() => {
     customers.forEach(c => {
       registry.push({
         id: c.customer_id,
-        name: c.name,
+        name: c.full_name || c.name,
         email: c.email,
         password: c.password,
         role: "customer",

@@ -1,4 +1,4 @@
-/* ── Admin Profile CSS ── */
+﻿/* ── Admin Profile CSS ── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
@@ -177,7 +177,7 @@ body {
 .avatar-edit-btn:hover { transform: scale(1.1); }
 .avatar-edit-btn svg { width: 14px; height: 14px; color: var(--blue); }
 
-.admin-badge {
+.super_user-badge {
   display: inline-block;
   background: rgba(255,255,255,.2);
   border: 1px solid rgba(255,255,255,.3);

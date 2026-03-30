@@ -9,9 +9,9 @@ window.RoleRenderer = (() => {
     /* ─── Nav link definitions per role ─── */
     const NAV_LINKS = {
         superuser: [
-            { label: "Dashboard", href: "/front-end/html/admin/admin_dashboard.html", icon: "🏠" },
-            { label: "User Management", href: "/front-end/html/admin/admin_users.html", icon: "👥" },
-            { label: "System Monitoring", href: "/front-end/html/admin/admin_monitoring.html", icon: "📊" },
+            { label: "Dashboard", href: "/front-end/html/super_user/super_user_dashboard.html", icon: "🏠" },
+            { label: "User Management", href: "/front-end/html/super_user/user_management.html", icon: "👥" },
+            { label: "System Monitoring", href: "/front-end/html/super_user/system_monitoring.html", icon: "📊" },
         ],
         collective_manager: [
             { label: "Dashboard", href: "/front-end/html/collective_manager/collective_dashboard.html", icon: "🏠" },

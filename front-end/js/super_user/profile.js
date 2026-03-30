@@ -1,4 +1,4 @@
-﻿// â”€â”€ Admin Profile JS â”€â”€
+// ── Super User Profile JS ──
 
 const sysStats = [
   { label: 'System Status', sub: 'All services operational', value: 'Online', valueColor: 'green', icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>`, iconColor: 'green' },
@@ -76,17 +76,17 @@ function renderActivities() {
 
 function syncName() {
   const v = document.getElementById('full-name').value.trim();
-  document.getElementById('hero-name').textContent = v || 'Admin User';
-  document.getElementById('topbar-name').textContent = v || 'Admin User';
+  document.getElementById('hero-name').textContent = v || 'Super User';
+  document.getElementById('topbar-name').textContent = v || 'Super User';
 }
 
 function syncEmail() {
   const v = document.getElementById('email').value.trim();
-  document.getElementById('hero-email').textContent = v || 'admin@tatku.com';
+  document.getElementById('hero-email').textContent = v || 'super_user@tatku.com';
 }
 
 function saveSection(section) {
-  showToast('Admin profile saved successfully!');
+  showToast('Super User profile saved successfully!');
 }
 
 function openPwdModal() { document.getElementById('pwd-modal').classList.add('open'); }
@@ -98,7 +98,7 @@ function updateAvatar(input) {
   const reader = new FileReader();
   reader.onload = e => {
     const av = document.getElementById('profile-avatar');
-    av.innerHTML = `<img src="${e.target.result}" alt="Admin" />`;
+    av.innerHTML = `<img src="${e.target.result}" alt="Super User" />`;
   };
   reader.readAsDataURL(input.files[0]);
 }
@@ -119,4 +119,5 @@ document.addEventListener('DOMContentLoaded', () => {
   renderPermissions();
   renderActivities();
 });
+
 

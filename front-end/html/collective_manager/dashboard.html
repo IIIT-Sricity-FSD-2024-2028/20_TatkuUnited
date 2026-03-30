@@ -1,9 +1,9 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Collective Manager â€“ Dashboard</title>
+    <title>Collective Manager – Dashboard</title>
     <link rel="stylesheet" href="../../css/collective_manager/dashboard.css" />
   </head>
   <body>
@@ -45,13 +45,7 @@
           </svg>
           Manage Units
         </a>
-        <a href="manage_skills.html" class="nav-item">
-          <svg viewBox="0 0 24 24">
-            <path d="M12 20h9" />
-            <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
-          </svg>
-          Manage Skills
-        </a>
+
         <a href="notifications.html" class="nav-item">
           <svg viewBox="0 0 24 24">
             <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
@@ -99,18 +93,34 @@
               <path d="M13.73 21a2 2 0 0 1-3.46 0" />
             </svg>
           </a>
-          <a href="profile.html" class="avatar" title="My Profile">CM</a>
+          <a href="profile.html" class="avatar" title="My Profile" id="topbar-avatar">CM</a>
         </div>
       </header>
 
       <main class="main">
-        <h1 class="page-title">Dashboard Overview</h1>
+        <h1 class="page-title" id="page-greeting">Dashboard Overview</h1>
+
+        <!-- ── Collective Overview Banner ── -->
+        <div id="collective-banner" style="display:none;background:linear-gradient(135deg,rgba(99,102,241,0.12),rgba(139,92,246,0.08));border:1px solid rgba(99,102,241,0.25);border-radius:16px;padding:1.25rem 1.5rem;margin-bottom:1.5rem">
+          <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem">
+            <div>
+              <p style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:#a78bfa;margin:0 0 0.3rem">Your Collective</p>
+              <h2 id="collective-name" style="font-size:1.3rem;font-weight:700;color:#f1f5f9;margin:0">—</h2>
+            </div>
+            <div style="display:flex;gap:1.25rem;flex-wrap:wrap;align-items:center">
+              <span id="collective-status-badge" style="padding:0.3rem 0.85rem;border-radius:9999px;font-size:0.75rem;font-weight:600">—</span>
+              <span style="color:#94a3b8;font-size:0.82rem">🗺️ Sectors: <strong id="collective-sectors" style="color:#cbd5e1">—</strong></span>
+              <span style="color:#94a3b8;font-size:0.82rem">📦 Units: <strong id="collective-units" style="color:#cbd5e1">—</strong></span>
+              <span style="color:#94a3b8;font-size:0.82rem">👤 Manager: <strong id="collective-manager-name" style="color:#cbd5e1">—</strong></span>
+            </div>
+          </div>
+        </div>
 
         <div class="stat-grid">
           <div class="stat-card">
             <div class="stat-info">
               <span class="stat-label">Total Providers</span>
-              <span class="stat-value" data-target="248">0</span>
+              <span class="stat-value" id="stat-providers">—</span>
             </div>
             <div class="stat-icon icon-blue">
               <svg viewBox="0 0 24 24">
@@ -124,7 +134,7 @@
           <div class="stat-card">
             <div class="stat-info">
               <span class="stat-label">Active Units</span>
-              <span class="stat-value" data-target="12">0</span>
+              <span class="stat-value" id="stat-active-units">—</span>
             </div>
             <div class="stat-icon icon-teal">
               <svg viewBox="0 0 24 24">
@@ -136,8 +146,8 @@
           </div>
           <div class="stat-card">
             <div class="stat-info">
-              <span class="stat-label">Monthly Revenue</span>
-              <span class="stat-value">â‚¦45,200</span>
+              <span class="stat-label">Revenue (All Time)</span>
+              <span class="stat-value" id="stat-revenue">—</span>
             </div>
             <div class="stat-icon icon-green">
               <svg viewBox="0 0 24 24">
@@ -149,7 +159,7 @@
           <div class="stat-card">
             <div class="stat-info">
               <span class="stat-label">Completed Services</span>
-              <span class="stat-value" data-target="1834">0</span>
+              <span class="stat-value" id="stat-completed">—</span>
             </div>
             <div class="stat-icon icon-indigo">
               <svg viewBox="0 0 24 24">
@@ -165,8 +175,8 @@
             <h2 class="card-title">Revenue Trend</h2>
             <div class="chart-wrap">
               <div class="y-labels">
-                <span>â‚¦60k</span><span>â‚¦45k</span><span>â‚¦30k</span
-                ><span>â‚¦15k</span><span>â‚¦0k</span>
+                <span>₦60k</span><span>₦45k</span><span>₦30k</span
+                ><span>₦15k</span><span>₦0k</span>
               </div>
               <div class="bars-wrap">
                 <div class="bars" id="revenueChart"></div>
@@ -181,51 +191,7 @@
               <li class="activity-item">
                 <div class="activity-dot"></div>
                 <div class="activity-content">
-                  <span class="activity-title">New provider registered</span>
-                  <span class="activity-sub"
-                    >Samuel Okoye joined Plumbing Unit</span
-                  >
-                  <span class="activity-time">2 hours ago</span>
-                </div>
-              </li>
-              <li class="activity-item">
-                <div class="activity-dot"></div>
-                <div class="activity-content">
-                  <span class="activity-title">Service completed</span>
-                  <span class="activity-sub"
-                    >Deep cleaning at 14 Lekki Phase 1</span
-                  >
-                  <span class="activity-time">4 hours ago</span>
-                </div>
-              </li>
-              <li class="activity-item">
-                <div class="activity-dot"></div>
-                <div class="activity-content">
-                  <span class="activity-title">Revenue milestone</span>
-                  <span class="activity-sub"
-                    >Monthly revenue exceeded â‚¦45,000</span
-                  >
-                  <span class="activity-time">1 day ago</span>
-                </div>
-              </li>
-              <li class="activity-item">
-                <div class="activity-dot"></div>
-                <div class="activity-content">
-                  <span class="activity-title">Unit updated</span>
-                  <span class="activity-sub"
-                    >Electrical Unit added 2 new providers</span
-                  >
-                  <span class="activity-time">2 days ago</span>
-                </div>
-              </li>
-              <li class="activity-item">
-                <div class="activity-dot"></div>
-                <div class="activity-content">
-                  <span class="activity-title">Skill added</span>
-                  <span class="activity-sub"
-                    >Tiling added to available skills</span
-                  >
-                  <span class="activity-time">3 days ago</span>
+                  <span class="activity-title">Loading activity…</span>
                 </div>
               </li>
             </ul>
@@ -233,8 +199,11 @@
         </div>
       </main>
     </div>
+    <script src="../../js/data/store.js"></script>
+    <script src="../../js/modules/auth.js"></script>
     <script src="../../js/collective_manager/dashboard.js"></script>
   </body>
 </html>
+
 
 

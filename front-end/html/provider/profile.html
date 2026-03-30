@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Profile â€“ Tatku United</title>
+  <title>Profile – Tatku United</title>
   <link rel="stylesheet" href="../../css/provider/profile.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link
@@ -187,7 +187,7 @@
                       d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z" />
                   </svg>
                   <select id="new-skill-select" class="skill-select">
-                    <option value="">â€” Choose a skill â€”</option>
+                    <option value="">— Choose a skill —</option>
                     <option value="Plumbing">Plumbing</option>
                     <option value="HVAC">HVAC</option>
                     <option value="Electrical">Electrical</option>
@@ -227,7 +227,7 @@
               </div>
               <div class="upload-zone-text">
                 <span class="upload-zone-title">Click to upload or drag &amp; drop</span>
-                <span class="upload-zone-sub">PDF, DOC, DOCX &nbsp;Â·&nbsp; Max 5 MB &nbsp;Â·&nbsp; Single file</span>
+                <span class="upload-zone-sub">PDF, DOC, DOCX &nbsp;·&nbsp; Max 5 MB &nbsp;·&nbsp; Single file</span>
               </div>
             </div>
             <div class="upload-file-list" id="resume-list"></div>
@@ -249,98 +249,99 @@
               </div>
               <div class="upload-zone-text">
                 <span class="upload-zone-title">Click to upload or drag &amp; drop</span>
-                <span class="upload-zone-sub">PDF, JPG, PNG &nbsp;Â·&nbsp; Max 5 MB per file &nbsp;Â·&nbsp; Multiple
+                <span class="upload-zone-sub">PDF, JPG, PNG &nbsp;·&nbsp; Max 5 MB per file &nbsp;·&nbsp; Multiple
                   allowed</span>
               </div>
             </div>
-            <div class="upload-file-list" id="certs-list"></div>
           </div>
-        </div>
-        <div class="card-footer">
-          <button class="btn-save-section" onclick="saveSection('professional')">Save Professional Details</button>
+          <div class="upload-file-list" id="certs-list"></div>
         </div>
       </div>
+      <div class="card-footer">
+        <button class="btn-save-section" onclick="saveSection('professional')">Save Professional Details</button>
+      </div>
+  </div>
 
-      <!-- Work Hours -->
-      <div class="form-card" id="work-hours-card">
-        <div class="card-section-head">
-          <svg viewBox="0 0 24 24">
-            <circle cx="12" cy="12" r="10" />
-            <polyline points="12 6 12 12 16 14" />
-          </svg>
-          <span>Work Hours</span>
-        </div>
-        <p class="work-hours-desc">
-          Set the earliest and latest times you're available for bookings each day.
-          These times define the window shown in your calendar's availability picker.
-        </p>
-        <div class="work-hours-grid">
-          <div class="work-time-field">
-            <label>
-              <span class="work-time-icon work-time-icon--start">
-                <svg viewBox="0 0 24 24" width="14" height="14">
-                  <circle cx="12" cy="12" r="10" />
-                  <polyline points="12 6 12 12 8 14" />
-                </svg>
-              </span>
-              Day Start Time
-            </label>
-            <input type="time" id="work-start" class="time-input" value="08:00" oninput="updateWorkHoursPreview()" />
-          </div>
-          <div class="work-time-divider">
-            <svg viewBox="0 0 24 24" width="20" height="20">
-              <line x1="5" y1="12" x2="19" y2="12" />
-              <polyline points="14 7 19 12 14 17" />
+  <!-- Work Hours -->
+  <div class="form-card" id="work-hours-card">
+    <div class="card-section-head">
+      <svg viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="10" />
+        <polyline points="12 6 12 12 16 14" />
+      </svg>
+      <span>Work Hours</span>
+    </div>
+    <p class="work-hours-desc">
+      Set the earliest and latest times you're available for bookings each day.
+      These times define the window shown in your calendar's availability picker.
+    </p>
+    <div class="work-hours-grid">
+      <div class="work-time-field">
+        <label>
+          <span class="work-time-icon work-time-icon--start">
+            <svg viewBox="0 0 24 24" width="14" height="14">
+              <circle cx="12" cy="12" r="10" />
+              <polyline points="12 6 12 12 8 14" />
             </svg>
-          </div>
-          <div class="work-time-field">
-            <label>
-              <span class="work-time-icon work-time-icon--end">
-                <svg viewBox="0 0 24 24" width="14" height="14">
-                  <circle cx="12" cy="12" r="10" />
-                  <polyline points="12 6 12 12 16 14" />
-                </svg>
-              </span>
-              Day End Time
-            </label>
-            <input type="time" id="work-end" class="time-input" value="18:00" oninput="updateWorkHoursPreview()" />
-          </div>
-        </div>
-        <div class="work-hours-preview" id="work-hours-preview">Active window: 8:00 AM â€“ 6:00 PM (10h)</div>
-        <div class="card-footer">
-          <button class="btn-save-section" onclick="saveWorkHours()">Save Work Hours</button>
-        </div>
+          </span>
+          Day Start Time
+        </label>
+        <input type="time" id="work-start" class="time-input" value="08:00" oninput="updateWorkHoursPreview()" />
       </div>
+      <div class="work-time-divider">
+        <svg viewBox="0 0 24 24" width="20" height="20">
+          <line x1="5" y1="12" x2="19" y2="12" />
+          <polyline points="14 7 19 12 14 17" />
+        </svg>
+      </div>
+      <div class="work-time-field">
+        <label>
+          <span class="work-time-icon work-time-icon--end">
+            <svg viewBox="0 0 24 24" width="14" height="14">
+              <circle cx="12" cy="12" r="10" />
+              <polyline points="12 6 12 12 16 14" />
+            </svg>
+          </span>
+          Day End Time
+        </label>
+        <input type="time" id="work-end" class="time-input" value="18:00" oninput="updateWorkHoursPreview()" />
+      </div>
+    </div>
+    <div class="work-hours-preview" id="work-hours-preview">Active window: 8:00 AM – 6:00 PM (10h)</div>
+    <div class="card-footer">
+      <button class="btn-save-section" onclick="saveWorkHours()">Save Work Hours</button>
+    </div>
+  </div>
 
-      <!-- Security -->
-      <div class="form-card" id="security-card">
-        <div class="card-section-head">
-          <svg viewBox="0 0 24 24">
-            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-          </svg>
-          <span>Security & Authentication</span>
-        </div>
-        <div class="security-row">
-          <div>
-            <div class="sec-label">Account Password</div>
-            <div class="sec-sub">Last changed 3 months ago</div>
-          </div>
-          <button class="sec-link-btn" onclick="showPasswordModal()">Change Account Password</button>
-        </div>
-        <div class="divider"></div>
+  <!-- Security -->
+  <div class="form-card" id="security-card">
+    <div class="card-section-head">
+      <svg viewBox="0 0 24 24">
+        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+      </svg>
+      <span>Security & Authentication</span>
+    </div>
+    <div class="security-row">
+      <div>
+        <div class="sec-label">Account Password</div>
+        <div class="sec-sub">Last changed 3 months ago</div>
       </div>
+      <button class="sec-link-btn" onclick="showPasswordModal()">Change Account Password</button>
+    </div>
+    <div class="divider"></div>
+  </div>
 
-      <!-- Danger Zone -->
-      <div class="form-card danger-card">
-        <div class="danger-row">
-          <div>
-            <div class="danger-title">Deactivate Account</div>
-            <div class="danger-sub">Permanently remove your provider profile and all history.</div>
-          </div>
-          <button class="btn-deactivate" onclick="confirmDeactivate()">Deactivate</button>
-        </div>
+  <!-- Danger Zone -->
+  <div class="form-card danger-card">
+    <div class="danger-row">
+      <div>
+        <div class="danger-title">Deactivate Account</div>
+        <div class="danger-sub">Permanently remove your provider profile and all history.</div>
       </div>
-    </main>
+      <button class="btn-deactivate" onclick="confirmDeactivate()">Deactivate</button>
+    </div>
+  </div>
+  </main>
   </div>
 
   <!-- Password Modal -->

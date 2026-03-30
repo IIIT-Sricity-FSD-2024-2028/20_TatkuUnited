@@ -64,20 +64,20 @@
 
     // ── AppStore.restore ──────────────────────────────────────────────────────────
     AppStore.restore = function () {
-        var alive = sessionStorage.getItem("fsd_session_alive");
-        if (alive !== null) {
-            // Same session — restore from localStorage
-            try {
-                var raw = localStorage.getItem("fsd_store");
-                if (raw) {
-                    AppStore.data = JSON.parse(raw);
-                    return true;
-                }
-            } catch (err) {
-                console.error("[AppStore] restore() failed to parse localStorage:", err);
+        // Always try to load from the most-recent saved state in localStorage.
+        // fsd_store is explicitly removed by Auth.logout(), so there is no risk
+        // of bleeding stale cross-session data. The old fsd_session_alive guard
+        // prevented this from working on pre-login pages (e.g. register).
+        try {
+            var raw = localStorage.getItem("fsd_store");
+            if (raw) {
+                AppStore.data = JSON.parse(raw);
+                return true;
             }
+        } catch (err) {
+            console.error("[AppStore] restore() failed to parse localStorage:", err);
         }
-        // New session or parse failure — signal fresh fetch needed
+        // Nothing in localStorage — signal that a fresh fetch is needed.
         return false;
     };
 
