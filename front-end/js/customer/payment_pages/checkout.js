@@ -6,7 +6,7 @@
 const toastEl = document.getElementById('toast');
 let toastTimer;
 
-function showToast(msg) {
+function showCheckoutToast(msg) {
   clearTimeout(toastTimer);
   toastEl.textContent = msg;
   toastEl.classList.add('show');
@@ -39,7 +39,7 @@ saveAddrBtn.addEventListener('click', () => {
   const line2 = document.getElementById('inputLine2').value.trim();
 
   if (!name || !phone || !line1) {
-    showToast('⚠️ Please fill in required fields.');
+    showCheckoutToast('⚠️ Please fill in required fields.');
     return;
   }
 
@@ -54,7 +54,7 @@ saveAddrBtn.addEventListener('click', () => {
   addressForm.classList.remove('visible');
   addressCard.style.opacity = '1';
   changeAddrBtn.style.display = 'flex';
-  showToast('✅ Address updated successfully!');
+  showCheckoutToast('✅ Address updated successfully!');
 });
 
 /* ── Payment Selection ── */
@@ -65,14 +65,10 @@ let   selectedPayment = null;
 
 paymentOptions.forEach(option => {
   option.addEventListener('click', () => {
-    /* Deselect all */
     paymentOptions.forEach(o => o.classList.remove('selected'));
-    /* Select clicked */
     option.classList.add('selected');
     option.querySelector('input[type="radio"]').checked = true;
     selectedPayment = option.dataset.value;
-
-    /* Enable confirm */
     confirmBtn.disabled = false;
     confirmHint.style.opacity = '0';
   });
@@ -86,11 +82,40 @@ confirmBtn.addEventListener('click', () => {
   confirmBtn.disabled    = true;
 
   setTimeout(() => {
-    /* Generate booking ID */
-    const id = 'TU-' + new Date().getFullYear() + '-' + Math.floor(Math.random() * 9000 + 1000);
-    document.getElementById('bookingId').textContent = id;
-    document.getElementById('successModal').classList.add('open');
-    showToast('🎉 Booking confirmed!');
+    const session = Auth.requireSession(['customer']);
+    if (!session) return;
+    
+    let cart = [];
+    try { cart = JSON.parse(localStorage.getItem('tu_cart') || '[]'); } catch(e) { cart = []; }
+    
+    let firstId = null;
+    cart.forEach(item => {
+      const bId = AppStore.nextId("BKG");
+      if (!firstId) firstId = bId;
+      const newBooking = {
+        booking_id: bId,
+        customer_id: session.id,
+        booking_type: item.mode === 'instant' ? 'INSTANT' : 'SCHEDULED',
+        status: 'PENDING',
+        service_address: item.location || document.getElementById('addrLine1').textContent,
+        service_name: item.service,
+        price: item.price,
+        provider_id: null,
+        scheduled_at: item.mode === 'scheduled' ? new Date(item.date + 'T' + (item.time ? item.time.split(' ')[0] + ':00' : '10:00:00')).toISOString() : new Date().toISOString(),
+        created_at: new Date().toISOString(),
+      };
+      CRUD.createRecord("bookings", newBooking);
+    });
+    
+    // Clear cart
+    localStorage.removeItem('tu_cart');
+    
+    // Store metadata for success page
+    localStorage.setItem('tu_last_booking_id', firstId || ('TU-' + new Date().getFullYear() + '-' + Math.floor(Math.random() * 9000 + 1000)));
+    localStorage.setItem('tu_last_payment_method', selectedPayment);
+    localStorage.setItem('tu_last_total', document.querySelector('.total-amount').textContent);
+    
+    window.location.href = 'payment_success.html';
   }, 1400);
 });
 
@@ -98,5 +123,51 @@ confirmBtn.addEventListener('click', () => {
 document.getElementById('successModal').addEventListener('click', e => {
   if (e.target === document.getElementById('successModal')) {
     document.getElementById('successModal').classList.remove('open');
+  }
+});
+
+/* ── Auth guard & Init ── */
+AppStore.ready.then(() => {
+  const session = Auth.requireSession(['customer']);
+  if (!session) return;
+  
+  // Calculate cart totals
+  let cart = [];
+  try { cart = JSON.parse(localStorage.getItem('tu_cart') || '[]'); } catch(e) { cart = []; }
+  
+  if (cart.length === 0) {
+    showCheckoutToast('Your cart is empty. Redirecting...');
+    setTimeout(() => { window.location.href = '../home.html'; }, 1500);
+    return;
+  }
+  
+  function parsePrice(p) { return parseInt((p || '0').replace(/[^\d]/g, '')) || 0; }
+  const subtotal = cart.reduce((s, i) => s + parsePrice(i.price), 0);
+  const tax = Math.round(subtotal * 0.18);
+  const delivery = 49;
+  const total = subtotal + tax + delivery;
+  
+  const summaryVals = document.querySelectorAll('.summary-val');
+  if (summaryVals.length >= 3) {
+    summaryVals[0].textContent = '₹' + subtotal.toLocaleString('en-IN');
+    summaryVals[1].textContent = '₹' + delivery;
+    summaryVals[2].textContent = '₹' + tax.toLocaleString('en-IN');
+  }
+  const totalAmountEl = document.querySelector('.total-amount');
+  if (totalAmountEl) {
+    totalAmountEl.textContent = '₹' + total.toLocaleString('en-IN');
+  }
+  
+  // Populate address from AppStore if available
+  const customers = AppStore.getTable("customers") || [];
+  const me = customers.find(c => c.customer_id === session.id);
+  if (me && me.full_name) {
+    document.getElementById('addrName').textContent = me.full_name;
+    if (me.phone) {
+      document.getElementById('addrPhone').innerHTML = `
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px;stroke:#94a3b8;flex-shrink:0"><path d="M22 16.92v3a2 2 0 0 1-2.18 2A19.79 19.79 0 0 1 3.1 5.18 2 2 0 0 1 5.09 3h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L9.09 10.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 17v-.08z"/></svg>
+        ${me.phone}
+      `;
+    }
   }
 });

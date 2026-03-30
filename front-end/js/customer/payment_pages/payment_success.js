@@ -6,7 +6,7 @@
 const toastEl = document.getElementById('toast');
 let toastTimer;
 
-function showToast(msg) {
+function showSuccessToast(msg) {
   clearTimeout(toastTimer);
   toastEl.textContent = msg;
   toastEl.classList.add('show');
@@ -15,8 +15,6 @@ function showToast(msg) {
 
 /* ═══════════════════════════════════════════
    VERIFICATION PROGRESS BAR
-   Fills 0 → 100% over ~2 seconds, then
-   reveals booking details & enables button
 ═══════════════════════════════════════════ */
 const verifyBarWrap = document.getElementById('verifyBarWrap');
 const verifyBar     = document.getElementById('verifyBar');
@@ -33,7 +31,6 @@ function startVerification() {
   receiptBtn.style.cursor  = 'not-allowed';
 
   verifyInterval = setInterval(() => {
-    /* Speed varies to feel natural */
     const step = progress < 60 ? 1.2 : progress < 90 ? 0.7 : 0.3;
     progress = Math.min(100, progress + step);
     verifyBar.style.width = progress + '%';
@@ -46,12 +43,10 @@ function startVerification() {
 }
 
 function onVerified() {
-  /* Hide progress bar */
   verifyBarWrap.style.transition = 'opacity .3s ease';
   verifyBarWrap.style.opacity    = '0';
   setTimeout(() => { verifyBarWrap.style.display = 'none'; }, 320);
 
-  /* Update subtitle */
   modalSub.style.transition = 'opacity .3s ease';
   modalSub.style.opacity    = '0';
   setTimeout(() => {
@@ -59,23 +54,19 @@ function onVerified() {
     modalSub.style.opacity = '1';
   }, 320);
 
-  /* Show booking details */
   setTimeout(() => {
     bookingDetails.classList.add('visible');
   }, 400);
 
-  /* Enable button */
   setTimeout(() => {
     receiptBtn.disabled      = false;
     receiptBtn.style.opacity = '1';
     receiptBtn.style.cursor  = 'pointer';
-    showToast('🎉 Booking confirmed! Tap "View Receipt" to see details.');
+    showSuccessToast('🎉 Booking confirmed! Tap "View Receipt" to see details.');
   }, 600);
 }
 
-/* ── Start verification on load ── */
 window.addEventListener('load', () => {
-  /* Small delay so page animations settle first */
   setTimeout(startVerification, 800);
 });
 
@@ -95,14 +86,12 @@ receiptClose.addEventListener('click', () => {
   receiptOverlay.classList.remove('open');
 });
 
-/* Close on overlay background click */
 receiptOverlay.addEventListener('click', e => {
   if (e.target === receiptOverlay) {
     receiptOverlay.classList.remove('open');
   }
 });
 
-/* Close on Escape key */
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') {
     receiptOverlay.classList.remove('open');
@@ -126,17 +115,23 @@ document.getElementById('downloadBtn').addEventListener('click', () => {
   btn.disabled = true;
 
   setTimeout(() => {
-    /* Build a simple text receipt and trigger download */
+    const bId = localStorage.getItem('tu_last_booking_id') || 'TU-88291';
+    const total = localStorage.getItem('tu_last_total') || '₹1,240.00';
+    const payMethod = localStorage.getItem('tu_last_payment_method') === 'upi' ? 'UPI' : (localStorage.getItem('tu_last_payment_method') === 'cash' ? 'Cash on Service' : 'Credit / Debit Card');
+    const today = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+    
+    document.getElementById('bookingId').textContent = bId;
+
     const content = [
       '===================================',
       '      TATKU UNITED — RECEIPT',
       '===================================',
       '',
-      'Booking ID     : #TKU-88291',
+      `Booking ID     : #${bId}`,
       'Service        : Home Services Package',
-      'Amount Paid    : ₹1,240.00',
-      'Payment Method : Visa ending in 4242',
-      'Transaction Date: May 24, 2024',
+      `Amount Paid    : ${total}`,
+      `Payment Method : ${payMethod}`,
+      `Transaction Date: ${today}`,
       'Status         : PAID ✓',
       '',
       '===================================',
@@ -149,23 +144,18 @@ document.getElementById('downloadBtn').addEventListener('click', () => {
     const url  = URL.createObjectURL(blob);
     const a    = document.createElement('a');
     a.href     = url;
-    a.download = 'TKU-88291-receipt.txt';
+    a.download = `${bId}-receipt.txt`;
     a.click();
     URL.revokeObjectURL(url);
 
     btn.innerHTML = original;
     btn.disabled  = false;
-    showToast('✅ Receipt downloaded!');
+    showSuccessToast('✅ Receipt downloaded!');
   }, 1000);
 });
 
-/* ═══════════════════════════════════════════
-   NAV LINKS — prevent default
-═══════════════════════════════════════════ */
-document.querySelectorAll('.nav-links a, .mlink, .footer-links a').forEach(link => {
-  link.addEventListener('click', e => {
-    e.preventDefault();
-    const label = link.textContent.trim();
-    showToast(`Navigating to ${label}…`);
-  });
+/* ── Auth guard ── */
+AppStore.ready.then(() => {
+  const session = Auth.requireSession(['customer']);
+  if (!session) return;
 });

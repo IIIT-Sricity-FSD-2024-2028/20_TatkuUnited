@@ -25,10 +25,8 @@ function openEditModal(itemId) {
   const item = cart.find(i => i.id === itemId);
   if (!item) return;
   document.getElementById('modal-service-name').textContent = item.service;
-  // Pre-fill current values
   const dateInput = document.getElementById('modal-date');
   const timeSelect = document.getElementById('modal-time');
-  // Apply 1-week constraint
   const { min, max } = getDateConstraints();
   dateInput.min = min;
   dateInput.max = max;
@@ -37,7 +35,6 @@ function openEditModal(itemId) {
   } else {
     dateInput.value = '';
   }
-  // Match time option
   const opts = Array.from(timeSelect.options);
   const match = opts.findIndex(o => o.value === item.time);
   if (match >= 0) timeSelect.selectedIndex = match;
@@ -55,8 +52,8 @@ function saveScheduleEdit() {
   if (!editingItemId) return;
   const newDate = document.getElementById('modal-date').value;
   const { min, max } = getDateConstraints();
-  if (!newDate) { alert('Please select a date.'); return; }
-  if (newDate < min || newDate > max) { alert('Please select a date within 1 week from today.'); return; }
+  if (!newDate) { showToast('Please select a date.', 'error'); return; }
+  if (newDate < min || newDate > max) { showToast('Please select a date within 1 week from today.', 'error'); return; }
   const cart = getCart();
   const item = cart.find(i => i.id === editingItemId);
   if (item) {
@@ -67,6 +64,7 @@ function saveScheduleEdit() {
   }
   closeEditModalBtn();
   render();
+  showToast('Schedule updated successfully!', 'success');
 }
 
 function removeItem(id) {
@@ -74,6 +72,7 @@ function removeItem(id) {
   saveCart(cart);
   updateCartBadge();
   render();
+  showToast('Item removed from cart.', 'info');
 }
 
 function render() {
@@ -163,19 +162,16 @@ function render() {
 
 function applyPromo() {
   const code = document.getElementById('promo-input')?.value?.trim();
-  if (code) alert(`Promo "${code}" applied! (Demo)`);
+  if (code) showToast(`Promo "${code}" applied! (Demo)`, 'success');
 }
 function confirmBooking() {
-  alert('Redirecting to payment gateway… (Payment page not yet implemented)');
+  window.location.href = 'payment_pages/checkout.html';
 }
 
-// Seed demo data on first open
-if (getCart().length === 0) {
-  saveCart([
-    { id: 1001, service: 'Home Deep Cleaning', price: '₹ 1200', location: '21/229, Indira Nagar, Lucknow', mode: 'instant', date: 'ASAP', time: 'Immediate' },
-    { id: 1002, service: 'AC Servicing', price: '₹ 800', location: '21/229, Indira Nagar, Lucknow', mode: 'scheduled', date: '2026-04-10', time: '10:00 AM – 12:00 PM' },
-  ]);
-}
+AppStore.ready.then(() => {
+  const session = Auth.requireSession(['customer']);
+  if (!session) return;
 
-render();
-updateCartBadge();
+  render();
+  updateCartBadge();
+});

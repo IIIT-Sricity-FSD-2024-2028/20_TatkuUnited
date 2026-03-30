@@ -235,7 +235,17 @@
 
   function initBookButtons() {
     document.querySelectorAll(".btn-book-item").forEach(function (btn) {
-      btn.addEventListener("click", function () {
+      btn.addEventListener("click", function (e) {
+        e.stopPropagation();
+        e.preventDefault();
+        var session = typeof Auth !== 'undefined' ? Auth.getCurrentUser() : null;
+        if (session && session.role === 'customer') {
+           var item = btn.closest('.explore-item');
+           var svcName = item ? item.querySelector('h3').textContent : '';
+           var price = item ? item.querySelector('.item-price').textContent : '';
+           window.location.href = '../customer/schedule.html?service=' + encodeURIComponent(svcName) + '&price=' + encodeURIComponent(price);
+           return;
+        }
         var orig = btn.textContent;
         btn.textContent = "Booked!";
         btn.style.background = "#15803d";
@@ -247,6 +257,36 @@
         }, 1800);
       });
     });
+  }
+
+  function initAuthNav() {
+    if (typeof AppStore !== 'undefined' && typeof Auth !== 'undefined') {
+      AppStore.ready.then(function() {
+        var session = Auth.getCurrentUser();
+        if (session && session.role === 'customer') {
+          var navAuth = document.querySelector('.nav-auth');
+          if (navAuth) {
+            navAuth.innerHTML = 
+              '<a href="../customer/cart.html" style="margin-right: 20px; text-decoration: none; color: #1e293b; font-weight: 500; display:flex; align-items:center; gap:6px;"><svg viewBox="0 0 24 24" style="width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2;"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>Cart</a>' +
+              '<a href="../customer/home.html" style="background: var(--primary, #1e3a8a); color: #fff; padding: 0.5rem 1.25rem; border-radius: 6px; font-weight: 500; text-decoration: none; display:flex; align-items:center; gap:8px;"><svg viewBox="0 0 24 24" style="width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Dashboard</a>';
+          }
+          var navLinks = document.querySelector('.nav-links');
+          if (navLinks) {
+            navLinks.innerHTML = 
+              '<li><a href="../customer/home.html">Home</a></li>' +
+              '<li><a href="service_discovery.html">Services</a></li>' +
+              '<li><a href="../customer/bookings.html">Bookings</a></li>';
+          }
+          var mobileMenu = document.querySelector('#mobileMenu ul');
+          if (mobileMenu) {
+            mobileMenu.innerHTML = 
+              '<li><a href="../customer/home.html" style="color:var(--primary); font-weight:600;">Dashboard</a></li>' +
+              '<li><a href="service_discovery.html">Services</a></li>' +
+              '<li><a href="../customer/cart.html">Cart</a></li>';
+          }
+        }
+      });
+    }
   }
 
   function initRatingFilter() {
@@ -398,6 +438,7 @@
   }
 
   initHamburger();
+  initAuthNav();
   initDynamicContent().catch(function (error) {
     console.error(error);
   });
