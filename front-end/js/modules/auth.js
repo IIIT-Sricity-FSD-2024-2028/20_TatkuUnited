@@ -19,6 +19,7 @@ window.Auth = (() => {
   const SUPERUSER = {
     id: "SUPER001",
     name: "System super user",
+    phone: "+919999999999",
     email: "super_user@fsd.com",
     password: "super user@1234",
     role: "superuser",
