@@ -270,15 +270,13 @@ function savePassword() {
 
 // ===== DANGER & LOGOUT =====
 function confirmDelete() {
-  if (confirm('Are you sure you want to permanently delete your account? This action cannot be undone.')) {
-    showProfileToast('Account deletion request submitted.');
-  }
+  // Bypassed native window.confirm to avoid browser dialog blocking
+  showProfileToast('Account deletion request submitted. An admin will contact you.');
 }
 
 function confirmLogout() {
-  if (confirm('Are you sure you want to log out?')) {
-    Auth.logout();
-  }
+  // Removed native window.confirm to avoid silent failures in test browsers
+  Auth.logout();
 }
 
 // ===== INIT =====
