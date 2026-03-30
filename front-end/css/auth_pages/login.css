@@ -18,13 +18,29 @@ body {
     system-ui,
     -apple-system,
     sans-serif;
-  background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+  background: #f8fafc;
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 1.5rem;
-  color: #111827;
+  color: #0f172a;
+}
+
+.login-wrapper {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.login-card {
+  background: #ffffff;
+  border-radius: 1rem;
+  padding: 2.25rem 2rem;
+  width: 100%;
+  max-width: 460px;
+  box-shadow: 0 18px 45px rgba(15, 23, 42, 0.15);
+  border: 1px solid #dbeafe;
 }
 
 /* ── Wrapper & card ── */
@@ -160,17 +176,97 @@ body {
   letter-spacing: 0.2px;
 }
 
+.btn-login {
+  width: 100%;
+  padding: 0.8rem 1rem;
+  background: #2563eb;
+  color: #ffffff;
+  border: none;
+  border-radius: 0.65rem;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    background 0.15s,
+    transform 0.1s;
+  letter-spacing: 0.2px;
+}
+
 .btn-login:hover {
-  background: #1e293b;
+  background: #1d4ed8;
 }
 
 .btn-login:active {
   transform: scale(0.98);
 }
 
+.register-hint {
+  margin-top: 0.9rem;
+  font-size: 0.85rem;
+  color: #475569;
+  text-align: center;
+}
+
+.register-link {
+  color: #0ea5e9;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.register-link:hover {
+  text-decoration: underline;
+}
+
 /* ── Demo section ── */
+.demo-toggle-input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.demo-toggle-btn {
+  display: block;
+  width: fit-content;
+  margin: 1rem auto 0.75rem;
+  padding: 0.55rem 1rem;
+  background: #2563eb;
+  color: #fff;
+  border: 1px solid #1d4ed8;
+  border-radius: 0.65rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.2s, transform 0.1s;
+}
+
+.demo-toggle-btn:hover {
+  background: #1d4ed8;
+}
+
+.demo-toggle-btn:hover {
+  background: #cbd5e1;
+}
+
+.demo-toggle-input:checked + .demo-toggle-btn {
+  background: #0f172a;
+  color: #fff;
+}
+
 .demo-section {
-  margin-top: 1.75rem;
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: max-height 0.35s ease, opacity 0.25s ease;
+  margin-top: 0;
+  padding-top: 0;
+  border-top: none;
+}
+
+.demo-toggle-input:checked + .demo-toggle-btn + .demo-section {
+  max-height: 1200px;
+  opacity: 1;
+  margin-top: 1rem;
   padding-top: 1.5rem;
   border-top: 1px solid #e5e7eb;
 }

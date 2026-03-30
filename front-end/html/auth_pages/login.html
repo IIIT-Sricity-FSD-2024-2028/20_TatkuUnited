@@ -15,7 +15,7 @@
 
       <!-- Header -->
       <div class="login-header">
-        <div class="login-logo">🔧</div>
+        <!-- <div class="login-logo">🔧</div> -->
         <h1 class="login-title">Tatku United</h1>
         <p class="login-subtitle">Sign in to your account</p>
       </div>
@@ -44,9 +44,14 @@
 
         <button type="submit" class="btn-login" id="btn-login">Sign In</button>
 
+        <p class="register-hint">Don't have an account? <a href="register.html" class="register-link">Register here</a>.</p>
+
       </form>
 
-      <!-- Demo Tiles -->
+      <!-- Demo drawer (hidden by default) -->
+      <input type="checkbox" id="toggle-demo" class="demo-toggle-input" />
+      <label for="toggle-demo" class="demo-toggle-btn" aria-expanded="false">Show quick demo users</label>
+
       <div class="demo-section">
         <p class="demo-heading">Quick Demo Login</p>
         <div class="demo-grid">
