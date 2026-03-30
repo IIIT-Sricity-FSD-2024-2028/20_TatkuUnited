@@ -1,4 +1,4 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -118,16 +118,16 @@
             <input type="file" id="avatar-input" accept="image/*" style="display:none" onchange="updateAvatar(this)" />
           </div>
           <div class="profile-hero-info">
-            <h1 class="profile-name" id="hero-name">Arun Kumar</h1>
+            <h1 class="profile-name" id="hero-name"></h1>
             <p class="profile-role">Unit Manager</p>
-            <p class="profile-email" id="hero-email">arun.kumar@tatku.com</p>
+            <p class="profile-email" id="hero-email"></p>
             <div class="profile-stats">
               <div class="profile-stat">
                 <span class="stat-num">24</span>
                 <span class="stat-lbl">Providers Managed</span>
               </div>
               <div class="profile-stat">
-                <span class="stat-num">4.7 â˜…</span>
+                <span class="stat-num">4.7 &#9733;</span>
                 <span class="stat-lbl">Unit Rating</span>
               </div>
               <div class="profile-stat">
@@ -153,22 +153,22 @@
               <div class="card-grid">
                 <div class="form-field">
                   <label>Full Name</label>
-                  <input type="text" id="full-name" value="Arun Kumar" oninput="syncName()" />
+                  <input type="text" id="full-name" autocomplete="off" oninput="syncName()" />
                 </div>
                 <div class="form-field">
                   <label>Email Address</label>
-                  <input type="email" id="email" value="arun.kumar@tatku.com" oninput="syncEmail()" />
+                  <input type="email" id="email" autocomplete="off" oninput="syncEmail()" />
                 </div>
                 <div class="form-field">
                   <label>Phone Number</label>
                   <div class="phone-row">
                     <span class="phone-code">+91</span>
-                    <input type="tel" id="phone" value="9876543210" />
+                    <input type="tel" id="phone" autocomplete="off" />
                   </div>
                 </div>
                 <div class="form-field">
                   <label>Date of Birth</label>
-                  <input type="date" id="dob" value="1990-03-22" />
+                  <input type="date" id="dob" />
                 </div>
               </div>
               <div class="card-footer">
@@ -190,7 +190,7 @@
               <div class="card-grid">
                 <div class="form-field">
                   <label>Unit Name</label>
-                  <input type="text" id="unit-name" value="Plumbing Unit Alpha" />
+                  <input type="text" id="unit-name" autocomplete="off" />
                 </div>
                 <div class="form-field">
                   <label>Unit ID</label>
@@ -208,7 +208,7 @@
                 </div>
                 <div class="form-field">
                   <label>Operating Zone</label>
-                  <input type="text" id="zone" value="North Bangalore" />
+                  <input type="text" id="zone" autocomplete="off" />
                 </div>
               </div>
               <div class="card-footer">
@@ -238,7 +238,7 @@
                   <div class="sec-sub">Secure your account with phone verification</div>
                 </div>
                 <label class="toggle">
-                  <input type="checkbox" checked onchange="showToast('Two-factor authentication updated')" />
+                  <input type="checkbox" id="toggle-2fa" onchange="saveToggle('twoFA', this.checked); showToast('Two-factor authentication ' + (this.checked ? 'enabled' : 'disabled'))" />
                   <span class="toggle-track"></span>
                 </label>
               </div>
@@ -263,7 +263,7 @@
                     <div class="pref-sub">Daily unit reports & alerts</div>
                   </div>
                   <label class="toggle">
-                    <input type="checkbox" checked onchange="showToast('Email notifications updated')" />
+                    <input type="checkbox" id="toggle-email" onchange="saveToggle('emailNotif', this.checked); showToast('Email notifications ' + (this.checked ? 'enabled' : 'disabled'))" />
                     <span class="toggle-track"></span>
                   </label>
                 </div>
@@ -273,7 +273,7 @@
                     <div class="pref-sub">Urgent provider no-shows & issues</div>
                   </div>
                   <label class="toggle">
-                    <input type="checkbox" checked onchange="showToast('SMS alerts updated')" />
+                    <input type="checkbox" id="toggle-sms" onchange="saveToggle('smsAlerts', this.checked); showToast('SMS alerts ' + (this.checked ? 'enabled' : 'disabled'))" />
                     <span class="toggle-track"></span>
                   </label>
                 </div>
@@ -283,7 +283,7 @@
                     <div class="pref-sub">Unit metrics delivered every Monday</div>
                   </div>
                   <label class="toggle">
-                    <input type="checkbox" onchange="showToast('Weekly summary updated')" />
+                    <input type="checkbox" id="toggle-weekly" onchange="saveToggle('weeklySummary', this.checked); showToast('Weekly summary ' + (this.checked ? 'enabled' : 'disabled'))" />
                     <span class="toggle-track"></span>
                   </label>
                 </div>

@@ -1,4 +1,4 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -140,7 +140,7 @@
             <p>Real-time overview of financial performance for Unit 402.</p>
           </div>
           <div class="page-actions">
-            <button class="btn-outline">
+            <button class="btn-outline" id="btn30Days">
               <svg
                 viewBox="0 0 24 24"
                 fill="none"
@@ -154,7 +154,7 @@
               </svg>
               Last 30 Days
             </button>
-            <button class="btn-primary">
+            <button class="btn-primary" id="btnExportPDF">
               <svg
                 viewBox="0 0 24 24"
                 fill="none"
@@ -186,9 +186,9 @@
             </div>
             <div class="stat-body">
               <span class="stat-label">Total Revenue</span>
-              <span class="stat-value">â‚¹12,450.00</span>
+              <span class="stat-value" id="statTotalRevenue">₹0.00</span>
             </div>
-            <span class="stat-badge up">â†‘ +12.5%</span>
+            <span class="stat-badge up" id="statRevenueBadge"></span>
           </div>
           <div class="stat-card">
             <div class="stat-icon amber">
@@ -204,9 +204,9 @@
             </div>
             <div class="stat-body">
               <span class="stat-label">Platform Fees</span>
-              <span class="stat-value">â‚¹871.50</span>
+              <span class="stat-value" id="statTotalFees">₹0.00</span>
             </div>
-            <span class="stat-badge down">â†“ -2.1%</span>
+            <span class="stat-badge" id="statFeesBadge"></span>
           </div>
           <div class="stat-card">
             <div class="stat-icon teal">
@@ -222,9 +222,9 @@
             </div>
             <div class="stat-body">
               <span class="stat-label">Net Earnings</span>
-              <span class="stat-value">â‚¹11,578.50</span>
+              <span class="stat-value" id="statNetEarnings">₹0.00</span>
             </div>
-            <span class="stat-badge up">â†‘ +14.2%</span>
+            <span class="stat-badge up" id="statEarningsBadge"></span>
           </div>
         </div>
 
@@ -277,12 +277,9 @@
             <tbody id="txnBody"></tbody>
           </table>
           <div class="table-footer">
-            <span>Showing 1 to 4 of 124 transactions</span>
-            <div class="pagination">
-              <button class="pg-btn" disabled>Prev</button>
-              <button class="pg-btn active">1</button>
-              <button class="pg-btn">2</button>
-              <button class="pg-btn">Next</button>
+            <span id="txnShowingText">Showing transactions...</span>
+            <div class="pagination" id="txnPagination">
+              <!-- Filled by JS -->
             </div>
           </div>
         </div>

@@ -1,4 +1,4 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -158,7 +158,7 @@
             </svg>
             <div>
               <span class="sum-label">Active Now</span>
-              <strong>142</strong>
+              <strong id="countActive">0</strong>
             </div>
           </div>
           <div class="summary-badge blue">
@@ -173,7 +173,7 @@
             </svg>
             <div>
               <span class="sum-label">On-Job</span>
-              <strong>56</strong>
+              <strong id="countOnJob">0</strong>
             </div>
           </div>
         </div>
@@ -271,7 +271,6 @@
                 <th>Name & ID</th>
                 <th>Status</th>
                 <th>Rating</th>
-                <th>Performance Score</th>
                 <th>Actions</th>
               </tr>
             </thead>
@@ -281,12 +280,8 @@
           </table>
           <div class="table-footer">
             <span id="showingText">Showing 1 â€“ 4 of 24 providers</span>
-            <div class="pagination">
-              <button class="pg-btn" disabled>&#8249;</button>
-              <button class="pg-btn active">1</button>
-              <button class="pg-btn">2</button>
-              <button class="pg-btn">3</button>
-              <button class="pg-btn">&#8250;</button>
+            <div class="pagination" id="pagination">
+              <!-- Filled by JS -->
             </div>
           </div>
         </div>
