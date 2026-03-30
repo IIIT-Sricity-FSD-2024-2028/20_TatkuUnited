@@ -103,14 +103,20 @@ function deleteAddress(id) {
   }
 }
 
-function addAddress() {
-  const text = prompt('Enter new address:');
+function saveNewAddress() {
+  const inputEl = document.getElementById('new-address-input');
+  if (!inputEl) return;
+  const text = inputEl.value;
   if (text && text.trim()) {
     const newAddr = { id: Date.now(), tag: 'Other', text: text.trim() };
     addresses.push(newAddr);
     saveAddressesToStore();
     renderAddresses();
+    inputEl.value = '';
+    document.getElementById('add-address-form').style.display = 'none';
     showProfileToast('Address added!');
+  } else {
+    showProfileToast('Please enter an address.');
   }
 }
 
@@ -148,6 +154,17 @@ function setDefaultPayment(id) {
   savePaymentsToStore();
   renderPayments();
   showProfileToast('Default payment method updated.');
+}
+
+// ===== PREFERENCES =====
+let preferences = { email: true, sms: true };
+function updatePreference(key, isChecked) {
+  preferences[key] = isChecked;
+  const session = Auth.getSession();
+  if (session) {
+    CRUD.updateRecord('customers', 'customer_id', session.id, { preferences: preferences });
+  }
+  showProfileToast(key === 'email' ? 'Email notifications updated' : 'SMS reminders updated');
 }
 
 // ===== RECENT ACTIVITY =====
@@ -248,6 +265,15 @@ AppStore.ready.then(() => {
   const dobInput = document.getElementById('dob');
   if (phoneInput && me.phone) phoneInput.value = me.phone;
   if (dobInput && me.dob) dobInput.value = me.dob;
+
+  // Load preferences
+  if (me.preferences) {
+    preferences = me.preferences;
+    const prefEmail = document.getElementById('pref-email');
+    const prefSms = document.getElementById('pref-sms');
+    if (prefEmail) prefEmail.checked = !!preferences.email;
+    if (prefSms) prefSms.checked = !!preferences.sms;
+  }
 
   renderAddresses();
   renderPayments();
