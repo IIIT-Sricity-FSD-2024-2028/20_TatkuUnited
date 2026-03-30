@@ -1,31 +1,31 @@
 // ── Work Hours (persisted in localStorage) ──────────────────────────────────
 const DEFAULT_START = '08:00';
-const DEFAULT_END   = '18:00';
+const DEFAULT_END = '18:00';
 
 function getWorkHours() {
   return {
     start: localStorage.getItem('workStart') || DEFAULT_START,
-    end:   localStorage.getItem('workEnd')   || DEFAULT_END,
+    end: localStorage.getItem('workEnd') || DEFAULT_END,
   };
 }
 
 function initWorkHours() {
   const { start, end } = getWorkHours();
   const startEl = document.getElementById('work-start');
-  const endEl   = document.getElementById('work-end');
+  const endEl = document.getElementById('work-end');
   if (startEl) startEl.value = start;
-  if (endEl)   endEl.value   = end;
+  if (endEl) endEl.value = end;
   updateWorkHoursPreview();
 }
 
 function updateWorkHoursPreview() {
   const startEl = document.getElementById('work-start');
-  const endEl   = document.getElementById('work-end');
+  const endEl = document.getElementById('work-end');
   const preview = document.getElementById('work-hours-preview');
   if (!startEl || !endEl || !preview) return;
 
   const start = startEl.value;
-  const end   = endEl.value;
+  const end = endEl.value;
 
   if (start >= end) {
     preview.textContent = '⚠ End time must be after start time.';
@@ -36,16 +36,16 @@ function updateWorkHoursPreview() {
   const fmt = t => {
     const [h, m] = t.split(':').map(Number);
     const ampm = h >= 12 ? 'PM' : 'AM';
-    const h12  = h % 12 || 12;
-    return `${h12}:${String(m).padStart(2,'0')} ${ampm}`;
+    const h12 = h % 12 || 12;
+    return `${h12}:${String(m).padStart(2, '0')} ${ampm}`;
   };
 
   const startMin = toMinutes(start);
-  const endMin   = toMinutes(end);
+  const endMin = toMinutes(end);
   const totalMins = endMin - startMin;
-  const hrs  = Math.floor(totalMins / 60);
+  const hrs = Math.floor(totalMins / 60);
   const mins = totalMins % 60;
-  const dur  = hrs > 0 ? `${hrs}h${mins > 0 ? ` ${mins}m` : ''}` : `${mins}m`;
+  const dur = hrs > 0 ? `${hrs}h${mins > 0 ? ` ${mins}m` : ''}` : `${mins}m`;
 
   preview.textContent = `Active window: ${fmt(start)} – ${fmt(end)} (${dur})`;
   preview.style.color = 'var(--accent-green)';
@@ -58,11 +58,11 @@ function toMinutes(t) {
 
 function saveWorkHours() {
   const startEl = document.getElementById('work-start');
-  const endEl   = document.getElementById('work-end');
+  const endEl = document.getElementById('work-end');
   if (!startEl || !endEl) return;
 
   const start = startEl.value;
-  const end   = endEl.value;
+  const end = endEl.value;
 
   if (start >= end) {
     showToast('⚠ End time must be after start time.', true);
@@ -70,7 +70,7 @@ function saveWorkHours() {
   }
 
   localStorage.setItem('workStart', start);
-  localStorage.setItem('workEnd',   end);
+  localStorage.setItem('workEnd', end);
   updateWorkHoursPreview();
   showToast('Work hours saved!');
 }
@@ -84,11 +84,11 @@ function saveSection(section) {
 const ALLOWED_RESUME = ['application/pdf',
   'application/msword',
   'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
-const ALLOWED_CERTS  = ['application/pdf', 'image/jpeg', 'image/png'];
-const MAX_BYTES      = 5 * 1024 * 1024; // 5 MB
+const ALLOWED_CERTS = ['application/pdf', 'image/jpeg', 'image/png'];
+const MAX_BYTES = 5 * 1024 * 1024; // 5 MB
 
 // Tracks uploaded files per list so duplicates are rejected
-const uploadedFiles  = { 'resume-list': [], 'certs-list': [] };
+const uploadedFiles = { 'resume-list': [], 'certs-list': [] };
 
 function handleDragOver(e, zoneId) {
   e.preventDefault();
@@ -105,8 +105,8 @@ function handleDrop(e, inputId) {
   const zoneId = input.closest('.upload-zone').id;
   document.getElementById(zoneId).classList.remove('drag-over');
 
-  const listId  = inputId === 'resume-input' ? 'resume-list' : 'certs-list';
-  const multi   = inputId === 'certs-input';
+  const listId = inputId === 'resume-input' ? 'resume-list' : 'certs-list';
+  const multi = inputId === 'certs-input';
   const allowed = multi ? ALLOWED_CERTS : ALLOWED_RESUME;
 
   const files = Array.from(e.dataTransfer.files);
@@ -115,7 +115,7 @@ function handleDrop(e, inputId) {
 
 function handleFileSelect(input, listId, multi) {
   const allowed = multi ? ALLOWED_CERTS : ALLOWED_RESUME;
-  const files   = Array.from(input.files);
+  const files = Array.from(input.files);
   processFiles(files, listId, multi, allowed);
   input.value = ''; // reset so same file can be re-selected after removal
 }
@@ -130,7 +130,7 @@ function processFiles(files, listId, multi, allowed) {
   let rejected = 0;
   for (const file of files) {
     if (!allowed.includes(file.type)) { rejected++; continue; }
-    if (file.size > MAX_BYTES)        { rejected++; continue; }
+    if (file.size > MAX_BYTES) { rejected++; continue; }
     if (uploadedFiles[listId].some(f => f.name === file.name && f.size === file.size)) continue;
 
     uploadedFiles[listId].push(file);
@@ -141,7 +141,7 @@ function processFiles(files, listId, multi, allowed) {
 }
 
 function formatBytes(bytes) {
-  if (bytes < 1024)        return bytes + ' B';
+  if (bytes < 1024) return bytes + ' B';
   if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
   return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
 }
@@ -179,7 +179,7 @@ function removeUploadedFile(btn, listId) {
   const size = Number(item.dataset.size);
   uploadedFiles[listId] = uploadedFiles[listId].filter(f => !(f.name === name && f.size === size));
   item.style.animation = 'none';
-  item.style.opacity   = '0';
+  item.style.opacity = '0';
   item.style.transform = 'translateY(-4px)';
   item.style.transition = 'opacity .18s, transform .18s';
   setTimeout(() => item.remove(), 180);
@@ -203,15 +203,15 @@ function requestRemoveSkill(btn, skillName) {
 }
 
 function toggleAddSkill() {
-  const panel  = document.getElementById('add-skill-panel');
+  const panel = document.getElementById('add-skill-panel');
   const toggle = document.getElementById('add-skill-toggle');
-  const open   = panel.classList.toggle('open');
+  const open = panel.classList.toggle('open');
   toggle.classList.toggle('open', open);
 }
 
 function requestVerifySkill() {
   const select = document.getElementById('new-skill-select');
-  const skill  = select.value;
+  const skill = select.value;
 
   if (!skill) {
     showToast('Please choose a skill from the list first.', true);
@@ -246,8 +246,30 @@ function closePwdModal(e) {
   if (e.target === document.getElementById('pwd-modal')) closePwdModalBtn();
 }
 
-function toggle2FA(checkbox) {
-  showToast(checkbox.checked ? 'Two-factor authentication enabled.' : 'Two-factor authentication disabled.');
+function updatePassword() {
+  const inputs = document.querySelectorAll('#pwd-modal input[type="password"]');
+  const currentPwd = inputs[0].value;
+  const newPwd = inputs[1].value;
+  const confirmPwd = inputs[2].value;
+
+  if (!currentPwd || !newPwd || !confirmPwd) {
+    showToast('Please fill in all password fields.', true);
+    return;
+  }
+
+  if (newPwd.length < 8) {
+    showToast('New password must be at least 8 characters.', true);
+    return;
+  }
+
+  if (newPwd !== confirmPwd) {
+    showToast('New passwords do not match.', true);
+    return;
+  }
+
+  showToast('Password updated successfully!');
+  inputs.forEach(input => input.value = ''); // Clear inputs
+  closePwdModalBtn();
 }
 
 function confirmDeactivate() {
