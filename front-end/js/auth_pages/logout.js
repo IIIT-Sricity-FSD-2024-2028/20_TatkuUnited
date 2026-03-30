@@ -12,9 +12,8 @@ document.getElementById("login-again").addEventListener("click", () => {
   window.location.href = "/front-end/html/auth_pages/login.html";
 });
 
-localStorage.removeItem("fsd_session");
-localStorage.removeItem("fsd_store");
-sessionStorage.removeItem("fsd_session_alive");
+sessionStorage.removeItem("fsd_session");
+// Removed: localStorage.removeItem("fsd_store"); // to prevent data wipe on logout
 
 /* ── Step 2: Auto-redirect countdown (optional UI) ── */
 const redirectNote = document.getElementById("redirect-note");

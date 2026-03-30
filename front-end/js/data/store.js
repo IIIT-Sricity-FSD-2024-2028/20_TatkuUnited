@@ -65,9 +65,8 @@
     // ── AppStore.restore ──────────────────────────────────────────────────────────
     AppStore.restore = function () {
         // Always try to load from the most-recent saved state in localStorage.
-        // fsd_store is explicitly removed by Auth.logout(), so there is no risk
-        // of bleeding stale cross-session data. The old fsd_session_alive guard
-        // prevented this from working on pre-login pages (e.g. register).
+        // We do *not* wipe fsd_store on logout so that the mock database state
+        // persists across different users logging in.
         try {
             var raw = localStorage.getItem("fsd_store");
             if (raw) {
@@ -154,10 +153,10 @@
     });
 
     if (AppStore.restore()) {
-        // Same session — data already loaded from localStorage
+        // Data already loaded from localStorage
         _resolve();
     } else {
-        // New session — fetch from mockData.json
+        // First startup or missing local data — fetch from mockData.json
         fetch("../../js/data/mockData.json")
             .then(function (r) {
                 if (!r.ok) {
@@ -167,7 +166,10 @@
             })
             .then(function (raw) {
                 AppStore.data = JSON.parse(JSON.stringify(raw));
-                // NOTE: fsd_session_alive is set ONLY by Auth.login(), not here.
+                // Session logic is handled entirely by Auth.login() and requires no action here.
+                // Persist the fresh state immediately
+                AppStore.save();
+
                 _resolve();
             })
             .catch(function (err) {

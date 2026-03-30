@@ -73,11 +73,19 @@ AppStore.ready.then(() => {
   const myUnitIds = new Set(myUnits.map(u => u.unit_id));
   const myProviders = allProviders.filter(p => myUnitIds.has(p.unit_id));
 
+  /* ── 3.5. Init custom tracking for persistence ── */
+  if (!AppStore.data.dismissed_providers) {
+      AppStore.data.dismissed_providers = [];
+  }
+
   /* ── 4. Generate skill requests ── */
-  // For each provider, find skills they don't have and create a request for one
+  // Find skills they don't have and create a request for one
   const requests = [];
   let requestId = 1;
   myProviders.forEach(provider => {
+    // Hide requests we already verified or rejected
+    if (AppStore.data.dismissed_providers.includes(provider.service_provider_id)) return;
+
     const providerSkills = allProviderSkills
       .filter(ps => ps.service_provider_id === provider.service_provider_id)
       .map(ps => ps.skill_id);
@@ -100,23 +108,6 @@ AppStore.ready.then(() => {
         skill_id: skill.skill_id
       });
     }
-  });
-
-  /* ── 5. Generate recently approved ── */
-  // Mock some recently approved providers from myProviders
-  const recentlyApproved = [];
-  const approvedProviders = myProviders.slice(0, 4); // Take first 4
-  const dates = ['Mar 8, 2026', 'Mar 7, 2026', 'Mar 6, 2026', 'Mar 5, 2026'];
-  approvedProviders.forEach((provider, i) => {
-    const unit = myUnits.find(u => u.unit_id === provider.unit_id);
-    const skill = allSkills[Math.floor(Math.random() * allSkills.length)]; // Random skill
-    recentlyApproved.push({
-      initials: provider.name.split(' ').map(n => n[0]).join('').toUpperCase(),
-      name: provider.name,
-      unit: `${unit.unit_name}`,
-      skill: skill.skill_name,
-      date: dates[i]
-    });
   });
 
   // ===== BUILD REQUEST CARD =====
@@ -164,18 +155,28 @@ AppStore.ready.then(() => {
     `;
 
     card.querySelector('.btn-verify').addEventListener('click', () => {
-      // Add the skill to provider_skills
+      // Add the skill to provider_skills with verification metadata
       const providerSkill = {
         service_provider_id: req.provider_id,
-        skill_id: req.skill_id
+        skill_id: req.skill_id,
+        verification_status: "Verified",
+        verified_at: new Date().toISOString()
       };
       AppStore.data.provider_skills.push(providerSkill);
+      // Mark as dismissed so it doesn't regenerate a new fake request
+      AppStore.data.dismissed_providers.push(req.provider_id);
+      
       AppStore.save();
       showToast(`✓ ${req.name}'s ${req.skill} skill verified`);
       removeCard(card);
+
+      document.getElementById('approvedGrid').innerHTML = '';
+      buildApprovedCards();
     });
 
     card.querySelector('.btn-reject').addEventListener('click', () => {
+      AppStore.data.dismissed_providers.push(req.provider_id);
+      AppStore.save();
       showToast(`✗ ${req.name}'s ${req.skill} request rejected`);
       removeCard(card);
     });
@@ -190,7 +191,33 @@ AppStore.ready.then(() => {
   // ===== BUILD APPROVED CARDS =====
   function buildApprovedCards() {
     const grid = document.getElementById('approvedGrid');
-    recentlyApproved.forEach((p, i) => {
+    
+    // Sort provider skills by verified_at descending
+    const verifiedSkills = [...AppStore.data.provider_skills]
+      .filter(ps => ps.verification_status === "Verified" && ps.verified_at)
+      .sort((a, b) => new Date(b.verified_at) - new Date(a.verified_at));
+
+    // Map to view models and filter down to top 4 belonging to myProviders
+    const recentDisplay = [];
+    for (const ps of verifiedSkills) {
+      if (recentDisplay.length >= 4) break;
+      const provider = myProviders.find(p => p.service_provider_id === ps.service_provider_id);
+      if (!provider) continue; // Skip if provider isn't in my collective
+      
+      const unit = myUnits.find(u => u.unit_id === provider.unit_id);
+      const skill = allSkills.find(s => s.skill_id === ps.skill_id);
+      const dt = new Date(ps.verified_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+      
+      recentDisplay.push({
+        initials: provider.name.split(' ').map(n => n[0]).join('').toUpperCase(),
+        name: provider.name,
+        unit: unit ? unit.unit_name : 'General Unit',
+        skill: skill ? skill.skill_name : 'Unknown Skill',
+        date: dt
+      });
+    }
+
+    recentDisplay.forEach((p, i) => {
       const color = colors[(i + 2) % colors.length];
       const card = document.createElement('div');
       card.className = 'approved-card';

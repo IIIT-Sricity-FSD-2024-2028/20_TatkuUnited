@@ -116,8 +116,7 @@
         <div class="stat-card">
           <div class="stat-inner">
             <span class="stat-label">Total Revenue</span>
-            <span class="stat-value">₦48,250</span>
-            <span class="stat-change positive">↑ +12.5% vs last period</span>
+            <span class="stat-value" id="stat-revenue">₦48,250</span>
           </div>
           <div class="stat-icon icon-green">
             <svg viewBox="0 0 24 24">
@@ -129,8 +128,7 @@
         <div class="stat-card">
           <div class="stat-inner">
             <span class="stat-label">Number of Bookings</span>
-            <span class="stat-value">1,284</span>
-            <span class="stat-change positive">↑ +8.2% vs last period</span>
+            <span class="stat-value" id="stat-bookings">1,284</span>
           </div>
           <div class="stat-icon icon-blue">
             <svg viewBox="0 0 24 24">
@@ -144,8 +142,7 @@
         <div class="stat-card">
           <div class="stat-inner">
             <span class="stat-label">Avg Order Value</span>
-            <span class="stat-value">₦37.58</span>
-            <span class="stat-change negative">↓ -2.1% vs last period</span>
+            <span class="stat-value" id="stat-aov">₦37.58</span>
           </div>
           <div class="stat-icon icon-amber">
             <svg viewBox="0 0 24 24">
@@ -157,8 +154,7 @@
         <div class="stat-card">
           <div class="stat-inner">
             <span class="stat-label">Active Providers</span>
-            <span class="stat-value">142</span>
-            <span class="stat-change positive">↑ +5.4% vs last period</span>
+            <span class="stat-value" id="stat-providers">142</span>
           </div>
           <div class="stat-icon icon-purple">
             <svg viewBox="0 0 24 24">
@@ -210,7 +206,9 @@
       </div>
     </main>
   </div>
-  <script src="../../js/collective_manager/revenue_reports.js"></script>
+  <script src="../../js/data/store.js?v=2"></script>
+  <script src="../../js/modules/auth.js?v=2"></script>
+  <script src="../../js/collective_manager/revenue_reports.js?v=2"></script>
 </body>
 
 </html>

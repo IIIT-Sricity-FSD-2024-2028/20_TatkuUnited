@@ -3,6 +3,7 @@
 
 /* Global unit array used by filters/modal */
 let units = [];
+let currentSession = null; // Store session globally
 
 /* ── Category CSS class map ── */
 const catClass = {};
@@ -34,7 +35,7 @@ function renderTable(data) {
       <td><span class="${u.status === 'Active' ? 'status-active' : 'status-suspended'}">${u.status}</span></td>
       <td>
         <div class="tbl-actions">
-          <button class="tbl-icon-btn" title="View">
+          <button class="tbl-icon-btn btn-view" data-id="${u.id}" title="View Manager Details">
             <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
           </button>
           <button class="tbl-icon-btn btn-edit" data-id="${u.id}" title="Edit">
@@ -49,6 +50,13 @@ function renderTable(data) {
     tbody.appendChild(tr);
   });
 
+  document.querySelectorAll('.btn-view').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const unit = units.find(u => u.id === btn.dataset.id);
+      if (unit) openViewModal(unit);
+    });
+  });
+
   document.querySelectorAll('.btn-edit').forEach(btn => {
     btn.addEventListener('click', () => {
       const unit = units.find(u => u.id === btn.dataset.id);
@@ -60,6 +68,12 @@ function renderTable(data) {
     btn.addEventListener('click', () => {
       const unit = units.find(u => u.id === btn.dataset.id);
       if (unit) {
+        // Update the actual AppStore data
+        const appStoreUnit = AppStore.getTable('units').find(u => u.unit_id === unit.id);
+        if (appStoreUnit) {
+          appStoreUnit.is_active = !appStoreUnit.is_active;
+          AppStore.save();
+        }
         unit.status = unit.status === 'Active' ? 'Suspended' : 'Active';
         applyFilters();
         showToast(unit.status === 'Active' ? `✓ ${unit.name} reactivated` : `⚠ ${unit.name} suspended`);
@@ -89,7 +103,45 @@ function openModal(unit) {
   document.getElementById('modalTitle').textContent = unit ? 'Edit Unit' : 'Create New Unit';
   document.getElementById('unitName').value     = unit ? unit.name     : '';
   document.getElementById('unitManager').value  = unit ? unit.manager  : '';
-  document.getElementById('unitCategory').value = unit ? unit.category : 'Plumbing';
+
+  // Dynamically populate category dropdown from AppStore
+  const categorySelect = document.getElementById('unitCategory');
+  categorySelect.innerHTML = '';
+  const allCategories = AppStore.getTable('categories') || [];
+  allCategories.forEach(function(c) {
+      const opt = document.createElement('option');
+      opt.value = c.category_name;
+      opt.textContent = c.category_name;
+      categorySelect.appendChild(opt);
+  });
+  
+  // Set category value after options are built
+  const defaultCat = allCategories.length > 0 ? allCategories[0].category_name : 'Plumbing';
+  categorySelect.value = unit ? unit.category : defaultCat;
+
+  const managerField = document.getElementById('unitManager');
+  managerField.disabled = false;
+  managerField.style.opacity = '1';
+
+  // Populate datalist for Unassigned Managers
+  let datalist = document.getElementById('unassignedManagersList');
+  if (!datalist) {
+      datalist = document.createElement('datalist');
+      datalist.id = 'unassignedManagersList';
+      managerField.setAttribute('list', 'unassignedManagersList');
+      managerField.parentNode.appendChild(datalist);
+  }
+  datalist.innerHTML = '';
+  const allManagers = AppStore.getTable('unit_managers') || [];
+  const available = allManagers.filter(function(m) {
+      return !m.unit_id || m.unit_id === editingId;
+  });
+  available.forEach(function(m) {
+      const opt = document.createElement('option');
+      opt.value = m.name;
+      datalist.appendChild(opt);
+  });
+
   document.getElementById('btnSave').textContent = unit ? 'Save Changes' : 'Create Unit';
   document.getElementById('modalOverlay').classList.add('open');
 }
@@ -106,18 +158,111 @@ document.getElementById('btnSave').addEventListener('click', () => {
   const name = document.getElementById('unitName').value.trim();
   const mgr  = document.getElementById('unitManager').value.trim();
   const cat  = document.getElementById('unitCategory').value;
-  if (!name || !mgr) { showToast('⚠ Please fill in all fields'); return; }
+  if (!name) { showToast('⚠ Please enter a unit name'); return; }
+  if (!editingId && !mgr) { showToast('⚠ Please enter a manager name'); return; }
+
+  const allManagers = AppStore.getTable('unit_managers');
+
+  // Check if manager exists and is available
+  const existingManager = allManagers.find(m => m.name.toLowerCase() === mgr.toLowerCase());
+  if (!existingManager) {
+      showToast(`⚠ Unit Manager "${mgr}" does not exist`);
+      return;
+  }
+  if (existingManager.unit_id && existingManager.unit_id !== editingId) {
+      showToast(`⚠ ${existingManager.name} already manages another unit`);
+      return;
+  }
+
   if (editingId) {
-    const unit = units.find(u => u.id === editingId);
-    if (unit) { unit.name = name; unit.manager = mgr; unit.category = cat; }
-    showToast(`✓ ${name} updated`);
+    // Update existing unit
+    const appStoreUnit = AppStore.getTable('units').find(u => u.unit_id === editingId);
+    if (appStoreUnit) {
+      appStoreUnit.unit_name = name;
+      appStoreUnit.category = cat;
+
+      // Update manager
+      const oldManager = allManagers.find(m => m.unit_id === editingId);
+      if (oldManager && oldManager.name.toLowerCase() !== existingManager.name.toLowerCase()) {
+          oldManager.unit_id = null; // Detach old
+      }
+
+      existingManager.unit_id = editingId;
+
+      AppStore.save();
+      showToast(`✓ ${name} updated`);
+    }
   } else {
-    units.push({ id: 'new-' + Date.now(), name, manager: mgr, category: cat, rating: null, providers: 0, completed: 0, active: 0, status: 'Active' });
+    // Create new unit
+    const newUnitId = AppStore.nextId('UNT');
+    const newUnit = {
+      unit_id: newUnitId,
+      unit_name: name,
+      category: cat,
+      rating: null,
+      rating_count: 0,
+      is_active: true,
+      created_at: new Date().toISOString(),
+      collective_id: currentSession.collectiveId
+    };
+
+    // Assign existing manager
+    existingManager.unit_id = newUnitId;
+
+    AppStore.getTable('units').push(newUnit);
+    AppStore.save();
     showToast(`✓ ${name} created`);
   }
+
   closeModal();
-  applyFilters();
-  updateSummaryCards();
+  // Re-initialize to refresh data
+  location.reload();
+});
+
+/* ── View Manager Modal ── */
+function openViewModal(unit) {
+  const allManagers = AppStore.getTable('unit_managers') || [];
+  const manager = allManagers.find(m => m.unit_id === unit.id);
+
+  if (!manager) {
+    showToast('⚠ No manager explicitly assigned to this unit');
+    return;
+  }
+
+  const pfp = document.getElementById('viewManagerPfp');
+  if (manager.pfp_url) {
+    pfp.src = manager.pfp_url;
+    pfp.style.display = 'block';
+  } else {
+    pfp.style.display = 'none';
+  }
+
+  document.getElementById('viewManagerName').textContent = manager.name || 'Unknown';
+  
+  const statusEl = document.getElementById('viewManagerStatus');
+  statusEl.textContent = manager.is_active ? 'Active' : 'Inactive';
+  statusEl.style.color = manager.is_active ? '#059669' : '#dc2626';
+
+  document.getElementById('viewManagerEmail').textContent = manager.email || '—';
+  document.getElementById('viewManagerPhone').textContent = manager.phone || '—';
+  
+  let joinedDt = '—';
+  if (manager.created_at) {
+    joinedDt = new Date(manager.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+  }
+  document.getElementById('viewManagerJoined').textContent = joinedDt;
+
+  document.getElementById('viewModalOverlay').classList.add('open');
+}
+
+function closeViewModal() {
+  document.getElementById('viewModalOverlay').classList.remove('open');
+}
+
+document.getElementById('viewModalClose').addEventListener('click', closeViewModal);
+document.getElementById('btnViewClose').addEventListener('click', closeViewModal);
+document.getElementById('viewModalOverlay').addEventListener('click', e => {
+  if (e.target === e.currentTarget) closeViewModal();
 });
 
 function showToast(msg) {
@@ -160,6 +305,7 @@ AppStore.ready.then(() => {
   const session = Auth.requireSession(['collective_manager']);
   if (!session) return;
 
+  currentSession = session; // Store globally
   const collectiveId = session.collectiveId;
 
   /* 2. Pull tables */
@@ -175,12 +321,12 @@ AppStore.ready.then(() => {
   // Since units don't have a category field, we derive from unit_name
   function deriveCategoryFromName(unitName) {
     const n = (unitName || '').toLowerCase();
-    if (n.includes('electric'))   return 'Electrical';
+    if (n.includes('electric') || n.includes('electronic')) return 'Electrical';
     if (n.includes('plumb'))      return 'Plumbing';
-    if (n.includes('clean'))      return 'Cleaning';
-    if (n.includes('landscap') || n.includes('garden')) return 'Landscaping';
+    if (n.includes('clean'))      return 'Home Cleaning';
+    if (n.includes('landscap') || n.includes('garden')) return 'Landscaping & Gardening';
     if (n.includes('security'))   return 'Security';
-    if (n.includes('paint'))      return 'Painting';
+    if (n.includes('paint'))      return 'Painting & Waterproofing';
     if (n.includes('carpent') || n.includes('furniture')) return 'Carpentry';
     if (n.includes('ac') || n.includes('appliance'))      return 'AC & Appliances';
     if (n.includes('pest'))       return 'Pest Control';
@@ -216,7 +362,7 @@ AppStore.ready.then(() => {
     id:        u.unit_id,
     name:      u.unit_name,
     manager:   unitManagerMap[u.unit_id] || '—',
-    category:  deriveCategoryFromName(u.unit_name),
+    category:  u.category || deriveCategoryFromName(u.unit_name),
     rating:    u.rating || null,
     providers: providersByUnit[u.unit_id] || 0,
     completed: completedByUnit[u.unit_id] || 0,
