@@ -73,11 +73,37 @@ AppStore.ready.then(() => {
   const myUnitIds = new Set(myUnits.map(u => u.unit_id));
   const myProviders = allProviders.filter(p => myUnitIds.has(p.unit_id));
 
+  /* ── 3.5. Init custom tracking for persistence ── */
+  if (!AppStore.data.dismissed_providers) {
+      AppStore.data.dismissed_providers = [];
+  }
+  if (!AppStore.data.recently_approved) {
+      const initialApproved = [];
+      const approvedProviders = myProviders.slice(0, 4);
+      const dates = ['Mar 8, 2026', 'Mar 7, 2026', 'Mar 6, 2026', 'Mar 5, 2026'];
+      approvedProviders.forEach((p, i) => {
+        const unit = myUnits.find(u => u.unit_id === p.unit_id);
+        const skill = allSkills[Math.floor(Math.random() * allSkills.length)];
+        initialApproved.push({
+          initials: p.name.split(' ').map(n => n[0]).join('').toUpperCase(),
+          name: p.name,
+          unit: unit ? unit.unit_name : 'General Unit',
+          skill: skill.skill_name,
+          date: dates[i]
+        });
+      });
+      AppStore.data.recently_approved = initialApproved;
+      AppStore.save();
+  }
+
   /* ── 4. Generate skill requests ── */
-  // For each provider, find skills they don't have and create a request for one
+  // Find skills they don't have and create a request for one
   const requests = [];
   let requestId = 1;
   myProviders.forEach(provider => {
+    // Hide requests we already verified or rejected
+    if (AppStore.data.dismissed_providers.includes(provider.service_provider_id)) return;
+
     const providerSkills = allProviderSkills
       .filter(ps => ps.service_provider_id === provider.service_provider_id)
       .map(ps => ps.skill_id);
@@ -100,23 +126,6 @@ AppStore.ready.then(() => {
         skill_id: skill.skill_id
       });
     }
-  });
-
-  /* ── 5. Generate recently approved ── */
-  // Mock some recently approved providers from myProviders
-  const recentlyApproved = [];
-  const approvedProviders = myProviders.slice(0, 4); // Take first 4
-  const dates = ['Mar 8, 2026', 'Mar 7, 2026', 'Mar 6, 2026', 'Mar 5, 2026'];
-  approvedProviders.forEach((provider, i) => {
-    const unit = myUnits.find(u => u.unit_id === provider.unit_id);
-    const skill = allSkills[Math.floor(Math.random() * allSkills.length)]; // Random skill
-    recentlyApproved.push({
-      initials: provider.name.split(' ').map(n => n[0]).join('').toUpperCase(),
-      name: provider.name,
-      unit: `${unit.unit_name}`,
-      skill: skill.skill_name,
-      date: dates[i]
-    });
   });
 
   // ===== BUILD REQUEST CARD =====
@@ -170,12 +179,31 @@ AppStore.ready.then(() => {
         skill_id: req.skill_id
       };
       AppStore.data.provider_skills.push(providerSkill);
+      // Mark as dismissed so it doesn't regenerate a new fake request
+      AppStore.data.dismissed_providers.push(req.provider_id);
+      
+      // Inject into recently approved
+      const realProvider = allProviders.find(p => p.service_provider_id === req.provider_id);
+      const unit = realProvider ? myUnits.find(u => u.unit_id === realProvider.unit_id) : null;
+      AppStore.data.recently_approved.unshift({
+        initials: req.initials,
+        name: req.name,
+        unit: unit ? unit.unit_name : 'General Unit',
+        skill: req.skill,
+        date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+      });
+
       AppStore.save();
       showToast(`✓ ${req.name}'s ${req.skill} skill verified`);
       removeCard(card);
+
+      document.getElementById('approvedGrid').innerHTML = '';
+      buildApprovedCards();
     });
 
     card.querySelector('.btn-reject').addEventListener('click', () => {
+      AppStore.data.dismissed_providers.push(req.provider_id);
+      AppStore.save();
       showToast(`✗ ${req.name}'s ${req.skill} request rejected`);
       removeCard(card);
     });
@@ -190,7 +218,7 @@ AppStore.ready.then(() => {
   // ===== BUILD APPROVED CARDS =====
   function buildApprovedCards() {
     const grid = document.getElementById('approvedGrid');
-    recentlyApproved.forEach((p, i) => {
+    AppStore.data.recently_approved.forEach((p, i) => {
       const color = colors[(i + 2) % colors.length];
       const card = document.createElement('div');
       card.className = 'approved-card';

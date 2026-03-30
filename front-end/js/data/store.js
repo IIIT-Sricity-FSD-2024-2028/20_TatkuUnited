@@ -153,11 +153,21 @@
         _resolve = resolve;
     });
 
-    if (AppStore.restore()) {
+    // Handle the specific requirement for collective manager pages:
+    // Reset data to mockData.json on a fresh start (new session/tab),
+    // but persist data during page refreshes.
+    var isCMPage = window.location.pathname.indexOf('/collective_manager/') !== -1;
+    var shouldForceReset = isCMPage && !sessionStorage.getItem('cm_data_initialized');
+
+    if (shouldForceReset) {
+        sessionStorage.setItem('cm_data_initialized', '1');
+    }
+
+    if (!shouldForceReset && AppStore.restore()) {
         // Same session — data already loaded from localStorage
         _resolve();
     } else {
-        // New session — fetch from mockData.json
+        // New session or forced reset — fetch from mockData.json
         fetch("../../js/data/mockData.json")
             .then(function (r) {
                 if (!r.ok) {
@@ -168,6 +178,12 @@
             .then(function (raw) {
                 AppStore.data = JSON.parse(JSON.stringify(raw));
                 // NOTE: fsd_session_alive is set ONLY by Auth.login(), not here.
+                
+                // If we forced a reset for CM pages, persist that fresh state immediately
+                if (shouldForceReset) {
+                    AppStore.save();
+                }
+
                 _resolve();
             })
             .catch(function (err) {
