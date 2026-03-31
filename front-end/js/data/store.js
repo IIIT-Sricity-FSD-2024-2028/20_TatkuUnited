@@ -27,6 +27,11 @@
     "transactions",
     "reviews",
     "super_users",
+    "super_user_platform_events",
+    "super_user_audit_logs",
+    "super_user_notifications",
+    "super_user_actions",
+    "super_user_system_performance",
   ];
 
   // ── Prefix → table mapping ───────────────────────────────────────────────────
@@ -78,6 +83,11 @@
     transactions: [],
     reviews: [],
     super_users: [],
+    super_user_platform_events: [],
+    super_user_audit_logs: [],
+    super_user_notifications: [],
+    super_user_actions: [],
+    super_user_system_performance: [],
   };
 
   const PLATFORM_SETTINGS_KEY = "fsd_platform_settings";
