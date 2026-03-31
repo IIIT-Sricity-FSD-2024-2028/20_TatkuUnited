@@ -1618,8 +1618,20 @@
       "skill_id": "SKL005"
     },
     {
+      "service_id": "SVC009",
+      "skill_id": "SKL002"
+    },
+    {
       "service_id": "SVC010",
       "skill_id": "SKL005"
+    },
+    {
+      "service_id": "SVC010",
+      "skill_id": "SKL002"
+    },
+    {
+      "service_id": "SVC010",
+      "skill_id": "SKL001"
     },
     {
       "service_id": "SVC011",

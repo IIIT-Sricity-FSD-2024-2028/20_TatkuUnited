@@ -341,14 +341,6 @@
               />
             </div>
             <div class="filter-right">
-              <select class="filter-select" id="catFilter">
-                <option value="All">All Categories</option>
-                <option value="Trade">Trade</option>
-                <option value="Creative">Creative</option>
-                <option value="Technical">Technical</option>
-                <option value="Management">Management</option>
-                <option value="Communication">Communication</option>
-              </select>
               <select class="filter-select" id="statusFilter">
                 <option value="All">All Statuses</option>
                 <option value="Active">Active</option>
@@ -361,7 +353,6 @@
             <thead>
               <tr>
                 <th>SKILL NAME</th>
-                <th>CATEGORY</th>
                 <th>DESCRIPTION</th>
                 <th>PROVIDERS</th>
                 <th>SERVICES</th>
@@ -405,29 +396,12 @@
             />
           </div>
           <div class="form-group">
-            <label class="form-label">Category</label>
-            <select class="form-input" id="skillCategory">
-              <option>Trade</option>
-              <option>Creative</option>
-              <option>Technical</option>
-              <option>Management</option>
-              <option>Communication</option>
-            </select>
-          </div>
-          <div class="form-group">
             <label class="form-label">Description</label>
             <textarea
               class="form-input form-textarea"
               id="skillDesc"
               placeholder="Brief description of this skill..."
             ></textarea>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Status</label>
-            <select class="form-input" id="skillStatus">
-              <option value="Active">Active</option>
-              <option value="Inactive">Inactive</option>
-            </select>
           </div>
         </div>
         <div class="modal-footer">

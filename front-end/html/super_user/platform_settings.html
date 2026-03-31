@@ -235,7 +235,7 @@
           </button>
         </div>
 
-        <!-- Row 1: Platform Status + Security Settings -->
+        <!-- Row 1: Platform Controls + Security Settings -->
         <div class="settings-row">
           <div class="settings-card">
             <div class="settings-card-header">
@@ -251,25 +251,14 @@
                   <line x1="12" y1="16" x2="12.01" y2="16" />
                 </svg>
               </div>
-              <h2 class="settings-card-title">Platform Status</h2>
-            </div>
-            <div class="setting-row">
-              <div class="setting-info">
-                <div class="setting-name">Platform Online</div>
-                <div class="setting-desc">
-                  Enable or disable the entire platform
-                </div>
-              </div>
-              <label class="toggle">
-                <input type="checkbox" id="platform-online" checked />
-                <span class="toggle-slider"></span>
-              </label>
+              <h2 class="settings-card-title">Platform Controls</h2>
             </div>
             <div class="setting-row">
               <div class="setting-info">
                 <div class="setting-name">Maintenance Mode</div>
                 <div class="setting-desc">
-                  Redirect users to a maintenance page
+                  Restrict customer/provider access while admins can still
+                  manage the platform
                 </div>
               </div>
               <label class="toggle">
@@ -378,98 +367,11 @@
           </div>
         </div>
 
-        <!-- Row 3: Provider Verification + Notification Settings -->
-        <div class="settings-row">
-          <div class="settings-card">
-            <div class="settings-card-header">
-              <div class="settings-icon settings-icon--orange">
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                >
-                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-                </svg>
-              </div>
-              <h2 class="settings-card-title">Provider Verification</h2>
-            </div>
-            <div class="setting-row">
-              <div class="setting-info">
-                <div class="setting-name">Require Super User Approval</div>
-                <div class="setting-desc">
-                  Manual review for all new providers
-                </div>
-              </div>
-              <label class="toggle">
-                <input type="checkbox" id="super_user-approval" checked />
-                <span class="toggle-slider"></span>
-              </label>
-            </div>
-            <div class="setting-row">
-              <div class="setting-info">
-                <div class="setting-name">Document Verification Required</div>
-                <div class="setting-desc">Mandatory ID and license checks</div>
-              </div>
-              <label class="toggle">
-                <input type="checkbox" id="doc-verification" checked />
-                <span class="toggle-slider"></span>
-              </label>
-            </div>
-          </div>
-
-          <div class="settings-card">
-            <div class="settings-card-header">
-              <div class="settings-icon settings-icon--blue">
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                >
-                  <path
-                    d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"
-                  />
-                  <polyline points="22,6 12,13 2,6" />
-                </svg>
-              </div>
-              <h2 class="settings-card-title">Notification Settings</h2>
-            </div>
-            <div class="setting-row">
-              <div class="setting-info">
-                <div class="setting-name">Booking Confirmation</div>
-              </div>
-              <label class="toggle">
-                <input type="checkbox" id="notif-booking" checked />
-                <span class="toggle-slider"></span>
-              </label>
-            </div>
-            <div class="setting-row">
-              <div class="setting-info">
-                <div class="setting-name">Provider Assignment</div>
-              </div>
-              <label class="toggle">
-                <input type="checkbox" id="notif-provider" checked />
-                <span class="toggle-slider"></span>
-              </label>
-            </div>
-            <div class="setting-row">
-              <div class="setting-info">
-                <div class="setting-name">Service Reminders</div>
-              </div>
-              <label class="toggle">
-                <input type="checkbox" id="notif-reminders" />
-                <span class="toggle-slider"></span>
-              </label>
-            </div>
-          </div>
-        </div>
-
         <!-- Footer note -->
         <p class="settings-footer-note">
           All changes made here will take effect immediately across all
           platforms (Web, iOS, Android).<br />
-          Last updated: Today at 09:42 AM by Alex Thompson.
+          <span id="settings-last-updated">Last updated: Never</span>
         </p>
       </main>
     </div>

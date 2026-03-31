@@ -22,28 +22,55 @@ function updateCartBadge() {
 
 let currentMode = "instant";
 
+function getBookingRules() {
+  if (!window.AppStore || typeof AppStore.getBookingRules !== "function") {
+    return {
+      instantBooking: true,
+      maxAdvanceDays: 7,
+      minNoticeLabel: "1 hour",
+      maxAdvanceLabel: "7 days",
+    };
+  }
+  return AppStore.getBookingRules();
+}
+
 function getDateConstraints() {
+  const rules = getBookingRules();
   const today = new Date();
   const maxDate = new Date();
-  maxDate.setDate(today.getDate() + 7);
+  maxDate.setDate(today.getDate() + rules.maxAdvanceDays);
   const fmt = (d) => d.toISOString().split("T")[0];
   return { min: fmt(today), max: fmt(maxDate) };
 }
 
 function setMode(mode) {
+  const rules = getBookingRules();
+  if (mode === "instant" && !rules.instantBooking) {
+    showToast("Instant booking is currently disabled.", "error");
+    mode = "scheduled";
+  }
+
   currentMode = mode;
-  const isInstant = mode === 'instant';
-  document.getElementById('btn-instant').classList.toggle('active', isInstant);
-  document.getElementById('btn-scheduled').classList.toggle('active', !isInstant);
-  document.getElementById('scheduled-fields').style.display = isInstant ? 'none' : 'flex';
-  document.getElementById('info-text').textContent = isInstant
-    ? 'Your service will be assigned to an available provider immediately.'
-    : 'Choose your preferred date and time (within 1 week from today).';
-  const banner = document.getElementById('info-banner');
-  banner.style.background = isInstant ? 'var(--green-light)' : 'var(--primary-light)';
-  banner.style.borderColor = isInstant ? '#6ee7b7' : '#bfdbfe';
-  banner.style.color = isInstant ? '#065f46' : '#1e3a8a';
-  banner.querySelector('svg').style.stroke = isInstant ? '#059669' : 'var(--primary)';
+  const isInstant = mode === "instant";
+  document.getElementById("btn-instant").classList.toggle("active", isInstant);
+  document
+    .getElementById("btn-scheduled")
+    .classList.toggle("active", !isInstant);
+  document.getElementById("scheduled-fields").style.display = isInstant
+    ? "none"
+    : "flex";
+  document.getElementById("info-text").textContent = isInstant
+    ? "Your service will be assigned to an available provider immediately."
+    : `Choose your preferred date and time (within ${rules.maxAdvanceLabel} from now).`;
+  const banner = document.getElementById("info-banner");
+  banner.style.background = isInstant
+    ? "var(--green-light)"
+    : "var(--primary-light)";
+  banner.style.borderColor = isInstant ? "#6ee7b7" : "#bfdbfe";
+  banner.style.color = isInstant ? "#065f46" : "#1e3a8a";
+  banner.querySelector("svg").style.stroke = isInstant
+    ? "#059669"
+    : "var(--primary)";
   if (!isInstant) {
     const { min, max } = getDateConstraints();
     const dateInput = document.getElementById("sched-date");
@@ -55,12 +82,25 @@ function setMode(mode) {
 }
 
 function addToCart() {
+  const rules = getBookingRules();
+
+  if (currentMode === "instant" && !rules.instantBooking) {
+    showToast("Instant booking is currently disabled.", "error");
+    return;
+  }
+
   if (currentMode === "scheduled") {
     const dateVal = document.getElementById("sched-date").value;
-    const { min, max } = getDateConstraints();
-    if (!dateVal) { showToast('Please select a date.', 'error'); return; }
-    if (dateVal < min || dateVal > max) { showToast('Please select a date within 1 week from today.', 'error'); return; }
-    if (!document.getElementById('sched-time').value) { showToast('Please select a time.', 'error'); return; }
+    const timeVal = document.getElementById("sched-time").value;
+    const validation =
+      window.AppStore && typeof AppStore.validateScheduledSlot === "function"
+        ? AppStore.validateScheduledSlot(dateVal, timeVal)
+        : { valid: !!dateVal && !!timeVal, error: "Please select date/time." };
+
+    if (!validation.valid) {
+      showToast(validation.error, "error");
+      return;
+    }
   }
   const cart = getCart();
   const item = {
@@ -92,6 +132,16 @@ let serviceName, servicePrice, serviceLocation;
 AppStore.ready.then(() => {
   const session = Auth.requireSession(["customer"]);
   if (!session) return;
+
+  const rules = getBookingRules();
+  if (!rules.instantBooking) {
+    const instantBtn = document.getElementById("btn-instant");
+    if (instantBtn) {
+      instantBtn.classList.add("disabled");
+      instantBtn.title = "Instant booking is disabled in platform settings";
+    }
+    setMode("scheduled");
+  }
 
   const params = new URLSearchParams(window.location.search);
   serviceName = params.get("service") || "Home Deep Cleaning";
