@@ -245,7 +245,47 @@ function saveSection(section) {
 
 function openPwdModal()    { document.getElementById('pwd-modal').classList.add('open'); }
 function closePwdModal(e)  { if (e.target === document.getElementById('pwd-modal')) closePwdModalBtn(); }
-function closePwdModalBtn(){ document.getElementById('pwd-modal').classList.remove('open'); }
+function closePwdModalBtn(){ 
+  document.getElementById('pwd-modal').classList.remove('open'); 
+  const fields = ['pwd-current', 'pwd-new', 'pwd-confirm'];
+  fields.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+}
+
+function handlePasswordChange() {
+  const currentPwd = document.getElementById("pwd-current")?.value;
+  const newPwd     = document.getElementById("pwd-new")?.value;
+  const confirmPwd = document.getElementById("pwd-confirm")?.value;
+
+  if (!currentPwd || !newPwd || !confirmPwd) {
+    showToast("Please fill in all password fields.");
+    return;
+  }
+
+  if (newPwd !== confirmPwd) {
+    showToast("New passwords do not match.");
+    return;
+  }
+
+  if (newPwd.length < 8) {
+    showToast("New password must be at least 8 characters.");
+    return;
+  }
+
+  const res = Auth.changePassword(currentPwd, newPwd);
+  if (res.success) {
+    showToast("Password updated successfully!");
+    closePwdModalBtn();
+  } else {
+    const errorMap = {
+      invalid_current_password: "Current password is incorrect.",
+      not_logged_in: "Session expired. Please log in again.",
+    };
+    showToast(errorMap[res.error] || "Failed to update password.");
+  }
+}
 
 function updateAvatar(input) {
   if (!input.files || !input.files[0]) return;

@@ -354,20 +354,20 @@
       <div class="modal-form">
         <div class="form-field">
           <label>Current Password</label>
-          <input type="password" placeholder="Enter current password" />
+          <input type="password" id="pwd-current" placeholder="Enter current password" />
         </div>
         <div class="form-field">
           <label>New Password</label>
-          <input type="password" placeholder="Min. 8 characters" />
+          <input type="password" id="pwd-new" placeholder="Min. 8 characters" />
         </div>
         <div class="form-field">
           <label>Confirm New Password</label>
-          <input type="password" placeholder="Re-enter new password" />
+          <input type="password" id="pwd-confirm" placeholder="Re-enter new password" />
         </div>
       </div>
       <div class="modal-footer">
         <button class="btn-cancel-modal" onclick="closePwdModalBtn()">Cancel</button>
-        <button class="btn-save-modal" onclick="updatePassword()">Update Password</button>
+        <button class="btn-save-modal" onclick="handlePasswordChange()">Update Password</button>
       </div>
     </div>
   </div>
@@ -376,6 +376,7 @@
   <div class="toast" id="toast"></div>
 
   <script src="../../js/data/store.js?v=3"></script>
+  <script src="../../js/modules/auth.js"></script>
   <script src="../../js/provider/profile.js?v=2"></script>
 </body>
 
