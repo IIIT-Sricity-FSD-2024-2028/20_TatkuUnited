@@ -55,6 +55,7 @@
     JA: "job_assignments",
     TXN: "transactions",
     REV: "reviews",
+    SU: "super_users",
   };
 
   // ── Empty data scaffold (used on fetch failure) ──────────────────────────────

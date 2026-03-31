@@ -1,4 +1,4 @@
-﻿/* user_management.js */
+/* user_management.js */
 // Depends on: store.js → auth.js (loaded before this script)
 
 AppStore.ready.then(() => {
@@ -80,7 +80,7 @@ AppStore.ready.then(() => {
       .toUpperCase();
   }
 
-  const USERS = transformUsers();
+  let USERS = transformUsers();
   const PAGE_SIZE = 10;
   let currentPage = 1;
   let roleFilter = "All Roles";
@@ -156,7 +156,6 @@ AppStore.ready.then(() => {
     const total = USERS.length;
     const active = USERS.filter((u) => u.status === "active").length;
     const suspended = USERS.filter((u) => u.status === "suspended").length;
-    const flagged = USERS.filter((u) => /flag/i.test(u.flagHint)).length;
 
     const ratio = (count) => (total ? `${((count / total) * 100).toFixed(1)}%` : "0.0%");
 
@@ -166,8 +165,6 @@ AppStore.ready.then(() => {
     const activeBadge = document.getElementById("kpi-active-badge");
     const suspendedEl = document.getElementById("kpi-suspended");
     const suspendedBadge = document.getElementById("kpi-suspended-badge");
-    const flaggedEl = document.getElementById("kpi-flagged");
-    const flaggedBadge = document.getElementById("kpi-flagged-badge");
 
     if (totalEl) totalEl.textContent = total.toLocaleString("en-IN");
     if (totalBadge) totalBadge.textContent = `${total.toLocaleString("en-IN")} users`;
@@ -175,8 +172,6 @@ AppStore.ready.then(() => {
     if (activeBadge) activeBadge.textContent = ratio(active);
     if (suspendedEl) suspendedEl.textContent = suspended.toLocaleString("en-IN");
     if (suspendedBadge) suspendedBadge.textContent = ratio(suspended);
-    if (flaggedEl) flaggedEl.textContent = flagged.toLocaleString("en-IN");
-    if (flaggedBadge) flaggedBadge.textContent = ratio(flagged);
   }
 
   function populateRoleFilter() {
@@ -219,7 +214,7 @@ AppStore.ready.then(() => {
         <td>${escapeHtml(u.role)}</td>
         <td><span class="status-badge ${mapStatus(u.status)}">${escapeHtml(u.statusLabel)}</span></td>
         <td>${escapeHtml(u.joined)}</td>
-        <td><button class="action-link action-link--${u.actionClass}">${escapeHtml(u.action)}</button></td>
+        <td><button class="action-link action-link--${u.actionClass}" data-id="${escapeHtml(u.id)}" data-role="${escapeHtml(u.role)}">${escapeHtml(u.action)}</button></td>
       </tr>
     `;
       })
@@ -296,6 +291,131 @@ AppStore.ready.then(() => {
         if (currentPage < max) {
           currentPage++;
           renderTable();
+        }
+      });
+    }
+
+    // Suspend / Reactivate action logic
+    const tbody = document.getElementById("users-tbody");
+    if (tbody) {
+      tbody.addEventListener("click", (e) => {
+        const btn = e.target.closest(".action-link");
+        if (!btn) return;
+
+        const id = btn.getAttribute("data-id");
+        const role = btn.getAttribute("data-role");
+        if (!id || !role) return;
+
+        let targetArray = null;
+        let idField = "";
+
+        if (role === "Customer") { targetArray = allCustomers; idField = "customer_id"; }
+        else if (role === "Provider") { targetArray = allProviders; idField = "service_provider_id"; }
+        else if (role === "Collective Manager") { targetArray = allCollectiveManagers; idField = "cm_id"; }
+        else if (role === "Unit Manager") { targetArray = allUnitManagers; idField = "um_id"; }
+        else if (role === "Super User") { targetArray = allSuperUsers; idField = "super_user_id"; }
+
+        if (targetArray) {
+          const userObj = targetArray.find(u => u[idField] === id);
+          if (userObj) {
+            // Confirm action
+            const actionVerb = userObj.is_active ? "suspend" : "reactivate";
+            if (!confirm(`Are you sure you want to ${actionVerb} this user?`)) return;
+
+            // Toggle active status
+            userObj.is_active = !userObj.is_active;
+            userObj.updated_at = new Date().toISOString();
+
+            // Save and refresh
+            AppStore.save();
+            USERS = transformUsers();
+            
+            renderKpis();
+            renderTable();
+          }
+        }
+      });
+    }
+
+    // Modal Handling
+    const openBtn = document.getElementById("open-add-user-btn");
+    const modal = document.getElementById("add-user-modal");
+    const cancelBtn = document.getElementById("cancel-add-user");
+    const form = document.getElementById("add-user-form");
+
+    if (openBtn && modal) {
+      openBtn.addEventListener("click", () => {
+        modal.style.display = "flex";
+      });
+    }
+
+    if (cancelBtn && modal) {
+      cancelBtn.addEventListener("click", () => {
+        modal.style.display = "none";
+        if (form) form.reset();
+      });
+    }
+
+    if (form) {
+      form.addEventListener("submit", (e) => {
+        e.preventDefault();
+
+        const role = document.getElementById("new-user-role").value;
+        const name = document.getElementById("new-user-name").value.trim();
+        const email = document.getElementById("new-user-email").value.trim();
+        const phone = document.getElementById("new-user-phone").value.trim();
+
+        if (!role || !name || !email || !phone) {
+          alert("Please fill all required fields.");
+          return;
+        }
+
+        const nowIso = new Date().toISOString();
+        let targetArray = null;
+        let idVal = "";
+        let newRecord = {
+          name,
+          email,
+          phone,
+          password: "Password@123",
+          is_active: true,
+          created_at: nowIso,
+          updated_at: nowIso,
+          pfp_url: "https://i.pravatar.cc/150?img=" + Math.floor(Math.random() * 70)
+        };
+
+        if (role === "Unit Manager") {
+          targetArray = allUnitManagers;
+          idVal = AppStore.nextId("UM");
+          newRecord.um_id = idVal;
+          newRecord.unit_id = null; // Unassigned initially
+        } else if (role === "Collective Manager") {
+          targetArray = allCollectiveManagers;
+          idVal = AppStore.nextId("CM");
+          newRecord.cm_id = idVal;
+          newRecord.collective_id = null; // Unassigned initially
+        } else if (role === "Super User") {
+          targetArray = allSuperUsers;
+          idVal = AppStore.nextId("SU");
+          newRecord.super_user_id = idVal;
+        }
+
+        if (targetArray) {
+          targetArray.push(newRecord);
+          // Save to AppStore
+          AppStore.save();
+          // Recompute USERS
+          USERS = transformUsers();
+          // Reset view to page 1 to show the newly added user (or sort might put them at top)
+          currentPage = 1;
+          
+          populateRoleFilter();
+          renderKpis();
+          renderTable();
+
+          modal.style.display = "none";
+          form.reset();
+          alert(`New ${role} added successfully! Temporary password is Password@123`);
         }
       });
     }

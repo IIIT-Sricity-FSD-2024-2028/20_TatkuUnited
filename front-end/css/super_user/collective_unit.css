@@ -681,6 +681,9 @@ body {
 .prov-status--onjob {
   color: #f59e0b;
 }
+.prov-status--unavailable {
+  color: var(--red);
+}
 .prov-status--offline {
   color: var(--text-faint);
 }

@@ -61,12 +61,10 @@ AppStore.ready.then(() => {
     const kpiTotal = document.getElementById("kpiTotal");
     const kpiActive = document.getElementById("kpiActive");
     const kpiInactive = document.getElementById("kpiInactive");
-    const kpiProviders = document.getElementById("kpiProviders");
 
     if (kpiTotal) kpiTotal.textContent = skills.length;
     if (kpiActive) kpiActive.textContent = active;
     if (kpiInactive) kpiInactive.textContent = inactive;
-    if (kpiProviders) kpiProviders.textContent = providers;
   }
 
   /* ── table ── */
@@ -76,7 +74,7 @@ AppStore.ready.then(() => {
     tbody.innerHTML = "";
 
     if (data.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:32px;color:var(--text-faint)">No skills found matching your filters.</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:32px;color:var(--text-faint)">No skills found matching your filters.</td></tr>`;
     } else {
       data.forEach((sk, idx) => {
         const tr = document.createElement("tr");
@@ -86,7 +84,6 @@ AppStore.ready.then(() => {
           <td class="desc-cell" title="${sk.desc}">${truncate(sk.desc)}</td>
           <td class="num-cell">${sk.providers}</td>
           <td class="num-cell">${sk.services}</td>
-          <td><span class="status-badge status-badge--${sk.status.toLowerCase()}">${sk.status}</span></td>
           <td>
             <div class="tbl-actions">
               <button class="tbl-icon-btn btn-edit" data-id="${sk.id}" title="Edit Skill">
@@ -129,13 +126,11 @@ AppStore.ready.then(() => {
   function applyFilters() {
     const search =
       document.getElementById("skillSearch")?.value.toLowerCase() || "";
-    const status = document.getElementById("statusFilter")?.value || "All";
     const filtered = skills.filter((sk) => {
       const matchSearch =
         sk.name.toLowerCase().includes(search) ||
         sk.desc.toLowerCase().includes(search);
-      const matchStatus = status === "All" || sk.status === status;
-      return matchSearch && matchStatus;
+      return matchSearch;
     });
     renderTable(filtered);
     updateKPIs(filtered);
@@ -143,10 +138,8 @@ AppStore.ready.then(() => {
 
   function setupEventListeners() {
     const skillSearch = document.getElementById("skillSearch");
-    const statusFilter = document.getElementById("statusFilter");
 
     if (skillSearch) skillSearch.addEventListener("input", applyFilters);
-    if (statusFilter) statusFilter.addEventListener("change", applyFilters);
   }
 
   /* ── add/edit modal ── */
