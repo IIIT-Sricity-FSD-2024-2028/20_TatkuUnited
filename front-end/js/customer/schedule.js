@@ -23,7 +23,7 @@ function setMode(mode) {
   document.getElementById('scheduled-fields').style.display = isInstant ? 'none' : 'flex';
   document.getElementById('info-text').textContent = isInstant
     ? 'Your service will be assigned to an available provider immediately.'
-    : 'Choose your preferred date and time slot (within 1 week from today).';
+    : 'Choose your preferred date and time (within 1 week from today).';
   const banner = document.getElementById('info-banner');
   banner.style.background = isInstant ? 'var(--green-light)' : 'var(--primary-light)';
   banner.style.borderColor = isInstant ? '#6ee7b7' : '#bfdbfe';
@@ -44,6 +44,7 @@ function addToCart() {
     const { min, max } = getDateConstraints();
     if (!dateVal) { showToast('Please select a date.', 'error'); return; }
     if (dateVal < min || dateVal > max) { showToast('Please select a date within 1 week from today.', 'error'); return; }
+    if (!document.getElementById('sched-time').value) { showToast('Please select a time.', 'error'); return; }
   }
   const cart = getCart();
   const item = {

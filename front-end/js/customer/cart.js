@@ -35,9 +35,7 @@ function openEditModal(itemId) {
   } else {
     dateInput.value = '';
   }
-  const opts = Array.from(timeSelect.options);
-  const match = opts.findIndex(o => o.value === item.time);
-  if (match >= 0) timeSelect.selectedIndex = match;
+  timeSelect.value = item.time && item.time !== 'Immediate' ? item.time : '';
   document.getElementById('edit-modal').classList.add('open');
   document.body.style.overflow = 'hidden';
 }
@@ -58,6 +56,7 @@ function saveScheduleEdit() {
   const item = cart.find(i => i.id === editingItemId);
   if (item) {
     const newTime = document.getElementById('modal-time').value;
+    if (!newTime) { showToast('Please select a time.', 'error'); return; }
     item.date = newDate;
     item.time = newTime;
     saveCart(cart);
@@ -91,6 +90,18 @@ function render() {
   document.getElementById('cart-items').innerHTML = cart.map((item, idx) => {
     const isScheduled = item.mode === 'scheduled';
     const displayDate = item.date && item.date !== 'ASAP' ? new Date(item.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : item.date;
+    
+    let displayTime = item.time;
+    if (displayTime && displayTime !== 'Immediate') {
+      const [h, m] = displayTime.split(':');
+      if (h && m) {
+        const hNum = parseInt(h, 10);
+        const ampm = hNum >= 12 ? 'PM' : 'AM';
+        const h12 = hNum % 12 || 12;
+        displayTime = `${h12.toString().padStart(2, '0')}:${m} ${ampm}`;
+      }
+    }
+
     return `
       <div class="cart-item" style="animation-delay:${idx * 0.07}s">
         <div class="cart-item-icon">${svcIcon}</div>
@@ -103,7 +114,7 @@ function render() {
             </div>
             <div class="cart-item-meta-row">
               <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-              ${displayDate} · ${item.time}
+              ${displayDate} · ${displayTime}
             </div>
             <div class="cart-item-meta-row">
               <span class="mode-tag ${isScheduled ? 'mode-scheduled' : 'mode-instant'}">${item.mode}</span>
@@ -115,7 +126,7 @@ function render() {
                 <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                 Edit Schedule
               </button>
-              <span class="edit-schedule-hint">Change date or time slot</span>
+              <span class="edit-schedule-hint">Change date or time</span>
             </div>
           ` : ''}
         </div>

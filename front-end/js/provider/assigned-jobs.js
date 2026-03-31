@@ -111,7 +111,7 @@ function openDetail(id) {
       <div class="modal-section-title">Schedule Details</div>
       <div class="modal-grid">
         <div class="modal-field"><label>Scheduled Date</label><p>${formatDateDisplay(job.date)}</p></div>
-        <div class="modal-field"><label>Time Slot</label><p>${job.time}</p></div>
+        <div class="modal-field"><label>Scheduled Time</label><p>${job.time}</p></div>
       </div>
     </div>
   `;
