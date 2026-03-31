@@ -116,7 +116,7 @@
           : DEFAULT_PLATFORM_SETTINGS.accountSuspension,
       ratingThreshold:
         typeof settings?.ratingThreshold === "string" &&
-        settings.ratingThreshold.trim()
+          settings.ratingThreshold.trim()
           ? settings.ratingThreshold
           : DEFAULT_PLATFORM_SETTINGS.ratingThreshold,
       instantBooking:
@@ -133,7 +133,7 @@
           : DEFAULT_PLATFORM_SETTINGS.minNotice,
       cancelWindow:
         typeof settings?.cancelWindow === "string" &&
-        settings.cancelWindow.trim()
+          settings.cancelWindow.trim()
           ? settings.cancelWindow
           : DEFAULT_PLATFORM_SETTINGS.cancelWindow,
       updatedAt:
@@ -204,10 +204,10 @@
     if (VALID_TABLES.indexOf(name) === -1) {
       console.error(
         '[AppStore] getTable(): "' +
-          name +
-          '" is not a valid table name. ' +
-          "Valid tables: " +
-          VALID_TABLES.join(", "),
+        name +
+        '" is not a valid table name. ' +
+        "Valid tables: " +
+        VALID_TABLES.join(", "),
       );
       return undefined;
     }
@@ -354,10 +354,10 @@
     if (!tableName) {
       console.error(
         '[AppStore] nextId(): "' +
-          prefix +
-          '" is not a recognised prefix. ' +
-          "Valid prefixes: " +
-          Object.keys(PREFIX_TABLE_MAP).join(", "),
+        prefix +
+        '" is not a recognised prefix. ' +
+        "Valid prefixes: " +
+        Object.keys(PREFIX_TABLE_MAP).join(", "),
       );
       return null;
     }
@@ -451,7 +451,7 @@
       if (!sess) return null;
       var parsed = JSON.parse(sess);
       if (parsed && parsed.role === "provider" && parsed.id) return parsed.id;
-    } catch (e) {}
+    } catch (e) { }
     return null;
   }
 
@@ -670,7 +670,7 @@
             );
           }
         }
-      } catch (e) {}
+      } catch (e) { }
 
       if (!hasProviderSession) {
         window.location.replace("/front-end/html/auth_pages/login.html");
