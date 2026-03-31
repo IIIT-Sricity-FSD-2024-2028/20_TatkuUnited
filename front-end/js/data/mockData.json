@@ -2344,5 +2344,226 @@
       "booking_id": "BKG010"
     }
   ],
-  "reviews": []
+  "reviews": [],
+  "admin_platform_events": [
+    {
+      "event_id": "EVT001",
+      "timestamp": "2026-03-31T10:45:22Z",
+      "event_type": "system",
+      "severity": "high",
+      "title": "Service assignment failure: Database timeout during routing calculation.",
+      "description": "Booking #A-9821 failed auto-assignment due to database timeout",
+      "status": "unresolved",
+      "component": "Scheduling Engine"
+    },
+    {
+      "event_id": "EVT002",
+      "timestamp": "2026-03-31T10:32:05Z",
+      "event_type": "security",
+      "severity": "critical",
+      "title": "Multiple login failures from IP 192.168.1.45",
+      "description": "Account #5821 has failed login 8 times in the last 10 minutes. Potential brute-force attack.",
+      "status": "investigating",
+      "component": "Auth-Service"
+    },
+    {
+      "event_id": "EVT003",
+      "timestamp": "2026-03-31T10:15:40Z",
+      "event_type": "user",
+      "severity": "medium",
+      "title": "Provider verification pending from Unit 24 Logistics",
+      "description": "New provider application submitted for verification",
+      "status": "pending",
+      "component": "User System"
+    },
+    {
+      "event_id": "EVT004",
+      "timestamp": "2026-03-31T09:58:12Z",
+      "event_type": "action",
+      "severity": "low",
+      "title": "Account suspended: User ID #9822 for policy violations",
+      "description": "User suspended due to multiple policy violations reported",
+      "status": "completed",
+      "component": "Admin Action"
+    },
+    {
+      "event_id": "EVT005",
+      "timestamp": "2026-03-31T09:30:00Z",
+      "event_type": "system",
+      "severity": "low",
+      "title": "Database backup completed successfully",
+      "description": "Daily database backup completed at 09:30 IST",
+      "status": "completed",
+      "component": "System Maintenance"
+    }
+  ],
+  "admin_audit_logs": [
+    {
+      "log_id": "LOG001",
+      "timestamp": "2026-03-31T10:45:22Z",
+      "admin_id": null,
+      "action_type": "system",
+      "action_description": "JWT Validation Successful",
+      "resource_type": "authentication",
+      "resource_id": "AUTH-001",
+      "status": "success",
+      "status_code": "200 OK"
+    },
+    {
+      "log_id": "LOG002",
+      "timestamp": "2026-03-31T10:44:58Z",
+      "admin_id": null,
+      "action_type": "payment",
+      "action_description": "Webhook Received: event_id_442",
+      "resource_type": "payment_gateway",
+      "resource_id": "WH-442",
+      "status": "success",
+      "status_code": "200 OK"
+    },
+    {
+      "log_id": "LOG003",
+      "timestamp": "2026-03-31T10:44:52Z",
+      "admin_id": null,
+      "action_type": "notification",
+      "action_description": "Push Notification Sent: user_99",
+      "resource_type": "notification",
+      "resource_id": "NOTIF-99",
+      "status": "success",
+      "status_code": "DELIVERED"
+    },
+    {
+      "log_id": "LOG004",
+      "timestamp": "2026-03-31T10:40:00Z",
+      "admin_id": null,
+      "action_type": "account_action",
+      "action_description": "Account suspended",
+      "resource_type": "user",
+      "resource_id": "USR-9822",
+      "status": "success",
+      "status_code": "200 OK"
+    },
+    {
+      "log_id": "LOG005",
+      "timestamp": "2026-03-31T10:35:00Z",
+      "admin_id": null,
+      "action_type": "settings_update",
+      "action_description": "Platform settings updated",
+      "resource_type": "platform_config",
+      "resource_id": "CONFIG-001",
+      "status": "success",
+      "status_code": "200 OK"
+    }
+  ],
+  "admin_notifications": [
+    {
+      "notif_id": "NOTIF001",
+      "timestamp": "2026-03-31T10:45:22Z",
+      "category": "security",
+      "priority": "critical",
+      "title": "Multiple Failed Login Attempts",
+      "description": "Account ID #5821 has failed login 8 times in the last 10 minutes. Potential brute-force attack.",
+      "is_read": false,
+      "is_urgent": true
+    },
+    {
+      "notif_id": "NOTIF002",
+      "timestamp": "2026-03-31T10:32:05Z",
+      "category": "system",
+      "priority": "critical",
+      "title": "Service Assignment Failure",
+      "description": "Booking #A-9421 has failed auto-assignment 3 times. No available providers in Plumbing Unit Alpha.",
+      "is_read": false,
+      "is_urgent": true
+    },
+    {
+      "notif_id": "NOTIF003",
+      "timestamp": "2026-03-31T09:45:00Z",
+      "category": "user",
+      "priority": "high",
+      "title": "Provider Verification Queue Overflow",
+      "description": "8 new provider applications have been waiting for more than 24 hours.",
+      "is_read": false,
+      "is_urgent": false
+    },
+    {
+      "notif_id": "NOTIF004",
+      "timestamp": "2026-03-31T08:45:00Z",
+      "category": "user",
+      "priority": "high",
+      "title": "Flagged Account Requires Review",
+      "description": "Customer Account #C-8812 was flagged by 3 providers for abusive behavior.",
+      "is_read": false,
+      "is_urgent": false
+    },
+    {
+      "notif_id": "NOTIF005",
+      "timestamp": "2026-03-31T06:45:00Z",
+      "category": "revenue",
+      "priority": "info",
+      "title": "Platform Revenue Milestone",
+      "description": "Tatku United has crossed ₹50 Lakhs in total platform revenue for March 2026.",
+      "is_read": true,
+      "is_urgent": false
+    }
+  ],
+  "super_users": [
+    {
+      "super_user_id": "SU001",
+      "name": "Admin Mark",
+      "email": "admin.mark@tatku.com",
+      "phone": "+919876543210",
+      "pfp_url": "https://i.pravatar.cc/150?img=1",
+      "is_active": true,
+      "created_at": "2023-01-01T00:00:00Z",
+      "last_login": "2026-03-31T10:00:00Z"
+    },
+    {
+      "super_user_id": "SU002",
+      "name": "Admin Sarah",
+      "email": "admin.sarah@tatku.com",
+      "phone": "+919876543211",
+      "pfp_url": "https://i.pravatar.cc/150?img=2",
+      "is_active": true,
+      "created_at": "2023-02-01T00:00:00Z",
+      "last_login": "2026-03-31T09:30:00Z"
+    }
+  ],
+  "super_user_actions": [
+    {
+      "action_id": "ACT001",
+      "timestamp": "2026-03-31T10:32:00Z",
+      "super_user_id": "SU001",
+      "action_type": "account_suspension",
+      "title": "Account suspended",
+      "description": "Admin_Mark suspended User #892",
+      "time_display": "2 mins ago"
+    },
+    {
+      "action_id": "ACT002",
+      "timestamp": "2026-03-31T10:17:00Z",
+      "super_user_id": "SU002",
+      "action_type": "provider_verification",
+      "title": "Provider verified",
+      "description": "Admin_Sarah approved 'QuickTransport'",
+      "time_display": "15 mins ago"
+    },
+    {
+      "action_id": "ACT003",
+      "timestamp": "2026-03-31T09:32:00Z",
+      "super_user_id": "SU001",
+      "action_type": "settings_update",
+      "title": "Settings updated",
+      "description": "System threshold modified (Queue: 45s)",
+      "time_display": "1 hour ago"
+    },
+    {
+      "action_id": "ACT004",
+      "timestamp": "2026-03-31T08:32:00Z",
+      "super_user_id": "SU002",
+      "action_type": "login",
+      "title": "Login attempt",
+      "description": "Super Admin login from 192.168.0.1",
+      "time_display": "2 hours ago"
+    }
+  ]
 }
