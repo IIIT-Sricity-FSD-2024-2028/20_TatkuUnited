@@ -1,17 +1,32 @@
-function getCart() { try { return JSON.parse(localStorage.getItem('tu_cart') || '[]'); } catch { return []; } }
-function saveCart(c) { localStorage.setItem('tu_cart', JSON.stringify(c)); }
+function getCustomerSessionId() {
+  const session = Auth.getSession();
+  return session && session.role === "customer" ? session.id : null;
+}
+function getCart() {
+  const customerId = getCustomerSessionId();
+  if (!customerId || !window.CustomerState) return [];
+  return CustomerState.getCart(customerId);
+}
+function saveCart(c) {
+  const customerId = getCustomerSessionId();
+  if (!customerId || !window.CustomerState) return;
+  CustomerState.setCart(customerId, c);
+}
 function updateCartBadge() {
   const count = getCart().length;
-  document.querySelectorAll('.cart-count').forEach(el => { el.textContent = count; el.style.display = count > 0 ? 'grid' : 'none'; });
+  document.querySelectorAll(".cart-count").forEach((el) => {
+    el.textContent = count;
+    el.style.display = count > 0 ? "grid" : "none";
+  });
 }
 
-let currentMode = 'instant';
+let currentMode = "instant";
 
 function getDateConstraints() {
   const today = new Date();
   const maxDate = new Date();
   maxDate.setDate(today.getDate() + 7);
-  const fmt = d => d.toISOString().split('T')[0];
+  const fmt = (d) => d.toISOString().split("T")[0];
   return { min: fmt(today), max: fmt(maxDate) };
 }
 
@@ -31,16 +46,17 @@ function setMode(mode) {
   banner.querySelector('svg').style.stroke = isInstant ? '#059669' : 'var(--primary)';
   if (!isInstant) {
     const { min, max } = getDateConstraints();
-    const dateInput = document.getElementById('sched-date');
+    const dateInput = document.getElementById("sched-date");
     dateInput.min = min;
     dateInput.max = max;
-    if (dateInput.value && (dateInput.value < min || dateInput.value > max)) dateInput.value = '';
+    if (dateInput.value && (dateInput.value < min || dateInput.value > max))
+      dateInput.value = "";
   }
 }
 
 function addToCart() {
-  if (currentMode === 'scheduled') {
-    const dateVal = document.getElementById('sched-date').value;
+  if (currentMode === "scheduled") {
+    const dateVal = document.getElementById("sched-date").value;
     const { min, max } = getDateConstraints();
     if (!dateVal) { showToast('Please select a date.', 'error'); return; }
     if (dateVal < min || dateVal > max) { showToast('Please select a date within 1 week from today.', 'error'); return; }
@@ -53,32 +69,38 @@ function addToCart() {
     price: servicePrice,
     location: serviceLocation,
     mode: currentMode,
-    date: currentMode === 'scheduled' ? (document.getElementById('sched-date').value || '') : 'ASAP',
-    time: currentMode === 'scheduled' ? document.getElementById('sched-time').value : 'Immediate',
+    date:
+      currentMode === "scheduled"
+        ? document.getElementById("sched-date").value || ""
+        : "ASAP",
+    time:
+      currentMode === "scheduled"
+        ? document.getElementById("sched-time").value
+        : "Immediate",
   };
   cart.push(item);
   saveCart(cart);
   updateCartBadge();
 
   // Redirect directly to cart
-  window.location.href = 'cart.html';
+  window.location.href = "cart.html";
 }
 
 /* ── Variables populated after auth ── */
 let serviceName, servicePrice, serviceLocation;
 
 AppStore.ready.then(() => {
-  const session = Auth.requireSession(['customer']);
+  const session = Auth.requireSession(["customer"]);
   if (!session) return;
 
   const params = new URLSearchParams(window.location.search);
-  serviceName = params.get('service') || 'Home Deep Cleaning';
-  servicePrice = params.get('price') || '₹ 1200';
-  serviceLocation = params.get('location') || '21/229, Indira Nagar, Lucknow';
+  serviceName = params.get("service") || "Home Deep Cleaning";
+  servicePrice = params.get("price") || "₹ 1200";
+  serviceLocation = params.get("location") || "21/229, Indira Nagar, Lucknow";
 
-  document.getElementById('svc-name').textContent = serviceName;
-  document.getElementById('svc-price').textContent = servicePrice;
-  document.getElementById('svc-location').textContent = serviceLocation;
+  document.getElementById("svc-name").textContent = serviceName;
+  document.getElementById("svc-price").textContent = servicePrice;
+  document.getElementById("svc-location").textContent = serviceLocation;
 
   updateCartBadge();
 });

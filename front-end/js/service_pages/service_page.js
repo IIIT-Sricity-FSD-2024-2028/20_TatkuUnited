@@ -43,14 +43,18 @@
   }
 
   function handleBook(btn) {
-    var session = typeof Auth !== 'undefined' ? Auth.getCurrentUser() : null;
-    if (session && session.role === 'customer') {
-       var svcTitle = document.querySelector(".svc-title");
-       var svcPrice = document.querySelector(".svc-price");
-       var name = svcTitle ? svcTitle.textContent : "";
-       var price = svcPrice ? svcPrice.textContent : "";
-       window.location.href = '../customer/schedule.html?service=' + encodeURIComponent(name) + '&price=' + encodeURIComponent(price);
-       return;
+    var session = typeof Auth !== "undefined" ? Auth.getCurrentUser() : null;
+    if (session && session.role === "customer") {
+      var svcTitle = document.querySelector(".svc-title");
+      var svcPrice = document.querySelector(".svc-price");
+      var name = svcTitle ? svcTitle.textContent : "";
+      var price = svcPrice ? svcPrice.textContent : "";
+      window.location.href =
+        "../customer/schedule.html?service=" +
+        encodeURIComponent(name) +
+        "&price=" +
+        encodeURIComponent(price);
+      return;
     }
     var orig = btn.textContent;
     btn.textContent = "Booked!";
@@ -64,26 +68,26 @@
   }
 
   function initAuthNav() {
-    if (typeof AppStore !== 'undefined' && typeof Auth !== 'undefined') {
-      AppStore.ready.then(function() {
+    if (typeof AppStore !== "undefined" && typeof Auth !== "undefined") {
+      AppStore.ready.then(function () {
         var session = Auth.getCurrentUser();
-        if (session && session.role === 'customer') {
-          var navAuth = document.querySelector('.nav-auth');
+        if (session && session.role === "customer") {
+          var navAuth = document.querySelector(".nav-auth");
           if (navAuth) {
-            navAuth.innerHTML = 
+            navAuth.innerHTML =
               '<a href="../customer/cart.html" style="margin-right: 20px; text-decoration: none; color: #1e293b; font-weight: 500; display:flex; align-items:center; gap:6px;"><svg viewBox="0 0 24 24" style="width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2;"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>Cart</a>' +
               '<a href="../customer/home.html" style="background: var(--primary, #1e3a8a); color: #fff; padding: 0.5rem 1.25rem; border-radius: 6px; font-weight: 500; text-decoration: none; display:flex; align-items:center; gap:8px;"><svg viewBox="0 0 24 24" style="width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Dashboard</a>';
           }
-          var navLinks = document.querySelector('.nav-links');
+          var navLinks = document.querySelector(".nav-links");
           if (navLinks) {
-            navLinks.innerHTML = 
+            navLinks.innerHTML =
               '<li><a href="../customer/home.html">Home</a></li>' +
               '<li><a href="service_discovery.html">Services</a></li>' +
               '<li><a href="../customer/bookings.html">Bookings</a></li>';
           }
-          var mobileMenu = document.querySelector('#mobileMenu ul');
+          var mobileMenu = document.querySelector("#mobileMenu ul");
           if (mobileMenu) {
-            mobileMenu.innerHTML = 
+            mobileMenu.innerHTML =
               '<li><a href="../customer/home.html" style="color:var(--primary); font-weight:600;">Dashboard</a></li>' +
               '<li><a href="service_discovery.html">Services</a></li>' +
               '<li><a href="../customer/cart.html">Cart</a></li>';
@@ -255,6 +259,43 @@
         text: "Smooth experience overall. The provider arrived on time and completed the service with good quality standards.",
       });
     });
+
+    // Also add real reviews from AppStore if available
+    if (typeof AppStore !== "undefined" && AppStore.data) {
+      var allReviews = AppStore.getTable("reviews") || [];
+      var serviceReviews = allReviews.filter(function (r) {
+        return r.service_id === serviceId;
+      });
+      var customerMap = new Map(
+        (AppStore.getTable("customers") || []).map(function (c) {
+          return [c.customer_id, c];
+        }),
+      );
+
+      serviceReviews.forEach(function (review) {
+        var customer = customerMap.get(review.customer_id);
+        var reviewerName = customer ? customer.full_name : "Tatku Customer";
+        var dateLabel = new Date(review.created_at).toLocaleDateString(
+          "en-IN",
+          {
+            year: "numeric",
+            month: "short",
+            day: "numeric",
+          },
+        );
+
+        reviews.push({
+          id: review.review_id,
+          stars: review.rating || 4,
+          score: review.rating || 4,
+          date: review.created_at,
+          name: reviewerName,
+          meta: dateLabel + " • Verified review",
+          initials: reviewerName.charAt(0).toUpperCase(),
+          text: review.review_text || "",
+        });
+      });
+    }
 
     if (!reviews.length) {
       reviews = [
@@ -636,6 +677,7 @@
     var serviceContent = getServiceContent(data, service.service_id) || {};
     var reviews = buildReviewData(data, service.service_id);
     var avgRating =
+      service.rating ||
       reviews.reduce(function (sum, review) {
         return sum + review.score;
       }, 0) / reviews.length;
@@ -747,7 +789,16 @@
 
   initHamburger();
   initAuthNav();
-  initDynamicContent().catch(function (error) {
-    console.error(error);
-  });
+
+  if (typeof AppStore !== "undefined" && AppStore.ready) {
+    AppStore.ready.then(function () {
+      initDynamicContent().catch(function (error) {
+        console.error(error);
+      });
+    });
+  } else {
+    initDynamicContent().catch(function (error) {
+      console.error(error);
+    });
+  }
 })();

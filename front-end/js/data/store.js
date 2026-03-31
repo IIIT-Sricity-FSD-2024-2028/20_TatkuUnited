@@ -25,6 +25,7 @@
     "booking_services",
     "job_assignments",
     "transactions",
+    "reviews",
   ];
 
   // ── Prefix → table mapping ───────────────────────────────────────────────────
@@ -47,6 +48,7 @@
     BKG: "bookings",
     JA: "job_assignments",
     TXN: "transactions",
+    REV: "reviews",
   };
 
   // ── Empty data scaffold (used on fetch failure) ──────────────────────────────
@@ -73,6 +75,7 @@
     booking_services: [],
     job_assignments: [],
     transactions: [],
+    reviews: [],
   };
 
   // ── Bootstrap AppStore on window ─────────────────────────────────────────────
@@ -709,5 +712,137 @@
     ) {
       AppStore.ready.then(syncAndSave);
     }
+  };
+
+  function resolveCustomerId(customerId) {
+    if (customerId) return customerId;
+    try {
+      var raw = sessionStorage.getItem("fsd_session");
+      if (!raw) return null;
+      var session = JSON.parse(raw);
+      if (!session || session.role !== "customer") return null;
+      return session.id || null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function ensureCustomerState() {
+    if (!AppStore || !AppStore.data) return null;
+    if (!AppStore.data.customer_state) {
+      AppStore.data.customer_state = {
+        carts: {},
+        checkout_meta: {},
+      };
+    }
+    if (!AppStore.data.customer_state.carts) {
+      AppStore.data.customer_state.carts = {};
+    }
+    if (!AppStore.data.customer_state.checkout_meta) {
+      AppStore.data.customer_state.checkout_meta = {};
+    }
+    return AppStore.data.customer_state;
+  }
+
+  function readLegacyCart() {
+    try {
+      return JSON.parse(localStorage.getItem("tu_cart") || "[]");
+    } catch (e) {
+      return [];
+    }
+  }
+
+  function readLegacyCheckoutMeta() {
+    var bookingId = localStorage.getItem("tu_last_booking_id");
+    var paymentMethod = localStorage.getItem("tu_last_payment_method");
+    var total = localStorage.getItem("tu_last_total");
+    if (!bookingId && !paymentMethod && !total) return null;
+    return {
+      last_booking_id: bookingId || null,
+      last_payment_method: paymentMethod || null,
+      last_total: total || null,
+    };
+  }
+
+  function clearLegacyCheckoutMeta() {
+    localStorage.removeItem("tu_last_booking_id");
+    localStorage.removeItem("tu_last_payment_method");
+    localStorage.removeItem("tu_last_total");
+  }
+
+  window.CustomerState = {
+    getCart: function (customerId) {
+      var resolvedId = resolveCustomerId(customerId);
+      if (!resolvedId) return [];
+
+      if (!AppStore || !AppStore.data) {
+        return readLegacyCart();
+      }
+
+      var state = ensureCustomerState();
+      var existing = state.carts[resolvedId];
+      if (Array.isArray(existing)) {
+        return existing;
+      }
+
+      var legacyCart = readLegacyCart();
+      if (legacyCart.length > 0) {
+        state.carts[resolvedId] = legacyCart;
+        AppStore.save();
+        localStorage.removeItem("tu_cart");
+        return legacyCart;
+      }
+
+      return [];
+    },
+
+    setCart: function (customerId, cart) {
+      var resolvedId = resolveCustomerId(customerId);
+      if (!resolvedId || !AppStore || !AppStore.data) return false;
+      var state = ensureCustomerState();
+      state.carts[resolvedId] = Array.isArray(cart) ? cart : [];
+      AppStore.save();
+      localStorage.removeItem("tu_cart");
+      return true;
+    },
+
+    clearCart: function (customerId) {
+      return this.setCart(customerId, []);
+    },
+
+    getCheckoutMeta: function (customerId) {
+      var resolvedId = resolveCustomerId(customerId);
+      if (!resolvedId) return null;
+
+      if (!AppStore || !AppStore.data) {
+        return readLegacyCheckoutMeta();
+      }
+
+      var state = ensureCustomerState();
+      var existing = state.checkout_meta[resolvedId] || null;
+      if (existing) {
+        return existing;
+      }
+
+      var legacyMeta = readLegacyCheckoutMeta();
+      if (legacyMeta) {
+        state.checkout_meta[resolvedId] = legacyMeta;
+        AppStore.save();
+        clearLegacyCheckoutMeta();
+        return legacyMeta;
+      }
+
+      return null;
+    },
+
+    setCheckoutMeta: function (customerId, meta) {
+      var resolvedId = resolveCustomerId(customerId);
+      if (!resolvedId || !AppStore || !AppStore.data) return false;
+      var state = ensureCustomerState();
+      state.checkout_meta[resolvedId] = Object.assign({}, meta || {});
+      AppStore.save();
+      clearLegacyCheckoutMeta();
+      return true;
+    },
   };
 })();
