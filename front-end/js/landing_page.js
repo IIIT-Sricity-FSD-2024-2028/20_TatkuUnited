@@ -23,16 +23,16 @@ document
   .querySelectorAll("a, button, .service-card, .testi-card")
   .forEach((el) => {
     el.addEventListener("mouseenter", () => {
-      ring.style.transform = "translate(-50%, -50%) scale(1.6)";
+      ring.style.transform = "translate(-50%,-50%) scale(1.6)";
       ring.style.opacity = "0.3";
     });
     el.addEventListener("mouseleave", () => {
-      ring.style.transform = "translate(-50%, -50%) scale(1)";
+      ring.style.transform = "translate(-50%,-50%) scale(1)";
       ring.style.opacity = "0.5";
     });
   });
 
-/* ── NAVBAR SCROLL ── */
+/* ── NAVBAR ── */
 const navbar = document.getElementById("navbar");
 const progressBar = document.getElementById("progressBar");
 window.addEventListener("scroll", () => {
@@ -48,9 +48,7 @@ const reveals = document.querySelectorAll(".reveal");
 const observer = new IntersectionObserver(
   (entries) => {
     entries.forEach((e) => {
-      if (e.isIntersecting) {
-        e.target.classList.add("visible");
-      }
+      if (e.isIntersecting) e.target.classList.add("visible");
     });
   },
   { threshold: 0.12, rootMargin: "0px 0px -40px 0px" },
@@ -101,7 +99,6 @@ const resize = () => {
 };
 resize();
 window.addEventListener("resize", resize);
-
 for (let i = 0; i < 40; i++) {
   particles.push({
     x: Math.random() * W,
@@ -112,7 +109,6 @@ for (let i = 0; i < 40; i++) {
     alpha: Math.random() * 0.6 + 0.1,
   });
 }
-
 const animParticles = () => {
   ctx.clearRect(0, 0, W, H);
   particles.forEach((p) => {
@@ -127,11 +123,10 @@ const animParticles = () => {
     ctx.fillStyle = `rgba(37,99,235,${p.alpha})`;
     ctx.fill();
   });
-  // lines between close particles
   for (let i = 0; i < particles.length; i++) {
     for (let j = i + 1; j < particles.length; j++) {
-      const dx = particles[i].x - particles[j].x;
-      const dy = particles[i].y - particles[j].y;
+      const dx = particles[i].x - particles[j].x,
+        dy = particles[i].y - particles[j].y;
       const dist = Math.sqrt(dx * dx + dy * dy);
       if (dist < 120) {
         ctx.beginPath();
@@ -147,11 +142,67 @@ const animParticles = () => {
 };
 animParticles();
 
-/* ── HERO CARD PARALLAX ── */
-const heroCard = document.querySelector(".booking-card");
+/* ── HERO CARD 3D PARALLAX ── */
+const heroStack = document.getElementById("hero3dStack");
 document.addEventListener("mousemove", (e) => {
-  if (!heroCard) return;
+  if (!heroStack) return;
   const xPct = (e.clientX / window.innerWidth - 0.5) * 2;
   const yPct = (e.clientY / window.innerHeight - 0.5) * 2;
-  heroCard.style.transform = `perspective(800px) rotateY(${-4 + xPct * 4}deg) rotateX(${yPct * 2}deg)`;
+  heroStack.style.transform = `rotateY(${-6 + xPct * 8}deg) rotateX(${4 + yPct * -4}deg)`;
+  heroStack.style.transition = "transform 0.1s ease";
 });
+
+/* ── SERVICE CARDS 3D TILT ── */
+document.querySelectorAll(".service-card").forEach((card) => {
+  card.addEventListener("mousemove", (e) => {
+    const rect = card.getBoundingClientRect();
+    const x = e.clientX - rect.left - rect.width / 2;
+    const y = e.clientY - rect.top - rect.height / 2;
+    const rotX = (-y / rect.height) * 12;
+    const rotY = (x / rect.width) * 12;
+    card.style.transform = `translateY(-12px) rotateX(${rotX}deg) rotateY(${rotY}deg) translateZ(10px)`;
+  });
+  card.addEventListener("mouseleave", () => {
+    card.style.transform = "";
+    card.style.transition = "all 0.4s cubic-bezier(0.34,1.56,0.64,1)";
+  });
+  card.addEventListener("mouseenter", () => {
+    card.style.transition = "box-shadow 0.3s, border-color 0.3s";
+  });
+});
+
+/* ── TESTI CARDS 3D TILT ── */
+document.querySelectorAll(".testi-card").forEach((card) => {
+  card.addEventListener("mousemove", (e) => {
+    const rect = card.getBoundingClientRect();
+    const x = e.clientX - rect.left - rect.width / 2;
+    const y = e.clientY - rect.top - rect.height / 2;
+    const rotX = (-y / rect.height) * 8;
+    const rotY = (x / rect.width) * 8;
+    card.style.transform = `translateY(-10px) rotateX(${rotX}deg) rotateY(${rotY}deg)`;
+    card.style.transition = "box-shadow 0.1s, border-color 0.1s";
+  });
+  card.addEventListener("mouseleave", () => {
+    card.style.transform = "";
+    card.style.transition = "all 0.4s cubic-bezier(0.34,1.56,0.64,1)";
+  });
+});
+
+/* ── FLOW CARD 3D TILT ── */
+const flowCard = document.querySelector(".flow-card");
+if (flowCard) {
+  flowCard.addEventListener("mousemove", (e) => {
+    const rect = flowCard.getBoundingClientRect();
+    const x = e.clientX - rect.left - rect.width / 2;
+    const y = e.clientY - rect.top - rect.height / 2;
+    const rotX = (-y / rect.height) * 6;
+    const rotY = (x / rect.width) * 6;
+    flowCard.style.transform = `rotateX(${rotX}deg) rotateY(${rotY}deg) translateZ(8px)`;
+    flowCard.style.transition = "none";
+  });
+  flowCard.addEventListener("mouseleave", () => {
+    flowCard.style.transform = "";
+    flowCard.style.transition =
+      "transform 0.6s cubic-bezier(0.22,1,0.36,1), box-shadow 0.5s";
+  });
+}
