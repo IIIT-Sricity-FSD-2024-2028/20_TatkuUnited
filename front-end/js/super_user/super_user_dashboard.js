@@ -1,4 +1,4 @@
-﻿/* dashboard.js */
+/* dashboard.js */
 // Depends on: store.js → auth.js (loaded before this script)
 
 AppStore.ready.then(() => {
@@ -7,7 +7,7 @@ AppStore.ready.then(() => {
   if (!session) return;
 
   /* ── 2. Pull tables ── */
-  const allEvents = AppStore.getTable("admin_platform_events") || [];
+  const allEvents = AppStore.getTable("super_user_platform_events") || [];
   const allActions = AppStore.getTable("super_user_actions") || [];
   const allBookings = AppStore.getTable("bookings") || [];
   const allProviders = AppStore.getTable("service_providers") || [];
