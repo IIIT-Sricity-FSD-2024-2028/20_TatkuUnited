@@ -340,12 +340,43 @@ function updatePassword() {
 }
 
 function confirmDeactivate() {
+  const data = window.getData();
+  if (!data || !data.provider) return;
+
+  if (data.provider.account_status === "inactive") {
+    showToast("Account is already deactivated.", true);
+    return;
+  }
+
   if (
     confirm(
       "Are you sure you want to deactivate your account? This action cannot be undone.",
     )
   ) {
-    showToast("Account deactivation request submitted.");
+    const unfinishedJobs = data.jobs.filter((j) =>
+      ["assigned", "inprogress", "pending"].includes(j.status),
+    );
+
+    if (unfinishedJobs.length === 0) {
+      // Immediate deactivation
+      data.provider.account_status = "inactive";
+      data.provider.is_active = false;
+      data.provider.deactivation_requested = true;
+      window.setData(data);
+      showToast("Account deactivated successfully. Logging out...");
+      setTimeout(() => {
+        window.location.href = "../auth_pages/logout.html";
+      }, 2000);
+    } else {
+      // Pending deactivation
+      data.provider.account_status = "pending_deactivation";
+      data.provider.deactivation_requested = true;
+      window.setData(data);
+      updateDeactivationUI("pending_deactivation");
+      showToast(
+        "Notice: Your account will only deactivate once all currently assigned jobs are completed.",
+      );
+    }
   }
 }
 
@@ -357,6 +388,22 @@ function showToast(msg, isError = false) {
   setTimeout(() => t.classList.remove("show"), 3000);
 }
 
+function updateDeactivationUI(status) {
+  const deactBtn = document.querySelector(".btn-deactivate");
+  const deactSub = document.querySelector(".danger-sub");
+  if (!deactBtn || !deactSub) return;
+  if (status === "pending_deactivation") {
+    deactBtn.disabled = true;
+    deactBtn.style.opacity = "0.5";
+    deactBtn.textContent = "Pending...";
+    deactSub.innerHTML = `<span style="color:var(--accent-red); font-weight:600;">⚠ Account deactivation will occur automatically once your remaining jobs are completed.</span>`;
+  } else if (status === "inactive") {
+    deactBtn.disabled = true;
+    deactBtn.textContent = "Deactivated";
+    deactSub.textContent = "Account deactivated.";
+  }
+}
+
 // ── Init ─────────────────────────────────────────────────────────────────────
 document.addEventListener("DOMContentLoaded", () => {
   if (window.initData) {
@@ -365,6 +412,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (!data || !data.provider) return;
 
       const sp = data.provider;
+      updateDeactivationUI(sp.account_status);
 
       // Topbar styling
       document

@@ -150,6 +150,21 @@ function updateStatus(id, newStatus) {
 
     job.status = newStatus;
     job.statusLabel = { inprogress: 'In Progress', completed: 'Completed', assigned: 'Assigned', pending: 'Pending Confirmation' }[newStatus];
+
+    // Check for pending deactivation
+    if (newStatus === 'completed' && data.provider && data.provider.account_status === "pending_deactivation") {
+      const remainingUnfinished = data.jobs.filter((j) =>
+        j.id !== id && ["assigned", "inprogress", "pending"].includes(j.status),
+      );
+      if (remainingUnfinished.length === 0) {
+        data.provider.account_status = "inactive";
+        data.provider.is_active = false;
+        alert("Last job completed. Your account is now deactivated.");
+        setTimeout(() => {
+          window.location.href = "../auth_pages/logout.html";
+        }, 1500);
+      }
+    }
   }
   
   window.setData(data); // Sync globally

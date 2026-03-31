@@ -297,6 +297,9 @@
       provider.dob = state.provider.dob || provider.dob;
       provider.gender = state.provider.gender || provider.gender;
       provider.pfp_url = state.provider.pfp_url || provider.pfp_url;
+      provider.account_status = state.provider.account_status || provider.account_status || "active";
+      provider.deactivation_requested = state.provider.deactivation_requested !== undefined ? state.provider.deactivation_requested : (provider.deactivation_requested || false);
+      provider.is_active = state.provider.is_active !== undefined ? state.provider.is_active : (provider.is_active !== undefined ? provider.is_active : true);
       provider.updated_at = nowIso;
     }
 
@@ -480,6 +483,8 @@
           }) || {};
 
         providerProfile.skills = [];
+        providerProfile.account_status = providerProfile.account_status || (providerProfile.is_active ? "active" : "inactive");
+        providerProfile.deactivation_requested = providerProfile.deactivation_requested || false;
         var mySkills = allProviderSkills.filter(function (ps) {
           return ps.service_provider_id === providerId;
         });

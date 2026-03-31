@@ -75,6 +75,19 @@ AppStore.ready.then(() => {
     });
   });
 
+  // 3. Deactivation Requests
+  const deactivatingProviders = myProviders.filter(p => p.deactivation_requested);
+  deactivatingProviders.forEach(p => {
+    allNotifications.push({
+      id: genId(), category: 'provider', read: false, color: 'red',
+      title: 'Deactivation Request',
+      desc: `Service Provider ${p.name} (${p.service_provider_id}) has requested account deactivation. Current status: ${p.account_status.replace('_', ' ')}.`,
+      time: getTimeAgo(p.updated_at),
+      icon: `<svg viewBox="0 0 24 24"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path><line x1="12" y1="2" x2="12" y2="12"></line></svg>`,
+      actions: [{ label: 'View Profile', cls: 'primary', href: `provider_profile.html?id=${p.service_provider_id}` }]
+    });
+  });
+
   // Example: System maintenance notification (Mock constant)
   allNotifications.push({
     id: genId(), category: 'system', read: false, color: 'blue',
