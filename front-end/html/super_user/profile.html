@@ -261,6 +261,7 @@
             <div class="super_user-badge">SUPER USER</div>
             <h1 class="profile-name" id="hero-name">Super User</h1>
             <p class="profile-email" id="hero-email">super_user@tatku.com</p>
+            <div class="profile-stats">
               <div class="profile-stat">
                 <span class="stat-num" id="hero-collectives">0</span>
                 <span class="stat-lbl">Collectives</span>
@@ -325,6 +326,7 @@
                   <label>Super User ID</label>
                   <input
                     type="text"
+                    id="super-user-id"
                     value="ADM-001"
                     readonly
                     class="readonly-field"
@@ -419,15 +421,15 @@
         <div class="modal-fields">
           <div class="form-field">
             <label>Current Password</label
-            ><input type="password" placeholder="Enter current password" />
+            ><input type="password" id="pwd-current" placeholder="Enter current password" />
           </div>
           <div class="form-field">
             <label>New Password</label
-            ><input type="password" placeholder="Min. 12 characters" />
+            ><input type="password" id="pwd-new" placeholder="Min. 12 characters" />
           </div>
           <div class="form-field">
             <label>Confirm New Password</label
-            ><input type="password" placeholder="Re-enter new password" />
+            ><input type="password" id="pwd-confirm" placeholder="Re-enter new password" />
           </div>
         </div>
         <div class="modal-btns">
@@ -436,10 +438,7 @@
           </button>
           <button
             class="modal-btn-save"
-            onclick="
-              closePwdModalBtn();
-              showToast('Password updated successfully!');
-            "
+            onclick="handlePasswordChange()"
           >
             Update Password
           </button>
