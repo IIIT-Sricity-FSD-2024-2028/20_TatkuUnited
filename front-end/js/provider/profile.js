@@ -109,7 +109,6 @@ function saveSection(section) {
       } else if (section === "professional") {
         const skillsRows = document.querySelectorAll(".skill-row");
         data.provider.skills = Array.from(skillsRows)
-          .filter((row) => !row.classList.contains("pending-remove"))
           .map((row) => row.getAttribute("data-skill"));
 
         // Serialize File objects generically for JSON mock-storage safety
@@ -261,23 +260,6 @@ function removeUploadedFile(btn, listId) {
   setTimeout(() => item.remove(), 180);
 }
 
-function requestRemoveSkill(btn, skillName) {
-  const row = btn.closest(".skill-row");
-  if (row.classList.contains("pending-remove")) return;
-
-  // Mark as pending – show a badge, disable the button
-  row.classList.add("pending-remove");
-  btn.disabled = true;
-  btn.innerHTML = `
-    <svg viewBox="0 0 24 24" width="12" height="12"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-    Pending Approval
-  `;
-
-  // In the future: POST /api/skill-removal-requests { skill: skillName }
-  showToast(
-    `Removal request sent for "${skillName}" — awaiting manager approval.`,
-  );
-}
 
 function toggleAddSkill() {
   const panel = document.getElementById("add-skill-panel");
@@ -300,7 +282,7 @@ function requestVerifySkill() {
     const el = document.createElement("div");
     el.className = "skill-row new-skill-anim";
     el.setAttribute("data-skill", skill);
-    el.innerHTML = `<span class="skill-badge" style="background:var(--primary-light); color:var(--primary); border:none;"><svg viewBox="0 0 24 24" width="13" height="13"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> ${skill}</span><button class="btn-remove-skill" title="Remove" onclick="requestRemoveSkill(this, '${skill}')"><svg viewBox="0 0 24 24" width="12" height="12"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>`;
+    el.innerHTML = `<span class="skill-badge" style="background:var(--primary-light); color:var(--primary); border:none;"><svg viewBox="0 0 24 24" width="13" height="13"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> ${skill}</span>`;
     list.appendChild(el);
   }
 
@@ -313,9 +295,12 @@ function requestVerifySkill() {
     btn.disabled = false;
     select.value = "";
     toggleAddSkill();
+    
+    // Auto-save the new skill to global state
+    saveSection('professional');
   }, 1000);
 
-  showToast(`Skill "${skill}" added. Remember to save changes!`);
+  showToast(`Skill "${skill}" requested for verification.`);
 }
 
 function showPasswordModal() {
@@ -428,9 +413,6 @@ document.addEventListener("DOMContentLoaded", () => {
               </svg>
               ${skill}
             </span>
-            <button class="btn-remove-skill" title="Remove" onclick="requestRemoveSkill(this, '${skill}')">
-              <svg viewBox="0 0 24 24" width="12" height="12"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-            </button>
           </div>
         `,
           )

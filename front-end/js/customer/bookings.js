@@ -169,7 +169,7 @@ function openDrawer(id) {
         <div class="drawer-field"><label>Category</label><p>${b.category}</p></div>
         <div class="drawer-field"><label>Duration</label><p>${b.duration}</p></div>
         <div class="drawer-field"><label>Scheduled Date</label><p>${b.date}</p></div>
-        <div class="drawer-field"><label>Time Slot</label><p>${b.time}</p></div>
+        <div class="drawer-field"><label>Scheduled Time</label><p>${b.time}</p></div>
         <div class="drawer-field"><label>Amount</label><p>${b.price}</p></div>
         <div class="drawer-field"><label>Location</label><p style="font-size:13px">${b.address}</p></div>
       </div>
@@ -240,10 +240,10 @@ function openRescheduleModal(bookingId) {
   const { min, max } = getDateConstraints();
   dateInput.min = min;
   dateInput.max = max;
-  dateInput.value = "";
-  document.getElementById("reschedule-time").selectedIndex = 0;
-  document.getElementById("reschedule-modal").classList.add("open");
-  document.body.style.overflow = "hidden";
+  dateInput.value = '';
+  document.getElementById('reschedule-time').value = '';
+  document.getElementById('reschedule-modal').classList.add('open');
+  document.body.style.overflow = 'hidden';
 }
 
 function closeRescheduleModalBtn() {
@@ -261,22 +261,13 @@ function saveReschedule() {
   const newDate = document.getElementById("reschedule-date").value;
   const newTime = document.getElementById("reschedule-time").value;
   const { min, max } = getDateConstraints();
-  if (!newDate) {
-    showToast("Please select a date.", "error");
-    return;
-  }
-  if (newDate < min || newDate > max) {
-    showToast("Please select a date within 1 week from today.", "error");
-    return;
-  }
-
-  const dateTimeISO = new Date(
-    newDate + "T" + (newTime ? newTime.split(" ")[0] + ":00" : "10:00:00"),
-  ).toISOString();
-  CRUD.updateRecord("bookings", "booking_id", reschedulingBookingId, {
-    scheduled_at: dateTimeISO,
-  });
-
+  if (!newDate) { showToast('Please select a date.', 'error'); return; }
+  if (newDate < min || newDate > max) { showToast('Please select a date within 1 week from today.', 'error'); return; }
+  if (!newTime) { showToast('Please select a time.', 'error'); return; }
+  
+  const dateTimeISO = new Date(newDate + 'T' + newTime + ':00').toISOString();
+  CRUD.updateRecord('bookings', 'booking_id', reschedulingBookingId, { scheduled_at: dateTimeISO });
+  
   closeRescheduleModalBtn();
   closeDrawerBtn();
   loadBookings();

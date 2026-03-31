@@ -32,26 +32,18 @@ function getDateConstraints() {
 
 function setMode(mode) {
   currentMode = mode;
-  const isInstant = mode === "instant";
-  document.getElementById("btn-instant").classList.toggle("active", isInstant);
-  document
-    .getElementById("btn-scheduled")
-    .classList.toggle("active", !isInstant);
-  document.getElementById("scheduled-fields").style.display = isInstant
-    ? "none"
-    : "flex";
-  document.getElementById("info-text").textContent = isInstant
-    ? "Your service will be assigned to an available provider immediately."
-    : "Choose your preferred date and time slot (within 1 week from today).";
-  const banner = document.getElementById("info-banner");
-  banner.style.background = isInstant
-    ? "var(--green-light)"
-    : "var(--primary-light)";
-  banner.style.borderColor = isInstant ? "#6ee7b7" : "#bfdbfe";
-  banner.style.color = isInstant ? "#065f46" : "#1e3a8a";
-  banner.querySelector("svg").style.stroke = isInstant
-    ? "#059669"
-    : "var(--primary)";
+  const isInstant = mode === 'instant';
+  document.getElementById('btn-instant').classList.toggle('active', isInstant);
+  document.getElementById('btn-scheduled').classList.toggle('active', !isInstant);
+  document.getElementById('scheduled-fields').style.display = isInstant ? 'none' : 'flex';
+  document.getElementById('info-text').textContent = isInstant
+    ? 'Your service will be assigned to an available provider immediately.'
+    : 'Choose your preferred date and time (within 1 week from today).';
+  const banner = document.getElementById('info-banner');
+  banner.style.background = isInstant ? 'var(--green-light)' : 'var(--primary-light)';
+  banner.style.borderColor = isInstant ? '#6ee7b7' : '#bfdbfe';
+  banner.style.color = isInstant ? '#065f46' : '#1e3a8a';
+  banner.querySelector('svg').style.stroke = isInstant ? '#059669' : 'var(--primary)';
   if (!isInstant) {
     const { min, max } = getDateConstraints();
     const dateInput = document.getElementById("sched-date");
@@ -66,14 +58,9 @@ function addToCart() {
   if (currentMode === "scheduled") {
     const dateVal = document.getElementById("sched-date").value;
     const { min, max } = getDateConstraints();
-    if (!dateVal) {
-      showToast("Please select a date.", "error");
-      return;
-    }
-    if (dateVal < min || dateVal > max) {
-      showToast("Please select a date within 1 week from today.", "error");
-      return;
-    }
+    if (!dateVal) { showToast('Please select a date.', 'error'); return; }
+    if (dateVal < min || dateVal > max) { showToast('Please select a date within 1 week from today.', 'error'); return; }
+    if (!document.getElementById('sched-time').value) { showToast('Please select a time.', 'error'); return; }
   }
   const cart = getCart();
   const item = {

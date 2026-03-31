@@ -98,18 +98,33 @@ AppStore.ready.then(() => {
   /* ── 4. Generate skill requests ── */
   const skillRequests = [];
 
-  // Inject a dummy skill request
-  skillRequests.push({
-    id: 999,
-    initials: "JD",
-    name: "John Dummy",
-    skill: "Advanced Plumbing",
-    phone: "+919876543210",
-    email: "john.dummy@mail.com",
-    location: "Chennai City",
-    documents: { resume: true, cert: true },
-    provider_id: "SP_DUMMY_SKILL",
-    skill_id: "SKL999"
+  allProviderSkills.forEach((ps, idx) => {
+    if (ps.verification_status.toLowerCase() !== 'pending') return;
+
+    // Is this provider managed by this CM?
+    const provider = myProviders.find(p => p.service_provider_id === ps.service_provider_id);
+    if (!provider) return; // Not handled by this CM
+
+    const skill = allSkills.find(s => s.skill_id === ps.skill_id);
+    if (!skill) return;
+
+    const initials = provider.name ? provider.name.split(' ').map(n => n[0]).join('').toUpperCase() : 'P';
+    const docs = allProviderDocuments.filter(d => d.service_provider_id === provider.service_provider_id);
+    const hasResume = docs.some(d => d.doc_type === 'RESUME');
+    const hasCert = docs.some(d => d.doc_type === 'CERTIFICATE');
+
+    skillRequests.push({
+      id: idx,
+      initials: initials,
+      name: provider.name,
+      skill: skill.skill_name,
+      phone: provider.phone,
+      email: provider.email,
+      location: provider.address,
+      documents: { resume: hasResume, cert: hasCert },
+      provider_id: provider.service_provider_id,
+      skill_id: ps.skill_id
+    });
   });
 
   // Limit to 4
@@ -148,22 +163,22 @@ AppStore.ready.then(() => {
     `;
 
     card.querySelector('.btn-verify').addEventListener('click', () => {
-      const providerSkill = {
-        service_provider_id: req.provider_id,
-        skill_id: req.skill_id,
-        verification_status: "Verified",
-        verified_at: new Date().toISOString()
-      };
-      AppStore.data.provider_skills.push(providerSkill);
-      AppStore.data.dismissed_providers.push(req.provider_id);
-      AppStore.save();
+      const targetPs = AppStore.data.provider_skills.find(ps => ps.service_provider_id === req.provider_id && ps.skill_id === req.skill_id);
+      if (targetPs) {
+        targetPs.verification_status = "Verified";
+        targetPs.verified_at = new Date().toISOString();
+        AppStore.save();
+      }
       showToast(`✓ ${req.name}'s ${req.skill} skill verified`);
       removeCard(card, true);
     });
 
     card.querySelector('.btn-reject').addEventListener('click', () => {
-      AppStore.data.dismissed_providers.push(req.provider_id);
-      AppStore.save();
+      const targetIndex = AppStore.data.provider_skills.findIndex(ps => ps.service_provider_id === req.provider_id && ps.skill_id === req.skill_id);
+      if (targetIndex !== -1) {
+        AppStore.data.provider_skills.splice(targetIndex, 1);
+        AppStore.save();
+      }
       showToast(`✗ ${req.name}'s ${req.skill} request rejected`);
       removeCard(card, true);
     });
