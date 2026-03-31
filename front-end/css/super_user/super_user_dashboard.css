@@ -1,4 +1,4 @@
-﻿/* ── Reset ── */
+/* ── Reset ── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
@@ -249,7 +249,7 @@ body {
 .link-btn { font-size: 13.5px; font-weight: 600; color: var(--blue); text-decoration: none; }
 .link-btn:hover { text-decoration: underline; }
 
-/* ── ADMIN ACTIONS GRID ── */
+/* ── SUPER USER ACTIONS GRID ── */
 .super_user-actions-grid {
   display: grid;
   grid-template-columns: repeat(3,1fr);

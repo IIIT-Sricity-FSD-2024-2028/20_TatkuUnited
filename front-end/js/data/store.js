@@ -26,6 +26,7 @@
     "job_assignments",
     "transactions",
     "reviews",
+    "super_users",
   ];
 
   // ── Prefix → table mapping ───────────────────────────────────────────────────
@@ -76,6 +77,7 @@
     job_assignments: [],
     transactions: [],
     reviews: [],
+    super_users: [],
   };
 
   // ── Bootstrap AppStore on window ─────────────────────────────────────────────

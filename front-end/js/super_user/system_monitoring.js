@@ -1,4 +1,4 @@
-﻿/* system_monitoring.js */
+/* system_monitoring.js */
 // Depends on: store.js → auth.js (loaded before this script)
 
 AppStore.ready.then(() => {
@@ -7,8 +7,8 @@ AppStore.ready.then(() => {
   if (!session) return;
 
   /* ── 2. Pull tables ── */
-  const allPlatformEvents = AppStore.getTable("admin_platform_events") || [];
-  const allAuditLogs = AppStore.getTable("admin_audit_logs") || [];
+  const allPlatformEvents = AppStore.getTable("super_user_platform_events") || [];
+  const allAuditLogs = AppStore.getTable("super_user_audit_logs") || [];
 
   /* ── 3. Transform platform events ── */
   function transformEvents(events) {

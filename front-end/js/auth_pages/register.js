@@ -268,7 +268,7 @@
 
       /* ── Duplicate e-mail check across every user table ── */
       var userTables  = ['collective_managers', 'unit_managers', 'service_providers', 'customers'];
-      var emailTaken  = email === 'admin@fsd.com' ||
+      var emailTaken  = email === 'super_user@fsd.com' ||
         userTables.some(function (tbl) {
           return (AppStore.getTable(tbl) || []).some(function (row) {
             return (row.email || '').toLowerCase() === email;
@@ -309,7 +309,7 @@
         AppStore.getTable('customers').push(record);
 
       } else {
-        /* service_provider — created inactive until assigned to a unit by admin */
+        /* service_provider — created inactive until assigned to a unit by super user */
         var newId  = AppStore.nextId('SP');
         var record = {
           service_provider_id: newId,

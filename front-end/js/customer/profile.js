@@ -349,7 +349,7 @@ function savePassword() {
 function confirmDelete() {
   // Bypassed native window.confirm to avoid browser dialog blocking
   showProfileToast(
-    "Account deletion request submitted. An admin will contact you.",
+    "Account deletion request submitted. A super user will contact you.",
   );
 }
 

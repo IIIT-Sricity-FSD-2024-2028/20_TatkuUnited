@@ -15,35 +15,49 @@
       "collective_name": "North Chennai Collective",
       "is_active": true,
       "created_at": "2023-01-10T08:00:00Z",
-      "sector_ids": ["SEC002", "SEC005"]
+      "sector_ids": [
+        "SEC002",
+        "SEC005"
+      ]
     },
     {
       "collective_id": "COL002",
       "collective_name": "Central Chennai Collective",
       "is_active": true,
       "created_at": "2023-03-15T09:30:00Z",
-      "sector_ids": ["SEC001", "SEC006"]
+      "sector_ids": [
+        "SEC001",
+        "SEC006"
+      ]
     },
     {
       "collective_id": "COL003",
       "collective_name": "South Chennai Collective",
       "is_active": false,
       "created_at": "2022-11-20T07:45:00Z",
-      "sector_ids": ["SEC003"]
+      "sector_ids": [
+        "SEC003"
+      ]
     },
     {
       "collective_id": "COL004",
       "collective_name": "West Chennai Collective",
       "is_active": true,
       "created_at": "2023-07-01T10:00:00Z",
-      "sector_ids": ["SEC004", "SEC006"]
+      "sector_ids": [
+        "SEC004",
+        "SEC006"
+      ]
     },
     {
       "collective_id": "COL005",
       "collective_name": "East Chennai Collective",
       "is_active": true,
       "created_at": "2024-01-05T08:30:00Z",
-      "sector_ids": ["SEC005", "SEC002"]
+      "sector_ids": [
+        "SEC005",
+        "SEC002"
+      ]
     }
   ],
   "units": [
@@ -2345,7 +2359,7 @@
     }
   ],
   "reviews": [],
-  "admin_platform_events": [
+  "super_user_platform_events": [
     {
       "event_id": "EVT001",
       "timestamp": "2026-03-31T10:45:22Z",
@@ -2384,7 +2398,7 @@
       "title": "Account suspended: User ID #9822 for policy violations",
       "description": "User suspended due to multiple policy violations reported",
       "status": "completed",
-      "component": "Admin Action"
+      "component": "Super User Action"
     },
     {
       "event_id": "EVT005",
@@ -2397,11 +2411,11 @@
       "component": "System Maintenance"
     }
   ],
-  "admin_audit_logs": [
+  "super_user_audit_logs": [
     {
       "log_id": "LOG001",
       "timestamp": "2026-03-31T10:45:22Z",
-      "admin_id": null,
+      "super_user_id": null,
       "action_type": "system",
       "action_description": "JWT Validation Successful",
       "resource_type": "authentication",
@@ -2412,7 +2426,7 @@
     {
       "log_id": "LOG002",
       "timestamp": "2026-03-31T10:44:58Z",
-      "admin_id": null,
+      "super_user_id": null,
       "action_type": "payment",
       "action_description": "Webhook Received: event_id_442",
       "resource_type": "payment_gateway",
@@ -2423,7 +2437,7 @@
     {
       "log_id": "LOG003",
       "timestamp": "2026-03-31T10:44:52Z",
-      "admin_id": null,
+      "super_user_id": null,
       "action_type": "notification",
       "action_description": "Push Notification Sent: user_99",
       "resource_type": "notification",
@@ -2434,7 +2448,7 @@
     {
       "log_id": "LOG004",
       "timestamp": "2026-03-31T10:40:00Z",
-      "admin_id": null,
+      "super_user_id": null,
       "action_type": "account_action",
       "action_description": "Account suspended",
       "resource_type": "user",
@@ -2445,7 +2459,7 @@
     {
       "log_id": "LOG005",
       "timestamp": "2026-03-31T10:35:00Z",
-      "admin_id": null,
+      "super_user_id": null,
       "action_type": "settings_update",
       "action_description": "Platform settings updated",
       "resource_type": "platform_config",
@@ -2454,7 +2468,7 @@
       "status_code": "200 OK"
     }
   ],
-  "admin_notifications": [
+  "super_user_notifications": [
     {
       "notif_id": "NOTIF001",
       "timestamp": "2026-03-31T10:45:22Z",
@@ -2509,8 +2523,9 @@
   "super_users": [
     {
       "super_user_id": "SU001",
-      "name": "Admin Mark",
-      "email": "admin.mark@tatku.com",
+      "name": "Mark",
+      "email": "super_user.mark@tatku.com",
+      "password": "SuperUser@123",
       "phone": "+919876543210",
       "pfp_url": "https://i.pravatar.cc/150?img=1",
       "is_active": true,
@@ -2519,8 +2534,9 @@
     },
     {
       "super_user_id": "SU002",
-      "name": "Admin Sarah",
-      "email": "admin.sarah@tatku.com",
+      "name": "Sarah",
+      "email": "super_user.sarah@tatku.com",
+      "password": "SuperUser@123",
       "phone": "+919876543211",
       "pfp_url": "https://i.pravatar.cc/150?img=2",
       "is_active": true,
@@ -2535,7 +2551,7 @@
       "super_user_id": "SU001",
       "action_type": "account_suspension",
       "title": "Account suspended",
-      "description": "Admin_Mark suspended User #892",
+      "description": "Super User Mark suspended User #892",
       "time_display": "2 mins ago"
     },
     {
@@ -2544,7 +2560,7 @@
       "super_user_id": "SU002",
       "action_type": "provider_verification",
       "title": "Provider verified",
-      "description": "Admin_Sarah approved 'QuickTransport'",
+      "description": "Super User Sarah approved 'QuickTransport'",
       "time_display": "15 mins ago"
     },
     {
@@ -2562,7 +2578,7 @@
       "super_user_id": "SU002",
       "action_type": "login",
       "title": "Login attempt",
-      "description": "Super Admin login from 192.168.0.1",
+      "description": "Super User login from 192.168.0.1",
       "time_display": "2 hours ago"
     }
   ]

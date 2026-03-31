@@ -14,21 +14,6 @@ window.Auth = (() => {
     customer: "/front-end/html/customer/home.html",
   };
 
-  /* ─── Hard-coded superuser ─── */
-  const SUPERUSER = {
-    id: "SUPER001",
-    name: "System super user",
-    phone: "+919999999999",
-    email: "super_user@fsd.com",
-    password: "super user@1234",
-    role: "super_user",
-    scopeId: null,
-    unitId: null,
-    collectiveId: null,
-    is_active: true,
-    pfp_url: "https://i.pravatar.cc/150?img=70",
-  };
-
   /* =========================================================================
      BUILD AUTH REGISTRY
      Called once inside AppStore.ready.then() — populates window.AuthRegistry
@@ -104,8 +89,22 @@ window.Auth = (() => {
       });
     });
 
-    /* 5. Hard-coded superuser */
-    registry.push(SUPERUSER);
+    /* 5. super_users (from mockData) */
+    const superUsers = AppStore.getTable("super_users") || [];
+    superUsers.forEach((su) => {
+      registry.push({
+        id: su.super_user_id,
+        name: su.name,
+        email: su.email,
+        password: su.password || "SuperUser@123",
+        role: "super_user",
+        scopeId: null,
+        unitId: null,
+        collectiveId: null,
+        is_active: su.is_active,
+        pfp_url: su.pfp_url || null,
+      });
+    });
 
     window.AuthRegistry = registry;
   }
@@ -116,7 +115,7 @@ window.Auth = (() => {
   function login(email, password) {
     const normEmail = (email || "").trim().toLowerCase();
     const entry = (window.AuthRegistry || []).find(
-      (u) => u.email === normEmail,
+      (u) => ((u.email || "").trim().toLowerCase() === normEmail),
     );
 
     if (!entry) {
