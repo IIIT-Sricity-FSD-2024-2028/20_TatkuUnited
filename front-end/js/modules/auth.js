@@ -5,6 +5,8 @@
    ============================================================================= */
 
 window.Auth = (() => {
+  const PLATFORM_SETTINGS_KEY = "fsd_platform_settings";
+
   /* ─── Role → Dashboard URL map ─── */
   const ROLE_DASHBOARDS = {
     super_user: "/front-end/html/super_user/super_user_dashboard.html",
@@ -13,6 +15,40 @@ window.Auth = (() => {
     provider: "/front-end/html/provider/dashboard.html",
     customer: "/front-end/html/customer/home.html",
   };
+
+  function _getPlatformSettings() {
+    try {
+      if (
+        window.AppStore &&
+        typeof AppStore.getPlatformSettings === "function"
+      ) {
+        return AppStore.getPlatformSettings();
+      }
+
+      const raw = localStorage.getItem(PLATFORM_SETTINGS_KEY);
+      if (!raw) return null;
+      return JSON.parse(raw);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  function _isProviderSuspended(role) {
+    if (role !== "provider") return false;
+    const settings = _getPlatformSettings();
+    return !!(settings && settings.accountSuspension);
+  }
+
+  function _isMaintenanceModeEnabled() {
+    const settings = _getPlatformSettings();
+    return !!(settings && settings.maintenanceMode);
+  }
+
+  function _isRoleBlockedByMaintenance(role) {
+    if (!role) return false;
+    if (!_isMaintenanceModeEnabled()) return false;
+    return role !== "super_user";
+  }
 
   /* =========================================================================
      BUILD AUTH REGISTRY
@@ -115,7 +151,7 @@ window.Auth = (() => {
   function login(email, password) {
     const normEmail = (email || "").trim().toLowerCase();
     const entry = (window.AuthRegistry || []).find(
-      (u) => ((u.email || "").trim().toLowerCase() === normEmail),
+      (u) => (u.email || "").trim().toLowerCase() === normEmail,
     );
 
     if (!entry) {
@@ -123,6 +159,12 @@ window.Auth = (() => {
     }
     if (!entry.is_active) {
       return { success: false, error: "account_inactive" };
+    }
+    if (_isRoleBlockedByMaintenance(entry.role)) {
+      return { success: false, error: "maintenance_mode_active" };
+    }
+    if (_isProviderSuspended(entry.role)) {
+      return { success: false, error: "provider_suspended_by_platform" };
     }
     if (entry.password !== password) {
       return { success: false, error: "invalid_credentials" };
@@ -176,6 +218,24 @@ window.Auth = (() => {
         ROLE_DASHBOARDS[session.role] ||
         "/front-end/html/auth_pages/login.html";
       window.location.replace(dest);
+      return null;
+    }
+
+    if (_isRoleBlockedByMaintenance(session.role)) {
+      sessionStorage.removeItem("fsd_session");
+      localStorage.removeItem("fsd_session");
+      window.location.replace(
+        "/front-end/html/landing_page.html?maintenance=1",
+      );
+      return null;
+    }
+
+    if (_isProviderSuspended(session.role)) {
+      sessionStorage.removeItem("fsd_session");
+      localStorage.removeItem("fsd_session");
+      window.location.replace(
+        "/front-end/html/auth_pages/login.html?error=provider_suspended",
+      );
       return null;
     }
 
@@ -269,5 +329,6 @@ window.Auth = (() => {
     hasRole,
     getRedirectUrl,
     getCurrentUser,
+    isMaintenanceModeEnabled: _isMaintenanceModeEnabled,
   };
 })();

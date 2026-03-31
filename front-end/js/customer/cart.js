@@ -23,10 +23,22 @@ function parsePrice(p) {
   return parseInt((p || "0").replace(/[^\d]/g, "")) || 0;
 }
 
+function getBookingRules() {
+  if (!window.AppStore || typeof AppStore.getBookingRules !== "function") {
+    return {
+      instantBooking: true,
+      maxAdvanceDays: 7,
+      maxAdvanceLabel: "7 days",
+    };
+  }
+  return AppStore.getBookingRules();
+}
+
 function getDateConstraints() {
+  const rules = getBookingRules();
   const today = new Date();
   const maxDate = new Date();
-  maxDate.setDate(today.getDate() + 7);
+  maxDate.setDate(today.getDate() + rules.maxAdvanceDays);
   const fmt = (d) => d.toISOString().split("T")[0];
   return { min: fmt(today), max: fmt(maxDate) };
 }
@@ -52,9 +64,9 @@ function openEditModal(itemId) {
   } else {
     dateInput.value = "";
   }
-  timeSelect.value = item.time && item.time !== 'Immediate' ? item.time : '';
-  document.getElementById('edit-modal').classList.add('open');
-  document.body.style.overflow = 'hidden';
+  timeSelect.value = item.time && item.time !== "Immediate" ? item.time : "";
+  document.getElementById("edit-modal").classList.add("open");
+  document.body.style.overflow = "hidden";
 }
 function closeEditModalBtn() {
   document.getElementById("edit-modal").classList.remove("open");
@@ -68,20 +80,21 @@ function closeEditModal(e) {
 function saveScheduleEdit() {
   if (!editingItemId) return;
   const newDate = document.getElementById("modal-date").value;
-  const { min, max } = getDateConstraints();
-  if (!newDate) {
-    showToast("Please select a date.", "error");
+  const newTime = document.getElementById("modal-time").value;
+
+  const validation =
+    window.AppStore && typeof AppStore.validateScheduledSlot === "function"
+      ? AppStore.validateScheduledSlot(newDate, newTime)
+      : { valid: !!newDate && !!newTime, error: "Please select date/time." };
+
+  if (!validation.valid) {
+    showToast(validation.error, "error");
     return;
   }
-  if (newDate < min || newDate > max) {
-    showToast("Please select a date within 1 week from today.", "error");
-    return;
-  }
+
   const cart = getCart();
   const item = cart.find((i) => i.id === editingItemId);
   if (item) {
-    const newTime = document.getElementById('modal-time').value;
-    if (!newTime) { showToast('Please select a time.', 'error'); return; }
     item.date = newDate;
     item.time = newTime;
     saveCart(cart);
@@ -120,22 +133,30 @@ function render() {
   const tax = Math.round(subtotal * 0.18);
   const total = subtotal + tax;
 
-  document.getElementById('cart-items').innerHTML = cart.map((item, idx) => {
-    const isScheduled = item.mode === 'scheduled';
-    const displayDate = item.date && item.date !== 'ASAP' ? new Date(item.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : item.date;
-    
-    let displayTime = item.time;
-    if (displayTime && displayTime !== 'Immediate') {
-      const [h, m] = displayTime.split(':');
-      if (h && m) {
-        const hNum = parseInt(h, 10);
-        const ampm = hNum >= 12 ? 'PM' : 'AM';
-        const h12 = hNum % 12 || 12;
-        displayTime = `${h12.toString().padStart(2, '0')}:${m} ${ampm}`;
-      }
-    }
+  document.getElementById("cart-items").innerHTML = cart
+    .map((item, idx) => {
+      const isScheduled = item.mode === "scheduled";
+      const displayDate =
+        item.date && item.date !== "ASAP"
+          ? new Date(item.date).toLocaleDateString("en-IN", {
+              day: "numeric",
+              month: "short",
+              year: "numeric",
+            })
+          : item.date;
 
-    return `
+      let displayTime = item.time;
+      if (displayTime && displayTime !== "Immediate") {
+        const [h, m] = displayTime.split(":");
+        if (h && m) {
+          const hNum = parseInt(h, 10);
+          const ampm = hNum >= 12 ? "PM" : "AM";
+          const h12 = hNum % 12 || 12;
+          displayTime = `${h12.toString().padStart(2, "0")}:${m} ${ampm}`;
+        }
+      }
+
+      return `
       <div class="cart-item" style="animation-delay:${idx * 0.07}s">
         <div class="cart-item-icon">${svcIcon}</div>
         <div class="cart-item-body">
@@ -214,6 +235,17 @@ function applyPromo() {
   if (code) showToast(`Promo "${code}" applied! (Demo)`, "success");
 }
 function confirmBooking() {
+  const rules = getBookingRules();
+  const cart = getCart();
+
+  if (!rules.instantBooking && cart.some((i) => i.mode === "instant")) {
+    showToast(
+      "Instant bookings are disabled. Edit cart items to scheduled slots before checkout.",
+      "error",
+    );
+    return;
+  }
+
   window.location.href = "payment_pages/checkout.html";
 }
 

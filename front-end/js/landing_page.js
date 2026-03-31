@@ -1,3 +1,73 @@
+/* ── MAINTENANCE MODE ── */
+function getPlatformSettings() {
+  if (window.AppStore && typeof AppStore.getPlatformSettings === "function") {
+    return AppStore.getPlatformSettings();
+  }
+  return null;
+}
+
+function setMaintenanceLinkState(active) {
+  const blockers = [
+    "a[href*='auth_pages/register.html']",
+    "a[href*='service_pages/service_discovery.html']",
+    "a[href*='service_pages/service_page.html']",
+  ];
+
+  if (!active) return;
+
+  const message =
+    "Maintenance mode is active. New registrations and bookings are temporarily unavailable.";
+
+  document.querySelectorAll(blockers.join(",")).forEach((el) => {
+    el.classList.add("maintenance-disabled-link");
+    el.setAttribute("aria-disabled", "true");
+    el.setAttribute("title", message);
+    el.addEventListener("click", (evt) => {
+      evt.preventDefault();
+    });
+  });
+}
+
+function renderMaintenanceBanner() {
+  const settings = getPlatformSettings();
+  const active = !!(settings && settings.maintenanceMode);
+  const fromQuery =
+    new URLSearchParams(window.location.search).get("maintenance") === "1";
+
+  if (!active && !fromQuery) return;
+
+  const existing = document.getElementById("maintenance-banner");
+  if (existing) return;
+
+  const banner = document.createElement("div");
+  banner.id = "maintenance-banner";
+  banner.className = "maintenance-banner";
+  banner.innerHTML = `
+    <div class="maintenance-banner-title">Scheduled Maintenance In Progress</div>
+    <div class="maintenance-banner-text">The platform is temporarily unavailable for new bookings and account creation. Super User admins can still sign in to resume operations.</div>
+  `;
+
+  document.body.prepend(banner);
+  document.body.classList.add("maintenance-mode");
+
+  const applyMaintenanceOffset = () => {
+    const h = banner.offsetHeight || 0;
+    document.documentElement.style.setProperty(
+      "--maintenance-offset",
+      `${h}px`,
+    );
+  };
+
+  applyMaintenanceOffset();
+  window.addEventListener("resize", applyMaintenanceOffset);
+
+  setMaintenanceLinkState(true);
+}
+
+AppStore.ready.then(() => {
+  renderMaintenanceBanner();
+});
+
 /* ── CURSOR ── */
 const cursor = document.getElementById("cursor");
 const ring = document.getElementById("cursorRing");
