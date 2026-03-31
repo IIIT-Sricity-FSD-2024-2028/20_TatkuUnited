@@ -1,95 +1,232 @@
 ﻿/* user_management.js */
-const USERS = [
-  { id: '#TK-9021', name: 'Jordan Smith',  initials: 'JS', color: '#2563eb', bg: '#eff6ff', email: 'jordan@example.com', phone: '+1 234 567 890', role: 'Customer', status: 'active',    statusLabel: 'Active',    joined: 'Mar 2, 2026', action: 'Suspend',    actionClass: 'red' },
-  { id: '#TK-8842', name: 'Marcus Reed',   initials: 'MR', color: '#d97706', bg: '#fef9c3', email: 'mreed@provider.co', phone: '+1 987 654 321', role: 'Provider', status: 'suspended', statusLabel: 'Suspended', joined: 'Mar 1, 2026', action: 'Reactivate', actionClass: 'green' },
-  { id: '#TK-9055', name: 'David Park',    initials: 'DP', color: '#7c3aed', bg: '#f5f3ff', email: 'dpark@services.io', phone: '+1 333 444 555', role: 'Provider', status: 'pending',   statusLabel: 'Pending Verification', joined: 'Mar 1, 2026', action: 'Verify', actionClass: 'blue' },
-  { id: '#TK-8801', name: 'Anika Patel',   initials: 'AP', color: '#0891b2', bg: '#e0f7fa', email: 'anika@mail.com',   phone: '+1 555 678 901', role: 'Customer', status: 'active',    statusLabel: 'Active',    joined: 'Feb 28, 2026', action: 'Suspend',   actionClass: 'red' },
-  { id: '#TK-8765', name: 'Leo Fernandez', initials: 'LF', color: '#16a34a', bg: '#f0fdf4', email: 'leo@biznet.io',   phone: '+1 444 321 876', role: 'Provider', status: 'active',    statusLabel: 'Active',    joined: 'Feb 27, 2026', action: 'Suspend',   actionClass: 'red' },
-];
+// Depends on: store.js → auth.js (loaded before this script)
 
-const PAGE_SIZE = 5;
-let currentPage = 1;
-let roleFilter = 'All Roles';
-let statusFilter = 'All Statuses';
+AppStore.ready.then(() => {
+  /* ── 1. Auth gate ── */
+  const session = Auth.requireSession(["super_user"]);
+  if (!session) return;
 
-function mapStatus(s) {
-  if (s === 'active') return 'status-badge--active';
-  if (s === 'suspended') return 'status-badge--suspended';
-  return 'status-badge--pending';
-}
+  /* ── 2. Pull tables ── */
+  const allCustomers = AppStore.getTable("customers") || [];
+  const allProviders = AppStore.getTable("service_providers") || [];
+  const allManagers = AppStore.getTable("collective_managers") || [];
 
-function getFiltered() {
-  return USERS.filter(u => {
-    const matchRole   = roleFilter   === 'All Roles'     || u.role === roleFilter;
-    const matchStatus = statusFilter === 'All Statuses'  || u.statusLabel === statusFilter || (statusFilter === 'Active' && u.status === 'active') || (statusFilter === 'Suspended' && u.status === 'suspended') || (statusFilter === 'Pending Verification' && u.status === 'pending');
-    return matchRole && matchStatus;
-  });
-}
+  /* ── 3. Transform users (combine customers and providers) ── */
+  function transformUsers() {
+    const users = [];
 
-function renderTable() {
-  const filtered = getFiltered();
-  const start = (currentPage - 1) * PAGE_SIZE;
-  const rows = filtered.slice(start, start + PAGE_SIZE);
-  const tbody = document.getElementById('users-tbody');
-  if (!tbody) return;
+    // Add customers
+    allCustomers.slice(0, 3).forEach((c, i) => {
+      const initials = getInitials(c.full_name);
+      const colors = ["#2563eb", "#d97706", "#7c3aed"];
+      const bgs = ["#eff6ff", "#fef9c3", "#f5f3ff"];
+      users.push({
+        id: `#TK-${9000 + i}`,
+        name: c.full_name,
+        initials: initials,
+        color: colors[i % colors.length],
+        bg: bgs[i % bgs.length],
+        email: c.email,
+        phone: c.phone,
+        role: "Customer",
+        status: c.is_active ? "active" : "suspended",
+        statusLabel: c.is_active ? "Active" : "Suspended",
+        joined: new Date(c.created_at).toLocaleDateString("en-IN", {
+          year: "numeric",
+          month: "short",
+          day: "numeric",
+        }),
+        action: c.is_active ? "Suspend" : "Reactivate",
+        actionClass: c.is_active ? "red" : "green",
+      });
+    });
 
-  tbody.innerHTML = rows.map(u => `
-    <tr>
-      <td class="user-id">${u.id}</td>
-      <td>
-        <div class="user-cell">
-          <div class="user-initials" style="background:${u.bg};color:${u.color}">${u.initials}</div>
-          <span class="user-fullname">${u.name}</span>
-        </div>
-      </td>
-      <td>
-        <div class="user-contact">
-          <span class="user-email">${u.email}</span>
-          <span class="user-phone">${u.phone}</span>
-        </div>
-      </td>
-      <td>${u.role}</td>
-      <td><span class="status-badge ${mapStatus(u.status)}">${u.statusLabel}</span></td>
-      <td>${u.joined}</td>
-      <td><button class="action-link action-link--${u.actionClass}">${u.action}</button></td>
-    </tr>
-  `).join('');
+    // Add providers
+    allProviders.slice(0, 2).forEach((p, i) => {
+      const initials = getInitials(p.name);
+      const colors = ["#0891b2", "#16a34a"];
+      const bgs = ["#e0f7fa", "#f0fdf4"];
+      users.push({
+        id: `#TK-${8800 + i}`,
+        name: p.name,
+        initials: initials,
+        color: colors[i % colors.length],
+        bg: bgs[i % bgs.length],
+        email: p.email,
+        phone: p.phone,
+        role: "Provider",
+        status: p.is_active ? "active" : i === 1 ? "pending" : "suspended",
+        statusLabel: p.is_active
+          ? "Active"
+          : i === 1
+            ? "Pending Verification"
+            : "Suspended",
+        joined: new Date(p.created_at).toLocaleDateString("en-IN", {
+          year: "numeric",
+          month: "short",
+          day: "numeric",
+        }),
+        action: i === 1 ? "Verify" : p.is_active ? "Suspend" : "Reactivate",
+        actionClass: i === 1 ? "blue" : p.is_active ? "red" : "green",
+      });
+    });
 
-  const info = document.getElementById('table-info');
-  if (info) {
-    const end = Math.min(start + PAGE_SIZE, filtered.length);
-    info.innerHTML = `Showing <strong>${start+1}-${end}</strong> of <strong>${filtered.length.toLocaleString()}</strong>`;
+    return users;
   }
 
-  document.querySelectorAll('[data-page]').forEach(btn =>
-    btn.classList.toggle('active', Number(btn.dataset.page) === currentPage)
-  );
-}
+  function getInitials(name) {
+    return name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase();
+  }
 
-document.addEventListener('DOMContentLoaded', () => {
-  renderTable();
+  let USERS = transformUsers();
+  const PAGE_SIZE = 5;
+  let currentPage = 1;
+  let roleFilter = "All Roles";
+  let statusFilter = "All Statuses";
 
-  document.getElementById('role-filter').addEventListener('change', e => {
-    roleFilter = e.target.value; currentPage = 1; renderTable();
-  });
-  document.getElementById('status-filter').addEventListener('change', e => {
-    statusFilter = e.target.value; currentPage = 1; renderTable();
-  });
-  document.getElementById('reset-btn').addEventListener('click', () => {
-    document.getElementById('role-filter').value = 'All Roles';
-    document.getElementById('status-filter').value = 'All Statuses';
-    document.getElementById('date-filter').value = '';
-    roleFilter = 'All Roles'; statusFilter = 'All Statuses';
-    currentPage = 1; renderTable();
-  });
-  document.getElementById('prev-btn').addEventListener('click', () => {
-    if (currentPage > 1) { currentPage--; renderTable(); }
-  });
-  document.getElementById('next-btn').addEventListener('click', () => {
-    const max = Math.ceil(getFiltered().length / PAGE_SIZE);
-    if (currentPage < max) { currentPage++; renderTable(); }
-  });
-  document.querySelectorAll('[data-page]').forEach(btn => {
-    btn.addEventListener('click', () => { currentPage = Number(btn.dataset.page); renderTable(); });
-  });
+  function mapStatus(s) {
+    if (s === "active") return "status-badge--active";
+    if (s === "suspended") return "status-badge--suspended";
+    return "status-badge--pending";
+  }
+
+  function getFiltered() {
+    return USERS.filter((u) => {
+      const matchRole = roleFilter === "All Roles" || u.role === roleFilter;
+      const matchStatus =
+        statusFilter === "All Statuses" ||
+        u.statusLabel === statusFilter ||
+        (statusFilter === "Active" && u.status === "active") ||
+        (statusFilter === "Suspended" && u.status === "suspended") ||
+        (statusFilter === "Pending Verification" && u.status === "pending");
+      return matchRole && matchStatus;
+    });
+  }
+
+  function renderTable() {
+    const filtered = getFiltered();
+    const start = (currentPage - 1) * PAGE_SIZE;
+    const rows = filtered.slice(start, start + PAGE_SIZE);
+    const tbody = document.getElementById("users-tbody");
+    if (!tbody) return;
+
+    tbody.innerHTML = rows
+      .map(
+        (u) => `
+      <tr>
+        <td class="user-id">${u.id}</td>
+        <td>
+          <div class="user-cell">
+            <div class="user-initials" style="background:${u.bg};color:${u.color}">${u.initials}</div>
+            <span class="user-fullname">${u.name}</span>
+          </div>
+        </td>
+        <td>
+          <div class="user-contact">
+            <span class="user-email">${u.email}</span>
+            <span class="user-phone">${u.phone}</span>
+          </div>
+        </td>
+        <td>${u.role}</td>
+        <td><span class="status-badge ${mapStatus(u.status)}">${u.statusLabel}</span></td>
+        <td>${u.joined}</td>
+        <td><button class="action-link action-link--${u.actionClass}">${u.action}</button></td>
+      </tr>
+    `,
+      )
+      .join("");
+
+    const info = document.getElementById("table-info");
+    if (info) {
+      const end = Math.min(start + PAGE_SIZE, filtered.length);
+      info.innerHTML = `Showing <strong>${start + 1}-${end}</strong> of <strong>${filtered.length.toLocaleString()}</strong>`;
+    }
+
+    document
+      .querySelectorAll("[data-page]")
+      .forEach((btn) =>
+        btn.classList.toggle(
+          "active",
+          Number(btn.dataset.page) === currentPage,
+        ),
+      );
+  }
+
+  function setupEventListeners() {
+    const roleFilter_el = document.getElementById("role-filter");
+    const statusFilter_el = document.getElementById("status-filter");
+    const resetBtn = document.getElementById("reset-btn");
+    const prevBtn = document.getElementById("prev-btn");
+    const nextBtn = document.getElementById("next-btn");
+
+    if (roleFilter_el) {
+      roleFilter_el.addEventListener("change", (e) => {
+        roleFilter = e.target.value;
+        currentPage = 1;
+        renderTable();
+      });
+    }
+
+    if (statusFilter_el) {
+      statusFilter_el.addEventListener("change", (e) => {
+        statusFilter = e.target.value;
+        currentPage = 1;
+        renderTable();
+      });
+    }
+
+    if (resetBtn) {
+      resetBtn.addEventListener("click", () => {
+        if (roleFilter_el) roleFilter_el.value = "All Roles";
+        if (statusFilter_el) statusFilter_el.value = "All Statuses";
+        const dateFilter = document.getElementById("date-filter");
+        if (dateFilter) dateFilter.value = "";
+        roleFilter = "All Roles";
+        statusFilter = "All Statuses";
+        currentPage = 1;
+        renderTable();
+      });
+    }
+
+    if (prevBtn) {
+      prevBtn.addEventListener("click", () => {
+        if (currentPage > 1) {
+          currentPage--;
+          renderTable();
+        }
+      });
+    }
+
+    if (nextBtn) {
+      nextBtn.addEventListener("click", () => {
+        const max = Math.ceil(getFiltered().length / PAGE_SIZE);
+        if (currentPage < max) {
+          currentPage++;
+          renderTable();
+        }
+      });
+    }
+
+    document.querySelectorAll("[data-page]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        currentPage = Number(btn.dataset.page);
+        renderTable();
+      });
+    });
+  }
+
+  /* ── Initialize on DOM ready ── */
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", () => {
+      renderTable();
+      setupEventListeners();
+    });
+  } else {
+    renderTable();
+    setupEventListeners();
+  }
 });

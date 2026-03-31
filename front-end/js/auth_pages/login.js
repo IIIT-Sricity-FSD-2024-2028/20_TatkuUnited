@@ -6,15 +6,13 @@
 
 /* Always wipe any leftover session when the login page loads.
    The login page is a clean-slate boundary — no session should persist here. */
-localStorage.removeItem("fsd_session");
-sessionStorage.removeItem("fsd_session_alive");
+sessionStorage.removeItem("fsd_session");
 
 AppStore.ready.then(() => {
 
   /* Belt-and-suspenders: ensure session is gone even if AppStore resolved
      from a cached localStorage fetch before the sync removal above ran. */
-  localStorage.removeItem("fsd_session");
-  sessionStorage.removeItem("fsd_session_alive");
+  sessionStorage.removeItem("fsd_session");
 
   /* Auth.isLoggedIn() will now always be false on fresh login page load */
   if (Auth.isLoggedIn()) {

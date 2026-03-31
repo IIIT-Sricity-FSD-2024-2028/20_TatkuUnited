@@ -4,6 +4,12 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Tatku United — Reliable Home Services</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap"
+      rel="stylesheet"
+    />
     <link rel="stylesheet" href="../css/landing_page.css" />
   </head>
   <body>
@@ -37,7 +43,13 @@
 
     <!-- ── HERO ── -->
     <section id="hero">
+      <div class="hero-3d-orbs">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+      </div>
       <div class="grid-dots"></div>
+
       <div class="hero-content">
         <div class="hero-badge">Home Services Platform</div>
         <h1 class="hero-title">
@@ -134,52 +146,68 @@
           </div>
         </div>
       </div>
+
       <div class="hero-visual">
         <div class="deco-circle-1"></div>
         <div class="deco-circle-2"></div>
-        <div class="floating-badge">✓ Service Confirmed</div>
-        <div class="booking-card">
-          <div class="booking-header">
-            <div class="booking-icon">
-              <svg
-                width="20"
-                height="20"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                stroke-width="2"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                />
-              </svg>
+        <div class="hero-3d-stack" id="hero3dStack">
+          <!-- Mini floating cards -->
+          <div class="hero-mini-card hero-mini-card-1">
+            <div class="mini-icon">🔧</div>
+            Expert Technician
+          </div>
+          <div class="hero-mini-card hero-mini-card-2">
+            <div class="mini-icon">⭐</div>
+            4.9 Rating
+          </div>
+
+          <div class="floating-badge">✓ Service Confirmed</div>
+          <div class="booking-card" id="bookingCard">
+            <div class="card-edge-left"></div>
+            <div class="card-edge-bottom"></div>
+            <div class="booking-header">
+              <div class="booking-icon">
+                <svg
+                  width="20"
+                  height="20"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                  />
+                </svg>
+              </div>
+              <div>
+                <div class="booking-title">Service Booked</div>
+                <div class="booking-sub">AC Repair • Tomorrow, 10 AM</div>
+              </div>
             </div>
-            <div>
-              <div class="booking-title">Service Booked</div>
-              <div class="booking-sub">AC Repair • Tomorrow, 10 AM</div>
+            <div class="booking-row">
+              <span class="booking-label">Technician assigned</span>
+              <span class="status-badge status-confirmed">✓ Confirmed</span>
+            </div>
+            <div class="booking-row">
+              <span class="booking-label">Quality guaranteed</span>
+              <span class="status-badge status-insured">✓ Insured</span>
+            </div>
+            <div class="booking-row">
+              <span class="booking-label">Transparent pricing</span>
+              <span class="status-badge status-hidden">→ No hidden fees</span>
             </div>
           </div>
-          <div class="booking-row">
-            <span class="booking-label">Technician assigned</span>
-            <span class="status-badge status-confirmed">✓ Confirmed</span>
+          <div class="rating-pill">
+            <span class="rating-stars">★★★★★</span>
+            <span>4.9</span>
+            <span
+              style="color: var(--silver); font-weight: 400; font-size: 12px"
+              >Customer rating</span
+            >
           </div>
-          <div class="booking-row">
-            <span class="booking-label">Quality guaranteed</span>
-            <span class="status-badge status-insured">✓ Insured</span>
-          </div>
-          <div class="booking-row">
-            <span class="booking-label">Transparent pricing</span>
-            <span class="status-badge status-hidden">→ No hidden fees</span>
-          </div>
-        </div>
-        <div class="rating-pill">
-          <span class="rating-stars">★★★★★</span>
-          <span>4.9</span>
-          <span style="color: var(--silver); font-weight: 400; font-size: 12px"
-            >Customer rating</span
-          >
         </div>
       </div>
     </section>
@@ -194,11 +222,10 @@
           professionals.
         </p>
       </div>
-      <div class="services-grid">
+      <div class="services-grid" id="servicesGrid">
         <a
           href="service_pages/service_discovery.html"
           class="service-card reveal reveal-delay-1"
-          style="text-decoration: none; color: inherit; display: block"
         >
           <div class="service-icon-wrap">❄️</div>
           <div class="service-name">AC Repair</div>
@@ -211,7 +238,6 @@
         <a
           href="service_pages/service_discovery.html"
           class="service-card reveal reveal-delay-2"
-          style="text-decoration: none; color: inherit; display: block"
         >
           <div class="service-icon-wrap">🔧</div>
           <div class="service-name">Plumbing</div>
@@ -224,7 +250,6 @@
         <a
           href="service_pages/service_discovery.html"
           class="service-card reveal reveal-delay-3"
-          style="text-decoration: none; color: inherit; display: block"
         >
           <div class="service-icon-wrap">🧹</div>
           <div class="service-name">Home Cleaning</div>
@@ -237,7 +262,6 @@
         <a
           href="service_pages/service_discovery.html"
           class="service-card reveal reveal-delay-1"
-          style="text-decoration: none; color: inherit; display: block"
         >
           <div class="service-icon-wrap">🔩</div>
           <div class="service-name">Appliance Repair</div>
@@ -250,7 +274,6 @@
         <a
           href="service_pages/service_discovery.html"
           class="service-card reveal reveal-delay-2"
-          style="text-decoration: none; color: inherit; display: block"
         >
           <div class="service-icon-wrap">⚡</div>
           <div class="service-name">Electrical Work</div>
@@ -263,7 +286,6 @@
         <a
           href="service_pages/service_discovery.html"
           class="service-card reveal reveal-delay-3"
-          style="text-decoration: none; color: inherit; display: block"
         >
           <div class="service-icon-wrap">🦟</div>
           <div class="service-name">Pest Control</div>
@@ -501,7 +523,6 @@
             Connecting you with trusted home service professionals.
           </p>
         </div>
-
         <div>
           <div class="footer-col-title">Services</div>
           <ul class="footer-links">

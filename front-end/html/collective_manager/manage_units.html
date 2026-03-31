@@ -276,6 +276,47 @@
       </div>
     </div>
 
+    <!-- View Manager Modal -->
+    <div class="modal-overlay" id="viewModalOverlay">
+      <div class="modal">
+        <div class="modal-header">
+          <h2 class="modal-title">Unit Manager Details</h2>
+          <button class="modal-close" id="viewModalClose">
+            <svg viewBox="0 0 24 24">
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </button>
+        </div>
+        <div class="modal-body" style="text-align: center;">
+          <img id="viewManagerPfp" src="" alt="Manager PFP" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; margin-bottom: 1rem; border: 2px solid #e5e7eb; display: none; margin-left: auto; margin-right: auto;">
+          <h3 id="viewManagerName" style="font-size: 1.25rem; font-weight: 600; color: #111827; margin-bottom: 0.5rem; text-align: center;">Name</h3>
+          
+          <div style="background: #f9fafb; padding: 1rem; border-radius: 8px; border: 1px solid #e5e7eb; margin-top: 1rem; text-align: left;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+              <span style="color: #6b7280; font-size: 0.875rem;">Status</span>
+              <span id="viewManagerStatus" style="font-size: 0.875rem; font-weight: 500;">Active</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+              <span style="color: #6b7280; font-size: 0.875rem;">Email</span>
+              <span id="viewManagerEmail" style="font-size: 0.875rem; color: #111827;">—</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+              <span style="color: #6b7280; font-size: 0.875rem;">Phone</span>
+              <span id="viewManagerPhone" style="font-size: 0.875rem; color: #111827;">—</span>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+              <span style="color: #6b7280; font-size: 0.875rem;">Joined</span>
+              <span id="viewManagerJoined" style="font-size: 0.875rem; color: #111827;">—</span>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer" style="justify-content: center;">
+          <button class="btn-cancel" id="btnViewClose">Close</button>
+        </div>
+      </div>
+    </div>
+
     <div class="toast" id="toast"></div>
 
     <script src="../../js/data/store.js"></script>

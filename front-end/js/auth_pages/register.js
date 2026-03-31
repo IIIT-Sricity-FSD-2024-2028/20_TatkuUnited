@@ -250,12 +250,21 @@
     spinner.style.display = 'inline-block';
 
     /* ── Wait for AppStore, then create the user ── */
-    AppStore.ready.then(function () {
-      var fullname    = fullnameInput.value.trim();
-      var email       = emailInput.value.trim().toLowerCase();
-      var countryCode = document.getElementById('country-code').value;
-      var phone       = countryCode + phoneInput.value.trim();
-      var now         = new Date().toISOString();
+    if (!window.AppStore || !AppStore.ready || typeof AppStore.ready.then !== 'function') {
+      showAlert('Unable to access the data store. Please refresh and try again.', 'error');
+      submitBtn.disabled = false;
+      submitText.style.display = 'inline';
+      spinner.style.display = 'none';
+      return;
+    }
+
+    AppStore.ready
+      .then(function () {
+        var fullname    = fullnameInput.value.trim();
+        var email       = emailInput.value.trim().toLowerCase();
+        var countryCode = document.getElementById('country-code').value;
+        var phone       = countryCode + phoneInput.value.trim();
+        var now         = new Date().toISOString();
 
       /* ── Duplicate e-mail check across every user table ── */
       var userTables  = ['collective_managers', 'unit_managers', 'service_providers', 'customers'];
@@ -329,6 +338,13 @@
 
       /* ── Redirect ── */
       window.location.href = 'register-success.html';
+    })
+    .catch(function (err) {
+      console.error('[Register] AppStore ready failed:', err);
+      submitBtn.disabled = false;
+      submitText.style.display = 'inline';
+      spinner.style.display = 'none';
+      showAlert('Could not complete registration. Please try again later.', 'error');
     });
   });
 

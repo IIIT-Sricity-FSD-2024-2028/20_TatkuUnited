@@ -89,14 +89,8 @@
               <input type="date" id="sched-date" />
             </div>
             <div class="form-field">
-              <label>Select Time Slot</label>
-              <select id="sched-time">
-                <option>08:00 AM – 10:00 AM</option>
-                <option>10:00 AM – 12:00 PM</option>
-                <option>12:00 PM – 02:00 PM</option>
-                <option>02:00 PM – 04:00 PM</option>
-                <option>04:00 PM – 06:00 PM</option>
-              </select>
+              <label>Select Time</label>
+              <input type="time" id="sched-time" />
             </div>
           </div>
         </div>
@@ -165,10 +159,15 @@
       <div class="footer-links">
         <a href="../legal/terms-of-service.html">Terms of Service</a>
         <a href="../legal/privacy-policy.html">Privacy Policy</a>
-        <a href="#">Contact Support</a>
+        <a href="home.html">Contact Support</a>
       </div>
     </footer>
 
+    <script src="../../js/data/store.js"></script>
+    <script src="../../js/modules/auth.js"></script>
+    <script src="../../js/modules/crud.js"></script>
+    <script src="../../js/utils/validation.js"></script>
+    <script src="../../js/utils/helpers.js"></script>
     <script src="../../js/customer/schedule.js"></script>
   </body>
 </html>

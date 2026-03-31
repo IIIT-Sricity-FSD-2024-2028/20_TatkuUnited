@@ -5,10 +5,9 @@
    ============================================================================= */
 
 window.Auth = (() => {
-
   /* ─── Role → Dashboard URL map ─── */
   const ROLE_DASHBOARDS = {
-    superuser: "/front-end/html/super_user/super_user_dashboard.html",
+    super_user: "/front-end/html/super_user/super_user_dashboard.html",
     collective_manager: "/front-end/html/collective_manager/dashboard.html",
     unit_manager: "/front-end/html/unit_manager/dashboard.html",
     provider: "/front-end/html/provider/dashboard.html",
@@ -19,9 +18,10 @@ window.Auth = (() => {
   const SUPERUSER = {
     id: "SUPER001",
     name: "System super user",
+    phone: "+919999999999",
     email: "super_user@fsd.com",
     password: "super user@1234",
-    role: "superuser",
+    role: "super_user",
     scopeId: null,
     unitId: null,
     collectiveId: null,
@@ -38,7 +38,7 @@ window.Auth = (() => {
 
     /* 1. collective_managers */
     const collectiveManagers = AppStore.getTable("collective_managers") || [];
-    collectiveManagers.forEach(cm => {
+    collectiveManagers.forEach((cm) => {
       registry.push({
         id: cm.cm_id,
         name: cm.name,
@@ -55,7 +55,7 @@ window.Auth = (() => {
 
     /* 2. unit_managers */
     const unitManagers = AppStore.getTable("unit_managers") || [];
-    unitManagers.forEach(um => {
+    unitManagers.forEach((um) => {
       registry.push({
         id: um.um_id,
         name: um.name,
@@ -72,7 +72,7 @@ window.Auth = (() => {
 
     /* 3. service_providers */
     const providers = AppStore.getTable("service_providers") || [];
-    providers.forEach(sp => {
+    providers.forEach((sp) => {
       registry.push({
         id: sp.service_provider_id,
         name: sp.name,
@@ -89,7 +89,7 @@ window.Auth = (() => {
 
     /* 4. customers */
     const customers = AppStore.getTable("customers") || [];
-    customers.forEach(c => {
+    customers.forEach((c) => {
       registry.push({
         id: c.customer_id,
         name: c.full_name || c.name,
@@ -115,7 +115,9 @@ window.Auth = (() => {
      ========================================================================= */
   function login(email, password) {
     const normEmail = (email || "").trim().toLowerCase();
-    const entry = (window.AuthRegistry || []).find(u => u.email === normEmail);
+    const entry = (window.AuthRegistry || []).find(
+      (u) => u.email === normEmail,
+    );
 
     if (!entry) {
       return { success: false, error: "invalid_credentials" };
@@ -140,8 +142,7 @@ window.Auth = (() => {
       loginAt: Date.now(),
     };
 
-    localStorage.setItem("fsd_session", JSON.stringify(session));
-    sessionStorage.setItem("fsd_session_alive", "1");
+    sessionStorage.setItem("fsd_session", JSON.stringify(session));
 
     return { success: true, session };
   }
@@ -150,10 +151,7 @@ window.Auth = (() => {
      Auth.logout()
      ========================================================================= */
   function logout() {
-    localStorage.removeItem("fsd_session");
-    localStorage.removeItem("fsd_store");
-    sessionStorage.removeItem("fsd_session_alive");
-    sessionStorage.removeItem("fsd_ui_state");
+    sessionStorage.removeItem("fsd_session");
     window.location.replace("/front-end/html/auth_pages/logout.html");
   }
 
@@ -161,10 +159,10 @@ window.Auth = (() => {
      Auth.requireSession(allowedRoles)
      ========================================================================= */
   function requireSession(allowedRoles) {
-    /* 1. Parse session from localStorage */
+    /* 1. Parse session from sessionStorage */
     let session = null;
     try {
-      const raw = localStorage.getItem("fsd_session");
+      const raw = sessionStorage.getItem("fsd_session");
       if (!raw) throw new Error("no session");
       session = JSON.parse(raw);
       if (!session || !session.role) throw new Error("invalid session");
@@ -173,15 +171,11 @@ window.Auth = (() => {
       return null;
     }
 
-    /* 2. Check tab-scoped alive flag */
-    if (!sessionStorage.getItem("fsd_session_alive")) {
-      window.location.replace("/front-end/html/auth_pages/login.html");
-      return null;
-    }
-
     /* 3. Role authorisation */
     if (!allowedRoles.includes(session.role)) {
-      const dest = ROLE_DASHBOARDS[session.role] || "/front-end/html/auth_pages/login.html";
+      const dest =
+        ROLE_DASHBOARDS[session.role] ||
+        "/front-end/html/auth_pages/login.html";
       window.location.replace(dest);
       return null;
     }
@@ -197,7 +191,7 @@ window.Auth = (() => {
      ========================================================================= */
   function getSession() {
     try {
-      const raw = localStorage.getItem("fsd_session");
+      const raw = sessionStorage.getItem("fsd_session");
       if (!raw) return null;
       return JSON.parse(raw) || null;
     } catch (_) {
@@ -209,7 +203,7 @@ window.Auth = (() => {
      Auth.isLoggedIn()
      ========================================================================= */
   function isLoggedIn() {
-    return !!getSession() && !!sessionStorage.getItem("fsd_session_alive");
+    return !!getSession();
   }
 
   /* =========================================================================
@@ -226,7 +220,9 @@ window.Auth = (() => {
   function getRedirectUrl() {
     const session = getSession();
     if (!session) return "/front-end/html/auth_pages/login.html";
-    return ROLE_DASHBOARDS[session.role] || "/front-end/html/auth_pages/login.html";
+    return (
+      ROLE_DASHBOARDS[session.role] || "/front-end/html/auth_pages/login.html"
+    );
   }
 
   /* =========================================================================
@@ -237,12 +233,16 @@ window.Auth = (() => {
     const session = getSession();
     if (!session) return null;
 
-    const entry = (window.AuthRegistry || []).find(u => u.id === session.id && u.role === session.role);
+    const entry = (window.AuthRegistry || []).find(
+      (u) => u.id === session.id && u.role === session.role,
+    );
     if (!entry) return null;
 
     if (session.role === "provider") {
       const allDocs = AppStore.getTable("provider_documents") || [];
-      entry.documents = allDocs.filter(d => d.service_provider_id === session.id);
+      entry.documents = allDocs.filter(
+        (d) => d.service_provider_id === session.id,
+      );
     }
 
     return entry;
@@ -251,6 +251,13 @@ window.Auth = (() => {
   /* ─── Initialise registry once AppStore is ready ─── */
   AppStore.ready.then(() => {
     _buildRegistry();
+  });
+
+  /* ─── Bfcache Back-Button Reload ─── */
+  window.addEventListener("pageshow", (e) => {
+    if (e.persisted && !getSession()) {
+      window.location.reload();
+    }
   });
 
   /* ─── Public API ─── */
@@ -264,5 +271,4 @@ window.Auth = (() => {
     getRedirectUrl,
     getCurrentUser,
   };
-
 })();
