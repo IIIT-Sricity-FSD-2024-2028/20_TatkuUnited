@@ -417,8 +417,18 @@
     _resolve = resolve;
   });
 
+  function _postReadyAudit() {
+    // Run service availability audit after data is loaded
+    if (window.AssignmentEngine && typeof AssignmentEngine.auditServiceAvailability === 'function') {
+      try { AssignmentEngine.auditServiceAvailability(); } catch (e) {
+        console.warn('[AppStore] Service availability audit failed:', e);
+      }
+    }
+  }
+
   if (AppStore.restore()) {
     // Same session — data already loaded from sessionStorage
+    _postReadyAudit();
     _resolve();
   } else {
     // First startup or missing local data — fetch from mockData.json
@@ -434,7 +444,7 @@
         // Session logic is handled entirely by Auth.login() and requires no action here.
         // Persist the fresh state immediately
         AppStore.save();
-
+        _postReadyAudit();
         _resolve();
       })
       .catch(function (err) {
@@ -947,6 +957,20 @@
             },
           ],
         };
+
+        // Inject dynamic provider notifications from AssignmentEngine
+        if (window.AssignmentEngine && typeof AssignmentEngine.getProviderNotifications === 'function') {
+          var dynamicNotifs = AssignmentEngine.getProviderNotifications(providerId);
+          if (dynamicNotifs && dynamicNotifs.length > 0) {
+            dynamicNotifs.forEach(function (dn) {
+              // Only inject if not already present by id
+              var exists = state.notifications.some(function (n) { return n.id === dn.id; });
+              if (!exists) {
+                state.notifications.unshift(dn);
+              }
+            });
+          }
+        }
 
         localStorage.setItem("fsd_ui_state", JSON.stringify(state));
         // Remove legacy session copy to avoid stale reads in current tab.

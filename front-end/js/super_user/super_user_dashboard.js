@@ -136,7 +136,6 @@ AppStore.ready.then(() => {
             }
           }
         }
-
         if (!collectiveRevMap[assignedColId]) {
           collectiveRevMap[assignedColId] = { name: `Unknown (${assignedColId})`, amount: 0 };
         }

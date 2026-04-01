@@ -152,13 +152,25 @@
       var metrics = getServiceMetrics(service, statsByService);
       var ratingText = metrics.hasRating ? metrics.rating.toFixed(1) : "N/A";
 
+      var isUnavailable = service.is_available === false;
+      var unavailableClass = isUnavailable ? " unavailable" : "";
+      var unavailableBadge = isUnavailable
+        ? '<div class="service-unavailable-badge">Unavailable</div>'
+        : "";
+      var bookBtnDisabled = isUnavailable
+        ? ' style="background:#94a3b8;cursor:not-allowed;pointer-events:none"'
+        : "";
+
       return (
         '<a href="service_page.html?serviceId=' +
         encodeURIComponent(service.service_id) +
-        '" class="service-card" data-cat="' +
+        '" class="service-card' +
+        unavailableClass +
+        '" data-cat="' +
         service.category_id +
         '">' +
-        '<div class="card-img">' +
+        '<div class="card-img" style="position:relative">' +
+        unavailableBadge +
         '<div class="card-badge ' +
         categoryClass +
         '">' +
@@ -190,7 +202,11 @@
         formatPrice(service.base_price) +
         "</span>" +
         "</div>" +
-        '<button class="btn-book" onclick="event.preventDefault()">Add to Cart</button>' +
+        '<button class="btn-book" onclick="event.preventDefault()"' +
+        bookBtnDisabled +
+        ">" +
+        (isUnavailable ? "Unavailable" : "Add to Cart") +
+        "</button>" +
         "</div>" +
         "</div>" +
         "</a>"

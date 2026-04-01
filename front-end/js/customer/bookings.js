@@ -155,12 +155,11 @@ function openDrawer(id) {
   const b = bookings.find((x) => x.id === id);
   if (!b) return;
   const actionBtns = {
-    track: `<button class="drawer-btn drawer-btn-teal">Track Technician</button>`,
     review: `<button class="drawer-btn drawer-btn-review" onclick="window.location='review.html?bookingId=${b.id}'">⭐ Leave a Review</button>`,
     invoice: `<button class="drawer-btn drawer-btn-outline" onclick="downloadBookingReceipt('${b.id}')">Download Receipt</button>`,
     rebook: `<button class="drawer-btn drawer-btn-orange" onclick="window.location='schedule.html?service=${encodeURIComponent(b.name)}&price=${encodeURIComponent(b.price)}'">Rebook This Service</button>`,
     reschedule: `<button class="drawer-btn drawer-btn-outline" onclick="openRescheduleModal('${b.id}')"><svg viewBox="0 0 24 24" style="width:16px;height:16px;display:inline-block;vertical-align:middle;margin-right:6px"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>Reschedule</button>`,
-    cancel: `<button class="drawer-btn drawer-btn-danger" onclick="cancelBooking('${b.id}')">Cancel Booking</button>`,
+    cancel: `<button class="drawer-btn drawer-btn-danger" onclick="cancelBooking('${b.id}')"><svg viewBox="0 0 24 24" style="width:16px;height:16px;display:inline-block;vertical-align:middle;margin-right:6px;stroke:currentColor;fill:none;stroke-width:2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>Cancel Service</button>`,
   };
 
   document.getElementById("drawer-content").innerHTML = `
@@ -210,6 +209,24 @@ function openDrawer(id) {
       </div>
     </div>
     <div class="drawer-divider"></div>
+    ${b.provider && b.provider !== "Awaiting assignment" ? `
+    <div class="drawer-section">
+      <div class="drawer-section-title">Service Provider</div>
+      <div style="display:flex;align-items:center;gap:14px;padding:12px 16px;background:#f0fdf4;border-radius:10px;border:1px solid #bbf7d0;">
+        <div style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#10b981,#059669);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <svg viewBox="0 0 24 24" style="width:22px;height:22px;stroke:#fff;fill:none;stroke-width:2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        </div>
+        <div style="flex:1;min-width:0">
+          <div style="font-weight:700;font-size:14.5px;color:#1e293b;">${b.provider}</div>
+          <div style="display:flex;align-items:center;gap:6px;margin-top:3px;">
+            <svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:#64748b;fill:none;stroke-width:2"><path d="M22 16.92v3a2 2 0 01-2.18 2A19.79 19.79 0 013.1 5.18 2 2 0 015.09 3h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L9.09 10.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 17v-.08z"/></svg>
+            <span style="font-size:13px;color:#475569;font-weight:500;">${b.providerPhone || 'Not available'}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="drawer-divider"></div>
+    ` : ''}
     <div class="drawer-section">${b.actions.map((a) => actionBtns[a] || "").join("")}</div>
   `;
   document.getElementById("drawer-overlay").classList.add("open");
@@ -352,6 +369,11 @@ function cancelBooking(id) {
     return;
   }
 
+  // Cascade cancellation to provider (job_assignment + notification)
+  if (window.AssignmentEngine && typeof AssignmentEngine.cancelAssignment === "function") {
+    AssignmentEngine.cancelAssignment(id);
+  }
+
   CRUD.updateRecord("bookings", "booking_id", id, { status: "CANCELLED" });
   closeDrawerBtn();
   loadBookings();
@@ -459,8 +481,8 @@ function loadBookings() {
 
       let actions = [];
       if (rawStatus === "PENDING") actions = ["reschedule", "cancel"];
-      else if (rawStatus === "ASSIGNED") actions = ["reschedule", "track"];
-      else if (rawStatus === "IN_PROGRESS") actions = ["track"];
+      else if (rawStatus === "ASSIGNED") actions = ["reschedule", "cancel"];
+      else if (rawStatus === "IN_PROGRESS") actions = ["cancel"];
       else if (rawStatus === "COMPLETED")
         actions = ["invoice", "review", "rebook"];
       else if (rawStatus === "CANCELLED") actions = ["rebook"];
@@ -468,11 +490,13 @@ function loadBookings() {
       const allProviders = AppStore.getTable("service_providers") || [];
 
       let providerName = "Awaiting assignment";
+      let providerPhone = null;
       if (b.provider_id) {
         const found = allProviders.find(
           (p) => p.service_provider_id === b.provider_id,
         );
         providerName = found ? found.name : "Tatku Provider";
+        providerPhone = found ? found.phone : null;
       } else if (["COMPLETED", "IN_PROGRESS", "ASSIGNED"].includes(rawStatus)) {
         providerName = "Tatku Professional";
       }
@@ -493,6 +517,7 @@ function loadBookings() {
         name: b.service_name || "Home Service",
         category: "Service",
         provider: providerName,
+        providerPhone: providerPhone,
         liveStatus:
           rawStatus === "IN_PROGRESS" ? "Job in progress/tracked" : null,
         rawDateISO: b.scheduled_at,

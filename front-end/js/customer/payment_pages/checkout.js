@@ -151,6 +151,16 @@ confirmBtn.addEventListener("click", () => {
         created_at: new Date().toISOString(),
       };
       CRUD.createRecord("bookings", newBooking);
+
+      // Auto-assign a provider via skill matching
+      if (window.AssignmentEngine) {
+        const result = AssignmentEngine.assignProviderForBooking(bId);
+        if (result.success) {
+          console.log("[Checkout] Provider " + result.providerId + " assigned to booking " + bId);
+        } else {
+          console.log("[Checkout] No provider assigned for " + bId + ": " + result.reason);
+        }
+      }
     });
 
     CustomerState.clearCart(session.id);
