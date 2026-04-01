@@ -32,6 +32,116 @@ function getCheckoutMeta() {
   return CustomerState.getCheckoutMeta(customerId);
 }
 
+function formatCurrency(value) {
+  const rawValue =
+    typeof value === "number"
+      ? value
+      : Number(String(value || "").replace(/[^\d.]/g, ""));
+  const amount = Number.isFinite(rawValue) ? rawValue : 0;
+  return `₹${amount.toLocaleString("en-IN", {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  })}`;
+}
+
+function formatPaymentMethod(method) {
+  if (method === "upi") return "UPI";
+  if (method === "cash") return "Cash on Service";
+  if (method === "card") return "Credit / Debit Card";
+  if (typeof method === "string" && method.trim()) {
+    return method
+      .replace(/_/g, " ")
+      .replace(/\b\w/g, (char) => char.toUpperCase());
+  }
+  return "Credit / Debit Card";
+}
+
+function getReceiptContext() {
+  const session = Auth.getSession();
+  const customerId = session && session.role === "customer" ? session.id : null;
+  if (!customerId || !window.AppStore) return null;
+
+  const meta = getCheckoutMeta() || {};
+  const bookings = AppStore.getTable("bookings") || [];
+  const sortedBookings = bookings
+    .filter((booking) => booking.customer_id === customerId)
+    .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+  let booking = null;
+  if (meta.last_booking_id) {
+    booking =
+      bookings.find((item) => item.booking_id === meta.last_booking_id) || null;
+  }
+  if (!booking) {
+    booking = sortedBookings[0] || null;
+  }
+  if (!booking) return null;
+
+  const bookedAt = booking.created_at || new Date().toISOString();
+  const transactionDate = new Date(bookedAt).toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+
+  return {
+    bookingId: booking.booking_id,
+    serviceName: booking.service_name || "Home Services Booking",
+    totalAmount: meta.last_total || formatCurrency(booking.price || 0),
+    paymentMethod: formatPaymentMethod(meta.last_payment_method),
+    transactionDate,
+    status: "PAID",
+  };
+}
+
+function updateReceiptView(context) {
+  if (!context) return;
+
+  const mappings = [
+    ["successBookingId", context.bookingId],
+    ["successAmount", context.totalAmount],
+    ["successPaymentMethod", context.paymentMethod],
+    ["successDate", context.transactionDate],
+    ["receiptBookingId", `#${context.bookingId}`],
+    ["receiptServiceName", context.serviceName],
+    ["receiptPaymentMethod", context.paymentMethod],
+    ["receiptTransactionDate", context.transactionDate],
+    ["receiptStatus", "✓ Paid"],
+  ];
+
+  mappings.forEach(([id, value]) => {
+    const node = document.getElementById(id);
+    if (node) {
+      node.textContent = value;
+    }
+  });
+
+  const amountNode = document.querySelector(".rp-big-amount");
+  if (amountNode) {
+    amountNode.textContent = context.totalAmount;
+  }
+}
+
+function buildReceiptText(context) {
+  return [
+    "===================================",
+    "      TATKU UNITED — RECEIPT",
+    "===================================",
+    "",
+    `Booking ID      : #${context.bookingId}`,
+    `Service         : ${context.serviceName}`,
+    `Amount Paid     : ${context.totalAmount}`,
+    `Payment Method  : ${context.paymentMethod}`,
+    `Transaction Date: ${context.transactionDate}`,
+    "Status          : PAID ✓",
+    "",
+    "===================================",
+    "  Tatku United Inc. © 2026",
+    "  support@tatkuunited.com",
+    "===================================",
+  ].join("\n");
+}
+
 function startVerification() {
   receiptBtn.disabled = true;
   receiptBtn.style.opacity = "0.55";
@@ -68,9 +178,14 @@ function onVerified() {
   }, 400);
 
   setTimeout(() => {
-    receiptBtn.disabled = false;
-    receiptBtn.style.opacity = "1";
-    receiptBtn.style.cursor = "pointer";
+    const receiptContext = getReceiptContext();
+    if (receiptContext) {
+      updateReceiptView(receiptContext);
+    }
+
+    receiptBtn.disabled = !receiptContext;
+    receiptBtn.style.opacity = receiptContext ? "1" : "0.55";
+    receiptBtn.style.cursor = receiptContext ? "pointer" : "not-allowed";
     showSuccessToast(
       '🎉 Booking confirmed! Tap "View Receipt" to see details.',
     );
@@ -115,6 +230,12 @@ document.addEventListener("keydown", (e) => {
 document.getElementById("downloadBtn").addEventListener("click", () => {
   const btn = document.getElementById("downloadBtn");
   const original = btn.innerHTML;
+  const receiptContext = getReceiptContext();
+
+  if (!receiptContext) {
+    showSuccessToast("Unable to load receipt details right now.");
+    return;
+  }
 
   btn.innerHTML = `
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px">
@@ -126,46 +247,14 @@ document.getElementById("downloadBtn").addEventListener("click", () => {
   btn.disabled = true;
 
   setTimeout(() => {
-    const meta = getCheckoutMeta() || {};
-    const bId = meta.last_booking_id || "TU-88291";
-    const total = meta.last_total || "₹1,240.00";
-    const payMethod =
-      meta.last_payment_method === "upi"
-        ? "UPI"
-        : meta.last_payment_method === "cash"
-          ? "Cash on Service"
-          : "Credit / Debit Card";
-    const today = new Date().toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
-
-    document.getElementById("bookingId").textContent = bId;
-
-    const content = [
-      "===================================",
-      "      TATKU UNITED — RECEIPT",
-      "===================================",
-      "",
-      `Booking ID     : #${bId}`,
-      "Service        : Home Services Package",
-      `Amount Paid    : ${total}`,
-      `Payment Method : ${payMethod}`,
-      `Transaction Date: ${today}`,
-      "Status         : PAID ✓",
-      "",
-      "===================================",
-      "  Tatku United Inc. © 2026",
-      "  support@tatkuunited.com",
-      "===================================",
-    ].join("\n");
+    updateReceiptView(receiptContext);
+    const content = buildReceiptText(receiptContext);
 
     const blob = new Blob([content], { type: "text/plain" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `${bId}-receipt.txt`;
+    a.download = `${receiptContext.bookingId}-receipt.txt`;
     a.click();
     URL.revokeObjectURL(url);
 

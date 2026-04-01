@@ -157,7 +157,7 @@ function openDrawer(id) {
   const actionBtns = {
     track: `<button class="drawer-btn drawer-btn-teal">Track Technician</button>`,
     review: `<button class="drawer-btn drawer-btn-review" onclick="window.location='review.html?bookingId=${b.id}'">⭐ Leave a Review</button>`,
-    invoice: `<button class="drawer-btn drawer-btn-outline">View Invoice</button>`,
+    invoice: `<button class="drawer-btn drawer-btn-outline" onclick="downloadBookingReceipt('${b.id}')">Download Receipt</button>`,
     rebook: `<button class="drawer-btn drawer-btn-orange" onclick="window.location='schedule.html?service=${encodeURIComponent(b.name)}&price=${encodeURIComponent(b.price)}'">Rebook This Service</button>`,
     reschedule: `<button class="drawer-btn drawer-btn-outline" onclick="openRescheduleModal('${b.id}')"><svg viewBox="0 0 24 24" style="width:16px;height:16px;display:inline-block;vertical-align:middle;margin-right:6px"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>Reschedule</button>`,
     cancel: `<button class="drawer-btn drawer-btn-danger" onclick="cancelBooking('${b.id}')">Cancel Booking</button>`,
@@ -214,6 +214,121 @@ function openDrawer(id) {
   `;
   document.getElementById("drawer-overlay").classList.add("open");
   document.body.style.overflow = "hidden";
+}
+
+function formatReceiptCurrency(value) {
+  const numericValue =
+    typeof value === "number"
+      ? value
+      : Number(String(value || "").replace(/[^\d.]/g, ""));
+  const amount = Number.isFinite(numericValue) ? numericValue : 0;
+  return `₹${amount.toLocaleString("en-IN", {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  })}`;
+}
+
+function formatReceiptPaymentMethod(method) {
+  if (method === "upi") return "UPI";
+  if (method === "cash") return "Cash on Service";
+  if (method === "card") return "Credit / Debit Card";
+  if (typeof method === "string" && method.trim()) {
+    return method
+      .replace(/_/g, " ")
+      .replace(/\b\w/g, (char) => char.toUpperCase());
+  }
+  return "Recorded at checkout";
+}
+
+function getBookingReceiptContext(bookingId) {
+  const allBookings = (window.AppStore && AppStore.getTable("bookings")) || [];
+  const booking = allBookings.find((item) => item.booking_id === bookingId);
+  if (!booking) return null;
+
+  const allServices = (window.AppStore && AppStore.getTable("services")) || [];
+  const bookingServices =
+    (window.AppStore && AppStore.getTable("booking_services")) || [];
+  const serviceRows = bookingServices.filter(
+    (item) => item.booking_id === bookingId,
+  );
+  const serviceNames = serviceRows
+    .map((item) => {
+      const service = allServices.find(
+        (entry) => entry.service_id === item.service_id,
+      );
+      return service ? service.service_name : null;
+    })
+    .filter(Boolean);
+
+  const checkoutMeta =
+    window.CustomerState && typeof CustomerState.getCheckoutMeta === "function"
+      ? CustomerState.getCheckoutMeta(booking.customer_id)
+      : null;
+  const paymentMethod =
+    checkoutMeta && checkoutMeta.last_booking_id === bookingId
+      ? checkoutMeta.last_payment_method
+      : null;
+
+  const amountFromBooking =
+    typeof booking.price === "number"
+      ? booking.price
+      : serviceRows.reduce(
+          (sum, item) => sum + (Number(item.price_at_booking) || 0),
+          0,
+        );
+
+  return {
+    bookingId,
+    serviceName:
+      serviceNames.join(", ") ||
+      booking.service_name ||
+      "Home Services Booking",
+    totalAmount: formatReceiptCurrency(amountFromBooking),
+    paymentMethod: formatReceiptPaymentMethod(paymentMethod),
+    transactionDate: new Date(
+      booking.created_at || Date.now(),
+    ).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    }),
+  };
+}
+
+function downloadBookingReceipt(bookingId) {
+  const context = getBookingReceiptContext(bookingId);
+  if (!context) {
+    showToast("Unable to load receipt details.", "error");
+    return;
+  }
+
+  const content = [
+    "===================================",
+    "      TATKU UNITED — RECEIPT",
+    "===================================",
+    "",
+    `Booking ID      : #${context.bookingId}`,
+    `Service         : ${context.serviceName}`,
+    `Amount Paid     : ${context.totalAmount}`,
+    `Payment Method  : ${context.paymentMethod}`,
+    `Transaction Date: ${context.transactionDate}`,
+    "Status          : PAID ✓",
+    "",
+    "===================================",
+    "  Tatku United Inc. © 2026",
+    "  support@tatkuunited.com",
+    "===================================",
+  ].join("\n");
+
+  const blob = new Blob([content], { type: "text/plain" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `${context.bookingId}-receipt.txt`;
+  link.click();
+  URL.revokeObjectURL(url);
+
+  showToast("Receipt downloaded successfully.", "success");
 }
 function closeDrawerBtn() {
   document.getElementById("drawer-overlay").classList.remove("open");
