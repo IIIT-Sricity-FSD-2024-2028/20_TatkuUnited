@@ -1,9 +1,23 @@
-// ── Admit Providers JS ──
-// Depends on: store.js → auth.js (loaded before this script)
+// ── Service Providers Management JS ──
+// Overhauled to handle both Existing Ranked Providers and New Admissions
 
 const colors = ['#3b82f6','#8b5cf6','#f59e0b','#ec4899','#10b981','#6366f1'];
 
-// ===== TOAST =====
+// ===== TAB SWITCHING LOGIC =====
+function switchOnboardingTab(tabId) {
+  // Update Buttons
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.tab === tabId);
+  });
+
+  // Update Panes
+  document.querySelectorAll('.tab-pane').forEach(pane => {
+    pane.classList.toggle('hidden', pane.id !== `tab-${tabId}`);
+  });
+}
+window.switchOnboardingTab = switchOnboardingTab;
+
+// ===== TOAST & UTILS =====
 function showToast(msg) {
   const t = document.getElementById('toast');
   t.textContent = msg;
@@ -11,18 +25,12 @@ function showToast(msg) {
   setTimeout(() => t.classList.remove('show'), 3000);
 }
 
-// ===== CARD REMOVAL =====
-function removeCard(cardEl, isSkillCard) {
-  cardEl.classList.add('fade-out');
-  setTimeout(() => {
-    cardEl.remove();
-    const sum = document.querySelectorAll('.applicant-card').length;
-    document.getElementById('pendingCount').textContent =
-      sum + ' application' + (sum !== 1 ? 's' : '') + ' pending review';
-  }, 300);
+function getInitials(name) {
+  if (!name) return 'SP';
+  return name.split(' ').map(n => n[0]).join('').toUpperCase();
 }
 
-// ===== VIEW DETAILS MODAL =====
+// ===== DIALOG LOGIC =====
 function openDetailsModal(req, color) {
   document.getElementById('detailsAvatar').textContent = req.initials;
   document.getElementById('detailsAvatar').style.background = color;
@@ -33,13 +41,12 @@ function openDetailsModal(req, color) {
   document.getElementById('detailsLocation').textContent = req.location;
 
   const docsEl = document.getElementById('detailsDocs');
+  docsEl.innerHTML = '';
   if (!req.documents || (!req.documents.resume && !req.documents.cert)) {
     docsEl.innerHTML = `<span class="details-no-docs">No documents uploaded</span>`;
   } else {
-    const docItems = [];
-    if (req.documents.cert)   docItems.push(`<div class="details-doc-item"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span>Certificate</span></div>`);
-    if (req.documents.resume) docItems.push(`<div class="details-doc-item"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span>Resume</span></div>`);
-    docsEl.innerHTML = docItems.join('');
+    if (req.documents.cert)   docsEl.innerHTML += `<div class="details-doc-item"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span>Certificate</span></div>`;
+    if (req.documents.resume) docsEl.innerHTML += `<div class="details-doc-item"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span>Resume</span></div>`;
   }
 
   document.getElementById('detailsOverlay').classList.add('open');
@@ -50,198 +57,255 @@ function closeDetailsModalBtn() {
   document.getElementById('detailsOverlay').classList.remove('open');
   document.body.style.overflow = '';
 }
-function closeDetailsModal(e) {
-  if (e.target === document.getElementById('detailsOverlay')) closeDetailsModalBtn();
+window.closeDetailsModalBtn = closeDetailsModalBtn;
+window.closeDetailsModal = (e) => { if (e.target === document.getElementById('detailsOverlay')) closeDetailsModalBtn(); };
+
+// ===== DOM CACHE =====
+let myProviders = [];
+let myUnits = [];
+
+// ===== 1. RANKED PROVIDERS LOGIC =====
+function renderRankedProviders(filter = '') {
+  const list = document.getElementById('rankedProvidersList');
+  list.innerHTML = '';
+
+  const query = filter.toLowerCase();
+  const sorted = [...myProviders].sort((a,b) => (b.rating || 0) - (a.rating || 0));
+
+  const filtered = sorted.filter(p => 
+    p.name.toLowerCase().includes(query) || 
+    (p.unit_name || '').toLowerCase().includes(query)
+  );
+
+  if (filtered.length === 0) {
+    list.innerHTML = `<div style="text-align:center; padding: 40px; color: #9ca3af; font-size: 13px;">No matching providers found.</div>`;
+    return;
+  }
+
+  filtered.forEach((p, idx) => {
+    const card = document.createElement('div');
+    card.className = 'ranked-card';
+    card.style.animationDelay = (idx * 0.05) + 's';
+    
+    // Find unit name
+    const unit = myUnits.find(u => u.unit_id === p.unit_id);
+    const unitName = unit ? unit.unit_name : 'No Unit';
+    p.unit_name = unitName; // Cache for filter
+
+    const rating = p.rating ? p.rating.toFixed(1) : 'N/A';
+    
+    card.innerHTML = `
+      <div class="r-provider-info">
+        <div class="r-avatar">${getInitials(p.name)}</div>
+        <div>
+          <div class="r-name">${p.name}</div>
+          <div class="r-meta">${unitName} &bull; ${p.service_provider_id}</div>
+        </div>
+      </div>
+      <div class="r-stats">
+        <div class="r-rating">
+           <span class="star-icon">★</span> ${rating}
+        </div>
+        <div class="r-jobs">${p.is_active ? 'Active' : 'Inactive'}</div>
+      </div>
+    `;
+    
+    card.onclick = () => window.location.href = `provider_profile.html?id=${p.service_provider_id}`;
+    list.appendChild(card);
+  });
 }
 
-AppStore.ready.then(() => {
-  /* ── 1. Auth gate ── */
-  const session = Auth.requireSession(['collective_manager']);
-  if (!session) return;
+// ===== 2. PROVIDER PULSE (STATS & ALERTS) =====
+function renderPulse() {
+  // Stats
+  const activeCount = myProviders.filter(p => !p.deactivation_requested && p.account_status !== 'inactive').length;
+  const ratings = myProviders.map(p => p.rating).filter(r => r !== null && r !== undefined);
+  const avgRating = ratings.length ? (ratings.reduce((a,b) => a+b, 0) / ratings.length).toFixed(1) : '0.0';
 
-  const collectiveId = session.collectiveId;
+  document.getElementById('stat-total-active').textContent = activeCount;
+  document.getElementById('stat-avg-rating').textContent = avgRating;
 
-  /* ── 2. Pull tables ── */
-  const allUnits = AppStore.getTable('units') || [];
-  const allProviders = AppStore.getTable('service_providers') || [];
+  // Alerts
+  const alertsList = document.getElementById('providerAlertsList');
+  alertsList.innerHTML = '';
+  const alerts = [];
+
+  // Deactivation requests
+  const deactReqs = myProviders.filter(p => p.deactivation_requested);
+  deactReqs.forEach(p => {
+    alerts.push({
+      type: 'red',
+      icon: '⚠',
+      text: `<strong>${p.name}</strong> requested deactivation. Status: ${p.account_status.replace('_', ' ')}.`
+    });
+  });
+
+  // Low ratings
+  myProviders.filter(p => p.rating && p.rating < 4.0).forEach(p => {
+    alerts.push({
+      type: 'amber',
+      icon: '📉',
+      text: `<strong>${p.name}</strong> rating dipped to ${p.rating.toFixed(1)}.`
+    });
+  });
+
+  if (alerts.length === 0) {
+    alertsList.innerHTML = `<span class="empty-notif">No urgent provider alerts.</span>`;
+  } else {
+    alerts.forEach(a => {
+      const el = document.createElement('div');
+      el.className = `alert-item ${a.type}`;
+      el.innerHTML = `<span class="alert-icon">${a.icon}</span><div>${a.text}</div>`;
+      alertsList.appendChild(el);
+    });
+  }
+}
+
+// ===== 3. ADMISSION & SKILL VERIFICATION LOGIC =====
+function renderAdmissions() {
+  const admissionList = document.getElementById('admissionRequestsList');
+  const skillList = document.getElementById('skillVerificationList');
+  
+  admissionList.innerHTML = '';
+  skillList.innerHTML = '';
+
   const allSkills = AppStore.getTable('skills') || [];
   const allProviderSkills = AppStore.getTable('provider_skills') || [];
   const allProviderDocuments = AppStore.getTable('provider_documents') || [];
+  const allProvidersTable = AppStore.getTable('service_providers') || [];
 
-  /* ── 3. Scope data to this collective ── */
-  const myUnits = allUnits.filter(u => u.collective_id === collectiveId);
-  const myUnitIds = new Set(myUnits.map(u => u.unit_id));
-  const myProviders = allProviders.filter(p => myUnitIds.has(p.unit_id));
-
-  /* ── 3.5. Init custom tracking for persistence ── */
-  if (!AppStore.data.dismissed_providers) {
-      AppStore.data.dismissed_providers = [];
-  }
-
-  // Inject a dummy unassigned provider if none exist for demonstration
-  let unassignedProviders = allProviders.filter(p => !p.unit_id);
-  if (unassignedProviders.length === 0) {
-      const dummyId = "SP_DUMMY_NEW";
-      const dummy = {
-          service_provider_id: dummyId,
-          name: "Ramesh Dummy",
-          phone: "9123456780",
-          email: "ramesh.new@mail.com",
-          unit_id: null,
-          is_active: false,
-          address: "Chennai City",
-          pfp_url: ""
-      };
-      AppStore.data.service_providers.push(dummy);
-      unassignedProviders.push(dummy);
-  }
-  /* ── 4. Generate skill requests ── */
+  // --- 3a. Skill Verification Requests (Existing Providers) ---
   const skillRequests = [];
+  allProviderSkills.forEach((ps, idx) => {
+    if (ps.verification_status.toLowerCase() !== 'pending') return;
+    
+    // Check if provider is already assigned to a unit in this collective
+    const provider = allProvidersTable.find(p => p.service_provider_id === ps.service_provider_id);
+    if (!provider || !provider.unit_id) return;
+    
+    if (!myUnits.some(u => u.unit_id === provider.unit_id)) return;
 
-  // Inject a dummy skill request
-  skillRequests.push({
-    id: 999,
-    initials: "JD",
-    name: "John Dummy",
-    skill: "Advanced Plumbing",
-    phone: "+919876543210",
-    email: "john.dummy@mail.com",
-    location: "Chennai City",
-    documents: { resume: true, cert: true },
-    provider_id: "SP_DUMMY_SKILL",
-    skill_id: "SKL999"
+    const skill = allSkills.find(s => s.skill_id === ps.skill_id);
+    if (!skill) return;
+
+    const docs = allProviderDocuments.filter(d => d.service_provider_id === provider.service_provider_id);
+    skillRequests.push({
+      initials: getInitials(provider.name),
+      name: provider.name,
+      skill: skill.skill_name,
+      phone: provider.phone,
+      email: provider.email,
+      location: provider.address,
+      documents: { 
+        resume: docs.some(d => d.doc_type === 'RESUME'), 
+        cert: docs.some(d => d.doc_type === 'CERTIFICATE') 
+      },
+      provider_id: provider.service_provider_id,
+      skill_id: ps.skill_id
+    });
   });
 
-  // Limit to 4
-  const paginatedSkillRequests = skillRequests.slice(0, 4);
-
-  // ===== BUILD SKILL REQUEST CARD =====
-  function buildSkillCard(req, idx) {
-    const card = document.createElement('div');
-    card.className = 'applicant-card';
-    card.style.animationDelay = (idx * 0.07) + 's';
-
-    const color = colors[idx % colors.length];
-
-    card.innerHTML = `
-      <div class="applicant-avatar" style="background:${color}">${req.initials}</div>
-      <div class="applicant-main">
-        <div class="applicant-name">${req.name}</div>
-        <div class="skill-tags"><span class="skill-tag">${req.skill}</span></div>
-        <div class="applicant-meta">
-          <div class="meta-row"><svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.4 2 2 0 0 1 3.58 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.56a16 16 0 0 0 6 6l.94-.94a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21.73 16z"/></svg>${req.phone}</div>
-          <div class="meta-row"><svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>${req.email}</div>
-          <div class="meta-row"><svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>${req.location}</div>
-        </div>
-      </div>
-      <div class="applicant-actions">
-        <button class="btn-verify" data-id="${req.id}">
-          <svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> Verify
-        </button>
-        <button class="btn-reject" data-id="${req.id}">
-          <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> Reject
-        </button>
-        <button class="btn-view" data-id="${req.id}">
-          <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg> View Details
-        </button>
-      </div>
-    `;
-
-    card.querySelector('.btn-verify').addEventListener('click', () => {
-      const providerSkill = {
-        service_provider_id: req.provider_id,
-        skill_id: req.skill_id,
-        verification_status: "Verified",
-        verified_at: new Date().toISOString()
-      };
-      AppStore.data.provider_skills.push(providerSkill);
-      AppStore.data.dismissed_providers.push(req.provider_id);
-      AppStore.save();
-      showToast(`✓ ${req.name}'s ${req.skill} skill verified`);
-      removeCard(card, true);
+  // Render Skill Verification Cards
+  if (skillRequests.length === 0) {
+    skillList.innerHTML = `<div class="empty-notif">No pending skill verifications.</div>`;
+  } else {
+    skillRequests.forEach((req, idx) => {
+      const card = buildAdmissionCard(req, idx, 'skill', (card) => {
+        const ps = allProviderSkills.find(p => p.service_provider_id === req.provider_id && p.skill_id === req.skill_id);
+        if (ps) {
+          ps.verification_status = "Verified";
+          ps.verified_at = new Date().toISOString();
+          AppStore.save();
+          showToast(`✓ Verified ${req.skill} for ${req.name}`);
+          card.remove();
+          if (skillList.children.length === 0) skillList.innerHTML = `<div class="empty-notif">No pending skill verifications.</div>`;
+        }
+      });
+      skillList.appendChild(card);
     });
-
-    card.querySelector('.btn-reject').addEventListener('click', () => {
-      AppStore.data.dismissed_providers.push(req.provider_id);
-      AppStore.save();
-      showToast(`✗ ${req.name}'s ${req.skill} request rejected`);
-      removeCard(card, true);
-    });
-
-    card.querySelector('.btn-view').addEventListener('click', () => {
-      openDetailsModal(req, color);
-    });
-
-    return card;
   }
 
-  // ===== BUILD UNIT ASSIGN CARD =====
-  function buildUnitAssignCard(provider, idx) {
-    const card = document.createElement('div');
-    card.className = 'applicant-card unit-assign-card';
-    card.style.animationDelay = (idx * 0.07) + 's';
+  // --- 3b. New Admission Requests (Unassigned Unit) ---
+  const unitRequests = allProvidersTable.filter(p => !p.unit_id);
 
-    const color = colors[(idx + 2) % colors.length];
-    const initials = provider.name.split(' ').map(n => n[0]).join('').toUpperCase();
-
-    // Create options
-    const options = myUnits.map(u => `<option value="${u.unit_id}">${u.unit_name}</option>`).join('');
-
-    card.innerHTML = `
-      <div class="applicant-avatar" style="background:${color}">${initials}</div>
-      <div class="applicant-main">
-        <div class="applicant-name">${provider.name}</div>
-        <div class="skill-tags"><span class="skill-tag" style="background:#fee2e2;color:#991b1b">Unassigned</span></div>
-        <div class="applicant-meta">
-          <div class="meta-row"><svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.4 2 2 0 0 1 3.58 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.56a16 16 0 0 0 6 6l.94-.94a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21.73 16z"/></svg>${provider.phone}</div>
-          <div class="meta-row"><svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>${provider.email}</div>
+  if (unitRequests.length === 0) {
+    admissionList.innerHTML = `<div class="empty-notif">No new admission requests.</div>`;
+  } else {
+    unitRequests.forEach((p, idx) => {
+      const initials = getInitials(p.name);
+      const options = myUnits.map(u => `<option value="${u.unit_id}">${u.unit_name}</option>`).join('');
+      const card = document.createElement('div');
+      card.className = 'applicant-card';
+      card.innerHTML = `
+        <div class="applicant-avatar" style="background:${colors[idx % colors.length]}">${initials}</div>
+        <div class="applicant-main">
+          <div class="applicant-name">${p.name}</div>
+          <div class="applicant-meta" style="color:var(--accent); font-weight:600">Pending Unit Assignment</div>
         </div>
-      </div>
-      <div class="applicant-actions">
-        <select class="unit-assign-select">
-          <option value="" disabled selected>Select a unit...</option>
-          ${options}
-        </select>
-        <button class="btn-assign" style="background:var(--accent);color:#fff;border:none;padding:9px 12px;border-radius:6px;display:flex;align-items:center;justify-content:center;gap:6px;font-weight:600;font-size:13px;cursor:pointer;">
-          <svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2.5;"><polyline points="20 6 9 17 4 12"></polyline></svg> Assign Unit
-        </button>
-      </div>
-    `;
-
-    card.querySelector('.btn-assign').addEventListener('click', () => {
-      const select = card.querySelector('.unit-assign-select');
-      const selectedUnitId = select.value;
-      
-      if (!selectedUnitId) {
-        showToast('Please select a unit first');
-        return;
-      }
-
-      // Update the provider in AppStore.data
-      const storeProvider = AppStore.data.service_providers.find(p => p.service_provider_id === provider.service_provider_id);
-      if (storeProvider) {
-        storeProvider.unit_id = selectedUnitId;
-        storeProvider.is_active = true;
-        AppStore.save();
-      }
-      
-      showToast(`✓ Provider assigned to unit successfully!`);
-      removeCard(card, false);
+        <div class="applicant-actions">
+           <select class="unit-assign-select" style="padding: 6px; border-radius: 6px; border: 1px solid var(--border); font-size: 12px; outline:none;">
+              <option value="" disabled selected>Unit...</option>
+              ${options}
+           </select>
+           <button class="btn-verify" onclick="assignUnit('${p.service_provider_id}', this)">Assign</button>
+        </div>
+      `;
+      admissionList.appendChild(card);
     });
-
-    return card;
   }
+}
 
-  // ===== INIT =====
-  const skillList = document.getElementById('skillRequestsList');
-  paginatedSkillRequests.forEach((req, i) => skillList.appendChild(buildSkillCard(req, i)));
+function buildAdmissionCard(req, idx, type, onVerify) {
+  const card = document.createElement('div');
+  card.className = 'applicant-card';
+  card.innerHTML = `
+    <div class="applicant-avatar" style="background:${colors[idx % colors.length]}">${req.initials}</div>
+    <div class="applicant-main">
+      <div class="applicant-name">${req.name}</div>
+      <div class="skill-tags"><span class="skill-tag">${req.skill}</span></div>
+    </div>
+    <div class="applicant-actions">
+      <button class="btn-verify">Verify</button>
+      <button class="btn-view">View</button>
+    </div>
+  `;
+  card.querySelector('.btn-verify').onclick = () => onVerify(card);
+  card.querySelector('.btn-view').onclick = () => openDetailsModal(req, colors[idx % colors.length]);
+  return card;
+}
 
-  const unitList = document.getElementById('unitRequestsList');
-  const paginatedUnitRequests = unassignedProviders.slice(0, 4);
-  paginatedUnitRequests.forEach((p, i) => unitList.appendChild(buildUnitAssignCard(p, i)));
+window.assignUnit = (providerId, btn) => {
+   const select = btn.previousElementSibling;
+   const unitId = select.value;
+   if (!unitId) return showToast('Please select a unit');
+   
+   const p = AppStore.getTable('service_providers').find(x => x.service_provider_id === providerId);
+   if (p) {
+      p.unit_id = unitId;
+      p.is_active = true;
+      AppStore.save();
+      showToast('✓ Provider assigned successfully');
+      btn.closest('.applicant-card').remove();
+   }
+};
 
-  const sum = document.querySelectorAll('.applicant-card').length;
-  document.getElementById('pendingCount').textContent =
-    sum + ' application' + (sum !== 1 ? 's' : '') + ' pending review';
+// ===== INIT =====
+AppStore.ready.then(() => {
+  const session = Auth.requireSession(['collective_manager']);
+  if (!session) return;
+  const collectiveId = session.collectiveId;
 
+  // 1. Data Scoping
+  myUnits = (AppStore.getTable('units') || []).filter(u => u.collective_id === collectiveId);
+  const myUnitIds = new Set(myUnits.map(u => u.unit_id));
+  myProviders = (AppStore.getTable('service_providers') || []).filter(p => myUnitIds.has(p.unit_id));
+
+  // 2. Initial Render
+  renderRankedProviders();
+  renderPulse();
+  renderAdmissions();
+
+  // 3. Bind Search
+  const searchInput = document.getElementById('rankedProviderSearch');
+  searchInput.oninput = (e) => renderRankedProviders(e.target.value);
 });

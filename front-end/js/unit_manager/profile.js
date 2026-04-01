@@ -9,36 +9,7 @@
   var session = null;
   var um = null;
   var unit = null;
-  var prefs = null;
   var _toastTimer;
-
-  var DEFAULT_PREFS = {
-    emailNotif: true,
-    smsAlerts: true,
-    weeklySummary: false,
-    twoFA: true,
-  };
-
-  function ensurePrefs() {
-    if (
-      !AppStore.data.um_preferences ||
-      typeof AppStore.data.um_preferences !== "object"
-    ) {
-      AppStore.data.um_preferences = {};
-    }
-
-    if (!AppStore.data.um_preferences[session.id]) {
-      AppStore.data.um_preferences[session.id] = {
-        emailNotif: DEFAULT_PREFS.emailNotif,
-        smsAlerts: DEFAULT_PREFS.smsAlerts,
-        weeklySummary: DEFAULT_PREFS.weeklySummary,
-        twoFA: DEFAULT_PREFS.twoFA,
-      };
-      AppStore.save();
-    }
-
-    prefs = AppStore.data.um_preferences[session.id];
-  }
 
   function initials(name) {
     var parts = String(name || "")
@@ -53,11 +24,6 @@
   function setInput(id, val) {
     var el = document.getElementById(id);
     if (el) el.value = val == null ? "" : val;
-  }
-
-  function setToggle(id, checked) {
-    var el = document.getElementById(id);
-    if (el) el.checked = !!checked;
   }
 
   function renderAvatar(src, name) {
@@ -115,15 +81,18 @@
       }
     }
 
-    setToggle("toggle-email", prefs.emailNotif);
-    setToggle("toggle-sms", prefs.smsAlerts);
-    setToggle("toggle-weekly", prefs.weeklySummary);
-    setToggle("toggle-2fa", prefs.twoFA);
-
     document.getElementById("hero-name").textContent = um
       ? um.name
       : "Unit Manager";
     document.getElementById("hero-email").textContent = um ? um.email : "";
+
+    var roleEl = document.getElementById("hero-role");
+    if (roleEl) {
+      roleEl.textContent =
+        unit && unit.unit_name
+          ? "Unit Manager - " + unit.unit_name
+          : "Unit Manager";
+    }
 
     renderAvatar(um ? um.pfp_url : null, um ? um.name : "Unit Manager");
   }
@@ -135,25 +104,14 @@
     renderAvatar(um ? um.pfp_url : null, v || (um ? um.name : "Unit Manager"));
   };
 
-  window.syncEmail = function () {
-    var v = (document.getElementById("email").value || "").trim();
-    document.getElementById("hero-email").textContent =
-      v || (um ? um.email : "");
-  };
-
   window.saveSection = function (section) {
     if (section === "personal") {
       var name = (document.getElementById("full-name").value || "").trim();
-      var email = (document.getElementById("email").value || "").trim();
       var phone = (document.getElementById("phone").value || "").trim();
       var dob = (document.getElementById("dob").value || "").trim();
 
       if (!name) {
         showToast("Name cannot be empty.", "error");
-        return;
-      }
-      if (!email || email.indexOf("@") === -1 || email.indexOf(".") === -1) {
-        showToast("Enter a valid email address.", "error");
         return;
       }
       if (phone && !/^\d{10}$/.test(phone)) {
@@ -162,14 +120,13 @@
       }
 
       um.name = name;
-      um.email = email.toLowerCase();
       um.phone = phone ? "+91" + phone : "";
       um.dob = dob || null; // custom UI field, persisted in shared store
       um.updated_at = new Date().toISOString();
 
       AppStore.save();
       document.getElementById("hero-name").textContent = name;
-      document.getElementById("hero-email").textContent = email;
+      document.getElementById("hero-email").textContent = um.email || "";
       renderAvatar(um.pfp_url, name);
       showToast("Personal information saved ✓", "success");
       return;
@@ -200,14 +157,10 @@
       unit.updated_at = new Date().toISOString();
 
       AppStore.save();
+      var roleEl = document.getElementById("hero-role");
+      if (roleEl) roleEl.textContent = "Unit Manager - " + unitName;
       showToast("Unit details saved ✓", "success");
     }
-  };
-
-  window.saveToggle = function (key, value) {
-    if (!prefs || !Object.prototype.hasOwnProperty.call(prefs, key)) return;
-    prefs[key] = !!value;
-    AppStore.save();
   };
 
   window.updateAvatar = function (input) {
@@ -253,6 +206,12 @@
     if (modal) {
       modal.classList.remove("open");
       removePwdError();
+      // Clear fields
+      var fields = ["pwd-current", "pwd-new", "pwd-confirm"];
+      fields.forEach(function (id) {
+        var el = document.getElementById(id);
+        if (el) el.value = "";
+      });
     }
   };
 
@@ -275,52 +234,167 @@
     fields.appendChild(p);
   }
 
-  function wirePasswordBtn() {
-    var modal = document.getElementById("pwd-modal");
-    if (!modal) return;
+  window.handlePasswordChange = function () {
+    var currentPwd = document.getElementById("pwd-current") ? document.getElementById("pwd-current").value : "";
+    var newPwd = document.getElementById("pwd-new") ? document.getElementById("pwd-new").value : "";
+    var confirmPwd = document.getElementById("pwd-confirm") ? document.getElementById("pwd-confirm").value : "";
 
-    var btn = modal.querySelector(".modal-btn-save");
-    if (!btn) return;
+    if (!currentPwd || !newPwd || !confirmPwd) {
+      showPwdError("Please fill in all password fields.");
+      return;
+    }
 
-    btn.removeAttribute("onclick");
-    btn.addEventListener("click", function () {
-      var inputs = modal.querySelectorAll('input[type="password"]');
-      var current = inputs[0] ? inputs[0].value : "";
-      var newPwd = inputs[1] ? inputs[1].value : "";
-      var confirm = inputs[2] ? inputs[2].value : "";
+    if (newPwd !== confirmPwd) {
+      showPwdError("New passwords do not match.");
+      return;
+    }
 
-      if (!current) {
-        showPwdError("Enter your current password.");
-        return;
-      }
-      if (um && um.password && current !== um.password) {
-        showPwdError("Current password is incorrect.");
-        if (inputs[0]) inputs[0].style.borderColor = "#f87171";
-        return;
-      }
-      if (newPwd.length < 8) {
-        showPwdError("New password must be at least 8 characters.");
-        if (inputs[1]) inputs[1].style.borderColor = "#f87171";
-        return;
-      }
-      if (newPwd === current) {
-        showPwdError("New password must differ from the current one.");
-        if (inputs[1]) inputs[1].style.borderColor = "#f87171";
-        return;
-      }
-      if (newPwd !== confirm) {
-        showPwdError("Passwords do not match.");
-        if (inputs[2]) inputs[2].style.borderColor = "#f87171";
-        return;
-      }
+    if (newPwd.length < 8) {
+      showPwdError("New password must be at least 8 characters.");
+      return;
+    }
 
-      um.password = newPwd;
-      um.updated_at = new Date().toISOString();
-      AppStore.save();
-
-      window.closePwdModalBtn();
+    var res = Auth.changePassword(currentPwd, newPwd);
+    if (res.success) {
       showToast("Password updated successfully ✓", "success");
+      window.closePwdModalBtn();
+    } else {
+      var errorMap = {
+        invalid_current_password: "Current password is incorrect.",
+        not_logged_in: "Session expired. Please log in again.",
+      };
+      showPwdError(errorMap[res.error] || "Failed to update password.");
+    }
+  };
+
+  function computeUnitMetrics() {
+    var allProviders = AppStore.getTable("service_providers") || [];
+    var assignments = AppStore.getTable("job_assignments") || [];
+
+    var unitProviders = allProviders.filter(function (p) {
+      return unit && p.unit_id === unit.unit_id;
     });
+
+    var providerIdSet = new Set(
+      unitProviders.map(function (p) {
+        return p.service_provider_id;
+      }),
+    );
+
+    var unitAssignments = assignments.filter(function (a) {
+      return providerIdSet.has(a.service_provider_id);
+    });
+
+    var now = new Date();
+    var month = now.getMonth();
+    var year = now.getFullYear();
+
+    var activeProviderThisMonth = new Set();
+    for (var i = 0; i < unitAssignments.length; i++) {
+      var a = unitAssignments[i];
+      var dt = new Date(a.assigned_at || a.updated_at || a.created_at || 0);
+      if (dt.getFullYear() === year && dt.getMonth() === month) {
+        activeProviderThisMonth.add(a.service_provider_id);
+      }
+    }
+
+    var scored = unitAssignments.filter(function (a) {
+      return typeof a.assignment_score === "number";
+    });
+
+    var avgRating = 0;
+    if (scored.length) {
+      var totalScore = scored.reduce(function (sum, a) {
+        return sum + Number(a.assignment_score || 0);
+      }, 0);
+      avgRating = totalScore / scored.length;
+    } else {
+      var providerRatings = unitProviders
+        .map(function (p) {
+          return p.rating;
+        })
+        .filter(function (r) {
+          return typeof r === "number";
+        });
+      if (providerRatings.length) {
+        avgRating =
+          providerRatings.reduce(function (sum, r) {
+            return sum + r;
+          }, 0) / providerRatings.length;
+      } else if (unit && typeof unit.rating === "number") {
+        avgRating = unit.rating;
+      }
+    }
+
+    var actionableAssignments = unitAssignments.filter(function (a) {
+      return a.status !== "CANCELLED";
+    });
+    var completedAssignments = actionableAssignments.filter(function (a) {
+      return a.status === "COMPLETED";
+    });
+    var completionRate = actionableAssignments.length
+      ? (completedAssignments.length / actionableAssignments.length) * 100
+      : 0;
+
+    return {
+      totalProviders: unitProviders.length,
+      activeThisMonth: activeProviderThisMonth.size,
+      avgRating: avgRating,
+      completionRate: completionRate,
+      totalProvidersPct: allProviders.length
+        ? (unitProviders.length / allProviders.length) * 100
+        : 0,
+      activeThisMonthPct: unitProviders.length
+        ? (activeProviderThisMonth.size / unitProviders.length) * 100
+        : 0,
+      avgRatingPct: (avgRating / 5) * 100,
+    };
+  }
+
+  function renderHeroCardStats() {
+    var metrics = computeUnitMetrics();
+    var providersEl = document.getElementById("hero-stat-providers");
+    var ratingEl = document.getElementById("hero-stat-rating");
+    var successEl = document.getElementById("hero-stat-success");
+
+    if (providersEl) providersEl.textContent = String(metrics.totalProviders);
+    if (ratingEl) ratingEl.textContent = metrics.avgRating.toFixed(1) + " ★";
+    if (successEl)
+      successEl.textContent =
+        Math.round(metrics.completionRate).toString() + "%";
+  }
+
+  function renderPerformanceSummary() {
+    function setPerfValue(id, value) {
+      var el = document.getElementById(id);
+      if (el) el.textContent = value;
+    }
+
+    function setPerfBar(id, pct) {
+      var el = document.getElementById(id);
+      if (!el) return;
+      var safePct = Number(pct);
+      if (!isFinite(safePct) || safePct < 0) safePct = 0;
+      if (safePct > 100) safePct = 100;
+      el.style.width = safePct.toFixed(1).replace(/\.0$/, "") + "%";
+    }
+
+    var metrics = computeUnitMetrics();
+
+    setPerfValue("perf-total-value", String(metrics.totalProviders));
+    setPerfBar("perf-total-bar", metrics.totalProvidersPct);
+
+    setPerfValue("perf-active-month-value", String(metrics.activeThisMonth));
+    setPerfBar("perf-active-month-bar", metrics.activeThisMonthPct);
+
+    setPerfValue("perf-rating-value", metrics.avgRating.toFixed(1));
+    setPerfBar("perf-rating-bar", metrics.avgRatingPct);
+
+    setPerfValue(
+      "perf-completion-value",
+      Math.round(metrics.completionRate).toString() + "%",
+    );
+    setPerfBar("perf-completion-bar", metrics.completionRate);
   }
 
   function renderActivities() {
@@ -499,9 +573,10 @@
         return u.unit_id === session.unitId;
       }) || null;
 
-    ensurePrefs();
     populateFields();
+    renderHeroCardStats();
+    renderPerformanceSummary();
     renderActivities();
-    wirePasswordBtn();
+    renderActivities();
   });
 })();

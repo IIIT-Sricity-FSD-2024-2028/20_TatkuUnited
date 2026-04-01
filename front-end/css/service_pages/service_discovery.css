@@ -307,26 +307,25 @@ button {
   margin-bottom: 24px;
 }
 
-.view-all-link {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--blue);
-  flex-shrink: 0;
-  margin-top: 4px;
-}
-.view-all-link:hover {
-  text-decoration: underline;
+/* ─── CATEGORIES ─────────────────────────── */
+.categories-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
 }
 
-/* ─── CATEGORIES ─────────────────────────── */
-.categories-row {
+.categories-row-group {
   display: flex;
+  flex-wrap: wrap;
   gap: 10px;
-  justify-content: space-between;
+  width: 100%;
+  justify-content: flex-start;
 }
 
 .category-pill {
   display: flex;
+  flex: 0 0 calc((100% - 50px) / 6);
   flex-direction: column;
   align-items: center;
   justify-content: center;
@@ -343,7 +342,7 @@ button {
   font-size: 12px;
   font-weight: 600;
   color: var(--text-muted);
-  width: 150px;
+  width: calc((100% - 50px) / 6);
   min-height: 100px;
   height: 100px;
 }

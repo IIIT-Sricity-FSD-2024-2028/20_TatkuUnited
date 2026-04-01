@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Profile – Collective Manager | Tatku United</title>
     <link rel="stylesheet" href="../../css/collective_manager/profile.css" />
+    <link rel="stylesheet" href="../../css/modules/global_search.css" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link
       href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
@@ -41,7 +42,7 @@
             <line x1="19" y1="8" x2="19" y2="14" />
             <line x1="22" y1="11" x2="16" y2="11" />
           </svg>
-          Admit Providers
+          Manage Service Providers
         </a>
         <a href="manage_units.html" class="nav-item">
           <svg viewBox="0 0 24 24">
@@ -281,18 +282,18 @@
         </div>
         <div class="modal-fields">
           <div class="form-field">
-            <label>Current Password</label><input type="password" placeholder="Enter current password" />
+            <label>Current Password</label><input type="password" id="pwd-current" placeholder="Enter current password" />
           </div>
           <div class="form-field">
-            <label>New Password</label><input type="password" placeholder="Min. 8 characters" />
+            <label>New Password</label><input type="password" id="pwd-new" placeholder="Min. 8 characters" />
           </div>
           <div class="form-field">
-            <label>Confirm New Password</label><input type="password" placeholder="Re-enter new password" />
+            <label>Confirm New Password</label><input type="password" id="pwd-confirm" placeholder="Re-enter new password" />
           </div>
         </div>
         <div class="modal-btns">
           <button class="modal-btn-cancel" onclick="closePwdModalBtn()">Cancel</button>
-          <button class="modal-btn-save" onclick="closePwdModalBtn(); showToast('Password updated successfully!')">Update Password</button>
+          <button class="modal-btn-save" onclick="handlePasswordChange()">Update Password</button>
         </div>
       </div>
     </div>
@@ -302,6 +303,7 @@
 
     <script src="../../js/data/store.js"></script>
     <script src="../../js/modules/auth.js"></script>
+    <script src="../../js/modules/global_search.js"></script>
     <script src="../../js/collective_manager/profile.js"></script>
   </body>
 </html>

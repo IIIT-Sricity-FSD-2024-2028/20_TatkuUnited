@@ -1,16 +1,45 @@
-function getCart() { try { return JSON.parse(localStorage.getItem('tu_cart') || '[]'); } catch { return []; } }
-function saveCart(c) { localStorage.setItem('tu_cart', JSON.stringify(c)); }
+function getCustomerSessionId() {
+  const session = Auth.getSession();
+  return session && session.role === "customer" ? session.id : null;
+}
+function getCart() {
+  const customerId = getCustomerSessionId();
+  if (!customerId || !window.CustomerState) return [];
+  return CustomerState.getCart(customerId);
+}
+function saveCart(c) {
+  const customerId = getCustomerSessionId();
+  if (!customerId || !window.CustomerState) return;
+  CustomerState.setCart(customerId, c);
+}
 function updateCartBadge() {
   const count = getCart().length;
-  document.querySelectorAll('.cart-count').forEach(el => { el.textContent = count; el.style.display = count > 0 ? 'grid' : 'none'; });
+  document.querySelectorAll(".cart-count").forEach((el) => {
+    el.textContent = count;
+    el.style.display = count > 0 ? "grid" : "none";
+  });
 }
-function parsePrice(p) { return parseInt((p || '0').replace(/[^\d]/g, '')) || 0; }
+function parsePrice(p) {
+  return parseInt((p || "0").replace(/[^\d]/g, "")) || 0;
+}
+
+function getBookingRules() {
+  if (!window.AppStore || typeof AppStore.getBookingRules !== "function") {
+    return {
+      instantBooking: true,
+      maxAdvanceDays: 7,
+      maxAdvanceLabel: "7 days",
+    };
+  }
+  return AppStore.getBookingRules();
+}
 
 function getDateConstraints() {
+  const rules = getBookingRules();
   const today = new Date();
   const maxDate = new Date();
-  maxDate.setDate(today.getDate() + 7);
-  const fmt = d => d.toISOString().split('T')[0];
+  maxDate.setDate(today.getDate() + rules.maxAdvanceDays);
+  const fmt = (d) => d.toISOString().split("T")[0];
   return { min: fmt(today), max: fmt(maxDate) };
 }
 
@@ -22,77 +51,112 @@ let editingItemId = null;
 function openEditModal(itemId) {
   editingItemId = itemId;
   const cart = getCart();
-  const item = cart.find(i => i.id === itemId);
+  const item = cart.find((i) => i.id === itemId);
   if (!item) return;
-  document.getElementById('modal-service-name').textContent = item.service;
-  // Pre-fill current values
-  const dateInput = document.getElementById('modal-date');
-  const timeSelect = document.getElementById('modal-time');
-  // Apply 1-week constraint
+  document.getElementById("modal-service-name").textContent = item.service;
+  const dateInput = document.getElementById("modal-date");
+  const timeSelect = document.getElementById("modal-time");
   const { min, max } = getDateConstraints();
   dateInput.min = min;
   dateInput.max = max;
-  if (item.date && item.date !== 'ASAP') {
-    dateInput.value = (item.date >= min && item.date <= max) ? item.date : '';
+  if (item.date && item.date !== "ASAP") {
+    dateInput.value = item.date >= min && item.date <= max ? item.date : "";
   } else {
-    dateInput.value = '';
+    dateInput.value = "";
   }
-  // Match time option
-  const opts = Array.from(timeSelect.options);
-  const match = opts.findIndex(o => o.value === item.time);
-  if (match >= 0) timeSelect.selectedIndex = match;
-  document.getElementById('edit-modal').classList.add('open');
-  document.body.style.overflow = 'hidden';
+  timeSelect.value = item.time && item.time !== "Immediate" ? item.time : "";
+  document.getElementById("edit-modal").classList.add("open");
+  document.body.style.overflow = "hidden";
 }
 function closeEditModalBtn() {
-  document.getElementById('edit-modal').classList.remove('open');
-  document.body.style.overflow = '';
+  document.getElementById("edit-modal").classList.remove("open");
+  document.body.style.overflow = "";
   editingItemId = null;
 }
-function closeEditModal(e) { if (e.target === document.getElementById('edit-modal')) closeEditModalBtn(); }
+function closeEditModal(e) {
+  if (e.target === document.getElementById("edit-modal")) closeEditModalBtn();
+}
 
 function saveScheduleEdit() {
   if (!editingItemId) return;
-  const newDate = document.getElementById('modal-date').value;
-  const { min, max } = getDateConstraints();
-  if (!newDate) { alert('Please select a date.'); return; }
-  if (newDate < min || newDate > max) { alert('Please select a date within 1 week from today.'); return; }
+  const newDate = document.getElementById("modal-date").value;
+  const newTime = document.getElementById("modal-time").value;
+
+  const validation =
+    window.AppStore && typeof AppStore.validateScheduledSlot === "function"
+      ? AppStore.validateScheduledSlot(newDate, newTime)
+      : { valid: !!newDate && !!newTime, error: "Please select date/time." };
+
+  if (!validation.valid) {
+    showToast(validation.error, "error");
+    return;
+  }
+
   const cart = getCart();
-  const item = cart.find(i => i.id === editingItemId);
+  const item = cart.find((i) => i.id === editingItemId);
   if (item) {
-    const newTime = document.getElementById('modal-time').value;
     item.date = newDate;
     item.time = newTime;
     saveCart(cart);
   }
   closeEditModalBtn();
   render();
+  showToast("Schedule updated successfully!", "success");
 }
 
 function removeItem(id) {
-  let cart = getCart().filter(i => i.id !== id);
+  let cart = getCart().filter((i) => i.id !== id);
   saveCart(cart);
   updateCartBadge();
   render();
+  showToast("Item removed from cart.", "info");
 }
 
 function render() {
   const cart = getCart();
   const isEmpty = cart.length === 0;
-  document.getElementById('cart-items').style.display = isEmpty ? 'none' : 'flex';
-  document.getElementById('cart-summary').style.display = isEmpty ? 'none' : 'block';
-  document.getElementById('empty-state').style.display = isEmpty ? 'flex' : 'none';
-  document.getElementById('cart-sub').textContent = isEmpty ? '' : `${cart.length} service${cart.length > 1 ? 's' : ''} in your cart`;
+  document.getElementById("cart-items").style.display = isEmpty
+    ? "none"
+    : "flex";
+  document.getElementById("cart-summary").style.display = isEmpty
+    ? "none"
+    : "block";
+  document.getElementById("empty-state").style.display = isEmpty
+    ? "flex"
+    : "none";
+  document.getElementById("cart-sub").textContent = isEmpty
+    ? ""
+    : `${cart.length} service${cart.length > 1 ? "s" : ""} in your cart`;
   if (isEmpty) return;
 
   const subtotal = cart.reduce((s, i) => s + parsePrice(i.price), 0);
   const tax = Math.round(subtotal * 0.18);
   const total = subtotal + tax;
 
-  document.getElementById('cart-items').innerHTML = cart.map((item, idx) => {
-    const isScheduled = item.mode === 'scheduled';
-    const displayDate = item.date && item.date !== 'ASAP' ? new Date(item.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : item.date;
-    return `
+  document.getElementById("cart-items").innerHTML = cart
+    .map((item, idx) => {
+      const isScheduled = item.mode === "scheduled";
+      const displayDate =
+        item.date && item.date !== "ASAP"
+          ? new Date(item.date).toLocaleDateString("en-IN", {
+              day: "numeric",
+              month: "short",
+              year: "numeric",
+            })
+          : item.date;
+
+      let displayTime = item.time;
+      if (displayTime && displayTime !== "Immediate") {
+        const [h, m] = displayTime.split(":");
+        if (h && m) {
+          const hNum = parseInt(h, 10);
+          const ampm = hNum >= 12 ? "PM" : "AM";
+          const h12 = hNum % 12 || 12;
+          displayTime = `${h12.toString().padStart(2, "0")}:${m} ${ampm}`;
+        }
+      }
+
+      return `
       <div class="cart-item" style="animation-delay:${idx * 0.07}s">
         <div class="cart-item-icon">${svcIcon}</div>
         <div class="cart-item-body">
@@ -104,21 +168,25 @@ function render() {
             </div>
             <div class="cart-item-meta-row">
               <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-              ${displayDate} · ${item.time}
+              ${displayDate} · ${displayTime}
             </div>
             <div class="cart-item-meta-row">
-              <span class="mode-tag ${isScheduled ? 'mode-scheduled' : 'mode-instant'}">${item.mode}</span>
+              <span class="mode-tag ${isScheduled ? "mode-scheduled" : "mode-instant"}">${item.mode}</span>
             </div>
           </div>
-          ${isScheduled ? `
+          ${
+            isScheduled
+              ? `
             <div class="edit-schedule-row">
               <button class="edit-schedule-btn" onclick="openEditModal(${item.id})">
                 <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                 Edit Schedule
               </button>
-              <span class="edit-schedule-hint">Change date or time slot</span>
+              <span class="edit-schedule-hint">Change date or time</span>
             </div>
-          ` : ''}
+          `
+              : ""
+          }
         </div>
         <div class="cart-item-right">
           <div class="cart-item-price">${item.price}</div>
@@ -129,22 +197,23 @@ function render() {
         </div>
       </div>
     `;
-  }).join('');
+    })
+    .join("");
 
-  document.getElementById('cart-summary').innerHTML = `
+  document.getElementById("cart-summary").innerHTML = `
     <div class="summary-title">Order Summary</div>
     <div class="summary-rows">
-      ${cart.map(i => `<div class="summary-row"><span class="summary-row-label">${i.service}</span><span class="summary-row-value">${i.price}</span></div>`).join('')}
+      ${cart.map((i) => `<div class="summary-row"><span class="summary-row-label">${i.service}</span><span class="summary-row-value">${i.price}</span></div>`).join("")}
     </div>
     <div class="summary-divider"></div>
     <div class="summary-rows">
-      <div class="summary-row"><span class="summary-row-label">Subtotal</span><span class="summary-row-value">₹${subtotal.toLocaleString('en-IN')}</span></div>
-      <div class="summary-row"><span class="summary-row-label">GST (18%)</span><span class="summary-row-value">₹${tax.toLocaleString('en-IN')}</span></div>
+      <div class="summary-row"><span class="summary-row-label">Subtotal</span><span class="summary-row-value">₹${subtotal.toLocaleString("en-IN")}</span></div>
+      <div class="summary-row"><span class="summary-row-label">GST (18%)</span><span class="summary-row-value">₹${tax.toLocaleString("en-IN")}</span></div>
     </div>
     <div class="summary-divider"></div>
     <div class="summary-total">
       <span class="summary-total-label">Total</span>
-      <span class="summary-total-value">₹${total.toLocaleString('en-IN')}</span>
+      <span class="summary-total-value">₹${total.toLocaleString("en-IN")}</span>
     </div>
     <div class="promo-field">
       <input type="text" class="promo-input" placeholder="Promo code" id="promo-input"/>
@@ -162,20 +231,28 @@ function render() {
 }
 
 function applyPromo() {
-  const code = document.getElementById('promo-input')?.value?.trim();
-  if (code) alert(`Promo "${code}" applied! (Demo)`);
+  const code = document.getElementById("promo-input")?.value?.trim();
+  if (code) showToast(`Promo "${code}" applied! (Demo)`, "success");
 }
 function confirmBooking() {
-  alert('Redirecting to payment gateway… (Payment page not yet implemented)');
+  const rules = getBookingRules();
+  const cart = getCart();
+
+  if (!rules.instantBooking && cart.some((i) => i.mode === "instant")) {
+    showToast(
+      "Instant bookings are disabled. Edit cart items to scheduled slots before checkout.",
+      "error",
+    );
+    return;
+  }
+
+  window.location.href = "payment_pages/checkout.html";
 }
 
-// Seed demo data on first open
-if (getCart().length === 0) {
-  saveCart([
-    { id: 1001, service: 'Home Deep Cleaning', price: '₹ 1200', location: '21/229, Indira Nagar, Lucknow', mode: 'instant', date: 'ASAP', time: 'Immediate' },
-    { id: 1002, service: 'AC Servicing', price: '₹ 800', location: '21/229, Indira Nagar, Lucknow', mode: 'scheduled', date: '2026-04-10', time: '10:00 AM – 12:00 PM' },
-  ]);
-}
+AppStore.ready.then(() => {
+  const session = Auth.requireSession(["customer"]);
+  if (!session) return;
 
-render();
-updateCartBadge();
+  render();
+  updateCartBadge();
+});

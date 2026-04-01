@@ -1,17 +1,11 @@
-const jobs = [
-  { id: 'JOB-2024-0042', service: 'Deep Home Cleaning', category: 'Cleaning', customer: 'Sambhav', address: '7274, Hausila Nagar, Maholi, Ayodhya', phone: '+91 7054120741', date: 'March 8, 2026', time: '10:00 AM – 1:00 PM', status: 'assigned', statusLabel: 'Assigned', description: 'Complete deep cleaning of a 3-bedroom apartment including kitchen, bathrooms, living room, and all bedrooms. Special attention to grout cleaning and window washing.' },
-  { id: 'JOB-2024-0041', service: 'AC Installation', category: 'HVAC', customer: 'Neha Kapoor', address: '17 Palm Residency, Koramangala, Bangalore', phone: '+91 9876543210', date: 'Apr 10, 2026', time: '11:30 AM – 2:00 PM', status: 'inprogress', statusLabel: 'In Progress', description: 'Install 1.5-ton split AC unit in the master bedroom. Customer has provided the unit. Ensure proper insulation and test run.' },
-  { id: 'JOB-2024-0040', service: 'Electrical Inspection', category: 'Electrical', customer: 'Priya Iyer', address: '49 Skyline Apartments, Whitefield, Bangalore', phone: '+91 9988776655', date: 'Apr 10, 2026', time: '05:00 PM – 6:30 PM', status: 'assigned', statusLabel: 'Assigned', description: 'Full electrical safety inspection for a 2BHK apartment. Check all wiring, sockets, and MCB panel.' },
-  { id: 'JOB-2024-0039', service: 'Water Heater Service', category: 'Plumbing', customer: 'Siddharth Rao', address: '8 Lotus Court, JP Nagar, Bangalore', phone: '+91 9112334455', date: 'Apr 11, 2026', time: '09:00 AM – 10:30 AM', status: 'pending', statusLabel: 'Pending Confirmation', description: 'Annual service for Racold 25L water heater. Check anode rod, heating element and thermostat.' },
-  { id: 'JOB-2024-0038', service: 'Plumbing Repair', category: 'Plumbing', customer: 'Aarav Sharma', address: '22 MG Road, Indiranagar, Bangalore', phone: '+91 9700011223', date: 'Apr 10, 2026', time: '08:00 AM – 9:30 AM', status: 'completed', statusLabel: 'Completed', description: 'Fix kitchen sink drainage and replace tap washer in bathroom.' },
-];
+let jobs = [];
 
-const statusMap = { inprogress: 'badge-inprogress', assigned: 'badge-assigned', pending: 'badge-pending', completed: 'badge-completed' };
+const statusMap = { inprogress: 'badge-inprogress', assigned: 'badge-assigned', pending: 'badge-pending', completed: 'badge-completed', cancelled: 'badge-pending' };
 let activeFilter = 'all';
 
 // Render filters
 function renderFilters() {
-  const filters = ['all', 'assigned', 'inprogress', 'pending', 'completed'];
+  const filters = ['all', 'assigned', 'inprogress', 'completed'];
   const labels = { all: 'All', assigned: 'Assigned', inprogress: 'In Progress', pending: 'Pending', completed: 'Completed' };
   document.getElementById('filter-row').innerHTML = filters.map(f => `
     <button class="filter-btn ${f === activeFilter ? 'active' : ''}" onclick="setFilter('${f}')">${labels[f]}</button>
@@ -24,16 +18,22 @@ function setFilter(f) {
   renderJobs();
 }
 
+function formatDateDisplay(dStr) {
+  if (!dStr) return '';
+  const d = new Date(dStr);
+  return isNaN(d) ? dStr : d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
 function renderJobs() {
   const list = document.getElementById('jobs-list');
   const filtered = activeFilter === 'all' ? jobs : jobs.filter(j => j.status === activeFilter);
   list.innerHTML = filtered.map((j, i) => `
-    <div class="job-row" style="animation-delay:${i*0.06}s" onclick="openDetail('${j.id}')">
+    <div class="job-row" style="animation-delay:${i * 0.06}s" onclick="openDetail('${j.id}')">
       <div class="job-meta">
         <div class="job-top">
           <span class="job-service">${j.service}</span>
           <span class="job-cat">${j.category}</span>
-          <span class="badge ${statusMap[j.status]}">${j.statusLabel}</span>
+          <span class="badge ${statusMap[j.status] || 'badge-pending'}">${j.statusLabel}</span>
         </div>
         <div class="job-details">
           <div class="jd-item">
@@ -46,7 +46,7 @@ function renderJobs() {
           </div>
           <div class="jd-item">
             <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
-            ${j.date}
+            ${formatDateDisplay(j.date)}
           </div>
           <div class="jd-item">
             <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
@@ -66,7 +66,7 @@ function openDetail(id) {
   if (!job) return;
   const steps = ['Assigned', 'In Progress', 'Completed'];
   const stepStatus = { assigned: 0, inprogress: 1, completed: 2 };
-  const current = stepStatus[job.status] ?? 0;
+  const current = stepStatus[job.status] ?? (job.status === 'pending' ? -1 : 0);
   document.getElementById('modal-content').innerHTML = `
     <div class="modal-job-title">${job.service}</div>
     <div class="modal-job-id">Job #${job.id}</div>
@@ -84,7 +84,7 @@ function openDetail(id) {
           </div>
         `).join('')}
       </div>
-      ${job.status !== 'completed' ? `
+      ${job.status !== 'completed' && job.status !== 'cancelled' ? `
         ${job.status === 'assigned' ? `<button class="modal-btn modal-btn-primary" onclick="updateStatus('${job.id}', 'inprogress')">Mark In Progress</button>` : ''}
         <button class="modal-btn modal-btn-success" onclick="updateStatus('${job.id}', 'completed')">Mark Completed</button>
       ` : ''}
@@ -110,8 +110,8 @@ function openDetail(id) {
     <div class="modal-section">
       <div class="modal-section-title">Schedule Details</div>
       <div class="modal-grid">
-        <div class="modal-field"><label>Scheduled Date</label><p>${job.date}</p></div>
-        <div class="modal-field"><label>Time Slot</label><p>${job.time}</p></div>
+        <div class="modal-field"><label>Scheduled Date</label><p>${formatDateDisplay(job.date)}</p></div>
+        <div class="modal-field"><label>Scheduled Time</label><p>${job.time}</p></div>
       </div>
     </div>
   `;
@@ -125,11 +125,68 @@ function closeModal(e) {
   if (e.target === document.getElementById('modal-overlay')) closeDetailModal();
 }
 function updateStatus(id, newStatus) {
-  const job = jobs.find(j => j.id === id);
-  if (job) { job.status = newStatus; job.statusLabel = { inprogress: 'In Progress', completed: 'Completed' }[newStatus]; }
+  const data = window.getData();
+  const job = data.jobs.find(j => j.id === id);
+  
+  if (job) {
+    // Validation: Do not allow future jobs to be marked as completed or in progress early
+    if (newStatus === 'completed' || newStatus === 'inprogress') {
+      try {
+        // Build an exact strict native Javascript Date object using ISO matching format String
+        // format: "YYYY-MM-DDTHH:MM:00" mapping against correct job.startTime
+        const isoString = `${job.date}T${job.startTime || job.time.split(' ')[0]}:00`;
+        const jobDateTime = new Date(isoString);
+        const currentRealTime = new Date();
+
+        // If parsed date valid, and it's strictly in the future timestamp
+        if (!isNaN(jobDateTime.getTime()) && jobDateTime > currentRealTime) {
+          alert(`Security Check: You cannot change the status to '${newStatus === 'completed' ? 'Completed' : 'In Progress'}' for a job scheduled in the future.\n\nCurrent Real Time: ${currentRealTime.toLocaleString()}\nAssigned Time: ${jobDateTime.toLocaleString()}`);
+          return;
+        }
+      } catch (e) {
+        console.warn("Time parsing error, skipping strict block", e);
+      }
+    }
+
+    job.status = newStatus;
+    job.statusLabel = { inprogress: 'In Progress', completed: 'Completed', assigned: 'Assigned', pending: 'Pending Confirmation' }[newStatus];
+
+    // Check for pending deactivation
+    if (newStatus === 'completed' && data.provider && data.provider.account_status === "pending_deactivation") {
+      const remainingUnfinished = data.jobs.filter((j) =>
+        j.id !== id && ["assigned", "inprogress", "pending"].includes(j.status),
+      );
+      if (remainingUnfinished.length === 0) {
+        data.provider.account_status = "inactive";
+        data.provider.is_active = false;
+        alert("Last job completed. Your account is now deactivated.");
+        setTimeout(() => {
+          window.location.href = "../auth_pages/logout.html";
+        }, 1500);
+      }
+    }
+  }
+  
+  window.setData(data); // Sync globally
+  jobs = data.jobs;     // Sync locally
   openDetail(id);
   renderJobs();
 }
 
-renderFilters();
-renderJobs();
+window.initData().then(() => {
+  const data = window.getData();
+  jobs = data.jobs;
+
+  // Use dynamic provider data from mockData.json
+  if (data.provider) {
+    document.querySelectorAll('.user-chip span').forEach(el => el.textContent = data.provider.name || 'Provider');
+    if (data.provider.pfp_url) {
+      document.querySelectorAll('.user-avatar').forEach(el => {
+        el.innerHTML = `<img src="${data.provider.pfp_url}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
+      });
+    }
+  }
+
+  renderFilters();
+  renderJobs();
+});

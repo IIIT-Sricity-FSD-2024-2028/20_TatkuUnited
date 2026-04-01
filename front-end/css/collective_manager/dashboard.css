@@ -180,11 +180,74 @@ body {
   padding: 28px 32px;
 }
 
-.page-title {
+.page-title { font-size: 24px; font-weight: 700; color: var(--text-primary); margin-bottom: 24px; }
+
+/* COLLECTIVE BANNER */
+.collective-banner {
+  background: white;
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--accent);
+  border-radius: var(--radius);
+  padding: 24px 28px;
+  margin-bottom: 24px;
+  box-shadow: var(--shadow);
+  display: none; /* Managed by JS */
+  animation: fadeUp .4s ease-out;
+}
+
+.banner-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.banner-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .12em;
+  color: var(--accent);
+  margin-bottom: 6px;
+  display: block;
+}
+
+.banner-title {
   font-size: 22px;
   font-weight: 700;
-  margin-bottom: 24px;
   color: var(--text-primary);
+  margin: 0;
+}
+
+.banner-meta-row {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.banner-status {
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  background: #f0fdf4;
+  color: #16a34a;
+}
+
+.banner-item {
+  color: var(--text-secondary);
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.banner-item strong {
+  color: var(--text-primary);
+  font-weight: 600;
 }
 
 /* STAT GRID */

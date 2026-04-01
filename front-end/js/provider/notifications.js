@@ -1,41 +1,6 @@
 const tabs = ['All', 'Jobs', 'Payments', 'Account'];
 let activeTab = 'All';
-
-const notifications = [
-  {
-    id: 1, type: 'job', category: 'Jobs', unread: true,
-    title: 'New Job Assigned', time: '2 hours ago',
-    desc: 'You have been assigned a new plumbing repair job at Sector 45. Scheduled for tomorrow, 10:00 AM.',
-    actions: [
-      { label: 'View Job Details', cls: 'btn-primary-action', href: 'assigned-jobs.html' },
-      { label: 'Dismiss', cls: 'btn-dismiss', action: 'dismiss' },
-    ]
-  },
-  {
-    id: 2, type: 'payment', category: 'Payments', unread: false,
-    title: 'Payment Received', time: '5 hours ago',
-    desc: 'Your payment of ₹4,500 for the "Electrical Maintenance - Villa 12" job has been successfully processed.',
-    actions: [
-      { label: 'View Earnings', cls: 'btn-outline-action', href: 'earnings.html' },
-    ]
-  },
-  {
-    id: 3, type: 'account', category: 'Account', unread: false,
-    title: 'Identity Verification Required', time: 'Yesterday',
-    desc: 'Your professional license is expiring in 5 days. Please upload the renewed document to avoid service interruption.',
-    actions: [
-      { label: 'Update Profile', cls: 'btn-orange-action', href: 'profile.html' },
-    ]
-  },
-  {
-    id: 4, type: 'completed', category: 'Jobs', unread: false,
-    title: 'Job Completed Successfully', time: '2 days ago',
-    desc: 'Job #ORD-9921 has been marked as completed. Customer feedback: "Excellent and fast service!".',
-    actions: [
-      { label: 'View Feedback', cls: 'btn-link-action', href: '#' },
-    ]
-  },
-];
+let notifications = [];
 
 const iconMap = {
   job: `<div class="notif-icon job"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></div>`,
@@ -49,12 +14,23 @@ function renderTabs() {
     <button class="notif-tab ${t === activeTab ? 'active' : ''}" onclick="setTab('${t}')">${t}</button>
   `).join('');
 }
+
 function setTab(t) { activeTab = t; renderTabs(); renderNotifs(); }
 
 function renderNotifs() {
   const filtered = activeTab === 'All' ? notifications : notifications.filter(n => n.category === activeTab);
+  
+  if (filtered.length === 0) {
+    document.getElementById('notif-list').innerHTML = `
+      <div style="text-align:center; padding: 40px; color: #94a3b8; font-size: 14px;">
+        <p>No notifications found in this category.</p>
+      </div>
+    `;
+    return;
+  }
+
   document.getElementById('notif-list').innerHTML = filtered.map((n, i) => `
-    <div class="notif-item ${n.unread ? 'unread' : ''} type-${n.type}" style="animation-delay:${i*0.07}s" id="notif-${n.id}">
+    <div class="notif-item ${n.unread ? 'unread' : ''} type-${n.type}" style="animation-delay:${i * 0.07}s" id="notif-${n.id}">
       ${iconMap[n.type]}
       <div class="notif-body">
         <div class="notif-row">
@@ -63,9 +39,9 @@ function renderNotifs() {
         </div>
         <p class="notif-desc">${n.desc}</p>
         <div class="notif-actions">
-          ${n.actions.map(a => `
+          ${n.actions && n.actions.length > 0 ? n.actions.map(a => `
             <button class="notif-action-btn ${a.cls}" onclick="${a.action === 'dismiss' ? `dismissNotif(${n.id})` : `window.location='${a.href}'`}">${a.label}</button>
-          `).join('')}
+          `).join('') : ''}
         </div>
       </div>
     </div>
@@ -74,18 +50,56 @@ function renderNotifs() {
 
 function dismissNotif(id) {
   const idx = notifications.findIndex(n => n.id === id);
-  if (idx > -1) notifications.splice(idx, 1);
-  renderNotifs();
+  if (idx > -1) {
+    notifications.splice(idx, 1);
+    saveNotifications();
+    renderNotifs();
+  }
 }
 
 function markAllRead() {
   notifications.forEach(n => n.unread = false);
+  saveNotifications();
   renderNotifs();
 }
 
-function loadMore() {
-  // No-op for demo
+function saveNotifications() {
+  if (window.getData && window.setData) {
+    const data = window.getData();
+    if (data) {
+      data.notifications = notifications;
+      window.setData(data);
+    }
+  }
 }
 
-renderTabs();
-renderNotifs();
+function loadMore() {
+  // Demo function placeholder
+}
+
+function init() {
+  if (window.initData) {
+    window.initData().then(() => {
+      const data = window.getData();
+      if (!data) return;
+
+      if (data.provider) {
+        document.querySelectorAll('.user-chip span').forEach(el => el.textContent = data.provider.name || 'Provider');
+        if (data.provider.pfp_url) {
+          document.querySelectorAll('.user-avatar').forEach(el => {
+            el.innerHTML = `<img src="${data.provider.pfp_url}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
+          });
+        }
+      }
+
+      notifications = data.notifications || [];
+      renderTabs();
+      renderNotifs();
+    });
+  } else {
+    renderTabs();
+    renderNotifs();
+  }
+}
+
+init();

@@ -217,6 +217,12 @@ body {
   text-decoration: underline;
 }
 
+.register-link--disabled {
+  color: #9ca3af;
+  pointer-events: none;
+  text-decoration: none;
+}
+
 /* ── Demo section ── */
 .demo-toggle-input {
   position: absolute;
@@ -237,7 +243,9 @@ body {
   font-weight: 700;
   cursor: pointer;
   user-select: none;
-  transition: background 0.2s, transform 0.1s;
+  transition:
+    background 0.2s,
+    transform 0.1s;
 }
 
 .demo-toggle-btn:hover {
@@ -257,7 +265,9 @@ body {
   max-height: 0;
   overflow: hidden;
   opacity: 0;
-  transition: max-height 0.35s ease, opacity 0.25s ease;
+  transition:
+    max-height 0.35s ease,
+    opacity 0.25s ease;
   margin-top: 0;
   padding-top: 0;
   border-top: none;
@@ -279,6 +289,17 @@ body {
   font-weight: 600;
   margin-bottom: 0.9rem;
   text-align: center;
+}
+
+.platform-warning {
+  margin-bottom: 0.75rem;
+  border: 1px solid #f59e0b;
+  background: #fffbeb;
+  color: #92400e;
+  border-radius: 0.55rem;
+  padding: 0.55rem 0.7rem;
+  font-size: 0.8rem;
+  line-height: 1.35;
 }
 
 /* ── Demo grid ── */
@@ -330,6 +351,20 @@ body {
 
 .demo-tile:active {
   transform: translateY(0);
+}
+
+.demo-tile--disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  filter: grayscale(0.25);
+  transform: none;
+  box-shadow: none;
+}
+
+.demo-tile--disabled:hover {
+  transform: none;
+  box-shadow: none;
+  background: #f9fafb;
 }
 
 /* ── Role accent colours (left border) ── */

@@ -78,12 +78,8 @@
     <!-- POPULAR CATEGORIES -->
     <section class="section">
       <div class="container">
-        <h2 class="section-heading">Popular Categories</h2>
-        <div class="categories-row" id="categoriesRow">
-          <button class="category-pill active" data-cat="all">
-            <span>All</span>
-          </button>
-        </div>
+        <h2 class="section-heading">Explore Categories</h2>
+        <div class="categories-stack" id="categoriesRow"></div>
       </div>
     </section>
 
@@ -92,10 +88,9 @@
       <div class="container">
         <div class="section-header">
           <div>
-            <h2 class="section-heading no-gap">Recommended for you</h2>
+            <h2 class="section-heading no-gap">Explore Services</h2>
             <p class="section-sub">Top rated services in your area</p>
           </div>
-          <a href="#" class="view-all-link">View all</a>
         </div>
 
         <div class="services-grid" id="servicesGrid"></div>
@@ -190,7 +185,9 @@
           <div class="footer-col">
             <h4>COMPANY</h4>
             <ul>
-              <li><a href="../legal/terms-of-service.html">Terms of Service</a></li>
+              <li>
+                <a href="../legal/terms-of-service.html">Terms of Service</a>
+              </li>
               <li><a href="../legal/privacy-policy.html">Privacy Policy</a></li>
             </ul>
           </div>
@@ -246,6 +243,8 @@
       </div>
     </footer>
 
+    <script src="../../js/data/store.js"></script>
+    <script src="../../js/modules/auth.js"></script>
     <script src="../../js/service_pages/service_discovery.js"></script>
   </body>
 </html>

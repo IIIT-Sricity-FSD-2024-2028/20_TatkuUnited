@@ -237,7 +237,7 @@
         underAllocatedSkills +
         " skill(s) are under-allocated in your current unit roster.",
       time: "recently",
-      actions: ["View Skills"],
+      actions: ["View Providers"],
       icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>',
     });
 
@@ -415,8 +415,8 @@
         window.dismissNotif(id);
         break;
 
-      case "View Skills":
-        window.location.href = "skills.html";
+      case "View Providers":
+        window.location.href = "providers.html";
         break;
 
       case "View Report":

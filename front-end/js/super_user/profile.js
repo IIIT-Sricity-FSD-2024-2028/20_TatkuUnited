@@ -1,123 +1,225 @@
-// ── Super User Profile JS ──
+/* profile.js */
+// Depends on: store.js → auth.js (loaded before this script)
 
-const sysStats = [
-  { label: 'System Status', sub: 'All services operational', value: 'Online', valueColor: 'green', icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>`, iconColor: 'green' },
-  { label: 'Active Sessions', sub: 'Platform-wide right now', value: '184', valueColor: 'blue', icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="10" r="3"/><path d="M7 20.662V19a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v1.662"/></svg>`, iconColor: 'blue' },
-  { label: 'Open Complaints', sub: 'Awaiting resolution', value: '4', valueColor: 'orange', icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>`, iconColor: 'orange' },
-  { label: 'Platform Uptime', sub: 'Last 30 days', value: '99.8%', valueColor: 'green', icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>`, iconColor: 'teal' },
-];
+AppStore.ready.then(() => {
+  /* ── 1. Auth gate ── */
+  const session = Auth.requireSession(["super_user"]);
+  if (!session) return;
 
-const permissions = [
-  { name: 'Full User Management', desc: 'Create, suspend, delete any account', cls: '' },
-  { name: 'Platform Configuration', desc: 'Modify all system settings', cls: '' },
-  { name: 'Financial Controls', desc: 'Access revenue, payout & billing data', cls: '' },
-  { name: 'Security Administration', desc: 'Manage roles, sessions & 2FA enforcement', cls: '' },
-  { name: 'Audit Log Access', desc: 'View complete system event history', cls: '' },
-  { name: 'Emergency Overrides', desc: 'Force-terminate jobs and escalate issues', cls: 'yellow' },
-];
+  /* ── 2. Pull tables ── */
+  const allBookings = AppStore.getTable("bookings") || [];
+  const allTransactions = AppStore.getTable("transactions") || [];
+  const allSuperUsers = AppStore.getTable("super_users") || [];
+  const currentUser = Auth.getCurrentUser();
 
-const activities = [
-  { title: 'User suspended', desc: 'Account ID #4192 suspended for policy violation', time: '10 minutes ago', color: 'red' },
-  { title: 'Platform settings updated', desc: 'Service fee adjusted from 12% to 14%', time: '1 hour ago', color: 'yellow' },
-  { title: 'Provider verification approved', desc: '6 new providers verified and activated', time: '3 hours ago', color: 'green' },
-  { title: 'System alert dismissed', desc: 'Service assignment failure for #A-421 resolved', time: '5 hours ago', color: 'blue' },
-  { title: 'New collective created', desc: 'East Zone Collective added to the platform', time: '1 day ago', color: 'blue' },
-];
 
-function renderSysStats() {
-  const el = document.getElementById('sys-stats');
-  if (!el) return;
-  el.innerHTML = sysStats.map(s => `
-    <div class="sys-stat">
-      <div class="sys-stat-left">
-        <div class="sys-stat-icon ${s.iconColor}">${s.icon}</div>
+
+  const permissions = [
+    {
+      name: "Full User Management",
+      desc: "Create, suspend, delete any account",
+      cls: "",
+    },
+    {
+      name: "Platform Configuration",
+      desc: "Modify all system settings",
+      cls: "",
+    },
+    {
+      name: "Financial Controls",
+      desc: "Access revenue, payout & billing data",
+      cls: "",
+    },
+    {
+      name: "Security Administration",
+      desc: "Manage roles, sessions & 2FA enforcement",
+      cls: "",
+    },
+    {
+      name: "Audit Log Access",
+      desc: "View complete system event history",
+      cls: "",
+    },
+    {
+      name: "Emergency Overrides",
+      desc: "Force-terminate jobs and escalate issues",
+      cls: "yellow",
+    },
+  ];
+
+
+
+  /* ── 5. Render functions ── */
+  function renderPermissions() {
+    const el = document.getElementById("perm-list");
+    if (!el) return;
+    el.innerHTML = permissions
+      .map(
+        (p) => `
+      <div class="perm-item ${p.cls}">
+        <div class="perm-check">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="20 6 9 17 4 12" />
+          </svg>
+        </div>
         <div>
-          <div class="sys-stat-label">${s.label}</div>
-          <div class="sys-stat-sub">${s.sub}</div>
+          <div class="perm-name">${p.name}</div>
+          <div class="perm-desc">${p.desc}</div>
         </div>
       </div>
-      <div class="sys-stat-value ${s.valueColor}">${s.value}</div>
-    </div>
-  `).join('');
-}
-
-function renderPermissions() {
-  const el = document.getElementById('perm-list');
-  if (!el) return;
-  el.innerHTML = permissions.map(p => `
-    <div class="perm-item ${p.cls}">
-      <div class="perm-check">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-          <polyline points="20 6 9 17 4 12" />
-        </svg>
-      </div>
-      <div>
-        <div class="perm-name">${p.name}</div>
-        <div class="perm-desc">${p.desc}</div>
-      </div>
-    </div>
-  `).join('');
-}
-
-function renderActivities() {
-  const el = document.getElementById('activity-list');
-  if (!el) return;
-  el.innerHTML = activities.map(a => `
-    <div class="act-item">
-      <div class="act-dot ${a.color}"></div>
-      <div class="act-body">
-        <div class="act-title">${a.title}</div>
-        <div class="act-desc">${a.desc}</div>
-        <div class="act-time">${a.time}</div>
-      </div>
-    </div>
-  `).join('');
-}
-
-function syncName() {
-  const v = document.getElementById('full-name').value.trim();
-  document.getElementById('hero-name').textContent = v || 'Super User';
-  document.getElementById('topbar-name').textContent = v || 'Super User';
-}
-
-function syncEmail() {
-  const v = document.getElementById('email').value.trim();
-  document.getElementById('hero-email').textContent = v || 'super_user@tatku.com';
-}
-
-function saveSection(section) {
-  showToast('Super User profile saved successfully!');
-}
-
-function openPwdModal() { document.getElementById('pwd-modal').classList.add('open'); }
-function closePwdModal(e) { if (e.target === document.getElementById('pwd-modal')) closePwdModalBtn(); }
-function closePwdModalBtn() { document.getElementById('pwd-modal').classList.remove('open'); }
-
-function updateAvatar(input) {
-  if (!input.files || !input.files[0]) return;
-  const reader = new FileReader();
-  reader.onload = e => {
-    const av = document.getElementById('profile-avatar');
-    av.innerHTML = `<img src="${e.target.result}" alt="Super User" />`;
-  };
-  reader.readAsDataURL(input.files[0]);
-}
-
-let toastTimer;
-function showToast(msg) {
-  const toast = document.getElementById('toast');
-  toast.textContent = msg;
-  toast.classList.add('show');
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => toast.classList.remove('show'), 3000);
-}
+    `,
+      )
+      .join("");
+  }
 
 
 
-document.addEventListener('DOMContentLoaded', () => {
-  renderSysStats();
-  renderPermissions();
-  renderActivities();
+  function syncName() {
+    const v = document.getElementById("full-name")?.value.trim();
+    const heroName = document.getElementById("hero-name");
+    const topbarName = document.getElementById("topbar-name");
+    if (heroName) heroName.textContent = v || "Super User";
+    if (topbarName) topbarName.textContent = v || "Super User";
+  }
+
+  function syncEmail() {
+    const v = document.getElementById("email")?.value.trim();
+    const heroEmail = document.getElementById("hero-email");
+    if (heroEmail) heroEmail.textContent = v || "super_user@tatku.com";
+  }
+
+  function saveSection(section) {
+    showToast("Super User profile saved successfully!");
+  }
+
+  function openPwdModal() {
+    const pwdModal = document.getElementById("pwd-modal");
+    if (pwdModal) pwdModal.classList.add("open");
+  }
+
+  function closePwdModal(e) {
+    if (e.target === document.getElementById("pwd-modal")) closePwdModalBtn();
+  }
+
+  function closePwdModalBtn() {
+    const pwdModal = document.getElementById("pwd-modal");
+    if (pwdModal) pwdModal.classList.remove("open");
+    // Clear fields
+    const fields = ["pwd-current", "pwd-new", "pwd-confirm"];
+    fields.forEach((id) => {
+      const el = document.getElementById(id);
+      if (el) el.value = "";
+    });
+  }
+
+  function handlePasswordChange() {
+    const currentPwd = document.getElementById("pwd-current")?.value;
+    const newPwd = document.getElementById("pwd-new")?.value;
+    const confirmPwd = document.getElementById("pwd-confirm")?.value;
+
+    if (!currentPwd || !newPwd || !confirmPwd) {
+      showToast("Please fill in all password fields.");
+      return;
+    }
+
+    if (newPwd !== confirmPwd) {
+      showToast("New passwords do not match.");
+      return;
+    }
+
+    if (newPwd.length < 12) {
+      showToast("New password must be at least 12 characters.");
+      return;
+    }
+
+    const res = Auth.changePassword(currentPwd, newPwd);
+    if (res.success) {
+      showToast("Password updated successfully!");
+      closePwdModalBtn();
+    } else {
+      const errorMap = {
+        invalid_current_password: "Current password is incorrect.",
+        not_logged_in: "Session expired. Please log in again.",
+      };
+      showToast(errorMap[res.error] || "Failed to update password.");
+    }
+  }
+
+  // Export to window for HTML onclick handlers
+  window.openPwdModal = openPwdModal;
+  window.closePwdModal = closePwdModal;
+  window.closePwdModalBtn = closePwdModalBtn;
+  window.handlePasswordChange = handlePasswordChange;
+
+  function updateAvatar(input) {
+    if (!input.files || !input.files[0]) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const av = document.getElementById("profile-avatar");
+      if (av)
+        av.innerHTML = `<img src="${e.target.result}" alt="Super User" />`;
+    };
+    reader.readAsDataURL(input.files[0]);
+  }
+
+  let toastTimer;
+  function showToast(msg) {
+    const toast = document.getElementById("toast");
+    if (toast) {
+      toast.textContent = msg;
+      toast.classList.add("show");
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => toast.classList.remove("show"), 3000);
+    }
+  }
+
+  /* ── Event Listeners ── */
+  const fullNameInput = document.getElementById("full-name");
+  const emailInput = document.getElementById("email");
+
+  if (fullNameInput) fullNameInput.addEventListener("input", syncName);
+  if (emailInput) emailInput.addEventListener("input", syncEmail);
+
+  /* ── Initialize on DOM ready ── */
+  function init() {
+    if (currentUser) {
+      const nameEl = document.getElementById("full-name");
+      const emailEl = document.getElementById("email");
+      const phoneEl = document.getElementById("phone");
+      const idEl = document.getElementById("super-user-id");
+      
+      if(nameEl) nameEl.value = currentUser.name || '';
+      if(emailEl) emailEl.value = currentUser.email || '';
+      if(phoneEl) phoneEl.value = currentUser.phone ? currentUser.phone.replace('+91', '') : '';
+      if(idEl) idEl.value = currentUser.id || 'ADM-001';
+      
+      const avatarEl = document.getElementById("profile-avatar");
+      if(avatarEl && currentUser.pfp_url) {
+        avatarEl.innerHTML = `<img src="${currentUser.pfp_url}" alt="Super User" style="border-radius:50%;width:100%;height:100%;object-fit:cover;" />`;
+      }
+      syncName();
+      syncEmail();
+    }
+    
+    // Populate Hero Stats dynamically
+    const collectivesCount = (AppStore.getTable("collectives") || []).length;
+    const unitsCount = (AppStore.getTable("units") || []).filter(u => u.is_active).length;
+    const totalUsers = (window.AuthRegistry || []).length;
+    
+    const collEl = document.getElementById("hero-collectives");
+    const unitsEl = document.getElementById("hero-units");
+    const usersEl = document.getElementById("hero-users");
+    
+    if(collEl) collEl.textContent = collectivesCount;
+    if(unitsEl) unitsEl.textContent = unitsCount;
+    if(usersEl) usersEl.textContent = totalUsers;
+
+    renderPermissions();
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", init);
+  } else {
+    init();
+  }
 });
-
-

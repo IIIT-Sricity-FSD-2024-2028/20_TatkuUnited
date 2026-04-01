@@ -1,12 +1,13 @@
 // ── Collective Manager – Manage Units JS ──
-// Depends on: store.js → auth.js (loaded before this script)
 
-/* Global unit array used by filters/modal */
 let units = [];
-let currentSession = null; // Store session globally
+let currentSession = null;
 
-/* ── Category CSS class map ── */
-const catClass = {};
+const catClass = {
+  'Plumbing': 'cat-plumbing',
+  'Electrical': 'cat-electrical',
+  'Cleaning': 'cat-cleaning'
+};
 
 /* ── Render table from data ── */
 function renderTable(data) {
@@ -20,14 +21,15 @@ function renderTable(data) {
 
   data.forEach(u => {
     const tr = document.createElement('tr');
+    tr.dataset.id = u.id; // Store ID for row click
     const ratingDisplay = u.rating ? u.rating.toFixed(1) : 'N/A';
-    const catKey = (u.category || '').replace(/\s+/g, '_').toLowerCase();
+    
     tr.innerHTML = `
       <td>
         <div class="unit-name">${u.name}</div>
         <div class="unit-manager">${u.manager}</div>
       </td>
-      <td><span class="cat-badge ${catClass[u.category] || ''}">${u.category}</span></td>
+      <td><span class="cat-badge">${u.category}</span></td>
       <td><span class="rating"><span class="star">★</span>${ratingDisplay}</span></td>
       <td>${u.providers}</td>
       <td>${u.completed.toLocaleString()}</td>
@@ -35,49 +37,38 @@ function renderTable(data) {
       <td><span class="${u.status === 'Active' ? 'status-active' : 'status-suspended'}">${u.status}</span></td>
       <td>
         <div class="tbl-actions">
-          <button class="tbl-icon-btn btn-view" data-id="${u.id}" title="View Manager Details">
+          <button class="tbl-icon-btn btn-view-det" data-id="${u.id}" title="View Details">
             <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
           </button>
           <button class="tbl-icon-btn btn-edit" data-id="${u.id}" title="Edit">
             <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
           </button>
-          <button class="tbl-icon-btn btn-suspend" data-id="${u.id}" title="${u.status === 'Active' ? 'Suspend' : 'Reactivate'}">
-            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
-          </button>
         </div>
       </td>
     `;
+
+    // Row click for Dashboard
+    tr.addEventListener('click', (e) => {
+      if (e.target.closest('.tbl-actions')) return; // Ignore if clicking action buttons
+      openUnitDetails(u.id);
+    });
+
     tbody.appendChild(tr);
   });
 
-  document.querySelectorAll('.btn-view').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const unit = units.find(u => u.id === btn.dataset.id);
-      if (unit) openViewModal(unit);
+  // Action button listeners
+  document.querySelectorAll('.btn-view-det').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      openUnitDetails(btn.dataset.id);
     });
   });
 
   document.querySelectorAll('.btn-edit').forEach(btn => {
-    btn.addEventListener('click', () => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
       const unit = units.find(u => u.id === btn.dataset.id);
-      if (unit) openModal(unit);
-    });
-  });
-
-  document.querySelectorAll('.btn-suspend').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const unit = units.find(u => u.id === btn.dataset.id);
-      if (unit) {
-        // Update the actual AppStore data
-        const appStoreUnit = AppStore.getTable('units').find(u => u.unit_id === unit.id);
-        if (appStoreUnit) {
-          appStoreUnit.is_active = !appStoreUnit.is_active;
-          AppStore.save();
-        }
-        unit.status = unit.status === 'Active' ? 'Suspended' : 'Active';
-        applyFilters();
-        showToast(unit.status === 'Active' ? `✓ ${unit.name} reactivated` : `⚠ ${unit.name} suspended`);
-      }
+      if (unit) openEditModal(unit);
     });
   });
 }
@@ -96,175 +87,106 @@ function applyFilters() {
 document.getElementById('unitSearch').addEventListener('input', applyFilters);
 document.getElementById('statusFilter').addEventListener('change', applyFilters);
 
-/* ── Modal ── */
+/* ── Unit Detailed Dashboard ── */
+function openUnitDetails(unitId) {
+  const allUnits = AppStore.getTable('units') || [];
+  const unit = allUnits.find(u => u.unit_id === unitId);
+  if (!unit) return;
+
+  const allManagers = AppStore.getTable('unit_managers') || [];
+  const manager = allManagers.find(m => m.unit_id === unitId);
+
+  const allProviders = AppStore.getTable('service_providers') || [];
+  const unitProviders = allProviders.filter(p => p.unit_id === unitId);
+
+  // Populate Dashboard
+  document.getElementById('det-unit-name').textContent = unit.unit_name;
+  document.getElementById('det-unit-cat').textContent = unit.category || 'Service Unit';
+  document.getElementById('det-unit-rating').textContent = (unit.rating ? unit.rating.toFixed(1) : 'N/A') + ' ★';
+  
+  // Stats
+  const completedJobs = AppStore.getTable('job_assignments').filter(ja => {
+     const p = allProviders.find(prov => prov.service_provider_id === ja.service_provider_id);
+     return p && p.unit_id === unitId && ja.status === 'COMPLETED';
+  }).length;
+  document.getElementById('det-unit-done').textContent = completedJobs;
+
+  // Manager Card
+  const mgrName = document.getElementById('det-mgr-name');
+  const mgrIcon = document.getElementById('det-mgr-icon');
+  const mgrStatus = document.getElementById('det-mgr-status');
+  const mgrContact = document.getElementById('det-mgr-contact');
+
+  if (manager) {
+    mgrName.textContent = manager.name;
+    mgrIcon.textContent = manager.name.split(' ').map(n => n[0]).join('').toUpperCase();
+    mgrStatus.textContent = manager.is_active ? 'Active' : 'Inactive';
+    mgrStatus.style.color = manager.is_active ? '#16a34a' : '#dc2626';
+    mgrContact.textContent = manager.email || 'No email';
+    
+    // Click manager to see their details (reusing existing view logic if needed, or just staying here)
+    document.getElementById('det-manager-card').onclick = () => {
+       // Optionally open a manager-specific modal or just show toast
+       showToast(`Viewing details for Manager: ${manager.name}`);
+    };
+  } else {
+    mgrName.textContent = 'Unassigned';
+    mgrIcon.textContent = '?';
+    mgrStatus.textContent = 'N/A';
+    mgrContact.textContent = '—';
+  }
+
+  // Roster rendering
+  const rosterBody = document.getElementById('det-roster-body');
+  rosterBody.innerHTML = '';
+  if (unitProviders.length === 0) {
+    rosterBody.innerHTML = '<tr><td colspan="3" style="text-align:center;padding:24px;color:#9ca3af;">No providers assigned to this unit.</td></tr>';
+  } else {
+    unitProviders.forEach(p => {
+      const tr = document.createElement('tr');
+      const r = p.rating ? p.rating.toFixed(1) : 'N/A';
+      tr.innerHTML = `
+        <td class="p-roster-name">${p.name}</td>
+        <td><span class="rating"><span class="star">★</span>${r}</span></td>
+        <td><span class="status-active" style="background:${p.is_active ? '#f0fdf4':'#fef2f2'}; color:${p.is_active ? '#16a34a':'#dc2626'};">${p.is_active ? 'Active' : 'Inactive'}</span></td>
+      `;
+      tr.onclick = () => {
+         window.location.href = `provider_profile.html?id=${p.service_provider_id}`;
+      };
+      rosterBody.appendChild(tr);
+    });
+  }
+
+  document.getElementById('unitDetailOverlay').classList.add('open');
+}
+
+function closeUnitDetails() {
+  document.getElementById('unitDetailOverlay').classList.remove('open');
+}
+
+document.getElementById('det-modal-close').onclick = closeUnitDetails;
+document.getElementById('unitDetailOverlay').onclick = (e) => {
+  if (e.target === e.currentTarget) closeUnitDetails();
+};
+
+/* ── Edit/Create Modal ── */
 let editingId = null;
-function openModal(unit) {
+function openEditModal(unit) {
   editingId = unit ? unit.id : null;
   document.getElementById('modalTitle').textContent = unit ? 'Edit Unit' : 'Create New Unit';
-  document.getElementById('unitName').value     = unit ? unit.name     : '';
-  document.getElementById('unitManager').value  = unit ? unit.manager  : '';
-
-  // Dynamically populate category dropdown from AppStore
-  const categorySelect = document.getElementById('unitCategory');
-  categorySelect.innerHTML = '';
-  const allCategories = AppStore.getTable('categories') || [];
-  allCategories.forEach(function(c) {
-      const opt = document.createElement('option');
-      opt.value = c.category_name;
-      opt.textContent = c.category_name;
-      categorySelect.appendChild(opt);
-  });
-  
-  // Set category value after options are built
-  const defaultCat = allCategories.length > 0 ? allCategories[0].category_name : 'Plumbing';
-  categorySelect.value = unit ? unit.category : defaultCat;
-
-  const managerField = document.getElementById('unitManager');
-  managerField.disabled = false;
-  managerField.style.opacity = '1';
-
-  // Populate datalist for Unassigned Managers
-  let datalist = document.getElementById('unassignedManagersList');
-  if (!datalist) {
-      datalist = document.createElement('datalist');
-      datalist.id = 'unassignedManagersList';
-      managerField.setAttribute('list', 'unassignedManagersList');
-      managerField.parentNode.appendChild(datalist);
-  }
-  datalist.innerHTML = '';
-  const allManagers = AppStore.getTable('unit_managers') || [];
-  const available = allManagers.filter(function(m) {
-      return !m.unit_id || m.unit_id === editingId;
-  });
-  available.forEach(function(m) {
-      const opt = document.createElement('option');
-      opt.value = m.name;
-      datalist.appendChild(opt);
-  });
-
+  document.getElementById('unitName').value = unit ? unit.name : '';
+  document.getElementById('unitManager').value = unit ? unit.manager : '';
+  document.getElementById('unitCategory').value = unit ? unit.category : 'Plumbing';
   document.getElementById('btnSave').textContent = unit ? 'Save Changes' : 'Create Unit';
   document.getElementById('modalOverlay').classList.add('open');
 }
+
 function closeModal() { document.getElementById('modalOverlay').classList.remove('open'); }
+document.getElementById('btnCreateUnit').onclick = () => openEditModal(null);
+document.getElementById('modalClose').onclick = closeModal;
+document.getElementById('btnCancel').onclick = closeModal;
 
-document.getElementById('btnCreateUnit').addEventListener('click', () => openModal(null));
-document.getElementById('modalClose').addEventListener('click', closeModal);
-document.getElementById('btnCancel').addEventListener('click', closeModal);
-document.getElementById('modalOverlay').addEventListener('click', e => {
-  if (e.target === e.currentTarget) closeModal();
-});
-
-document.getElementById('btnSave').addEventListener('click', () => {
-  const name = document.getElementById('unitName').value.trim();
-  const mgr  = document.getElementById('unitManager').value.trim();
-  const cat  = document.getElementById('unitCategory').value;
-  if (!name) { showToast('⚠ Please enter a unit name'); return; }
-  if (!editingId && !mgr) { showToast('⚠ Please enter a manager name'); return; }
-
-  const allManagers = AppStore.getTable('unit_managers');
-
-  // Check if manager exists and is available
-  const existingManager = allManagers.find(m => m.name.toLowerCase() === mgr.toLowerCase());
-  if (!existingManager) {
-      showToast(`⚠ Unit Manager "${mgr}" does not exist`);
-      return;
-  }
-  if (existingManager.unit_id && existingManager.unit_id !== editingId) {
-      showToast(`⚠ ${existingManager.name} already manages another unit`);
-      return;
-  }
-
-  if (editingId) {
-    // Update existing unit
-    const appStoreUnit = AppStore.getTable('units').find(u => u.unit_id === editingId);
-    if (appStoreUnit) {
-      appStoreUnit.unit_name = name;
-      appStoreUnit.category = cat;
-
-      // Update manager
-      const oldManager = allManagers.find(m => m.unit_id === editingId);
-      if (oldManager && oldManager.name.toLowerCase() !== existingManager.name.toLowerCase()) {
-          oldManager.unit_id = null; // Detach old
-      }
-
-      existingManager.unit_id = editingId;
-
-      AppStore.save();
-      showToast(`✓ ${name} updated`);
-    }
-  } else {
-    // Create new unit
-    const newUnitId = AppStore.nextId('UNT');
-    const newUnit = {
-      unit_id: newUnitId,
-      unit_name: name,
-      category: cat,
-      rating: null,
-      rating_count: 0,
-      is_active: true,
-      created_at: new Date().toISOString(),
-      collective_id: currentSession.collectiveId
-    };
-
-    // Assign existing manager
-    existingManager.unit_id = newUnitId;
-
-    AppStore.getTable('units').push(newUnit);
-    AppStore.save();
-    showToast(`✓ ${name} created`);
-  }
-
-  closeModal();
-  // Re-initialize to refresh data
-  location.reload();
-});
-
-/* ── View Manager Modal ── */
-function openViewModal(unit) {
-  const allManagers = AppStore.getTable('unit_managers') || [];
-  const manager = allManagers.find(m => m.unit_id === unit.id);
-
-  if (!manager) {
-    showToast('⚠ No manager explicitly assigned to this unit');
-    return;
-  }
-
-  const pfp = document.getElementById('viewManagerPfp');
-  if (manager.pfp_url) {
-    pfp.src = manager.pfp_url;
-    pfp.style.display = 'block';
-  } else {
-    pfp.style.display = 'none';
-  }
-
-  document.getElementById('viewManagerName').textContent = manager.name || 'Unknown';
-  
-  const statusEl = document.getElementById('viewManagerStatus');
-  statusEl.textContent = manager.is_active ? 'Active' : 'Inactive';
-  statusEl.style.color = manager.is_active ? '#059669' : '#dc2626';
-
-  document.getElementById('viewManagerEmail').textContent = manager.email || '—';
-  document.getElementById('viewManagerPhone').textContent = manager.phone || '—';
-  
-  let joinedDt = '—';
-  if (manager.created_at) {
-    joinedDt = new Date(manager.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
-  }
-  document.getElementById('viewManagerJoined').textContent = joinedDt;
-
-  document.getElementById('viewModalOverlay').classList.add('open');
-}
-
-function closeViewModal() {
-  document.getElementById('viewModalOverlay').classList.remove('open');
-}
-
-document.getElementById('viewModalClose').addEventListener('click', closeViewModal);
-document.getElementById('btnViewClose').addEventListener('click', closeViewModal);
-document.getElementById('viewModalOverlay').addEventListener('click', e => {
-  if (e.target === e.currentTarget) closeViewModal();
-});
-
+/* ── Toast and Summary ── */
 function showToast(msg) {
   const t = document.getElementById('toast');
   t.textContent = msg;
@@ -272,109 +194,58 @@ function showToast(msg) {
   setTimeout(() => t.classList.remove('show'), 3000);
 }
 
-/* ── Summary cards ── */
-function setText(id, val) {
-  const el = document.getElementById(id);
-  if (el) el.textContent = val;
-}
-
 function updateSummaryCards() {
-  const totalUnits   = units.length;
-  const totalProv    = units.reduce((s, u) => s + u.providers, 0);
-  const totalComp    = units.reduce((s, u) => s + u.completed, 0);
-  const totalActive  = units.reduce((s, u) => s + u.active, 0);
-  setText('sum-total-units',    totalUnits);
-  setText('sum-total-providers', totalProv);
-  setText('sum-completed-jobs',  totalComp.toLocaleString('en-IN'));
-  setText('sum-active-jobs',     totalActive);
+  const totalUnits = units.length;
+  const totalProv = units.reduce((s, u) => s + u.providers, 0);
+  const totalComp = units.reduce((s, u) => s + u.completed, 0);
+  const totalActive = units.reduce((s, u) => s + u.active, 0);
+  document.getElementById('sum-total-units').textContent = totalUnits;
+  document.getElementById('sum-total-providers').textContent = totalProv;
+  document.getElementById('sum-completed-jobs').textContent = totalComp.toLocaleString();
+  document.getElementById('sum-active-jobs').textContent = totalActive;
 }
 
-/* ── Avatar ── */
-function getInitials(name) {
-  if (!name) return 'CM';
-  const parts = name.trim().split(' ').filter(Boolean);
-  if (parts.length >= 2) return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
-  return parts[0].slice(0, 2).toUpperCase();
-}
-
-/* ═══════════════════════════════════════════════════════════
-   MAIN – runs after AppStore is ready
-   ═══════════════════════════════════════════════════════════ */
+/* ── Initialization ── */
 AppStore.ready.then(() => {
-  /* 1. Auth gate */
   const session = Auth.requireSession(['collective_manager']);
   if (!session) return;
+  currentSession = session;
 
-  currentSession = session; // Store globally
-  const collectiveId = session.collectiveId;
+  const allUnits = AppStore.getTable('units').filter(u => u.collective_id === session.collectiveId);
+  const allProviders = AppStore.getTable('service_providers') || [];
+  const allManagers = AppStore.getTable('unit_managers') || [];
+  const allAssignments = AppStore.getTable('job_assignments') || [];
 
-  /* 2. Pull tables */
-  const allUnits       = AppStore.getTable('units')            || [];
-  const allProviders   = AppStore.getTable('service_providers') || [];
-  const allManagers    = AppStore.getTable('unit_managers')     || [];
-  const allAssignments = AppStore.getTable('job_assignments')   || [];
-
-  /* 3. Scope to this collective */
-  const myRawUnits = allUnits.filter(u => u.collective_id === collectiveId);
-
-  /* 4. Build category → unit map via providers' skills and unit name */
-  // Since units don't have a category field, we derive from unit_name
-  function deriveCategoryFromName(unitName) {
-    const n = (unitName || '').toLowerCase();
-    if (n.includes('electric') || n.includes('electronic')) return 'Electrical';
-    if (n.includes('plumb'))      return 'Plumbing';
-    if (n.includes('clean'))      return 'Home Cleaning';
-    if (n.includes('landscap') || n.includes('garden')) return 'Landscaping & Gardening';
-    if (n.includes('security'))   return 'Security';
-    if (n.includes('paint'))      return 'Painting & Waterproofing';
-    if (n.includes('carpent') || n.includes('furniture')) return 'Carpentry';
-    if (n.includes('ac') || n.includes('appliance'))      return 'AC & Appliances';
-    if (n.includes('pest'))       return 'Pest Control';
-    return unitName;
-  }
-
-  /* 5. Build unit-manager look-up */
-  const unitManagerMap = Object.fromEntries(
-    allManagers.map(um => [um.unit_id, um.name])
-  );
-
-  /* 6. Build provider count per unit */
+  const managerMap = Object.fromEntries(allManagers.map(m => [m.unit_id, m.name]));
   const providersByUnit = {};
   allProviders.forEach(p => {
-    if (!providersByUnit[p.unit_id]) providersByUnit[p.unit_id] = 0;
-    providersByUnit[p.unit_id]++;
+    providersByUnit[p.unit_id] = (providersByUnit[p.unit_id] || 0) + 1;
   });
 
-  /* 7. Build completed/active assignment counts per unit */
-  // Map provider → unit
-  const providerUnitMap = Object.fromEntries(allProviders.map(p => [p.service_provider_id, p.unit_id]));
-  const completedByUnit = {};
-  const activeByUnit    = {};
+  const completedMap = {};
+  const activeMap = {};
   allAssignments.forEach(ja => {
-    const uid = providerUnitMap[ja.service_provider_id];
-    if (!uid) return;
-    if (ja.status === 'COMPLETED') completedByUnit[uid] = (completedByUnit[uid] || 0) + 1;
-    if (ja.status === 'IN_PROGRESS' || ja.status === 'ASSIGNED') activeByUnit[uid] = (activeByUnit[uid] || 0) + 1;
+    const p = allProviders.find(prov => prov.service_provider_id === ja.service_provider_id);
+    if (!p) return;
+    if (ja.status === 'COMPLETED') completedMap[p.unit_id] = (completedMap[p.unit_id] || 0) + 1;
+    else activeMap[p.unit_id] = (activeMap[p.unit_id] || 0) + 1;
   });
 
-  /* 8. Compose units array */
-  units = myRawUnits.map(u => ({
-    id:        u.unit_id,
-    name:      u.unit_name,
-    manager:   unitManagerMap[u.unit_id] || '—',
-    category:  u.category || deriveCategoryFromName(u.unit_name),
-    rating:    u.rating || null,
+  units = allUnits.map(u => ({
+    id: u.unit_id,
+    name: u.unit_name,
+    manager: managerMap[u.unit_id] || 'Unassigned',
+    category: u.category || 'Service',
+    rating: u.rating || null,
     providers: providersByUnit[u.unit_id] || 0,
-    completed: completedByUnit[u.unit_id] || 0,
-    active:    activeByUnit[u.unit_id]    || 0,
-    status:    u.is_active ? 'Active' : 'Suspended',
+    completed: completedMap[u.unit_id] || 0,
+    active: activeMap[u.unit_id] || 0,
+    status: u.is_active ? 'Active' : 'Suspended'
   }));
 
-  /* 9. Topbar avatar */
-  const avatarEl = document.querySelector('.avatar');
-  if (avatarEl) avatarEl.textContent = getInitials(session.name);
+  const avatarEl = document.getElementById('topbar-avatar');
+  if (avatarEl) avatarEl.textContent = session.name.split(' ').map(n => n[0]).join('').toUpperCase();
 
-  /* 10. Render */
   updateSummaryCards();
   renderTable(units);
 });
