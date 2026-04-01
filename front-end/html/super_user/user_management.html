@@ -73,6 +73,34 @@
           </svg>
           Manage Skills
         </a>
+        <a href="manage_categories.html" class="nav-item">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path
+              d="M12 2L2 7v10c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5z"
+            />
+          </svg>
+          Manage Categories
+        </a>
+        <a href="manage_services.html" class="nav-item">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <circle cx="9" cy="21" r="1" />
+            <circle cx="20" cy="21" r="1" />
+            <path
+              d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"
+            />
+          </svg>
+          Manage Services
+        </a>
       </nav>
       <div class="sidebar-section-label">SYSTEM CONTROLS</div>
       <nav class="sidebar-nav">
@@ -330,9 +358,7 @@
             <tbody id="users-tbody"></tbody>
           </table>
           <div class="table-footer">
-            <span class="table-info" id="table-info"
-              >Showing 0-0 of 0</span
-            >
+            <span class="table-info" id="table-info">Showing 0-0 of 0</span>
             <div class="pagination">
               <button class="page-arrow" id="prev-btn">
                 <svg
@@ -362,12 +388,22 @@
     </div>
 
     <!-- Add New User Modal -->
+<<<<<<< HEAD
     <div class="modal-overlay" id="add-user-modal" style="display: none;">
+=======
+    <div class="modal-overlay" id="add-user-modal" style="display: none">
+>>>>>>> 0abe33d00de6446002534a7e6926287b59f8a27f
       <div class="modal-content">
         <h2 class="modal-title">Add New User</h2>
         <form id="add-user-form">
           <div class="form-group">
+<<<<<<< HEAD
             <label for="new-user-role">Role <span style="color:red">*</span></label>
+=======
+            <label for="new-user-role"
+              >Role <span style="color: red">*</span></label
+            >
+>>>>>>> 0abe33d00de6446002534a7e6926287b59f8a27f
             <select id="new-user-role" required>
               <option value="" disabled selected>Select a role</option>
               <option value="Unit Manager">Unit Manager</option>
@@ -376,6 +412,7 @@
             </select>
           </div>
           <div class="form-group">
+<<<<<<< HEAD
             <label for="new-user-name">Full Name <span style="color:red">*</span></label>
             <input type="text" id="new-user-name" placeholder="Enter full name" minlength="3" required />
           </div>
@@ -389,6 +426,47 @@
           </div>
           <div class="modal-actions">
             <button type="button" class="btn-cancel" id="cancel-add-user">Cancel</button>
+=======
+            <label for="new-user-name"
+              >Full Name <span style="color: red">*</span></label
+            >
+            <input
+              type="text"
+              id="new-user-name"
+              placeholder="Enter full name"
+              minlength="3"
+              required
+            />
+          </div>
+          <div class="form-group">
+            <label for="new-user-email"
+              >Email <span style="color: red">*</span></label
+            >
+            <input
+              type="email"
+              id="new-user-email"
+              placeholder="Enter email address"
+              required
+            />
+          </div>
+          <div class="form-group">
+            <label for="new-user-phone"
+              >Phone Number <span style="color: red">*</span></label
+            >
+            <input
+              type="tel"
+              id="new-user-phone"
+              placeholder="+919876543210"
+              pattern="[\+]?[0-9]{10,13}"
+              required
+              title="Enter a valid phone number (e.g., +919876543210)"
+            />
+          </div>
+          <div class="modal-actions">
+            <button type="button" class="btn-cancel" id="cancel-add-user">
+              Cancel
+            </button>
+>>>>>>> 0abe33d00de6446002534a7e6926287b59f8a27f
             <button type="submit" class="btn-primary">Add User</button>
           </div>
         </form>

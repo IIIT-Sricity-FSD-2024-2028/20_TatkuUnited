@@ -23,20 +23,15 @@
       "collective_id": "COL002",
       "collective_name": "Central Chennai Collective",
       "is_active": true,
-      "created_at": "2023-03-15T09:30:00Z",
-      "sector_ids": [
-        "SEC001",
-        "SEC006"
-      ]
+      "created_at": "2024-12-12T09:30:00Z",
+      "sector_ids": ["SEC001", "SEC006"]
     },
     {
       "collective_id": "COL003",
       "collective_name": "South Chennai Collective",
       "is_active": false,
-      "created_at": "2022-11-20T07:45:00Z",
-      "sector_ids": [
-        "SEC003"
-      ]
+      "created_at": "2024-08-19T07:45:00Z",
+      "sector_ids": ["SEC003"]
     },
     {
       "collective_id": "COL004",
@@ -64,7 +59,7 @@
       "rating": 5,
       "rating_count": 1,
       "is_active": true,
-      "created_at": "2023-02-01T00:00:00Z",
+      "created_at": "2024-10-31T00:00:00Z",
       "collective_id": "COL001"
     },
     {
@@ -73,7 +68,7 @@
       "rating": null,
       "rating_count": 0,
       "is_active": true,
-      "created_at": "2023-04-10T00:00:00Z",
+      "created_at": "2025-01-07T00:00:00Z",
       "collective_id": "COL001"
     },
     {
@@ -82,7 +77,7 @@
       "rating": null,
       "rating_count": 0,
       "is_active": false,
-      "created_at": "2023-06-05T00:00:00Z",
+      "created_at": "2025-03-04T00:00:00Z",
       "collective_id": "COL002"
     },
     {
@@ -91,7 +86,7 @@
       "rating": null,
       "rating_count": 0,
       "is_active": true,
-      "created_at": "2023-08-15T00:00:00Z",
+      "created_at": "2025-05-14T00:00:00Z",
       "collective_id": "COL002"
     },
     {
@@ -100,7 +95,7 @@
       "rating": null,
       "rating_count": 0,
       "is_active": true,
-      "created_at": "2023-09-01T00:00:00Z",
+      "created_at": "2025-05-31T00:00:00Z",
       "collective_id": "COL003"
     },
     {
@@ -109,7 +104,7 @@
       "rating": null,
       "rating_count": 0,
       "is_active": true,
-      "created_at": "2023-10-20T00:00:00Z",
+      "created_at": "2025-07-19T00:00:00Z",
       "collective_id": "COL003"
     },
     {
@@ -118,7 +113,7 @@
       "rating": 4,
       "rating_count": 1,
       "is_active": true,
-      "created_at": "2023-11-05T00:00:00Z",
+      "created_at": "2025-08-04T00:00:00Z",
       "collective_id": "COL004"
     },
     {
@@ -127,7 +122,7 @@
       "rating": 5,
       "rating_count": 1,
       "is_active": true,
-      "created_at": "2024-01-10T00:00:00Z",
+      "created_at": "2025-10-09T00:00:00Z",
       "collective_id": "COL004"
     },
     {
@@ -136,7 +131,7 @@
       "rating": null,
       "rating_count": 0,
       "is_active": true,
-      "created_at": "2024-02-01T00:00:00Z",
+      "created_at": "2025-10-31T00:00:00Z",
       "collective_id": "COL005"
     },
     {
@@ -145,7 +140,7 @@
       "rating": null,
       "rating_count": 0,
       "is_active": true,
-      "created_at": "2024-03-15T00:00:00Z",
+      "created_at": "2025-12-13T00:00:00Z",
       "collective_id": "COL005"
     }
   ],
@@ -280,8 +275,8 @@
       "email": "suresh@collective.com",
       "pfp_url": "https://i.pravatar.cc/150?img=11",
       "is_active": true,
-      "created_at": "2023-01-11T00:00:00Z",
-      "updated_at": "2024-01-01T00:00:00Z",
+      "created_at": "2024-10-10T00:00:00Z",
+      "updated_at": "2025-09-30T00:00:00Z",
       "collective_id": "COL001"
     },
     {
@@ -292,8 +287,8 @@
       "email": "meena@collective.com",
       "pfp_url": "https://i.pravatar.cc/150?img=23",
       "is_active": true,
-      "created_at": "2023-03-16T00:00:00Z",
-      "updated_at": "2024-01-01T00:00:00Z",
+      "created_at": "2024-12-13T00:00:00Z",
+      "updated_at": "2025-09-30T00:00:00Z",
       "collective_id": "COL002"
     },
     {
@@ -304,8 +299,8 @@
       "email": "aryan@collective.com",
       "pfp_url": "https://i.pravatar.cc/150?img=33",
       "is_active": false,
-      "created_at": "2023-05-20T00:00:00Z",
-      "updated_at": "2024-01-01T00:00:00Z",
+      "created_at": "2025-02-16T00:00:00Z",
+      "updated_at": "2025-09-30T00:00:00Z",
       "collective_id": "COL003"
     },
     {
@@ -316,8 +311,8 @@
       "email": "lakshmi@collective.com",
       "pfp_url": "https://i.pravatar.cc/150?img=44",
       "is_active": true,
-      "created_at": "2023-07-02T00:00:00Z",
-      "updated_at": "2024-02-01T00:00:00Z",
+      "created_at": "2025-03-31T00:00:00Z",
+      "updated_at": "2025-10-31T00:00:00Z",
       "collective_id": "COL004"
     },
     {
@@ -328,8 +323,8 @@
       "email": "vijay@collective.com",
       "pfp_url": "https://i.pravatar.cc/150?img=55",
       "is_active": true,
-      "created_at": "2024-01-06T00:00:00Z",
-      "updated_at": "2024-03-01T00:00:00Z",
+      "created_at": "2025-10-05T00:00:00Z",
+      "updated_at": "2025-11-29T00:00:00Z",
       "collective_id": "COL005"
     },
     {
@@ -366,8 +361,8 @@
       "email": "karan.m@unit.com",
       "pfp_url": "https://i.pravatar.cc/150?img=12",
       "is_active": true,
-      "created_at": "2023-02-10T00:00:00Z",
-      "updated_at": "2024-01-01T00:00:00Z",
+      "created_at": "2024-11-09T00:00:00Z",
+      "updated_at": "2025-09-30T00:00:00Z",
       "unit_id": "UNT001"
     },
     {
@@ -378,8 +373,8 @@
       "email": "deepa.n@unit.com",
       "pfp_url": "https://i.pravatar.cc/150?img=25",
       "is_active": true,
-      "created_at": "2023-04-11T00:00:00Z",
-      "updated_at": "2024-01-01T00:00:00Z",
+      "created_at": "2025-01-08T00:00:00Z",
+      "updated_at": "2025-09-30T00:00:00Z",
       "unit_id": "UNT002"
     },
     {
@@ -390,8 +385,8 @@
       "email": "rahul.s@unit.com",
       "pfp_url": "https://i.pravatar.cc/150?img=36",
       "is_active": true,
-      "created_at": "2023-08-16T00:00:00Z",
-      "updated_at": "2024-01-01T00:00:00Z",
+      "created_at": "2025-05-15T00:00:00Z",
+      "updated_at": "2025-09-30T00:00:00Z",
       "unit_id": "UNT004"
     },
     {
@@ -402,8 +397,8 @@
       "email": "anita.d@unit.com",
       "pfp_url": "https://i.pravatar.cc/150?img=47",
       "is_active": true,
-      "created_at": "2023-11-06T00:00:00Z",
-      "updated_at": "2024-02-01T00:00:00Z",
+      "created_at": "2025-08-05T00:00:00Z",
+      "updated_at": "2025-10-31T00:00:00Z",
       "unit_id": "UNT007"
     },
     {
@@ -414,8 +409,8 @@
       "email": "sanjay.p@unit.com",
       "pfp_url": "https://i.pravatar.cc/150?img=57",
       "is_active": true,
-      "created_at": "2024-01-11T00:00:00Z",
-      "updated_at": "2024-03-01T00:00:00Z",
+      "created_at": "2025-10-10T00:00:00Z",
+      "updated_at": "2025-11-29T00:00:00Z",
       "unit_id": "UNT008"
     },
     {
@@ -426,8 +421,8 @@
       "email": "preethi.s@unit.com",
       "pfp_url": "https://i.pravatar.cc/150?img=60",
       "is_active": false,
-      "created_at": "2024-02-02T00:00:00Z",
-      "updated_at": "2024-04-01T00:00:00Z",
+      "created_at": "2025-11-01T00:00:00Z",
+      "updated_at": "2025-12-30T00:00:00Z",
       "unit_id": "UNT009"
     },
     {
@@ -469,8 +464,10 @@
       "rating": 5,
       "rating_count": 1,
       "is_active": true,
-      "created_at": "2023-02-01T08:00:00Z",
-      "updated_at": "2024-06-15T10:30:00Z",
+      "account_status": "active",
+      "deactivation_requested": false,
+      "created_at": "2024-10-31T08:00:00Z",
+      "updated_at": "2026-03-15T10:30:00Z",
       "unit_id": "UNT001",
       "home_sector_id": "SEC001"
     },
@@ -487,8 +484,10 @@
       "rating": null,
       "rating_count": 0,
       "is_active": true,
-      "created_at": "2023-04-10T09:15:00Z",
-      "updated_at": "2024-05-20T14:00:00Z",
+      "account_status": "active",
+      "deactivation_requested": false,
+      "created_at": "2025-01-07T09:15:00Z",
+      "updated_at": "2026-02-17T14:00:00Z",
       "unit_id": "UNT002",
       "home_sector_id": "SEC002"
     },
@@ -505,8 +504,10 @@
       "rating": null,
       "rating_count": 0,
       "is_active": false,
-      "created_at": "2023-06-05T11:00:00Z",
-      "updated_at": "2024-01-10T09:45:00Z",
+      "account_status": "active",
+      "deactivation_requested": false,
+      "created_at": "2025-03-04T11:00:00Z",
+      "updated_at": "2025-10-09T09:45:00Z",
       "unit_id": "UNT001",
       "home_sector_id": "SEC003"
     },
@@ -523,8 +524,10 @@
       "rating": null,
       "rating_count": 0,
       "is_active": true,
-      "created_at": "2023-08-20T10:00:00Z",
-      "updated_at": "2024-04-10T11:00:00Z",
+      "account_status": "active",
+      "deactivation_requested": false,
+      "created_at": "2025-05-19T10:00:00Z",
+      "updated_at": "2026-01-08T11:00:00Z",
       "unit_id": "UNT004",
       "home_sector_id": "SEC004"
     },
@@ -541,8 +544,10 @@
       "rating": 4,
       "rating_count": 1,
       "is_active": true,
-      "created_at": "2023-11-10T09:00:00Z",
-      "updated_at": "2024-05-01T10:00:00Z",
+      "account_status": "active",
+      "deactivation_requested": false,
+      "created_at": "2025-08-09T09:00:00Z",
+      "updated_at": "2026-01-29T10:00:00Z",
       "unit_id": "UNT007",
       "home_sector_id": "SEC004"
     },
@@ -559,8 +564,10 @@
       "rating": 5,
       "rating_count": 1,
       "is_active": true,
-      "created_at": "2024-01-15T08:30:00Z",
-      "updated_at": "2024-06-01T09:00:00Z",
+      "account_status": "active",
+      "deactivation_requested": false,
+      "created_at": "2025-10-14T08:30:00Z",
+      "updated_at": "2026-03-01T09:00:00Z",
       "unit_id": "UNT008",
       "home_sector_id": "SEC005"
     },
@@ -577,8 +584,10 @@
       "rating": null,
       "rating_count": 0,
       "is_active": true,
-      "created_at": "2024-02-10T07:45:00Z",
-      "updated_at": "2024-06-10T12:00:00Z",
+      "account_status": "active",
+      "deactivation_requested": false,
+      "created_at": "2025-11-09T07:45:00Z",
+      "updated_at": "2026-03-10T12:00:00Z",
       "unit_id": "UNT009",
       "home_sector_id": "SEC005"
     },
@@ -595,8 +604,10 @@
       "rating": null,
       "rating_count": 0,
       "is_active": true,
-      "created_at": "2024-03-20T10:15:00Z",
-      "updated_at": "2024-06-15T14:30:00Z",
+      "account_status": "active",
+      "deactivation_requested": false,
+      "created_at": "2025-12-18T10:15:00Z",
+      "updated_at": "2026-03-15T14:30:00Z",
       "unit_id": "UNT009",
       "home_sector_id": "SEC006"
     },
@@ -788,7 +799,7 @@
       "doc_type": "RESUME",
       "file_url": "mock://uploads/Ravi_Kumar_Resume.pdf",
       "file_name": "Ravi_Kumar_Resume.pdf",
-      "uploaded_at": "2023-02-05T10:00:00Z"
+      "uploaded_at": "2024-11-04T10:00:00Z"
     },
     {
       "doc_id": "DOC002",
@@ -796,7 +807,7 @@
       "doc_type": "CERTIFICATE",
       "file_url": "mock://uploads/Electrical_Safety_Cert.pdf",
       "file_name": "Electrical_Safety_Cert.pdf",
-      "uploaded_at": "2023-02-05T10:15:00Z"
+      "uploaded_at": "2024-11-04T10:15:00Z"
     },
     {
       "doc_id": "DOC003",
@@ -804,7 +815,7 @@
       "doc_type": "RESUME",
       "file_url": "mock://uploads/Priya_Sharma_Resume.pdf",
       "file_name": "Priya_Sharma_Resume.pdf",
-      "uploaded_at": "2023-04-12T11:00:00Z"
+      "uploaded_at": "2025-01-09T11:00:00Z"
     },
     {
       "doc_id": "DOC004",
@@ -812,7 +823,7 @@
       "doc_type": "CERTIFICATE",
       "file_url": "mock://uploads/AC_Technician_Cert.pdf",
       "file_name": "AC_Technician_Cert.pdf",
-      "uploaded_at": "2023-11-15T09:00:00Z"
+      "uploaded_at": "2025-08-14T09:00:00Z"
     },
     {
       "doc_id": "DOC005",
@@ -820,7 +831,7 @@
       "doc_type": "CERTIFICATE",
       "file_url": "mock://uploads/Refrigerant_Handling_Cert.pdf",
       "file_name": "Refrigerant_Handling_Cert.pdf",
-      "uploaded_at": "2023-11-15T09:30:00Z"
+      "uploaded_at": "2025-08-14T09:30:00Z"
     },
     {
       "doc_id": "DOC006",
@@ -828,7 +839,7 @@
       "doc_type": "RESUME",
       "file_url": "mock://uploads/Tamil_Selvan_Resume.pdf",
       "file_name": "Tamil_Selvan_Resume.pdf",
-      "uploaded_at": "2024-02-12T08:00:00Z"
+      "uploaded_at": "2025-11-11T08:00:00Z"
     },
     {
       "doc_id": "DOC007",
@@ -836,7 +847,7 @@
       "doc_type": "CERTIFICATE",
       "file_url": "mock://uploads/Deep_Clean_Specialisation.pdf",
       "file_name": "Deep_Clean_Specialisation.pdf",
-      "uploaded_at": "2024-03-22T10:00:00Z"
+      "uploaded_at": "2025-12-20T10:00:00Z"
     }
   ],
   "provider_working_hours": [
@@ -1230,7 +1241,7 @@
       "password": "Password@123",
       "phone": "+919889012345",
       "email": "ananya.k@gmail.com",
-      "dob": "2000-09-18",
+      "dob": "2002-06-18",
       "address": "9 Adyar, Chennai",
       "pfp_url": "https://i.pravatar.cc/150?img=21",
       "latitude": 13.005,
@@ -1246,7 +1257,7 @@
       "category_id": "CAT001",
       "category_name": "Home Cleaning",
       "description": "All home cleaning services",
-      "icon": "ðŸ§¹",
+      "icon": "\u00f0\u0178\u00a7\u00b9",
       "image_url": "https://placehold.co/400x200/4A90D9/white?text=Home+Cleaning",
       "is_available": true,
       "average_rating": 4.87,
@@ -1257,7 +1268,7 @@
       "category_id": "CAT002",
       "category_name": "Plumbing",
       "description": "Pipe and fixture repair services",
-      "icon": "ðŸ”§",
+      "icon": "\u00f0\u0178\u201d\u00a7",
       "image_url": "https://placehold.co/400x200/E67E22/white?text=Plumbing",
       "is_available": true,
       "average_rating": 4.73,
@@ -1268,7 +1279,7 @@
       "category_id": "CAT003",
       "category_name": "Electrical",
       "description": "Wiring, appliances, and electrical repairs",
-      "icon": "âš¡",
+      "icon": "\u00e2\u0161\u00a1",
       "image_url": "https://placehold.co/400x200/F1C40F/black?text=Electrical",
       "is_available": true,
       "average_rating": 4.87,
@@ -1279,7 +1290,7 @@
       "category_id": "CAT004",
       "category_name": "Carpentry",
       "description": "Furniture, woodwork, and custom fittings",
-      "icon": "ðŸªš",
+      "icon": "\u00f0\u0178\u00aa\u0161",
       "image_url": "https://placehold.co/400x200/8B4513/white?text=Carpentry",
       "is_available": true,
       "average_rating": 4.73,
@@ -1290,7 +1301,7 @@
       "category_id": "CAT005",
       "category_name": "AC & Appliances",
       "description": "Air conditioner and home appliance services",
-      "icon": "â„ï¸",
+      "icon": "\u00e2\u009d\u201e\u00ef\u00b8\u008f",
       "image_url": "https://placehold.co/400x200/1ABC9C/white?text=AC+%26+Appliances",
       "is_available": true,
       "average_rating": 4.47,
@@ -1301,7 +1312,7 @@
       "category_id": "CAT006",
       "category_name": "Pest Control",
       "description": "Residential pest treatment and prevention",
-      "icon": "ðŸ›",
+      "icon": "\u00f0\u0178\u0090\u203a",
       "image_url": "https://placehold.co/400x200/2ECC71/white?text=Pest+Control",
       "is_available": false,
       "average_rating": 4.73,
@@ -2082,6 +2093,7 @@
       "service_address": "14 Boat Club Road, Chennai",
       "service_lat": 13.05,
       "service_lng": 80.25,
+
       "scheduled_at": "2026-03-29T03:48:22Z",
       "status": "COMPLETED",
       "failure_reason": null,
@@ -2356,7 +2368,7 @@
   "job_assignments": [
     {
       "assignment_id": "JA001",
-      "scheduled_date": "2024-07-01",
+      "scheduled_date": "2026-03-31",
       "hour_start": "10:00",
       "hour_end": "12:00",
       "status": "COMPLETED",
@@ -2371,7 +2383,7 @@
     },
     {
       "assignment_id": "JA002",
-      "scheduled_date": "2024-07-05",
+      "scheduled_date": "2026-04-04",
       "hour_start": "09:00",
       "hour_end": "11:00",
       "status": "ASSIGNED",
@@ -2386,7 +2398,7 @@
     },
     {
       "assignment_id": "JA003",
-      "scheduled_date": "2024-07-10",
+      "scheduled_date": "2026-04-09",
       "hour_start": "14:00",
       "hour_end": "16:00",
       "status": "CANCELLED",
@@ -2431,7 +2443,7 @@
     },
     {
       "assignment_id": "JA006",
-      "scheduled_date": "2024-08-12",
+      "scheduled_date": "2026-05-12",
       "hour_start": "15:00",
       "hour_end": "16:00",
       "status": "COMPLETED",
@@ -2476,7 +2488,7 @@
     },
     {
       "assignment_id": "JA009",
-      "scheduled_date": "2024-09-10",
+      "scheduled_date": "2026-06-10",
       "hour_start": "10:00",
       "hour_end": "12:00",
       "status": "COMPLETED",
@@ -2491,7 +2503,7 @@
     },
     {
       "assignment_id": "JA010",
-      "scheduled_date": "2024-10-01",
+      "scheduled_date": "2026-07-01",
       "hour_start": "14:00",
       "hour_end": "17:00",
       "status": "CANCELLED",

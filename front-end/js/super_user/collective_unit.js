@@ -503,16 +503,16 @@ AppStore.ready.then(function () {
     function renderDropdown(query) {
       var managers = AppStore.getTable("collective_managers") || [];
       var q = String(query || "").trim().toLowerCase();
-      
+
       var options = managers.filter(function (m) {
         if (!m.is_active) return false;
-        
+
         var isUnassigned = !m.collective_id;
         var isCurrentAssigned = includeCollectiveId && m.collective_id === includeCollectiveId;
-        
+
         if (!isUnassigned && !isCurrentAssigned) return false;
         if (q && m.name.toLowerCase().indexOf(q) === -1 && m.cm_id.toLowerCase().indexOf(q) === -1) {
-            return false;
+          return false;
         }
         return true;
       });
@@ -523,29 +523,29 @@ AppStore.ready.then(function () {
         return;
       }
 
-      dropdownEl.innerHTML = options.map(function(m) {
-        return '<div class="cm-option" style="padding: 8px; cursor: pointer; border-bottom: 1px solid #f3f4f6; font-size: 14px;" data-id="' + escapeHtml(m.cm_id) + '" data-name="' + escapeHtml(m.name) + '">' + 
+      dropdownEl.innerHTML = options.map(function (m) {
+        return '<div class="cm-option" style="padding: 8px; cursor: pointer; border-bottom: 1px solid #f3f4f6; font-size: 14px;" data-id="' + escapeHtml(m.cm_id) + '" data-name="' + escapeHtml(m.name) + '">' +
           escapeHtml(m.name) + ' <span style="color:#9ca3af; font-size:12px;">(' + escapeHtml(m.cm_id) + ')</span>' +
-        '</div>';
+          '</div>';
       }).join('');
       dropdownEl.style.display = "block";
     }
 
-    inputEl.addEventListener("input", function(e) {
-      state[selectedIdKey] = null; 
+    inputEl.addEventListener("input", function (e) {
+      state[selectedIdKey] = null;
       renderDropdown(e.target.value);
     });
 
-    inputEl.addEventListener("focus", function(e) {
+    inputEl.addEventListener("focus", function (e) {
       renderDropdown(e.target.value);
     });
 
     // Hide dropdown on blur with slight delay to allow click 
-    inputEl.addEventListener("blur", function() {
-      setTimeout(function() { dropdownEl.style.display = "none"; }, 150);
+    inputEl.addEventListener("blur", function () {
+      setTimeout(function () { dropdownEl.style.display = "none"; }, 150);
     });
 
-    dropdownEl.addEventListener("click", function(e) {
+    dropdownEl.addEventListener("click", function (e) {
       var opt = e.target.closest(".cm-option");
       if (!opt) return;
       var id = opt.getAttribute("data-id");
@@ -744,10 +744,10 @@ AppStore.ready.then(function () {
     });
 
     var q = state.quickSearch.toLowerCase();
-    
+
     var collectiveManagerMap = {};
-    (tables.collectiveManagers || []).forEach(function(m) {
-        if (m.collective_id) collectiveManagerMap[m.collective_id] = m;
+    (tables.collectiveManagers || []).forEach(function (m) {
+      if (m.collective_id) collectiveManagerMap[m.collective_id] = m;
     });
 
     return tables.collectives
@@ -821,6 +821,8 @@ AppStore.ready.then(function () {
         var providerCount = units.reduce(function (sum, u) {
           return sum + (providersByUnit[u.unit_id] || 0);
         }, 0);
+
+        var collectiveCm = collectiveManagerMap[collective.collective_id];
 
         return {
           idx: idx,
@@ -908,47 +910,47 @@ AppStore.ready.then(function () {
 
         var unitsHtml = entry.units.length
           ? entry.units
-              .map(function (unit) {
-                var manager = entry.managerByUnit[unit.unit_id];
-                var managerName =
-                  manager && manager.name ? manager.name : "Unassigned";
-                var providersCount = entry.providersByUnit[unit.unit_id] || 0;
-                var selectedClass =
-                  state.selectedUnitId === unit.unit_id ? " selected-unit" : "";
+            .map(function (unit) {
+              var manager = entry.managerByUnit[unit.unit_id];
+              var managerName =
+                manager && manager.name ? manager.name : "Unassigned";
+              var providersCount = entry.providersByUnit[unit.unit_id] || 0;
+              var selectedClass =
+                state.selectedUnitId === unit.unit_id ? " selected-unit" : "";
 
-                return (
-                  '<div class="unit-row' +
-                  selectedClass +
-                  '">' +
-                  '<span class="unit-arrow">›</span>' +
-                  '<span class="unit-name">' +
-                  escapeHtml(unit.unit_name) +
-                  " (" +
-                  escapeHtml(unit.unit_id) +
-                  ")</span>" +
-                  '<span class="unit-providers">' +
-                  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="7" r="4"></circle><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"></path></svg>' +
-                  providersCount +
-                  " Providers</span>" +
-                  '<span class="unit-mgr">' +
-                  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"></rect><path d="M16 3H8"></path></svg>' +
-                  "Mgr: " +
-                  escapeHtml(managerName) +
-                  "</span>" +
-                  '<a href="#" class="view-providers-link" data-action="view-providers" data-unit-id="' +
-                  escapeHtml(unit.unit_id) +
-                  '" data-collective-id="' +
-                  escapeHtml(collective.collective_id) +
-                  '">View<br>Providers</a>' +
-                  '<button class="edit-btn" type="button" data-action="edit-unit" data-unit-id="' +
-                  escapeHtml(unit.unit_id) +
-                  '">' +
-                  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>' +
-                  "</button>" +
-                  "</div>"
-                );
-              })
-              .join("")
+              return (
+                '<div class="unit-row' +
+                selectedClass +
+                '">' +
+                '<span class="unit-arrow">›</span>' +
+                '<span class="unit-name">' +
+                escapeHtml(unit.unit_name) +
+                " (" +
+                escapeHtml(unit.unit_id) +
+                ")</span>" +
+                '<span class="unit-providers">' +
+                '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="7" r="4"></circle><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"></path></svg>' +
+                providersCount +
+                " Providers</span>" +
+                '<span class="unit-mgr">' +
+                '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"></rect><path d="M16 3H8"></path></svg>' +
+                "Mgr: " +
+                escapeHtml(managerName) +
+                "</span>" +
+                '<a href="#" class="view-providers-link" data-action="view-providers" data-unit-id="' +
+                escapeHtml(unit.unit_id) +
+                '" data-collective-id="' +
+                escapeHtml(collective.collective_id) +
+                '">View<br>Providers</a>' +
+                '<button class="edit-btn" type="button" data-action="edit-unit" data-unit-id="' +
+                escapeHtml(unit.unit_id) +
+                '">' +
+                '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>' +
+                "</button>" +
+                "</div>"
+              );
+            })
+            .join("")
           : '<div class="unit-row"><span class="unit-name">No units in this collective.</span></div>';
 
         var cmName = entry.collectiveManager
@@ -1138,11 +1140,11 @@ AppStore.ready.then(function () {
           var buttonHtml =
             row.actionType === "reassign"
               ? '<button class="reassign-btn" type="button" data-action="reassign-provider" data-provider-id="' +
-                escapeHtml(p.service_provider_id) +
-                '">Reassign</button>'
+              escapeHtml(p.service_provider_id) +
+              '">Reassign</button>'
               : '<button class="assign-btn" type="button" data-action="assign-provider" data-provider-id="' +
-                escapeHtml(p.service_provider_id) +
-                '">Assign Provider</button>';
+              escapeHtml(p.service_provider_id) +
+              '">Assign Provider</button>';
 
           return (
             "<tr>" +
@@ -1273,16 +1275,16 @@ AppStore.ready.then(function () {
     }
 
     if (!state.selectedCmId) {
-       setFieldError(el.collectiveManagerInput, el.collectiveManagerError, "A valid unassigned collective manager must be selected.");
-       valid = false;
+      setFieldError(el.collectiveManagerInput, el.collectiveManagerError, "A valid unassigned collective manager must be selected.");
+      valid = false;
     } else {
-       var managerRef = tables.collectiveManagers.find(function(m) { return m.cm_id === state.selectedCmId; });
-       if (!managerRef || managerRef.collective_id) {
-         setFieldError(el.collectiveManagerInput, el.collectiveManagerError, "The selected manager is not available.");
-         valid = false;
-       } else {
-         setFieldError(el.collectiveManagerInput, el.collectiveManagerError, "");
-       }
+      var managerRef = tables.collectiveManagers.find(function (m) { return m.cm_id === state.selectedCmId; });
+      if (!managerRef || managerRef.collective_id) {
+        setFieldError(el.collectiveManagerInput, el.collectiveManagerError, "The selected manager is not available.");
+        valid = false;
+      } else {
+        setFieldError(el.collectiveManagerInput, el.collectiveManagerError, "");
+      }
     }
 
     if (!valid) return null;
@@ -1307,14 +1309,14 @@ AppStore.ready.then(function () {
     };
 
     AppStore.getTable("collectives").push(newCollective);
-    
+
     // Assign CM
     var managers = AppStore.getTable("collective_managers");
-    managers.forEach(function(m) {
-        if (m.cm_id === result.cmId) {
-            m.collective_id = newCollective.collective_id;
-            m.updated_at = new Date().toISOString();
-        }
+    managers.forEach(function (m) {
+      if (m.cm_id === result.cmId) {
+        m.collective_id = newCollective.collective_id;
+        m.updated_at = new Date().toISOString();
+      }
     });
 
     AppStore.save();
@@ -1336,13 +1338,13 @@ AppStore.ready.then(function () {
     if (el.reassignCmInput) el.reassignCmInput.value = "";
     if (el.reassignCmDropdown) el.reassignCmDropdown.innerHTML = "";
     setFieldError(el.reassignCmInput, el.reassignCmError, "");
-    
+
     // Attempt to pre-fill the current manager
     var tables = getTables();
-    var currentMgr = tables.collectiveManagers.find(function(m) { return m.collective_id === collectiveId; });
+    var currentMgr = tables.collectiveManagers.find(function (m) { return m.collective_id === collectiveId; });
     if (currentMgr && el.reassignCmInput) {
-        el.reassignCmInput.value = currentMgr.name;
-        state.reassignCmId = currentMgr.cm_id;
+      el.reassignCmInput.value = currentMgr.name;
+      state.reassignCmId = currentMgr.cm_id;
     }
 
     openModal(el.reassignCmModal);
@@ -1351,41 +1353,41 @@ AppStore.ready.then(function () {
   }
 
   function submitReassignCm() {
-     if (!state.reassignCollectiveId) {
-         closeModal(el.reassignCmModal);
-         return;
-     }
+    if (!state.reassignCollectiveId) {
+      closeModal(el.reassignCmModal);
+      return;
+    }
 
-     if (!state.reassignCmId) {
-         setFieldError(el.reassignCmInput, el.reassignCmError, "Please select a valid manager from the list.");
-         return;
-     }
+    if (!state.reassignCmId) {
+      setFieldError(el.reassignCmInput, el.reassignCmError, "Please select a valid manager from the list.");
+      return;
+    }
 
-     var managers = AppStore.getTable("collective_managers");
-     var collectiveId = state.reassignCollectiveId;
-     var chosenId = state.reassignCmId;
+    var managers = AppStore.getTable("collective_managers");
+    var collectiveId = state.reassignCollectiveId;
+    var chosenId = state.reassignCmId;
 
-     var chosenManager = managers.find(function(m) { return m.cm_id === chosenId; });
-     if (!chosenManager || (chosenManager.collective_id && chosenManager.collective_id !== collectiveId)) {
-         setFieldError(el.reassignCmInput, el.reassignCmError, "This manager is not available.");
-         return;
-     }
+    var chosenManager = managers.find(function (m) { return m.cm_id === chosenId; });
+    if (!chosenManager || (chosenManager.collective_id && chosenManager.collective_id !== collectiveId)) {
+      setFieldError(el.reassignCmInput, el.reassignCmError, "This manager is not available.");
+      return;
+    }
 
-     // Remove existing
-     managers.forEach(function(m) {
-         if (m.collective_id === collectiveId) {
-             m.collective_id = null;
-         }
-     });
+    // Remove existing
+    managers.forEach(function (m) {
+      if (m.collective_id === collectiveId) {
+        m.collective_id = null;
+      }
+    });
 
-     // Assign new
-     chosenManager.collective_id = collectiveId;
-     chosenManager.updated_at = new Date().toISOString();
+    // Assign new
+    chosenManager.collective_id = collectiveId;
+    chosenManager.updated_at = new Date().toISOString();
 
-     AppStore.save();
-     closeModal(el.reassignCmModal);
-     renderCollectives();
-     notify("Collective Manager updated.");
+    AppStore.save();
+    closeModal(el.reassignCmModal);
+    renderCollectives();
+    notify("Collective Manager updated.");
   }
 
   function openEditCollectiveModal(collectiveId) {
@@ -1544,7 +1546,7 @@ AppStore.ready.then(function () {
           el.editCollectiveSectorSelect,
           el.editCollectiveSectorError,
           "These sectors are already assigned to another collective: " +
-            conflicts.join(", "),
+          conflicts.join(", "),
         );
         valid = false;
       } else {
@@ -2000,10 +2002,10 @@ AppStore.ready.then(function () {
     }
 
     if (el.reassignCmModalClose) {
-      el.reassignCmModalClose.addEventListener("click", function() { closeModal(el.reassignCmModal); });
+      el.reassignCmModalClose.addEventListener("click", function () { closeModal(el.reassignCmModal); });
     }
     if (el.reassignCmCancelBtn) {
-      el.reassignCmCancelBtn.addEventListener("click", function() { closeModal(el.reassignCmModal); });
+      el.reassignCmCancelBtn.addEventListener("click", function () { closeModal(el.reassignCmModal); });
     }
     if (el.reassignCmModal) {
       el.reassignCmModal.addEventListener("click", function (event) {
@@ -2018,10 +2020,10 @@ AppStore.ready.then(function () {
     }
 
     if (el.editCollectiveModalClose) {
-      el.editCollectiveModalClose.addEventListener("click", function() { closeModal(el.editCollectiveModal); });
+      el.editCollectiveModalClose.addEventListener("click", function () { closeModal(el.editCollectiveModal); });
     }
     if (el.editCollectiveCancelBtn) {
-      el.editCollectiveCancelBtn.addEventListener("click", function() { closeModal(el.editCollectiveModal); });
+      el.editCollectiveCancelBtn.addEventListener("click", function () { closeModal(el.editCollectiveModal); });
     }
     if (el.editCollectiveModal) {
       el.editCollectiveModal.addEventListener("click", function (event) {
