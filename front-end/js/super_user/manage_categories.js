@@ -20,7 +20,10 @@ AppStore.ready.then(() => {
         id: parseInt(cat.category_id.replace("CAT", "")) || idx + 1,
         name: cat.category_name,
         desc: cat.description,
-        rating: cat.average_rating || 0.0,
+        rating:
+          typeof cat.average_rating === "number" && (cat.rating_count || 0) > 0
+            ? cat.average_rating
+            : null,
         status: status,
         isAvailable: cat.is_available,
         parentId: cat.parent_id || null,
@@ -51,10 +54,14 @@ AppStore.ready.then(() => {
   function updateKPIs(data) {
     const active = data.filter((c) => c.status === "Active").length;
     const inactive = data.filter((c) => c.status === "Inactive").length;
+    const validRatings = data.filter((c) => typeof c.rating === "number");
     const avgRating =
-      data.length > 0
-        ? (data.reduce((sum, c) => sum + c.rating, 0) / data.length).toFixed(2)
-        : 0;
+      validRatings.length > 0
+        ? (
+            validRatings.reduce((sum, c) => sum + c.rating, 0) /
+            validRatings.length
+          ).toFixed(2)
+        : "N/A";
 
     const kpiTotal = document.getElementById("kpiTotal");
     const kpiActive = document.getElementById("kpiActive");
@@ -84,8 +91,10 @@ AppStore.ready.then(() => {
             ? "status-badge--active"
             : "status-badge--inactive";
         const ratingStars =
-          "★".repeat(Math.floor(cat.rating)) +
-          (cat.rating % 1 >= 0.5 ? "½" : "");
+          typeof cat.rating === "number"
+            ? "★".repeat(Math.floor(cat.rating)) +
+              (cat.rating % 1 >= 0.5 ? "½" : "")
+            : "";
 
         tr.innerHTML = `
           <td class="category-name-col">${cat.name}</td>
@@ -93,7 +102,7 @@ AppStore.ready.then(() => {
           <td>
             <span class="status-badge ${statusClass}">${cat.status}</span>
           </td>
-          <td class="rating-cell" title="${cat.rating} / 5.0">${cat.rating.toFixed(2)} ⭐</td>
+          <td class="rating-cell" title="${typeof cat.rating === "number" ? cat.rating + " / 5.0" : "No rating"}">${typeof cat.rating === "number" ? cat.rating.toFixed(2) + " ⭐" : "N/A"}</td>
           <td>
             <div class="tbl-actions">
               <button class="tbl-icon-btn btn-edit" data-id="${cat.id}" title="Edit Category">
@@ -355,7 +364,7 @@ AppStore.ready.then(() => {
             "https://placehold.co/400x200/6b7280/white?text=" +
             encodeURIComponent(name),
           is_available: isAvailable,
-          average_rating: 4.73,
+          average_rating: null,
           rating_count: 0,
           parent_id: parentId && parentId !== "" ? parentId : null,
         });

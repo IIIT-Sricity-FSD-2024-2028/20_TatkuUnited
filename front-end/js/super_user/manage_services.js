@@ -9,6 +9,7 @@ AppStore.ready.then(() => {
   /* ── 2. Pull tables ── */
   const allServices = AppStore.getTable("services") || [];
   const allCategories = AppStore.getTable("categories") || [];
+  let allServiceContent = AppStore.getTable("service_content") || [];
 
   /* ── 3. Transform and enrich services ── */
   function transformServices(servicesList) {
@@ -31,7 +32,10 @@ AppStore.ready.then(() => {
         categoryName: categoryName,
         basePrice: svc.base_price,
         duration: svc.estimated_duration_min,
-        rating: svc.average_rating || 4.73,
+        rating:
+          typeof svc.average_rating === "number" && (svc.rating_count || 0) > 0
+            ? svc.average_rating
+            : null,
         ratingCount: svc.rating_count || 0,
         isAvailable: svc.is_available,
         status: status,
@@ -45,6 +49,7 @@ AppStore.ready.then(() => {
 
   function refreshServicesFromStore() {
     services = transformServices(AppStore.getTable("services") || []);
+    allServiceContent = AppStore.getTable("service_content") || [];
   }
 
   let editingId = null;
@@ -98,7 +103,8 @@ AppStore.ready.then(() => {
 
         const statusClass =
           svc.status === "Active" ? "status-active" : "status-inactive";
-        const ratingDisplay = svc.rating ? svc.rating.toFixed(2) : "N/A";
+        const ratingDisplay =
+          typeof svc.rating === "number" ? svc.rating.toFixed(2) : "N/A";
         const toggleClass = svc.isAvailable ? "is-on" : "is-off";
         const toggleTitle = svc.isAvailable
           ? "Deactivate Service"
@@ -212,6 +218,9 @@ AppStore.ready.then(() => {
   /* ── Add/Edit Modal ── */
   function openModal(svc) {
     editingId = svc ? svc.serviceId : null;
+    // Refresh service_content from store
+    allServiceContent = AppStore.getTable("service_content") || [];
+
     const modalTitle = document.getElementById("modalTitle");
     const serviceName = document.getElementById("serviceName");
     const serviceCategory = document.getElementById("serviceCategory");
@@ -219,6 +228,11 @@ AppStore.ready.then(() => {
     const servicePrice = document.getElementById("servicePrice");
     const serviceDuration = document.getElementById("serviceDuration");
     const serviceAvailable = document.getElementById("serviceAvailable");
+    const serviceHowItWorks = document.getElementById("serviceHowItWorks");
+    const serviceWhatCovered = document.getElementById("serviceWhatCovered");
+    const serviceWhatNotCovered = document.getElementById(
+      "serviceWhatNotCovered",
+    );
     const btnSave = document.getElementById("btnSave");
     const modalOverlay = document.getElementById("modalOverlay");
 
@@ -231,6 +245,39 @@ AppStore.ready.then(() => {
     if (serviceDuration) serviceDuration.value = svc ? svc.duration : "";
     if (serviceAvailable)
       serviceAvailable.checked = svc ? svc.isAvailable : true;
+
+    // Populate service_content fields when editing
+    if (
+      svc &&
+      serviceHowItWorks &&
+      serviceWhatCovered &&
+      serviceWhatNotCovered
+    ) {
+      const content = allServiceContent.find(
+        (c) => c.service_id === svc.serviceId,
+      );
+      if (content) {
+        // Format how_it_works array into textarea format
+        const howItWorksText = content.how_it_works
+          .map((step) => `${step.step_title} | ${step.step_description}`)
+          .join("\n");
+        serviceHowItWorks.value = howItWorksText;
+
+        // Format what_is_covered array into textarea format
+        const whatCoveredText = content.what_is_covered.join("\n");
+        serviceWhatCovered.value = whatCoveredText;
+
+        // Format what_is_not_covered array into textarea format
+        const whatNotCoveredText = content.what_is_not_covered.join("\n");
+        serviceWhatNotCovered.value = whatNotCoveredText;
+      }
+    } else {
+      // Clear service_content fields when adding new service
+      if (serviceHowItWorks) serviceHowItWorks.value = "";
+      if (serviceWhatCovered) serviceWhatCovered.value = "";
+      if (serviceWhatNotCovered) serviceWhatNotCovered.value = "";
+    }
+
     if (btnSave) btnSave.textContent = svc ? "Save Changes" : "Add Service";
     if (modalOverlay) modalOverlay.classList.add("open");
   }
@@ -329,6 +376,12 @@ AppStore.ready.then(() => {
       );
       const isAvailable =
         document.getElementById("serviceAvailable")?.checked || true;
+      const howItWorksText =
+        document.getElementById("serviceHowItWorks")?.value.trim() || "";
+      const whatCoveredText =
+        document.getElementById("serviceWhatCovered")?.value.trim() || "";
+      const whatNotCoveredText =
+        document.getElementById("serviceWhatNotCovered")?.value.trim() || "";
 
       // Validation
       if (!name) {
@@ -363,6 +416,41 @@ AppStore.ready.then(() => {
         return;
       }
 
+      // Helper to parse service content
+      function parseServiceContent(
+        howItWorksText,
+        whatCoveredText,
+        whatNotCoveredText,
+      ) {
+        // Parse how_it_works: "Title | Description" format
+        const howItWorks = howItWorksText
+          .split("\n")
+          .filter((line) => line.trim())
+          .map((line) => {
+            const [title, description] = line.split("|").map((s) => s.trim());
+            return {
+              step_title: title || "",
+              step_description: description || "",
+            };
+          });
+
+        // Parse what_is_covered: one item per line
+        const whatIsCovered = whatCoveredText
+          .split("\n")
+          .filter((line) => line.trim());
+
+        // Parse what_is_not_covered: one item per line
+        const whatIsNotCovered = whatNotCoveredText
+          .split("\n")
+          .filter((line) => line.trim());
+
+        return {
+          how_it_works: howItWorks,
+          what_is_covered: whatIsCovered,
+          what_is_not_covered: whatIsNotCovered,
+        };
+      }
+
       if (editingId) {
         const storeService = servicesTable.find(
           (s) => s.service_id === editingId,
@@ -374,6 +462,27 @@ AppStore.ready.then(() => {
           storeService.base_price = price;
           storeService.estimated_duration_min = duration;
           storeService.is_available = isAvailable;
+
+          // Update or create service_content
+          const serviceContentTable =
+            AppStore.getTable("service_content") || [];
+          let contentRecord = serviceContentTable.find(
+            (c) => c.service_id === editingId,
+          );
+          if (!contentRecord) {
+            contentRecord = { service_id: editingId };
+            serviceContentTable.push(contentRecord);
+          }
+
+          const parsedContent = parseServiceContent(
+            howItWorksText,
+            whatCoveredText,
+            whatNotCoveredText,
+          );
+          contentRecord.how_it_works = parsedContent.how_it_works;
+          contentRecord.what_is_covered = parsedContent.what_is_covered;
+          contentRecord.what_is_not_covered = parsedContent.what_is_not_covered;
+
           AppStore.save();
           refreshServicesFromStore();
           showToast(`✓ "${name}" updated successfully`);
@@ -391,10 +500,25 @@ AppStore.ready.then(() => {
             encodeURIComponent(name),
           base_price: price,
           estimated_duration_min: duration,
-          average_rating: 4.73,
+          average_rating: null,
           rating_count: 0,
           is_available: isAvailable,
         });
+
+        // Create service_content for new service
+        const serviceContentTable = AppStore.getTable("service_content") || [];
+        const parsedContent = parseServiceContent(
+          howItWorksText,
+          whatCoveredText,
+          whatNotCoveredText,
+        );
+        serviceContentTable.push({
+          service_id: nextId,
+          how_it_works: parsedContent.how_it_works,
+          what_is_covered: parsedContent.what_is_covered,
+          what_is_not_covered: parsedContent.what_is_not_covered,
+        });
+
         AppStore.save();
         refreshServicesFromStore();
         showToast(`✓ "${name}" added to service catalog`);

@@ -13,6 +13,8 @@ AppStore.ready.then(() => {
   const allProviders = AppStore.getTable("service_providers") || [];
   const allUsers = AppStore.getTable("customers") || [];
   const allUnits = AppStore.getTable("units") || [];
+  const allServices = AppStore.getTable("services") || [];
+  const allCategories = AppStore.getTable("categories") || [];
 
   /* ── 3. Transform platform events ── */
   function transformEvents(events) {
@@ -61,10 +63,27 @@ AppStore.ready.then(() => {
     });
   }
 
+  /* ── 5. Transform services and categories to get top-rated ── */
+  function getTopRatedServices(limit = 5) {
+    return allServices
+      .filter((s) => s.is_available)
+      .sort((a, b) => (b.average_rating || 0) - (a.average_rating || 0))
+      .slice(0, limit);
+  }
+
+  function getTopRatedCategories(limit = 5) {
+    return allCategories
+      .filter((c) => c.is_available)
+      .sort((a, b) => (b.average_rating || 0) - (a.average_rating || 0))
+      .slice(0, limit);
+  }
+
   const EVENTS = transformEvents(allEvents);
   const SUPER_USER_ACTIONS = transformActions(allActions);
+  const TOP_SERVICES = getTopRatedServices();
+  const TOP_CATEGORIES = getTopRatedCategories();
 
-  /* ── 5. Render ── */
+  /* ── 6. Render ── */
   function renderEvents() {
     const tbody = document.getElementById("events-tbody");
     if (!tbody) return;
@@ -97,14 +116,78 @@ AppStore.ready.then(() => {
     ).join("");
   }
 
+  function renderTopServices() {
+    const el = document.getElementById("top-services-list");
+    if (!el) return;
+
+    if (TOP_SERVICES.length === 0) {
+      el.innerHTML = `<div class="empty-state">No services yet</div>`;
+    } else {
+      el.innerHTML = TOP_SERVICES.map((svc) => {
+        const rating =
+          typeof svc.average_rating === "number" && (svc.rating_count || 0) > 0
+            ? svc.average_rating
+            : null;
+        const ratingText =
+          typeof rating === "number" ? rating.toFixed(1) : "N/A";
+        return `
+          <div class="top-item">
+            <div class="top-item-info">
+              <div class="top-item-name">${svc.service_name}</div>
+              <div class="top-item-meta">${svc.base_price ? "₹" + svc.base_price : "Price TBA"}</div>
+            </div>
+            <div class="top-item-rating">
+              <div class="rating-value">${ratingText}${typeof rating === "number" ? " ⭐" : ""}</div>
+              <div class="rating-count">${svc.rating_count || 0} ratings</div>
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+  }
+
+  function renderTopCategories() {
+    const el = document.getElementById("top-categories-list");
+    if (!el) return;
+
+    if (TOP_CATEGORIES.length === 0) {
+      el.innerHTML = `<div class="empty-state">No categories yet</div>`;
+    } else {
+      el.innerHTML = TOP_CATEGORIES.map((cat) => {
+        const rating =
+          typeof cat.average_rating === "number" && (cat.rating_count || 0) > 0
+            ? cat.average_rating
+            : null;
+        const ratingText =
+          typeof rating === "number" ? rating.toFixed(1) : "N/A";
+        return `
+          <div class="top-item">
+            <div class="top-item-info">
+              <div class="top-item-name">${cat.category_name}</div>
+              <div class="top-item-meta">${cat.icon} ${cat.description}</div>
+            </div>
+            <div class="top-item-rating">
+              <div class="rating-value">${ratingText}${typeof rating === "number" ? " ⭐" : ""}</div>
+              <div class="rating-count">${cat.rating_count || 0} ratings</div>
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+  }
+
   /* ── 6. Initialize on DOM ready ── */
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", () => {
       renderEvents();
       renderSuperUserActions();
+      renderTopServices();
+      renderTopCategories();
     });
   } else {
     renderEvents();
     renderSuperUserActions();
+    renderTopServices();
+    renderTopCategories();
   }
 });
