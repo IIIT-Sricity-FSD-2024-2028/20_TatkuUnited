@@ -236,7 +236,10 @@
       var score =
         assignment && typeof assignment.assignment_score === "number"
           ? assignment.assignment_score
-          : (customer && customer.rating) || 4.5;
+          : null;
+      if (typeof score !== "number") {
+        return;
+      }
       var rounded = Math.max(1, Math.min(5, Math.round(score)));
       var reviewerName = customer ? customer.full_name : "Tatku Customer";
       var dateLabel = new Date(booking.scheduled_at).toLocaleDateString(
@@ -273,6 +276,9 @@
       );
 
       serviceReviews.forEach(function (review) {
+        if (typeof review.rating !== "number") {
+          return;
+        }
         var customer = customerMap.get(review.customer_id);
         var reviewerName = customer ? customer.full_name : "Tatku Customer";
         var dateLabel = new Date(review.created_at).toLocaleDateString(
@@ -286,8 +292,8 @@
 
         reviews.push({
           id: review.review_id,
-          stars: review.rating || 4,
-          score: review.rating || 4,
+          stars: review.rating,
+          score: review.rating,
           date: review.created_at,
           name: reviewerName,
           meta: dateLabel + " • Verified review",
@@ -297,25 +303,21 @@
       });
     }
 
-    if (!reviews.length) {
-      reviews = [
-        {
-          id: "fallback-1",
-          stars: 5,
-          score: 4.8,
-          date: "2026-01-01T10:00:00Z",
-          name: "Tatku User",
-          meta: "Recent booking • Verified customer",
-          initials: "T",
-          text: "Good quality service and professional behavior. Booking and execution were both seamless.",
-        },
-      ];
-    }
-
     return reviews;
   }
 
   function renderReviewCards(reviewList, reviews) {
+    if (!reviews.length) {
+      reviewList.innerHTML =
+        '<div class="review-card">' +
+        '<div class="review-header">' +
+        '<div><div class="reviewer-name">N/A</div><div class="reviewer-meta">No reviews available</div></div>' +
+        "</div>" +
+        "<p>N/A</p>" +
+        "</div>";
+      return;
+    }
+
     reviewList.innerHTML = reviews
       .map(function (review) {
         return (
@@ -353,6 +355,29 @@
   }
 
   function updateReviewSummary(reviews) {
+    var overallNum = document.querySelector(".overall-num");
+    var overallCount = document.querySelector(".overall-count");
+
+    if (!reviews.length) {
+      if (overallNum) {
+        overallNum.textContent = "N/A";
+      }
+      if (overallCount) {
+        overallCount.textContent = "N/A";
+      }
+      document.querySelectorAll(".rating-bar-row").forEach(function (row) {
+        var fill = row.querySelector(".rb-fill");
+        var countNode = row.querySelector(".rb-count");
+        if (fill) {
+          fill.style.width = "0%";
+        }
+        if (countNode) {
+          countNode.textContent = "N/A";
+        }
+      });
+      return;
+    }
+
     var average =
       reviews.reduce(function (sum, r) {
         return sum + r.score;
@@ -364,8 +389,6 @@
       counts[review.stars] += 1;
     });
 
-    var overallNum = document.querySelector(".overall-num");
-    var overallCount = document.querySelector(".overall-count");
     if (overallNum) {
       overallNum.textContent = average.toFixed(2);
     }
@@ -644,13 +667,25 @@
       .join("");
   }
 
-  async function initDynamicContent() {
+  async function loadData() {
+    if (
+      typeof AppStore !== "undefined" &&
+      AppStore.data &&
+      Array.isArray(AppStore.data.services)
+    ) {
+      return AppStore.data;
+    }
+
     var response = await fetch(MOCK_DATA_PATH);
     if (!response.ok) {
       throw new Error("Unable to load mock data");
     }
 
-    var data = await response.json();
+    return response.json();
+  }
+
+  async function initDynamicContent() {
+    var data = await loadData();
     var availableServices = (data.services || []).filter(function (service) {
       return service.is_available;
     });
@@ -659,12 +694,45 @@
       return;
     }
 
-    var serviceId =
-      getQueryParam("serviceId") || availableServices[0].service_id;
-    var service =
-      availableServices.find(function (item) {
-        return item.service_id === serviceId;
-      }) || availableServices[0];
+    var requestedServiceId = getQueryParam("serviceId");
+    var serviceId = requestedServiceId || availableServices[0].service_id;
+    var service = availableServices.find(function (item) {
+      return item.service_id === serviceId;
+    });
+
+    if (!service) {
+      var svcTitleMissing = document.querySelector(".svc-title");
+      var svcMetaRatingMissing = document.querySelector(".svc-meta strong");
+      var svcMetaReviewsMissing = document.querySelector(".svc-reviews");
+      var svcBulletsMissing = document.querySelector(".svc-bullets");
+      var heroImageMissing = document.querySelector(".svc-hero-img-wrap img");
+      var bookButtonMissing = document.getElementById("btnBookNow");
+
+      document.title = "Service unavailable – Tatku United";
+      if (svcTitleMissing) {
+        svcTitleMissing.textContent = "Service unavailable";
+      }
+      if (svcMetaRatingMissing) {
+        svcMetaRatingMissing.textContent = "N/A";
+      }
+      if (svcMetaReviewsMissing) {
+        svcMetaReviewsMissing.textContent = "(N/A)";
+      }
+      if (svcBulletsMissing) {
+        svcBulletsMissing.innerHTML =
+          "<li>The selected service could not be found.</li>" +
+          "<li>It may have been removed or is not available right now.</li>";
+      }
+      if (heroImageMissing) {
+        heroImageMissing.src = "https://placehold.co/1200x800?text=Service+Unavailable";
+        heroImageMissing.alt = "Service unavailable";
+      }
+      if (bookButtonMissing) {
+        bookButtonMissing.disabled = true;
+        bookButtonMissing.textContent = "Unavailable";
+      }
+      return;
+    }
 
     var faqs = (data.service_faqs || [])
       .filter(function (faq) {
@@ -676,11 +744,11 @@
 
     var serviceContent = getServiceContent(data, service.service_id) || {};
     var reviews = buildReviewData(data, service.service_id);
-    var avgRating =
-      service.rating ||
-      reviews.reduce(function (sum, review) {
-        return sum + review.score;
-      }, 0) / reviews.length;
+    var avgRating = reviews.length
+      ? reviews.reduce(function (sum, review) {
+          return sum + review.score;
+        }, 0) / reviews.length
+      : null;
 
     document.title = service.service_name + " – Tatku United";
 
@@ -706,10 +774,12 @@
       svcTitle.textContent = service.service_name;
     }
     if (svcMetaRating) {
-      svcMetaRating.textContent = avgRating.toFixed(2);
+      svcMetaRating.textContent =
+        typeof avgRating === "number" ? avgRating.toFixed(2) : "N/A";
     }
     if (svcMetaReviews) {
-      svcMetaReviews.textContent = "(" + reviews.length + " reviews)";
+      svcMetaReviews.textContent =
+        reviews.length > 0 ? "(" + reviews.length + " reviews)" : "(N/A)";
     }
     if (svcBullets) {
       svcBullets.innerHTML = [

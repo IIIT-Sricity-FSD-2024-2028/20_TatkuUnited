@@ -1,5 +1,5 @@
-const tabs = ['All', 'Jobs', 'Payments', 'Account'];
-let activeTab = 'All';
+const tabs = ["All", "Jobs", "Payments", "Account"];
+let activeTab = "All";
 let notifications = [];
 
 const iconMap = {
@@ -9,47 +9,91 @@ const iconMap = {
   completed: `<div class="notif-icon completed"><svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div>`,
 };
 
+const PAGE_SIZE = 3;
+let visibleCount = PAGE_SIZE;
+
 function renderTabs() {
-  document.getElementById('notif-tabs').innerHTML = tabs.map(t => `
-    <button class="notif-tab ${t === activeTab ? 'active' : ''}" onclick="setTab('${t}')">${t}</button>
-  `).join('');
+  document.getElementById("notif-tabs").innerHTML = tabs
+    .map(
+      (t) => `
+    <button class="notif-tab ${t === activeTab ? "active" : ""}" onclick="setTab('${t}')">${t}</button>
+  `,
+    )
+    .join("");
 }
 
-function setTab(t) { activeTab = t; renderTabs(); renderNotifs(); }
+function setTab(t) {
+  activeTab = t;
+  visibleCount = PAGE_SIZE;
+  renderTabs();
+  renderNotifs();
+}
 
 function renderNotifs() {
-  const filtered = activeTab === 'All' ? notifications : notifications.filter(n => n.category === activeTab);
-  
+  const filtered =
+    activeTab === "All"
+      ? notifications
+      : notifications.filter((n) => n.category === activeTab);
+  const visible = filtered.slice(0, visibleCount);
+
   if (filtered.length === 0) {
-    document.getElementById('notif-list').innerHTML = `
+    document.getElementById("notif-list").innerHTML = `
       <div style="text-align:center; padding: 40px; color: #94a3b8; font-size: 14px;">
         <p>No notifications found in this category.</p>
       </div>
     `;
+    updateLoadMoreButton(0, 0);
     return;
   }
 
-  document.getElementById('notif-list').innerHTML = filtered.map((n, i) => `
-    <div class="notif-item ${n.unread ? 'unread' : ''} type-${n.type}" style="animation-delay:${i * 0.07}s" id="notif-${n.id}">
+  document.getElementById("notif-list").innerHTML = visible
+    .map(
+      (n, i) => `
+    <div class="notif-item ${n.unread ? "unread" : ""} type-${n.type}" style="animation-delay:${i * 0.07}s" id="notif-${n.id}">
       ${iconMap[n.type]}
       <div class="notif-body">
         <div class="notif-row">
           <span class="notif-title-text">${n.title}</span>
-          <span class="notif-time">${n.time} ${n.unread ? '<span class="unread-dot"></span>' : ''}</span>
+          <span class="notif-time">${n.time} ${n.unread ? '<span class="unread-dot"></span>' : ""}</span>
         </div>
         <p class="notif-desc">${n.desc}</p>
         <div class="notif-actions">
-          ${n.actions && n.actions.length > 0 ? n.actions.map(a => `
-            <button class="notif-action-btn ${a.cls}" onclick="${a.action === 'dismiss' ? `dismissNotif(${n.id})` : `window.location='${a.href}'`}">${a.label}</button>
-          `).join('') : ''}
+          ${
+            n.actions && n.actions.length > 0
+              ? n.actions
+                  .map(
+                    (a) => `
+            <button class="notif-action-btn ${a.cls}" onclick="${a.action === "dismiss" ? `dismissNotif(${n.id})` : `window.location='${a.href}'`}">${a.label}</button>
+          `,
+                  )
+                  .join("")
+              : ""
+          }
         </div>
       </div>
     </div>
-  `).join('');
+  `,
+    )
+    .join("");
+
+  updateLoadMoreButton(visible.length, filtered.length);
+}
+
+function updateLoadMoreButton(visible, total) {
+  const btn = document.querySelector(".load-more-btn");
+  if (!btn) return;
+  const remaining = Math.max(0, total - visible);
+  if (remaining <= 0) {
+    btn.textContent = "No more notifications";
+    btn.disabled = true;
+    return;
+  }
+  btn.textContent = `Load previous notifications (${remaining})`;
+  btn.disabled = false;
 }
 
 function dismissNotif(id) {
-  const idx = notifications.findIndex(n => n.id === id);
+  const idx = notifications.findIndex((n) => n.id === id);
   if (idx > -1) {
     notifications.splice(idx, 1);
     saveNotifications();
@@ -58,7 +102,7 @@ function dismissNotif(id) {
 }
 
 function markAllRead() {
-  notifications.forEach(n => n.unread = false);
+  notifications.forEach((n) => (n.unread = false));
   saveNotifications();
   renderNotifs();
 }
@@ -74,7 +118,12 @@ function saveNotifications() {
 }
 
 function loadMore() {
-  // Demo function placeholder
+  const filtered =
+    activeTab === "All"
+      ? notifications
+      : notifications.filter((n) => n.category === activeTab);
+  visibleCount = Math.min(filtered.length, visibleCount + PAGE_SIZE);
+  renderNotifs();
 }
 
 function init() {
@@ -84,15 +133,18 @@ function init() {
       if (!data) return;
 
       if (data.provider) {
-        document.querySelectorAll('.user-chip span').forEach(el => el.textContent = data.provider.name || 'Provider');
+        document
+          .querySelectorAll(".user-chip span")
+          .forEach((el) => (el.textContent = data.provider.name || "Provider"));
         if (data.provider.pfp_url) {
-          document.querySelectorAll('.user-avatar').forEach(el => {
+          document.querySelectorAll(".user-avatar").forEach((el) => {
             el.innerHTML = `<img src="${data.provider.pfp_url}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
           });
         }
       }
 
       notifications = data.notifications || [];
+      visibleCount = PAGE_SIZE;
       renderTabs();
       renderNotifs();
     });

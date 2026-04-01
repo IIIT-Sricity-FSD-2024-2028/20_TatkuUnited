@@ -22,6 +22,10 @@
       .replace(/\s+/g, "-");
   }
 
+  function buildCategoryUrl(categoryId) {
+    return "category_page.html?categoryId=" + encodeURIComponent(categoryId);
+  }
+
   function formatDuration(minutes) {
     var mins = Number(minutes) || 0;
     if (mins >= 60) {
@@ -56,25 +60,19 @@
   function renderCategoryPills(categoriesRow, categories) {
     var html = [];
     var chunkSize = 6;
-    var allCategories = [{ category_id: "all", category_name: "All" }].concat(
-      categories || [],
-    );
 
-    for (var i = 0; i < allCategories.length; i += chunkSize) {
-      var rowCategories = allCategories.slice(i, i + chunkSize);
+    for (var i = 0; i < (categories || []).length; i += chunkSize) {
+      var rowCategories = categories.slice(i, i + chunkSize);
       var rowHtml = rowCategories
         .map(function (category) {
-          var isAll = category.category_id === "all";
           return (
-            '<button class="category-pill' +
-            (isAll ? " active" : "") +
-            '" data-cat="' +
-            category.category_id +
+            '<a class="category-pill" href="' +
+            buildCategoryUrl(category.category_id) +
             '">' +
             "<span>" +
             category.category_name +
             "</span>" +
-            "</button>"
+            "</a>"
           );
         })
         .join("");
@@ -83,6 +81,62 @@
     }
 
     categoriesRow.innerHTML = html.join("");
+  }
+
+  function getServiceMetrics(service, statsByService) {
+    var stats = statsByService.get(service.service_id) || {
+      bookingCount: 0,
+      ratings: [],
+    };
+    var hasRating = stats.ratings.length > 0;
+    var rating = hasRating
+      ? stats.ratings.reduce(function (a, b) {
+          return a + b;
+        }, 0) / stats.ratings.length
+      : null;
+
+    return {
+      rating: rating,
+      hasRating: hasRating,
+      bookingCount: stats.bookingCount || 0,
+    };
+  }
+
+  function sortServices(services, sortBy, statsByService) {
+    var sorted = services.slice();
+
+    sorted.sort(function (a, b) {
+      var aMetrics = getServiceMetrics(a, statsByService);
+      var bMetrics = getServiceMetrics(b, statsByService);
+      var aRatingForSort = aMetrics.hasRating ? aMetrics.rating : -1;
+      var bRatingForSort = bMetrics.hasRating ? bMetrics.rating : -1;
+
+      if (sortBy === "price-low") {
+        return (a.base_price || 0) - (b.base_price || 0);
+      }
+      if (sortBy === "price-high") {
+        return (b.base_price || 0) - (a.base_price || 0);
+      }
+      if (sortBy === "most-booked") {
+        if (bMetrics.bookingCount !== aMetrics.bookingCount) {
+          return bMetrics.bookingCount - aMetrics.bookingCount;
+        }
+        if (bRatingForSort !== aRatingForSort) {
+          return bRatingForSort - aRatingForSort;
+        }
+        return a.service_name.localeCompare(b.service_name);
+      }
+
+      if (bRatingForSort !== aRatingForSort) {
+        return bRatingForSort - aRatingForSort;
+      }
+      if (bMetrics.bookingCount !== aMetrics.bookingCount) {
+        return bMetrics.bookingCount - aMetrics.bookingCount;
+      }
+      return a.service_name.localeCompare(b.service_name);
+    });
+
+    return sorted;
   }
 
   function renderServiceCards(
@@ -95,15 +149,8 @@
       var category = categoriesById.get(service.category_id);
       var categoryName = category ? category.category_name : "General";
       var categoryClass = slugify(categoryName).split("-")[0] || "general";
-      var stats = statsByService.get(service.service_id) || {
-        bookingCount: 0,
-        ratings: [],
-      };
-      var rating = stats.ratings.length
-        ? stats.ratings.reduce(function (a, b) {
-            return a + b;
-          }, 0) / stats.ratings.length
-        : 4.6;
+      var metrics = getServiceMetrics(service, statsByService);
+      var ratingText = metrics.hasRating ? metrics.rating.toFixed(1) : "N/A";
 
       var isUnavailable = service.is_available === false;
       var unavailableClass = isUnavailable ? " unavailable" : "";
@@ -142,7 +189,7 @@
         "</h3>" +
         '<span class="card-rating">' +
         '<svg viewBox="0 0 20 20" fill="#f5a623"><path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"/></svg>' +
-        rating.toFixed(1) +
+        ratingText +
         "</span>" +
         "</div>" +
         '<p class="card-desc">' +
@@ -182,58 +229,57 @@
     }
   }
 
-  function initFiltersAndSearch() {
-    var categoryPills = document.querySelectorAll(
-      ".categories-row-group .category-pill",
-    );
-    var serviceCards = document.querySelectorAll(".service-card");
+  function initServiceControls(
+    servicesGrid,
+    services,
+    categoriesById,
+    statsByService,
+  ) {
     var noResults = document.getElementById("noResults");
     var searchInput = document.getElementById("searchInput");
+    var serviceSort = document.getElementById("serviceSort");
 
-    function runFilter() {
-      var activePill = document.querySelector(".category-pill.active");
-      var category = activePill ? activePill.dataset.cat : "all";
+    function renderVisibleServices() {
       var query = searchInput ? searchInput.value.trim().toLowerCase() : "";
-      var visible = 0;
+      var sortBy = serviceSort ? serviceSort.value : "top-rated";
 
-      serviceCards.forEach(function (card) {
-        var title = (card.querySelector("h3") || {}).textContent || "";
-        var desc = (card.querySelector(".card-desc") || {}).textContent || "";
-        var cat = card.dataset.cat || "";
-
-        var categoryMatch = category === "all" || cat === category;
-        var searchMatch =
-          !query ||
-          title.toLowerCase().indexOf(query) >= 0 ||
-          desc.toLowerCase().indexOf(query) >= 0;
-        var show = categoryMatch && searchMatch;
-
-        card.style.display = show ? "" : "none";
-        if (show) {
-          visible += 1;
+      var filtered = services.filter(function (service) {
+        if (!query) {
+          return true;
         }
+
+        var category = categoriesById.get(service.category_id);
+        var categoryName = category ? category.category_name : "";
+        return (
+          service.service_name.toLowerCase().indexOf(query) >= 0 ||
+          service.description.toLowerCase().indexOf(query) >= 0 ||
+          categoryName.toLowerCase().indexOf(query) >= 0
+        );
       });
 
+      filtered = sortServices(filtered, sortBy, statsByService);
+      renderServiceCards(
+        servicesGrid,
+        filtered,
+        categoriesById,
+        statsByService,
+      );
+      initBookButtons();
+
       if (noResults) {
-        noResults.style.display = visible === 0 ? "" : "none";
+        noResults.style.display = filtered.length === 0 ? "" : "none";
       }
     }
 
-    categoryPills.forEach(function (pill) {
-      pill.addEventListener("click", function () {
-        categoryPills.forEach(function (p) {
-          p.classList.remove("active");
-        });
-        pill.classList.add("active");
-        runFilter();
-      });
-    });
-
     if (searchInput) {
-      searchInput.addEventListener("input", runFilter);
+      searchInput.addEventListener("input", renderVisibleServices);
     }
 
-    runFilter();
+    if (serviceSort) {
+      serviceSort.addEventListener("change", renderVisibleServices);
+    }
+
+    renderVisibleServices();
   }
 
   function initBookButtons() {
@@ -351,7 +397,9 @@
       data = await response.json();
     }
 
-    var categories = data.categories || [];
+    var categories = (data.categories || []).filter(function (category) {
+      return category.is_available;
+    });
     var categoriesById = new Map(
       categories.map(function (category) {
         return [category.category_id, category];
@@ -359,7 +407,7 @@
     );
 
     var services = (data.services || []).filter(function (service) {
-      return categoriesById.has(service.category_id);
+      return service.is_available && categoriesById.has(service.category_id);
     });
 
     var statsByService = getServiceStats(data);
@@ -390,15 +438,13 @@
     });
 
     renderCategoryPills(categoriesRow, categories);
-    renderServiceCards(servicesGrid, services, categoriesById, statsByService);
 
     if (sectionSub) {
       sectionSub.textContent =
         "Showing " + services.length + " services from live mock data";
     }
 
-    initFiltersAndSearch();
-    initBookButtons();
+    initServiceControls(servicesGrid, services, categoriesById, statsByService);
   }
 
   initHamburger();

@@ -94,10 +94,26 @@
           </div>
         </div>
 
+        <div class="service-toolbar">
+          <div class="service-toolbar-copy">
+            <span class="toolbar-label">Refine services</span>
+            <p>Search the list, then sort it by rating, bookings, or price.</p>
+          </div>
+          <label class="service-sort" for="serviceSort">
+            <span>Sort by</span>
+            <select id="serviceSort">
+              <option value="top-rated">Top rated</option>
+              <option value="most-booked">Most booked</option>
+              <option value="price-low">Price: low to high</option>
+              <option value="price-high">Price: high to low</option>
+            </select>
+          </label>
+        </div>
+
         <div class="services-grid" id="servicesGrid"></div>
 
         <div class="no-results" id="noResults" style="display: none">
-          <p>No services found. Try a different search or category.</p>
+          <p>No services found. Try a different search or sort option.</p>
         </div>
       </div>
     </section>
@@ -164,7 +180,7 @@
       <div class="container">
         <div class="footer-grid">
           <div class="footer-brand">
-            <a href="#" class="logo">
+            <a href="../landing_page.html" class="logo">
               <span class="logo-badge">TU</span>
               <span class="logo-name">Tatku United</span>
             </a>
@@ -177,10 +193,20 @@
           <div class="footer-col">
             <h4>SERVICES</h4>
             <ul>
-              <li><a href="#">AC Repair</a></li>
-              <li><a href="#">Electrical</a></li>
-              <li><a href="category_page.html">Cleaning</a></li>
-              <li><a href="#">Plumbing</a></li>
+              <li>
+                <a href="category_page.html?categoryId=CAT001">Home Cleaning</a>
+              </li>
+              <li>
+                <a href="category_page.html?categoryId=CAT002">Plumbing</a>
+              </li>
+              <li>
+                <a href="category_page.html?categoryId=CAT003">Electrical</a>
+              </li>
+              <li>
+                <a href="category_page.html?categoryId=CAT005"
+                  >AC &amp; Appliances</a
+                >
+              </li>
             </ul>
           </div>
           <div class="footer-col">

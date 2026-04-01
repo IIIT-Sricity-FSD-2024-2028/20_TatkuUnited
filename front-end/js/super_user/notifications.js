@@ -82,6 +82,8 @@ AppStore.ready.then(() => {
   }
 
   let notifications = transformNotifications(allNotifications);
+  const PAGE_SIZE = 4;
+  let visibleCount = PAGE_SIZE;
 
   const tabs = [
     { key: "all", label: "All" },
@@ -92,6 +94,10 @@ AppStore.ready.then(() => {
   ];
 
   let activeTab = "all";
+
+  function resetPagination() {
+    visibleCount = PAGE_SIZE;
+  }
 
   function getFiltered() {
     const q = (
@@ -130,6 +136,7 @@ AppStore.ready.then(() => {
 
   function setTab(key) {
     activeTab = key;
+    resetPagination();
     renderTabs();
     renderNotifications();
   }
@@ -141,6 +148,7 @@ AppStore.ready.then(() => {
     const list = document.getElementById("notif-list");
     if (!list) return;
     const filtered = getFiltered();
+    const visible = filtered.slice(0, visibleCount);
     if (filtered.length === 0) {
       list.innerHTML = `<div class="empty-state">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
@@ -149,9 +157,10 @@ AppStore.ready.then(() => {
         </svg>
         <p>No notifications</p><span>You're all caught up!</span>
       </div>`;
+      updateLoadMoreButton(0, 0);
       return;
     }
-    list.innerHTML = filtered
+    list.innerHTML = visible
       .map(
         (n, i) => `
       <div class="notif-item ${n.read ? "" : "unread"} ${n.urgent ? "urgent" : ""}" id="notif-${n.id}" style="animation-delay:${i * 0.04}s">
@@ -171,7 +180,21 @@ AppStore.ready.then(() => {
     `,
       )
       .join("");
+    updateLoadMoreButton(visible.length, filtered.length);
     updateBadge();
+  }
+
+  function updateLoadMoreButton(visible, total) {
+    const btn = document.querySelector(".load-more-btn");
+    if (!btn) return;
+    const remaining = Math.max(0, total - visible);
+    if (remaining <= 0) {
+      btn.textContent = "No more notifications";
+      btn.disabled = true;
+      return;
+    }
+    btn.textContent = `Load previous notifications (${remaining})`;
+    btn.disabled = false;
   }
 
   function handleAction(id, label) {
@@ -194,6 +217,7 @@ AppStore.ready.then(() => {
   }
 
   function filterNotifications() {
+    resetPagination();
     renderNotifications();
   }
 
@@ -207,11 +231,9 @@ AppStore.ready.then(() => {
   }
 
   function loadMore() {
-    const btn = document.querySelector(".load-more-btn");
-    if (btn) {
-      btn.textContent = "No more notifications";
-      btn.disabled = true;
-    }
+    const total = getFiltered().length;
+    visibleCount = Math.min(total, visibleCount + PAGE_SIZE);
+    renderNotifications();
   }
 
   // Make functions globally accessible

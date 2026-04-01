@@ -325,6 +325,7 @@ button {
 
 .category-pill {
   display: flex;
+  text-decoration: none;
   flex: 0 0 calc((100% - 50px) / 6);
   flex-direction: column;
   align-items: center;
@@ -345,6 +346,74 @@ button {
   width: calc((100% - 50px) / 6);
   min-height: 100px;
   height: 100px;
+}
+
+.category-pill span {
+  text-align: center;
+}
+
+.service-toolbar {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 20px;
+  padding: 16px 18px;
+  background: linear-gradient(180deg, #f8fbff 0%, #ffffff 100%);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.service-toolbar-copy {
+  display: grid;
+  gap: 4px;
+}
+
+.toolbar-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.service-toolbar-copy p {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.service-sort {
+  display: grid;
+  gap: 6px;
+  min-width: 220px;
+}
+
+.service-sort span {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.service-sort select {
+  width: 100%;
+  height: 42px;
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  padding: 0 14px;
+  background: var(--white);
+  color: var(--text);
+  font-size: 14px;
+  outline: none;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
+}
+
+.service-sort select:focus {
+  border-color: var(--blue);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
 }
 
 .category-pill:hover {
@@ -758,6 +827,14 @@ button {
   }
   .hamburger {
     display: flex;
+  }
+  .service-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .service-sort {
+    min-width: 0;
+    width: 100%;
   }
   .services-grid {
     grid-template-columns: 1fr;
