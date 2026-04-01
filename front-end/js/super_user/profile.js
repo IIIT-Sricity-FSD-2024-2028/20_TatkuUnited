@@ -104,7 +104,52 @@ AppStore.ready.then(() => {
   function closePwdModalBtn() {
     const pwdModal = document.getElementById("pwd-modal");
     if (pwdModal) pwdModal.classList.remove("open");
+    // Clear fields
+    const fields = ["pwd-current", "pwd-new", "pwd-confirm"];
+    fields.forEach((id) => {
+      const el = document.getElementById(id);
+      if (el) el.value = "";
+    });
   }
+
+  function handlePasswordChange() {
+    const currentPwd = document.getElementById("pwd-current")?.value;
+    const newPwd = document.getElementById("pwd-new")?.value;
+    const confirmPwd = document.getElementById("pwd-confirm")?.value;
+
+    if (!currentPwd || !newPwd || !confirmPwd) {
+      showToast("Please fill in all password fields.");
+      return;
+    }
+
+    if (newPwd !== confirmPwd) {
+      showToast("New passwords do not match.");
+      return;
+    }
+
+    if (newPwd.length < 12) {
+      showToast("New password must be at least 12 characters.");
+      return;
+    }
+
+    const res = Auth.changePassword(currentPwd, newPwd);
+    if (res.success) {
+      showToast("Password updated successfully!");
+      closePwdModalBtn();
+    } else {
+      const errorMap = {
+        invalid_current_password: "Current password is incorrect.",
+        not_logged_in: "Session expired. Please log in again.",
+      };
+      showToast(errorMap[res.error] || "Failed to update password.");
+    }
+  }
+
+  // Export to window for HTML onclick handlers
+  window.openPwdModal = openPwdModal;
+  window.closePwdModal = closePwdModal;
+  window.closePwdModalBtn = closePwdModalBtn;
+  window.handlePasswordChange = handlePasswordChange;
 
   function updateAvatar(input) {
     if (!input.files || !input.files[0]) return;
@@ -141,7 +186,7 @@ AppStore.ready.then(() => {
       const nameEl = document.getElementById("full-name");
       const emailEl = document.getElementById("email");
       const phoneEl = document.getElementById("phone");
-      const idEl = document.querySelector(".readonly-field");
+      const idEl = document.getElementById("super-user-id");
       
       if(nameEl) nameEl.value = currentUser.name || '';
       if(emailEl) emailEl.value = currentUser.email || '';

@@ -49,7 +49,6 @@ window.Auth = (() => {
     if (!_isMaintenanceModeEnabled()) return false;
     return role !== "super_user";
   }
-
   /* =========================================================================
      BUILD AUTH REGISTRY
      Called once inside AppStore.ready.then() — populates window.AuthRegistry
@@ -138,6 +137,7 @@ window.Auth = (() => {
         unitId: null,
         collectiveId: null,
         is_active: su.is_active,
+        phone: su.phone || null,
         pfp_url: su.pfp_url || null,
       });
     });
@@ -307,6 +307,54 @@ window.Auth = (() => {
     return entry;
   }
 
+  /* =========================================================================
+     Auth.changePassword(currentPassword, newPassword)
+     ========================================================================= */
+  function changePassword(currentPassword, newPassword) {
+    const user = getCurrentUser();
+    if (!user) return { success: false, error: "not_logged_in" };
+
+    if (user.password !== currentPassword) {
+      return { success: false, error: "invalid_current_password" };
+    }
+
+    const tableMap = {
+      super_user: "super_users",
+      collective_manager: "collective_managers",
+      unit_manager: "unit_managers",
+      provider: "service_providers",
+      customer: "customers",
+    };
+
+    const idKeyMap = {
+      super_user: "super_user_id",
+      collective_manager: "cm_id",
+      unit_manager: "um_id",
+      provider: "service_provider_id",
+      customer: "customer_id",
+    };
+
+    const tableName = tableMap[user.role];
+    const idKey = idKeyMap[user.role];
+    const table = AppStore.getTable(tableName);
+
+    if (!table) return { success: false, error: "table_not_found" };
+
+    const row = table.find((r) => r[idKey] === user.id);
+    if (!row) return { success: false, error: "user_not_found_in_store" };
+
+    /* Update password */
+    row.password = newPassword;
+
+    /* Persist to localStorage */
+    AppStore.save();
+
+    /* Rebuild registry for future operations */
+    _buildRegistry();
+
+    return { success: true };
+  }
+
   /* ─── Initialise registry once AppStore is ready ─── */
   AppStore.ready.then(() => {
     _buildRegistry();
@@ -329,6 +377,7 @@ window.Auth = (() => {
     hasRole,
     getRedirectUrl,
     getCurrentUser,
+    changePassword,
     isMaintenanceModeEnabled: _isMaintenanceModeEnabled,
   };
 })();

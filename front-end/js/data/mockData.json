@@ -15,35 +15,49 @@
       "collective_name": "North Chennai Collective",
       "is_active": true,
       "created_at": "2023-01-10T08:00:00Z",
-      "sector_ids": ["SEC002", "SEC005"]
+      "sector_ids": [
+        "SEC002",
+        "SEC005"
+      ]
     },
     {
       "collective_id": "COL002",
       "collective_name": "Central Chennai Collective",
       "is_active": true,
       "created_at": "2023-03-15T09:30:00Z",
-      "sector_ids": ["SEC001", "SEC006"]
+      "sector_ids": [
+        "SEC001",
+        "SEC006"
+      ]
     },
     {
       "collective_id": "COL003",
       "collective_name": "South Chennai Collective",
       "is_active": false,
       "created_at": "2022-11-20T07:45:00Z",
-      "sector_ids": ["SEC003"]
+      "sector_ids": [
+        "SEC003"
+      ]
     },
     {
       "collective_id": "COL004",
       "collective_name": "West Chennai Collective",
       "is_active": true,
       "created_at": "2023-07-01T10:00:00Z",
-      "sector_ids": ["SEC004", "SEC006"]
+      "sector_ids": [
+        "SEC004",
+        "SEC006"
+      ]
     },
     {
       "collective_id": "COL005",
       "collective_name": "East Chennai Collective",
       "is_active": true,
       "created_at": "2024-01-05T08:30:00Z",
-      "sector_ids": ["SEC005", "SEC002"]
+      "sector_ids": [
+        "SEC005",
+        "SEC002"
+      ]
     }
   ],
   "units": [

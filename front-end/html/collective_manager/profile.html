@@ -281,18 +281,18 @@
         </div>
         <div class="modal-fields">
           <div class="form-field">
-            <label>Current Password</label><input type="password" placeholder="Enter current password" />
+            <label>Current Password</label><input type="password" id="pwd-current" placeholder="Enter current password" />
           </div>
           <div class="form-field">
-            <label>New Password</label><input type="password" placeholder="Min. 8 characters" />
+            <label>New Password</label><input type="password" id="pwd-new" placeholder="Min. 8 characters" />
           </div>
           <div class="form-field">
-            <label>Confirm New Password</label><input type="password" placeholder="Re-enter new password" />
+            <label>Confirm New Password</label><input type="password" id="pwd-confirm" placeholder="Re-enter new password" />
           </div>
         </div>
         <div class="modal-btns">
           <button class="modal-btn-cancel" onclick="closePwdModalBtn()">Cancel</button>
-          <button class="modal-btn-save" onclick="closePwdModalBtn(); showToast('Password updated successfully!')">Update Password</button>
+          <button class="modal-btn-save" onclick="handlePasswordChange()">Update Password</button>
         </div>
       </div>
     </div>
