@@ -5,8 +5,6 @@
 (function () {
   "use strict";
 
-  var MOCK_DATA_PATH = "../../js/data/mockData.json";
-
   function formatPrice(value) {
     return new Intl.NumberFormat("en-IN", {
       style: "currency",
@@ -56,21 +54,33 @@
   }
 
   function renderCategoryPills(categoriesRow, categories) {
-    var html = [
-      '<button class="category-pill active" data-cat="all"><span>All</span></button>',
-    ];
+    var html = [];
+    var chunkSize = 6;
+    var allCategories = [{ category_id: "all", category_name: "All" }].concat(
+      categories || [],
+    );
 
-    categories.forEach(function (category) {
-      html.push(
-        '<button class="category-pill" data-cat="' +
-          category.category_id +
-          '">' +
-          "<span>" +
-          category.category_name +
-          "</span>" +
-          "</button>",
-      );
-    });
+    for (var i = 0; i < allCategories.length; i += chunkSize) {
+      var rowCategories = allCategories.slice(i, i + chunkSize);
+      var rowHtml = rowCategories
+        .map(function (category) {
+          var isAll = category.category_id === "all";
+          return (
+            '<button class="category-pill' +
+            (isAll ? " active" : "") +
+            '" data-cat="' +
+            category.category_id +
+            '">' +
+            "<span>" +
+            category.category_name +
+            "</span>" +
+            "</button>"
+          );
+        })
+        .join("");
+
+      html.push('<div class="categories-row-group">' + rowHtml + "</div>");
+    }
 
     categoriesRow.innerHTML = html.join("");
   }
@@ -157,7 +167,9 @@
   }
 
   function initFiltersAndSearch() {
-    var categoryPills = document.querySelectorAll(".category-pill");
+    var categoryPills = document.querySelectorAll(
+      ".categories-row-group .category-pill",
+    );
     var serviceCards = document.querySelectorAll(".service-card");
     var noResults = document.getElementById("noResults");
     var searchInput = document.getElementById("searchInput");
@@ -213,13 +225,18 @@
       btn.addEventListener("click", function (e) {
         e.stopPropagation();
         e.preventDefault();
-        var session = typeof Auth !== 'undefined' ? Auth.getCurrentUser() : null;
-        if (session && session.role === 'customer') {
-           var card = btn.closest('.service-card');
-           var svcName = card ? card.querySelector('h3').textContent : '';
-           var price = card ? card.querySelector('.price').textContent : '';
-           window.location.href = '../customer/schedule.html?service=' + encodeURIComponent(svcName) + '&price=' + encodeURIComponent(price);
-           return;
+        var session =
+          typeof Auth !== "undefined" ? Auth.getCurrentUser() : null;
+        if (session && session.role === "customer") {
+          var card = btn.closest(".service-card");
+          var svcName = card ? card.querySelector("h3").textContent : "";
+          var price = card ? card.querySelector(".price").textContent : "";
+          window.location.href =
+            "../customer/schedule.html?service=" +
+            encodeURIComponent(svcName) +
+            "&price=" +
+            encodeURIComponent(price);
+          return;
         }
         var orig = btn.textContent;
         btn.textContent = "Booked!";
@@ -233,26 +250,26 @@
   }
 
   function initAuthNav() {
-    if (typeof AppStore !== 'undefined' && typeof Auth !== 'undefined') {
-      AppStore.ready.then(function() {
+    if (typeof AppStore !== "undefined" && typeof Auth !== "undefined") {
+      AppStore.ready.then(function () {
         var session = Auth.getCurrentUser();
-        if (session && session.role === 'customer') {
-          var navAuth = document.querySelector('.nav-auth');
+        if (session && session.role === "customer") {
+          var navAuth = document.querySelector(".nav-auth");
           if (navAuth) {
-            navAuth.innerHTML = 
+            navAuth.innerHTML =
               '<a href="../customer/cart.html" style="margin-right: 20px; text-decoration: none; color: #1e293b; font-weight: 500; display:flex; align-items:center; gap:6px;"><svg viewBox="0 0 24 24" style="width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2;"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>Cart</a>' +
               '<a href="../customer/home.html" style="background: var(--primary, #1e3a8a); color: #fff; padding: 0.5rem 1.25rem; border-radius: 6px; font-weight: 500; text-decoration: none; display:flex; align-items:center; gap:8px;"><svg viewBox="0 0 24 24" style="width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Dashboard</a>';
           }
-          var navLinks = document.querySelector('.nav-links');
+          var navLinks = document.querySelector(".nav-links");
           if (navLinks) {
-            navLinks.innerHTML = 
+            navLinks.innerHTML =
               '<li><a href="../customer/home.html">Home</a></li>' +
               '<li><a href="service_discovery.html" class="active">Services</a></li>' +
               '<li><a href="../customer/bookings.html">Bookings</a></li>';
           }
-          var mobileMenu = document.querySelector('#mobileMenu ul');
+          var mobileMenu = document.querySelector("#mobileMenu ul");
           if (mobileMenu) {
-            mobileMenu.innerHTML = 
+            mobileMenu.innerHTML =
               '<li><a href="../customer/home.html" style="color:var(--primary); font-weight:600;">Dashboard</a></li>' +
               '<li><a href="service_discovery.html">Services</a></li>' +
               '<li><a href="../customer/cart.html">Cart</a></li>';
@@ -303,15 +320,22 @@
       return;
     }
 
-    var response = await fetch(MOCK_DATA_PATH);
-    if (!response.ok) {
-      throw new Error("Unable to load mock data");
+    if (typeof AppStore !== "undefined" && AppStore.ready) {
+      await AppStore.ready;
     }
 
-    var data = await response.json();
-    var categories = (data.categories || []).filter(function (category) {
-      return category.is_available;
-    });
+    var data =
+      typeof AppStore !== "undefined" && AppStore.data ? AppStore.data : null;
+
+    if (!data) {
+      var response = await fetch("../../js/data/mockData.json");
+      if (!response.ok) {
+        throw new Error("Unable to load mock data");
+      }
+      data = await response.json();
+    }
+
+    var categories = data.categories || [];
     var categoriesById = new Map(
       categories.map(function (category) {
         return [category.category_id, category];
@@ -319,7 +343,7 @@
     );
 
     var services = (data.services || []).filter(function (service) {
-      return service.is_available && categoriesById.has(service.category_id);
+      return categoriesById.has(service.category_id);
     });
 
     var statsByService = getServiceStats(data);
@@ -350,18 +374,11 @@
     });
 
     renderCategoryPills(categoriesRow, categories);
-    renderServiceCards(
-      servicesGrid,
-      services.slice(0, 8),
-      categoriesById,
-      statsByService,
-    );
+    renderServiceCards(servicesGrid, services, categoriesById, statsByService);
 
     if (sectionSub) {
       sectionSub.textContent =
-        "Showing " +
-        Math.min(8, services.length) +
-        " services from live mock data";
+        "Showing " + services.length + " services from live mock data";
     }
 
     initFiltersAndSearch();
