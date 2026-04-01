@@ -192,12 +192,20 @@
       p.rating.toFixed(1) +
       "</span></td>" +
       "<td>" +
-      '  <button class="action-link" onclick="viewProfile(\'' +
+      '  <div class="actions-cell">' +
+      '    <button class="btn-action btn-view" onclick="viewProfile(\'' +
       p.id +
-      "')\">View Profile</button>" +
-      '  <button class="action-link delete-link" onclick="deleteProvider(\'' +
+      '\')">' +
+      '      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>' +
+      "      View Profile" +
+      "    </button>" +
+      '    <button class="btn-action btn-remove" onclick="deleteProvider(\'' +
       p.id +
-      "')\">Remove</button>" +
+      '\')">' +
+      '      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>' +
+      "      Remove" +
+      "    </button>" +
+      "  </div>" +
       "</td>";
     return tr;
   }
@@ -375,32 +383,7 @@
   };
 
   window.viewProfile = function (id) {
-    var p = providers.find(function (x) {
-      return x.id === id;
-    });
-    if (!p) return;
-    alert(
-      "Provider Profile\n\n" +
-        "Name:        " +
-        p.name +
-        "\n" +
-        "ID:          " +
-        p.id +
-        "\n" +
-        "Skill:       " +
-        p.specialty +
-        "\n" +
-        "Status:      " +
-        p.status +
-        "\n" +
-        "Rating:      " +
-        p.rating.toFixed(1) +
-        "\n" +
-        "Performance: " +
-        p.perf +
-        "% " +
-        p.perfLabel,
-    );
+    window.location.href = "provider_profile.html?id=" + id;
   };
 
   document.addEventListener("keydown", function (e) {
