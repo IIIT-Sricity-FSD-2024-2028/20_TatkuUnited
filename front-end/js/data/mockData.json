@@ -7,7 +7,7 @@
     "unit_average_rule": "Average of assignment scores for all providers in that unit",
     "category_average_rule": "Average of assignment scores for services in the category",
     "fallback_average_rule": "If average_rating is missing, fill it with the mean of all available non-null average_rating values (currently 4.73)",
-    "updated_on": "2026-03-29"
+    "updated_on": "2026-04-01"
   },
   "collectives": [
     {
@@ -60,7 +60,7 @@
   "units": [
     {
       "unit_id": "UNT001",
-      "unit_name": "Electronics Repair",
+      "unit_name": "Electrical & AC Services",
       "rating": 5,
       "rating_count": 1,
       "is_active": true,
@@ -115,7 +115,7 @@
     {
       "unit_id": "UNT007",
       "unit_name": "AC & Appliance Repair",
-      "rating": 4,
+      "rating": 4.2,
       "rating_count": 1,
       "is_active": true,
       "created_at": "2025-08-04T00:00:00Z",
@@ -546,7 +546,7 @@
       "address": "5 Porur, Chennai",
       "pfp_url": "https://i.pravatar.cc/150?img=53",
       "gender": "Male",
-      "rating": 4,
+      "rating": 4.2,
       "rating_count": 1,
       "is_active": true,
       "account_status": "active",
@@ -626,9 +626,11 @@
       "address": "11 Mylapore, Chennai",
       "pfp_url": "https://i.pravatar.cc/150?img=14",
       "gender": "Male",
-      "rating": 4.5,
-      "rating_count": 2,
+      "rating": null,
+      "rating_count": 0,
       "is_active": true,
+      "account_status": "active",
+      "deactivation_requested": false,
       "created_at": "2024-04-05T08:00:00Z",
       "updated_at": "2024-06-20T10:30:00Z",
       "unit_id": "UNT002",
@@ -647,6 +649,8 @@
       "rating": null,
       "rating_count": 0,
       "is_active": true,
+      "account_status": "active",
+      "deactivation_requested": false,
       "created_at": "2024-04-10T09:30:00Z",
       "updated_at": "2024-06-18T11:15:00Z",
       "unit_id": "UNT004",
@@ -662,9 +666,11 @@
       "address": "28 Abidor, Chennai",
       "pfp_url": "https://i.pravatar.cc/150?img=44",
       "gender": "Male",
-      "rating": 4,
-      "rating_count": 1,
+      "rating": null,
+      "rating_count": 0,
       "is_active": true,
+      "account_status": "active",
+      "deactivation_requested": false,
       "created_at": "2024-04-15T07:45:00Z",
       "updated_at": "2024-06-19T09:00:00Z",
       "unit_id": "UNT005",
@@ -683,6 +689,8 @@
       "rating": null,
       "rating_count": 0,
       "is_active": true,
+      "account_status": "active",
+      "deactivation_requested": false,
       "created_at": "2024-04-20T10:00:00Z",
       "updated_at": "2024-06-17T13:30:00Z",
       "unit_id": "UNT006",
@@ -698,9 +706,11 @@
       "address": "38 Besant Nagar, Chennai",
       "pfp_url": "https://i.pravatar.cc/150?img=58",
       "gender": "Male",
-      "rating": 5,
-      "rating_count": 1,
+      "rating": null,
+      "rating_count": 0,
       "is_active": true,
+      "account_status": "active",
+      "deactivation_requested": false,
       "created_at": "2024-05-01T08:30:00Z",
       "updated_at": "2024-06-16T10:45:00Z",
       "unit_id": "UNT007",
@@ -719,6 +729,8 @@
       "rating": null,
       "rating_count": 0,
       "is_active": false,
+      "account_status": "active",
+      "deactivation_requested": false,
       "created_at": "2024-05-05T11:00:00Z",
       "updated_at": "2024-06-15T14:20:00Z",
       "unit_id": "UNT008",
@@ -734,9 +746,11 @@
       "address": "19 Medavakkam, Chennai",
       "pfp_url": "https://i.pravatar.cc/150?img=71",
       "gender": "Male",
-      "rating": 4.5,
-      "rating_count": 2,
+      "rating": null,
+      "rating_count": 0,
       "is_active": true,
+      "account_status": "active",
+      "deactivation_requested": false,
       "created_at": "2024-05-10T09:15:00Z",
       "updated_at": "2024-06-21T11:30:00Z",
       "unit_id": "UNT001",
@@ -755,6 +769,8 @@
       "rating": null,
       "rating_count": 0,
       "is_active": true,
+      "account_status": "active",
+      "deactivation_requested": false,
       "created_at": "2024-05-15T10:30:00Z",
       "updated_at": "2024-06-20T12:00:00Z",
       "unit_id": "UNT009",
@@ -770,9 +786,11 @@
       "address": "56 Mambalam, Chennai",
       "pfp_url": "https://i.pravatar.cc/150?img=73",
       "gender": "Male",
-      "rating": 3.5,
-      "rating_count": 2,
+      "rating": null,
+      "rating_count": 0,
       "is_active": true,
+      "account_status": "active",
+      "deactivation_requested": false,
       "created_at": "2024-05-20T08:45:00Z",
       "updated_at": "2024-06-19T15:00:00Z",
       "unit_id": "UNT002",
@@ -791,6 +809,8 @@
       "rating": null,
       "rating_count": 0,
       "is_active": true,
+      "account_status": "active",
+      "deactivation_requested": false,
       "created_at": "2024-05-25T09:00:00Z",
       "updated_at": "2024-06-21T10:15:00Z",
       "unit_id": "UNT004",
@@ -1056,6 +1076,12 @@
     },
     {
       "service_provider_id": "SP001",
+      "skill_id": "SKL003",
+      "verification_status": "Verified",
+      "verified_at": "2026-03-25T09:00:00Z"
+    },
+    {
+      "service_provider_id": "SP001",
       "skill_id": "SKL005",
       "verification_status": "Verified",
       "verified_at": "2026-03-26T11:00:00Z"
@@ -1262,10 +1288,10 @@
       "category_id": "CAT001",
       "category_name": "Home Cleaning",
       "description": "All home cleaning services",
-      "icon": "\u00f0\u0178\u00a7\u00b9",
+      "icon": "🧹",
       "image_url": "https://placehold.co/400x200/4A90D9/white?text=Home+Cleaning",
       "is_available": true,
-      "average_rating": 4.87,
+      "average_rating": 5.0,
       "rating_count": 1,
       "parent_id": null
     },
@@ -1273,7 +1299,7 @@
       "category_id": "CAT002",
       "category_name": "Plumbing",
       "description": "Pipe and fixture repair services",
-      "icon": "\u00f0\u0178\u201d\u00a7",
+      "icon": "🔧",
       "image_url": "https://placehold.co/400x200/E67E22/white?text=Plumbing",
       "is_available": true,
       "average_rating": 4.73,
@@ -1284,10 +1310,10 @@
       "category_id": "CAT003",
       "category_name": "Electrical",
       "description": "Wiring, appliances, and electrical repairs",
-      "icon": "\u00e2\u0161\u00a1",
+      "icon": "⚡",
       "image_url": "https://placehold.co/400x200/F1C40F/black?text=Electrical",
       "is_available": true,
-      "average_rating": 4.87,
+      "average_rating": 5.0,
       "rating_count": 2,
       "parent_id": null
     },
@@ -1295,7 +1321,7 @@
       "category_id": "CAT004",
       "category_name": "Carpentry",
       "description": "Furniture, woodwork, and custom fittings",
-      "icon": "\u00f0\u0178\u00aa\u0161",
+      "icon": "🪚",
       "image_url": "https://placehold.co/400x200/8B4513/white?text=Carpentry",
       "is_available": true,
       "average_rating": 4.73,
@@ -1306,10 +1332,10 @@
       "category_id": "CAT005",
       "category_name": "AC & Appliances",
       "description": "Air conditioner and home appliance services",
-      "icon": "\u00e2\u009d\u201e\u00ef\u00b8\u008f",
+      "icon": "❄️",
       "image_url": "https://placehold.co/400x200/1ABC9C/white?text=AC+%26+Appliances",
       "is_available": true,
-      "average_rating": 4.47,
+      "average_rating": 4.2,
       "rating_count": 1,
       "parent_id": null
     },
@@ -1317,7 +1343,7 @@
       "category_id": "CAT006",
       "category_name": "Pest Control",
       "description": "Residential pest treatment and prevention",
-      "icon": "\u00f0\u0178\u0090\u203a",
+      "icon": "🐛",
       "image_url": "https://placehold.co/400x200/2ECC71/white?text=Pest+Control",
       "is_available": false,
       "average_rating": 4.73,
@@ -1333,7 +1359,7 @@
       "image_url": "https://placehold.co/400x200/4A90D9/white?text=Standard+Clean",
       "base_price": 499,
       "estimated_duration_min": 120,
-      "average_rating": 5,
+      "average_rating": 5.0,
       "rating_count": 1,
       "is_available": true,
       "category_id": "CAT001"
@@ -1381,7 +1407,7 @@
       "image_url": "https://placehold.co/400x200/F1C40F/black?text=Fan+Installation",
       "base_price": 299,
       "estimated_duration_min": 45,
-      "average_rating": 5,
+      "average_rating": 5.0,
       "rating_count": 2,
       "is_available": true,
       "category_id": "CAT003"
@@ -1846,66 +1872,21 @@
     }
   ],
   "service_skills": [
-    {
-      "service_id": "SVC001",
-      "skill_id": "SKL003"
-    },
-    {
-      "service_id": "SVC002",
-      "skill_id": "SKL003"
-    },
-    {
-      "service_id": "SVC003",
-      "skill_id": "SKL001"
-    },
-    {
-      "service_id": "SVC004",
-      "skill_id": "SKL001"
-    },
-    {
-      "service_id": "SVC005",
-      "skill_id": "SKL002"
-    },
-    {
-      "service_id": "SVC006",
-      "skill_id": "SKL002"
-    },
-    {
-      "service_id": "SVC007",
-      "skill_id": "SKL004"
-    },
-    {
-      "service_id": "SVC008",
-      "skill_id": "SKL004"
-    },
-    {
-      "service_id": "SVC009",
-      "skill_id": "SKL005"
-    },
-    {
-      "service_id": "SVC009",
-      "skill_id": "SKL002"
-    },
-    {
-      "service_id": "SVC010",
-      "skill_id": "SKL005"
-    },
-    {
-      "service_id": "SVC010",
-      "skill_id": "SKL002"
-    },
-    {
-      "service_id": "SVC010",
-      "skill_id": "SKL001"
-    },
-    {
-      "service_id": "SVC011",
-      "skill_id": "SKL006"
-    },
-    {
-      "service_id": "SVC012",
-      "skill_id": "SKL006"
-    }
+    { "service_id": "SVC001", "skill_id": "SKL003" },
+    { "service_id": "SVC002", "skill_id": "SKL003" },
+    { "service_id": "SVC003", "skill_id": "SKL001" },
+    { "service_id": "SVC004", "skill_id": "SKL001" },
+    { "service_id": "SVC005", "skill_id": "SKL002" },
+    { "service_id": "SVC006", "skill_id": "SKL002" },
+    { "service_id": "SVC007", "skill_id": "SKL004" },
+    { "service_id": "SVC008", "skill_id": "SKL004" },
+    { "service_id": "SVC009", "skill_id": "SKL005" },
+    { "service_id": "SVC009", "skill_id": "SKL002" },
+    { "service_id": "SVC010", "skill_id": "SKL005" },
+    { "service_id": "SVC010", "skill_id": "SKL002" },
+    { "service_id": "SVC010", "skill_id": "SKL001" },
+    { "service_id": "SVC011", "skill_id": "SKL006" },
+    { "service_id": "SVC012", "skill_id": "SKL006" }
   ],
   "service_faqs": [
     {
@@ -2533,7 +2514,7 @@
       "refund_amount": 0,
       "refund_reason": null,
       "transaction_at": "2026-03-29T03:20:22Z",
-      "verified_at": "2024-07-01T09:33:00Z",
+      "verified_at": "2026-03-29T03:21:00Z",
       "booking_id": "BKG001"
     },
     {
@@ -2547,7 +2528,7 @@
       "refund_amount": 0,
       "refund_reason": null,
       "transaction_at": "2026-03-17T14:13:14Z",
-      "verified_at": "2024-07-01T11:06:00Z",
+      "verified_at": "2026-03-17T14:14:00Z",
       "booking_id": "BKG002"
     },
     {
@@ -2561,7 +2542,7 @@
       "refund_amount": 799,
       "refund_reason": "Service cancelled by customer",
       "transaction_at": "2026-02-24T08:14:15Z",
-      "verified_at": "2024-07-11T10:00:00Z",
+      "verified_at": "2026-02-25T10:00:00Z",
       "booking_id": "BKG003"
     },
     {
@@ -2589,7 +2570,7 @@
       "refund_amount": 0,
       "refund_reason": null,
       "transaction_at": "2026-02-07T18:54:44Z",
-      "verified_at": "2026-04-01T08:48:00Z",
+      "verified_at": "2026-02-07T18:55:00Z",
       "booking_id": "BKG005"
     },
     {
@@ -2603,7 +2584,7 @@
       "refund_amount": 0,
       "refund_reason": null,
       "transaction_at": "2026-03-29T21:49:25Z",
-      "verified_at": "2024-08-12T14:33:00Z",
+      "verified_at": "2026-03-29T21:50:00Z",
       "booking_id": "BKG006"
     },
     {
@@ -2617,7 +2598,7 @@
       "refund_amount": 0,
       "refund_reason": null,
       "transaction_at": "2026-02-07T16:49:40Z",
-      "verified_at": "2026-04-14T10:03:00Z",
+      "verified_at": "2026-02-07T16:50:00Z",
       "booking_id": "BKG007"
     },
     {
@@ -2631,172 +2612,14 @@
       "refund_amount": 3999,
       "refund_reason": "Full refund on customer cancellation",
       "transaction_at": "2026-02-28T04:12:29Z",
-      "verified_at": "2024-09-30T09:00:00Z",
+      "verified_at": "2026-03-02T09:00:00Z",
       "booking_id": "BKG010"
     }
   ],
   "reviews": [],
-  "super_user_platform_events": [
-    {
-      "event_id": "EVT001",
-      "timestamp": "2026-03-31T10:45:22Z",
-      "event_type": "system",
-      "severity": "high",
-      "title": "Service assignment failure: Database timeout during routing calculation.",
-      "description": "Booking #A-9821 failed auto-assignment due to database timeout",
-      "status": "unresolved",
-      "component": "Scheduling Engine"
-    },
-    {
-      "event_id": "EVT002",
-      "timestamp": "2026-03-31T10:32:05Z",
-      "event_type": "security",
-      "severity": "critical",
-      "title": "Multiple login failures from IP 192.168.1.45",
-      "description": "Account #5821 has failed login 8 times in the last 10 minutes. Potential brute-force attack.",
-      "status": "investigating",
-      "component": "Auth-Service"
-    },
-    {
-      "event_id": "EVT003",
-      "timestamp": "2026-03-31T10:15:40Z",
-      "event_type": "user",
-      "severity": "medium",
-      "title": "Provider verification pending from Unit 24 Logistics",
-      "description": "New provider application submitted for verification",
-      "status": "pending",
-      "component": "User System"
-    },
-    {
-      "event_id": "EVT004",
-      "timestamp": "2026-03-31T09:58:12Z",
-      "event_type": "action",
-      "severity": "low",
-      "title": "Account suspended: User ID #9822 for policy violations",
-      "description": "User suspended due to multiple policy violations reported",
-      "status": "completed",
-      "component": "Super User Action"
-    },
-    {
-      "event_id": "EVT005",
-      "timestamp": "2026-03-31T09:30:00Z",
-      "event_type": "system",
-      "severity": "low",
-      "title": "Database backup completed successfully",
-      "description": "Daily database backup completed at 09:30 IST",
-      "status": "completed",
-      "component": "System Maintenance"
-    }
-  ],
-  "super_user_audit_logs": [
-    {
-      "log_id": "LOG001",
-      "timestamp": "2026-03-31T10:45:22Z",
-      "super_user_id": null,
-      "action_type": "system",
-      "action_description": "JWT Validation Successful",
-      "resource_type": "authentication",
-      "resource_id": "AUTH-001",
-      "status": "success",
-      "status_code": "200 OK"
-    },
-    {
-      "log_id": "LOG002",
-      "timestamp": "2026-03-31T10:44:58Z",
-      "super_user_id": null,
-      "action_type": "payment",
-      "action_description": "Webhook Received: event_id_442",
-      "resource_type": "payment_gateway",
-      "resource_id": "WH-442",
-      "status": "success",
-      "status_code": "200 OK"
-    },
-    {
-      "log_id": "LOG003",
-      "timestamp": "2026-03-31T10:44:52Z",
-      "super_user_id": null,
-      "action_type": "notification",
-      "action_description": "Push Notification Sent: user_99",
-      "resource_type": "notification",
-      "resource_id": "NOTIF-99",
-      "status": "success",
-      "status_code": "DELIVERED"
-    },
-    {
-      "log_id": "LOG004",
-      "timestamp": "2026-03-31T10:40:00Z",
-      "super_user_id": null,
-      "action_type": "account_action",
-      "action_description": "Account suspended",
-      "resource_type": "user",
-      "resource_id": "USR-9822",
-      "status": "success",
-      "status_code": "200 OK"
-    },
-    {
-      "log_id": "LOG005",
-      "timestamp": "2026-03-31T10:35:00Z",
-      "super_user_id": null,
-      "action_type": "settings_update",
-      "action_description": "Platform settings updated",
-      "resource_type": "platform_config",
-      "resource_id": "CONFIG-001",
-      "status": "success",
-      "status_code": "200 OK"
-    }
-  ],
-  "super_user_notifications": [
-    {
-      "notif_id": "NOTIF001",
-      "timestamp": "2026-03-31T10:45:22Z",
-      "category": "security",
-      "priority": "critical",
-      "title": "Multiple Failed Login Attempts",
-      "description": "Account ID #5821 has failed login 8 times in the last 10 minutes. Potential brute-force attack.",
-      "is_read": false,
-      "is_urgent": true
-    },
-    {
-      "notif_id": "NOTIF002",
-      "timestamp": "2026-03-31T10:32:05Z",
-      "category": "system",
-      "priority": "critical",
-      "title": "Service Assignment Failure",
-      "description": "Booking #A-9421 has failed auto-assignment 3 times. No available providers in Plumbing Unit Alpha.",
-      "is_read": false,
-      "is_urgent": true
-    },
-    {
-      "notif_id": "NOTIF003",
-      "timestamp": "2026-03-31T09:45:00Z",
-      "category": "user",
-      "priority": "high",
-      "title": "Provider Verification Queue Overflow",
-      "description": "8 new provider applications have been waiting for more than 24 hours.",
-      "is_read": false,
-      "is_urgent": false
-    },
-    {
-      "notif_id": "NOTIF004",
-      "timestamp": "2026-03-31T08:45:00Z",
-      "category": "user",
-      "priority": "high",
-      "title": "Flagged Account Requires Review",
-      "description": "Customer Account #C-8812 was flagged by 3 providers for abusive behavior.",
-      "is_read": false,
-      "is_urgent": false
-    },
-    {
-      "notif_id": "NOTIF005",
-      "timestamp": "2026-03-31T06:45:00Z",
-      "category": "revenue",
-      "priority": "info",
-      "title": "Platform Revenue Milestone",
-      "description": "Tatku United has crossed ₹50 Lakhs in total platform revenue for March 2026.",
-      "is_read": true,
-      "is_urgent": false
-    }
-  ],
+  "super_user_platform_events": [],
+  "super_user_audit_logs": [],
+  "super_user_notifications": [],
   "super_users": [
     {
       "super_user_id": "SU001",
@@ -2821,128 +2644,6 @@
       "last_login": "2026-03-31T09:30:00Z"
     }
   ],
-  "super_user_actions": [
-    {
-      "action_id": "ACT001",
-      "timestamp": "2026-03-31T10:32:00Z",
-      "super_user_id": "SU001",
-      "action_type": "account_suspension",
-      "title": "Account suspended",
-      "description": "Super User Mark suspended User #892",
-      "time_display": "2 mins ago"
-    },
-    {
-      "action_id": "ACT002",
-      "timestamp": "2026-03-31T10:17:00Z",
-      "super_user_id": "SU002",
-      "action_type": "provider_verification",
-      "title": "Provider verified",
-      "description": "Super User Sarah approved 'QuickTransport'",
-      "time_display": "15 mins ago"
-    },
-    {
-      "action_id": "ACT003",
-      "timestamp": "2026-03-31T09:32:00Z",
-      "super_user_id": "SU001",
-      "action_type": "settings_update",
-      "title": "Settings updated",
-      "description": "System threshold modified (Queue: 45s)",
-      "time_display": "1 hour ago"
-    },
-    {
-      "action_id": "ACT004",
-      "timestamp": "2026-03-31T08:32:00Z",
-      "super_user_id": "SU002",
-      "action_type": "login",
-      "title": "Login attempt",
-      "description": "Super User login from 192.168.0.1",
-      "time_display": "2 hours ago"
-    }
-  ],
-  "super_user_system_performance": [
-    {
-      "metric_id": "PERF001",
-      "timestamp": "2026-03-31T09:45:00Z",
-      "api_response_ms": 298,
-      "server_load_cpu_percent": 38,
-      "memory_usage_percent": 57
-    },
-    {
-      "metric_id": "PERF002",
-      "timestamp": "2026-03-31T09:50:00Z",
-      "api_response_ms": 312,
-      "server_load_cpu_percent": 41,
-      "memory_usage_percent": 58
-    },
-    {
-      "metric_id": "PERF003",
-      "timestamp": "2026-03-31T09:55:00Z",
-      "api_response_ms": 326,
-      "server_load_cpu_percent": 44,
-      "memory_usage_percent": 60
-    },
-    {
-      "metric_id": "PERF004",
-      "timestamp": "2026-03-31T10:00:00Z",
-      "api_response_ms": 341,
-      "server_load_cpu_percent": 47,
-      "memory_usage_percent": 61
-    },
-    {
-      "metric_id": "PERF005",
-      "timestamp": "2026-03-31T10:05:00Z",
-      "api_response_ms": 319,
-      "server_load_cpu_percent": 43,
-      "memory_usage_percent": 60
-    },
-    {
-      "metric_id": "PERF006",
-      "timestamp": "2026-03-31T10:10:00Z",
-      "api_response_ms": 333,
-      "server_load_cpu_percent": 46,
-      "memory_usage_percent": 62
-    },
-    {
-      "metric_id": "PERF007",
-      "timestamp": "2026-03-31T10:15:00Z",
-      "api_response_ms": 347,
-      "server_load_cpu_percent": 49,
-      "memory_usage_percent": 63
-    },
-    {
-      "metric_id": "PERF008",
-      "timestamp": "2026-03-31T10:20:00Z",
-      "api_response_ms": 355,
-      "server_load_cpu_percent": 52,
-      "memory_usage_percent": 64
-    },
-    {
-      "metric_id": "PERF009",
-      "timestamp": "2026-03-31T10:25:00Z",
-      "api_response_ms": 362,
-      "server_load_cpu_percent": 54,
-      "memory_usage_percent": 65
-    },
-    {
-      "metric_id": "PERF010",
-      "timestamp": "2026-03-31T10:30:00Z",
-      "api_response_ms": 378,
-      "server_load_cpu_percent": 57,
-      "memory_usage_percent": 66
-    },
-    {
-      "metric_id": "PERF011",
-      "timestamp": "2026-03-31T10:35:00Z",
-      "api_response_ms": 371,
-      "server_load_cpu_percent": 56,
-      "memory_usage_percent": 65
-    },
-    {
-      "metric_id": "PERF012",
-      "timestamp": "2026-03-31T10:40:00Z",
-      "api_response_ms": 384,
-      "server_load_cpu_percent": 59,
-      "memory_usage_percent": 67
-    }
-  ]
+  "super_user_actions": [],
+  "super_user_system_performance": []
 }

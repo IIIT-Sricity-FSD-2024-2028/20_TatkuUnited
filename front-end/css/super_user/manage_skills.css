@@ -26,6 +26,7 @@
   --indigo-light: #eef2ff;
   --yellow: #d97706;
   --sidebar-w: 210px;
+  --topbar-h: 56px;
   --font: "DM Sans", sans-serif;
   --mono: "DM Mono", monospace;
   --radius: 10px;
@@ -172,7 +173,7 @@ body {
 
 /* ── TOPBAR ── */
 .topbar {
-  height: 56px;
+  height: var(--topbar-h);
   display: flex;
   align-items: center;
   justify-content: space-between;

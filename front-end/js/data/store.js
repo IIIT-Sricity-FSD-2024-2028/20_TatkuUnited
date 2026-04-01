@@ -17,6 +17,7 @@
     "customers",
     "categories",
     "services",
+    "service_content",
     "service_skills",
     "service_faqs",
     "service_packages",
@@ -74,6 +75,7 @@
     customers: [],
     categories: [],
     services: [],
+    service_content: [],
     service_skills: [],
     service_faqs: [],
     service_packages: [],
@@ -116,7 +118,7 @@
           : DEFAULT_PLATFORM_SETTINGS.accountSuspension,
       ratingThreshold:
         typeof settings?.ratingThreshold === "string" &&
-          settings.ratingThreshold.trim()
+        settings.ratingThreshold.trim()
           ? settings.ratingThreshold
           : DEFAULT_PLATFORM_SETTINGS.ratingThreshold,
       instantBooking:
@@ -133,7 +135,7 @@
           : DEFAULT_PLATFORM_SETTINGS.minNotice,
       cancelWindow:
         typeof settings?.cancelWindow === "string" &&
-          settings.cancelWindow.trim()
+        settings.cancelWindow.trim()
           ? settings.cancelWindow
           : DEFAULT_PLATFORM_SETTINGS.cancelWindow,
       updatedAt:
@@ -204,10 +206,10 @@
     if (VALID_TABLES.indexOf(name) === -1) {
       console.error(
         '[AppStore] getTable(): "' +
-        name +
-        '" is not a valid table name. ' +
-        "Valid tables: " +
-        VALID_TABLES.join(", "),
+          name +
+          '" is not a valid table name. ' +
+          "Valid tables: " +
+          VALID_TABLES.join(", "),
       );
       return undefined;
     }
@@ -354,10 +356,10 @@
     if (!tableName) {
       console.error(
         '[AppStore] nextId(): "' +
-        prefix +
-        '" is not a recognised prefix. ' +
-        "Valid prefixes: " +
-        Object.keys(PREFIX_TABLE_MAP).join(", "),
+          prefix +
+          '" is not a recognised prefix. ' +
+          "Valid prefixes: " +
+          Object.keys(PREFIX_TABLE_MAP).join(", "),
       );
       return null;
     }
@@ -451,7 +453,7 @@
       if (!sess) return null;
       var parsed = JSON.parse(sess);
       if (parsed && parsed.role === "provider" && parsed.id) return parsed.id;
-    } catch (e) { }
+    } catch (e) {}
     return null;
   }
 
@@ -510,9 +512,18 @@
       provider.dob = state.provider.dob || provider.dob;
       provider.gender = state.provider.gender || provider.gender;
       provider.pfp_url = state.provider.pfp_url || provider.pfp_url;
-      provider.account_status = state.provider.account_status || provider.account_status || "active";
-      provider.deactivation_requested = state.provider.deactivation_requested !== undefined ? state.provider.deactivation_requested : (provider.deactivation_requested || false);
-      provider.is_active = state.provider.is_active !== undefined ? state.provider.is_active : (provider.is_active !== undefined ? provider.is_active : true);
+      provider.account_status =
+        state.provider.account_status || provider.account_status || "active";
+      provider.deactivation_requested =
+        state.provider.deactivation_requested !== undefined
+          ? state.provider.deactivation_requested
+          : provider.deactivation_requested || false;
+      provider.is_active =
+        state.provider.is_active !== undefined
+          ? state.provider.is_active
+          : provider.is_active !== undefined
+            ? provider.is_active
+            : true;
       provider.updated_at = nowIso;
     }
 
@@ -673,7 +684,7 @@
             );
           }
         }
-      } catch (e) { }
+      } catch (e) {}
 
       if (!hasProviderSession) {
         window.location.replace("/front-end/html/auth_pages/login.html");
@@ -738,8 +749,11 @@
           }) || {};
 
         providerProfile.skills = [];
-        providerProfile.account_status = providerProfile.account_status || (providerProfile.is_active ? "active" : "inactive");
-        providerProfile.deactivation_requested = providerProfile.deactivation_requested || false;
+        providerProfile.account_status =
+          providerProfile.account_status ||
+          (providerProfile.is_active ? "active" : "inactive");
+        providerProfile.deactivation_requested =
+          providerProfile.deactivation_requested || false;
         var mySkills = allProviderSkills.filter(function (ps) {
           return ps.service_provider_id === providerId;
         });
