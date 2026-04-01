@@ -55,16 +55,8 @@ AppStore.ready.then(() => {
   }
 
   function updateKPIs(data) {
-    const active = data.filter((s) => s.status === "Active").length;
-    const inactive = data.filter((s) => s.status === "Inactive").length;
-    const providers = data.reduce((sum, s) => sum + s.providers, 0);
     const kpiTotal = document.getElementById("kpiTotal");
-    const kpiActive = document.getElementById("kpiActive");
-    const kpiInactive = document.getElementById("kpiInactive");
-
-    if (kpiTotal) kpiTotal.textContent = skills.length;
-    if (kpiActive) kpiActive.textContent = active;
-    if (kpiInactive) kpiInactive.textContent = inactive;
+    if (kpiTotal) kpiTotal.textContent = data.length;
   }
 
   /* ── table ── */
@@ -100,10 +92,9 @@ AppStore.ready.then(() => {
     }
 
     /* footer */
-    const active = data.filter((s) => s.status === "Active").length;
     const tableFooter = document.getElementById("tableFooter");
     if (tableFooter) {
-      tableFooter.innerHTML = `<span>${data.length} skill${data.length !== 1 ? "s" : ""} shown</span> · <span class="active-count">${active} active</span>`;
+      tableFooter.innerHTML = `<span>${data.length} skill${data.length !== 1 ? "s" : ""} shown</span>`;
     }
 
     /* event listeners */
