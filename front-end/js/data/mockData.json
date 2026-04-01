@@ -24,14 +24,19 @@
       "collective_name": "Central Chennai Collective",
       "is_active": true,
       "created_at": "2024-12-12T09:30:00Z",
-      "sector_ids": ["SEC001", "SEC006"]
+      "sector_ids": [
+        "SEC001",
+        "SEC006"
+      ]
     },
     {
       "collective_id": "COL003",
       "collective_name": "South Chennai Collective",
       "is_active": false,
       "created_at": "2024-08-19T07:45:00Z",
-      "sector_ids": ["SEC003"]
+      "sector_ids": [
+        "SEC003"
+      ]
     },
     {
       "collective_id": "COL004",
@@ -2093,7 +2098,6 @@
       "service_address": "14 Boat Club Road, Chennai",
       "service_lat": 13.05,
       "service_lng": 80.25,
-
       "scheduled_at": "2026-03-29T03:48:22Z",
       "status": "COMPLETED",
       "failure_reason": null,

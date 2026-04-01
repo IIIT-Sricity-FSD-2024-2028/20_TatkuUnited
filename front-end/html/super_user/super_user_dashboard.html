@@ -241,25 +241,7 @@
             <p>Real-time operational health and key metrics.</p>
           </div>
 
-          <!-- Status Cards -->
           <div class="status-cards">
-            <div class="status-card">
-              <div class="sc-icon sc-icon--green">
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                >
-                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
-                  <polyline points="22 4 12 14.01 9 11.01" />
-                </svg>
-              </div>
-              <div class="sc-label">STATUS</div>
-              <div class="sc-title">System Status</div>
-              <div class="sc-value sc-value--green">Operational</div>
-              <div class="sc-sub">All services are running normally</div>
-            </div>
             <div class="status-card status-card--active">
               <div class="sc-icon sc-icon--blue">
                 <svg
@@ -273,28 +255,9 @@
                   <path d="M7 20.662V19a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v1.662" />
                 </svg>
               </div>
-              <div class="sc-label">REAL-TIME</div>
-              <div class="sc-title">Active Sessions</div>
-              <div class="sc-value">184</div>
-              <div class="sc-badge sc-badge--blue">+12% from last hour</div>
-            </div>
-            <div class="status-card">
-              <div class="sc-icon sc-icon--red">
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                >
-                  <circle cx="12" cy="12" r="10" />
-                  <line x1="12" y1="8" x2="12" y2="12" />
-                  <line x1="12" y1="16" x2="12.01" y2="16" />
-                </svg>
-              </div>
-              <div class="sc-label">CRITICAL</div>
-              <div class="sc-title">System Errors</div>
-              <div class="sc-value sc-value--red">3</div>
-              <div class="sc-sub">Requires investigation</div>
+              <div class="sc-label">PLATFORM</div>
+              <div class="sc-title">Active Users</div>
+              <div class="sc-value" id="activeUsersValue">0</div>
             </div>
             <div class="status-card">
               <div class="sc-icon sc-icon--orange">
@@ -311,64 +274,45 @@
                   <line x1="12" y1="17" x2="12.01" y2="17" />
                 </svg>
               </div>
-              <div class="sc-label">ATTENTION</div>
+              <div class="sc-label">OPERATIONS</div>
               <div class="sc-title">Failed Assignments</div>
-              <div class="sc-value">5</div>
-              <div class="sc-badge sc-badge--green">+2% success rate</div>
+              <div class="sc-value" id="failedAssignmentsValue">0</div>
+            </div>
+            <div class="status-card">
+              <div class="sc-icon sc-icon--green">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <line x1="12" y1="1" x2="12" y2="23"/>
+                  <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                </svg>
+              </div>
+              <div class="sc-label">FINANCE</div>
+              <div class="sc-title">Total Revenue</div>
+              <div class="sc-value" id="totalRevenueValue">₹0</div>
             </div>
           </div>
 
-          <!-- Pending Super User Actions -->
-          <div class="section-card">
-            <h2 class="section-title">Pending Super User Actions</h2>
-            <div class="super_user-actions-grid">
-              <div class="action-tile action-tile--yellow">
-                <div class="action-tile-icon">
-                  <svg
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                  >
-                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-                  </svg>
-                </div>
-                <div class="action-tile-num">6</div>
-                <div class="action-tile-label">PROVIDER<br />VERIFICATIONS</div>
-              </div>
-              <div class="action-tile action-tile--teal">
-                <div class="action-tile-icon">
-                  <svg
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                  >
-                    <path
-                      d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"
-                    />
-                  </svg>
-                </div>
-                <div class="action-tile-num">4</div>
-                <div class="action-tile-label">OPEN<br />COMPLAINTS</div>
-              </div>
-              <div class="action-tile action-tile--blue">
-                <div class="action-tile-icon">
-                  <svg
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                  >
-                    <circle cx="12" cy="12" r="10" />
-                    <line x1="4.93" y1="4.93" x2="19.07" y2="19.07" />
-                  </svg>
-                </div>
-                <div class="action-tile-num">2</div>
-                <div class="action-tile-label">FLAGGED<br />ACCOUNTS</div>
-              </div>
+          <!-- Collective Revenue Breakdown -->
+          <div class="section-card" style="margin-bottom: 24px;">
+            <div class="section-card-header">
+              <h2 class="section-title">Collective Revenue Breakdown</h2>
             </div>
+            <table class="events-table">
+              <thead>
+                <tr>
+                  <th>COLLECTIVE NAME</th>
+                  <th style="text-align: right;">REVENUE (INR)</th>
+                </tr>
+              </thead>
+              <tbody id="revenue-tbody"></tbody>
+            </table>
           </div>
+
+
 
           <!-- Recent System Events -->
           <div class="section-card">
@@ -382,7 +326,6 @@
                   <th>TIME</th>
                   <th>TYPE</th>
                   <th>EVENT DESCRIPTION</th>
-                  <th>STATUS</th>
                 </tr>
               </thead>
               <tbody id="events-tbody"></tbody>
@@ -392,40 +335,7 @@
 
         <!-- RIGHT SIDEBAR -->
         <aside class="right-panel">
-          <!-- System Alerts -->
-          <div class="right-card">
-            <div class="right-card-header">
-              <div class="right-card-title">
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                >
-                  <circle cx="12" cy="12" r="10" />
-                  <line x1="12" y1="8" x2="12" y2="12" />
-                  <line x1="12" y1="16" x2="12.01" y2="16" />
-                </svg>
-                System Alerts
-              </div>
-              <span class="alert-count">2</span>
-            </div>
-            <div class="alert-item alert-item--red">
-              <div class="alert-title">Service assignment failure</div>
-              <div class="alert-desc">
-                Retry attempt failed for Request #A-421. Manual intervention
-                required.
-              </div>
-              <a href="#" class="alert-action">TROUBLESHOOT</a>
-            </div>
-            <div class="alert-item alert-item--yellow">
-              <div class="alert-title">Provider verification pending</div>
-              <div class="alert-desc">
-                3 new applications are older than 24 hours.
-              </div>
-              <a href="#" class="alert-action">OPEN QUEUE</a>
-            </div>
-          </div>
+
 
           <!-- Recent Super User Actions -->
           <div class="right-card">

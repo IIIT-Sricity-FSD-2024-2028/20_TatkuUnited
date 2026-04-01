@@ -113,6 +113,27 @@ AppStore.ready.then(() => {
     return "status-badge--pending";
   }
 
+  /* ── 4. Initialize Topbar ── */
+  function initTopbar() {
+    const sessionUser = Auth.getCurrentUser();
+    if (sessionUser) {
+      const nameEl = document.querySelector(".topbar-user .user-name");
+      if (nameEl) nameEl.textContent = sessionUser.name;
+    }
+
+    const notifBadge = document.querySelector(".notif-badge");
+    if (notifBadge) {
+      const allNotifs = AppStore.getTable("super_user_notifications") || [];
+      const unread = allNotifs.filter(n => !n.is_read).length;
+      if (unread > 0) {
+        notifBadge.textContent = unread;
+        notifBadge.style.display = "flex";
+      } else {
+        notifBadge.style.display = "none";
+      }
+    }
+  }
+
   function getFiltered() {
     return USERS.filter((u) => {
       const matchRole = roleFilter === "All Roles" || u.role === roleFilter;
@@ -424,12 +445,14 @@ AppStore.ready.then(() => {
   /* ── Initialize on DOM ready ── */
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", () => {
+      initTopbar();
       renderKpis();
       populateRoleFilter();
       renderTable();
       setupEventListeners();
     });
   } else {
+    initTopbar();
     renderKpis();
     populateRoleFilter();
     renderTable();
