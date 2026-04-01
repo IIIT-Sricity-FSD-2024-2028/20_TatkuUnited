@@ -12,7 +12,7 @@ AppStore.ready.then(function () {
     editingUnitId: null,
     providerPage: 1,
     quickSearch: "",
-    city: "All Cities",
+    sector: "All Sectors",
     manager: "All Managers",
     skill: "All Skills",
     reassignProviderId: null,
@@ -21,6 +21,9 @@ AppStore.ready.then(function () {
     reassignCollectiveId: null,
     editingCollectiveId: null,
     editCmId: null,
+    collectivePage: 1,
+    COLLECTIVE_PAGE_SIZE: 4,
+    collectiveManager: "All Managers",
   };
 
   var el = {
@@ -28,9 +31,9 @@ AppStore.ready.then(function () {
     createUnitBtn: document.getElementById("btn-create-unit"),
     createCollectiveBtn: document.getElementById("btn-create-collective"),
     searchInput: document.getElementById("quick-search"),
-    cityFilter: document.getElementById("city-filter"),
+    sectorFilter: document.getElementById("city-filter"),
     managerFilter: document.getElementById("manager-filter"),
-    skillFilter: document.getElementById("skill-filter"),
+    collectiveManagerFilter: document.getElementById("collective-manager-filter"),
     collectivesGrid: document.getElementById("collectives-grid"),
     providersTbody: document.getElementById("providers-tbody"),
     providerTitle: document.getElementById("provider-section-title"),
@@ -38,6 +41,10 @@ AppStore.ready.then(function () {
     tableInfo: document.getElementById("table-info"),
     prevPageBtn: document.getElementById("providers-prev-page"),
     nextPageBtn: document.getElementById("providers-next-page"),
+    collectivesPrevPageBtn: document.getElementById("collectives-prev-page"),
+    collectivesNextPageBtn: document.getElementById("collectives-next-page"),
+    collectivesTableInfo: document.getElementById("collectives-table-info"),
+    collectivesPages: document.getElementById("collectives-pages"),
     exportBtn: document.getElementById("btn-export-providers"),
     collectiveModal: document.getElementById("collective-modal"),
     collectiveModalClose: document.getElementById("collective-modal-close"),
@@ -661,14 +668,18 @@ AppStore.ready.then(function () {
       sectorsById[s.sector_id] = s;
     });
 
-    var cityValues = [];
-    tables.collectives.forEach(function (c) {
-      getCollectiveRegions(c, sectorsById).forEach(function (region) {
-        if (cityValues.indexOf(region) === -1) cityValues.push(region);
-      });
-    });
+    // Get all unique sector names from the sectors table
+    var sectorValues = tables.sectors
+      .map(function (s) {
+        return s.sector_name;
+      })
+      .filter(Boolean)
+      .filter(function (name, index, arr) {
+        return arr.indexOf(name) === index;
+      })
+      .sort();
 
-    var managerValues = tables.unitManagers
+    var unitManagerValues = tables.unitManagers
       .map(function (m) {
         return m.name;
       })
@@ -678,40 +689,44 @@ AppStore.ready.then(function () {
       })
       .sort();
 
-    var skillValues = [];
-    tables.units.forEach(function (u) {
-      var skillName = deriveSkillFromUnitName(u.unit_name);
-      if (skillValues.indexOf(skillName) === -1) skillValues.push(skillName);
-    });
-    skillValues.sort();
+    var collectiveManagerValues = (tables.collectiveManagers || [])
+      .map(function (m) {
+        return m.name;
+      })
+      .filter(Boolean)
+      .filter(function (name, index, arr) {
+        return arr.indexOf(name) === index;
+      })
+      .sort();
 
-    el.cityFilter.innerHTML = "<option>All Cities</option>";
-    cityValues.forEach(function (region) {
+    el.sectorFilter.innerHTML = "<option>All Sectors</option>";
+    sectorValues.forEach(function (name) {
       var option = document.createElement("option");
-      option.textContent = region;
-      option.value = region;
-      el.cityFilter.appendChild(option);
+      option.textContent = name;
+      option.value = name;
+      el.sectorFilter.appendChild(option);
     });
 
-    el.managerFilter.innerHTML = "<option>All Managers</option>";
-    managerValues.forEach(function (name) {
+    el.managerFilter.innerHTML = "<option>All Managers</option><option>No Unit Manager</option>";
+    unitManagerValues.forEach(function (name) {
+      if (name === "Unassigned") return;
       var option = document.createElement("option");
       option.textContent = name;
       option.value = name;
       el.managerFilter.appendChild(option);
     });
 
-    el.skillFilter.innerHTML = "<option>All Skills</option>";
-    skillValues.forEach(function (name) {
+    el.collectiveManagerFilter.innerHTML = "<option>All Managers</option><option>No Collective Manager</option>";
+    collectiveManagerValues.forEach(function (name) {
+      if (name === "Unassigned") return;
       var option = document.createElement("option");
       option.textContent = name;
       option.value = name;
-      el.skillFilter.appendChild(option);
+      el.collectiveManagerFilter.appendChild(option);
     });
 
-    el.cityFilter.value = state.city;
-    el.managerFilter.value = state.manager;
-    el.skillFilter.value = state.skill;
+    el.collectiveManagerFilter.value = state.collectiveManager;
+    el.sectorFilter.value = state.sector;
   }
 
   function getFilteredCollectivesData() {
@@ -741,20 +756,24 @@ AppStore.ready.then(function () {
           return u.collective_id === collective.collective_id;
         });
 
-        var regions = getCollectiveRegions(collective, sectorsById);
-        var cityMatches =
-          state.city === "All Cities" || regions.indexOf(state.city) !== -1;
+        var collectiveSectors = (collective.sector_ids || []).map(function (id) {
+          return sectorsById[id] ? sectorsById[id].sector_name : "";
+        });
+
+        var sectorMatches =
+          state.sector === "All Sectors" ||
+          collectiveSectors.indexOf(state.sector) !== -1;
 
         units = units.filter(function (unit) {
           var manager = managerByUnit[unit.unit_id];
           var managerName =
             manager && manager.name ? manager.name : "Unassigned";
-          var skillName = deriveSkillFromUnitName(unit.unit_name);
 
           var managerMatches =
-            state.manager === "All Managers" || managerName === state.manager;
-          var skillMatches =
-            state.skill === "All Skills" || skillName === state.skill;
+            state.manager === "All Managers" ||
+            (state.manager === "No Unit Manager" &&
+              managerName === "Unassigned") ||
+            managerName === state.manager;
 
           var unitSearchBlob = (
             unit.unit_id +
@@ -765,31 +784,48 @@ AppStore.ready.then(function () {
           ).toLowerCase();
           var unitMatchesSearch = !q || unitSearchBlob.indexOf(q) !== -1;
 
-          return managerMatches && skillMatches && unitMatchesSearch;
+          return managerMatches && unitMatchesSearch;
         });
+
+        var collectiveCm = collectiveManagerMap[collective.collective_id];
+        var collectiveCmName = collectiveCm ? collectiveCm.name : "Unassigned";
+
+        var collectiveCmMatches =
+          state.collectiveManager === "All Managers" ||
+          (state.collectiveManager === "No Collective Manager" &&
+            collectiveCmName === "Unassigned") ||
+          collectiveCmName === state.collectiveManager;
 
         var collectiveSearchBlob = (
           collective.collective_id +
           " " +
-          collective.collective_name
+          collective.collective_name +
+          " " +
+          collectiveCmName
         ).toLowerCase();
         var collectiveMatchesSearch =
           !q || collectiveSearchBlob.indexOf(q) !== -1;
 
-        var visible =
-          cityMatches && (collectiveMatchesSearch || units.length > 0);
+        var visible = sectorMatches && collectiveCmMatches;
+
+        if (state.manager !== "All Managers") {
+          // If a Unit Manager filter is applied, we must have units
+          if (units.length === 0) visible = false;
+        } else {
+          // Default: show if name/ID matches or at least one unit matches
+          visible = visible && (collectiveMatchesSearch || units.length > 0);
+        }
+
         if (!visible) return null;
 
         var providerCount = units.reduce(function (sum, u) {
           return sum + (providersByUnit[u.unit_id] || 0);
         }, 0);
 
-        var collectiveCm = collectiveManagerMap[collective.collective_id];
-
         return {
           idx: idx,
           collective: collective,
-          regions: regions,
+          sectorNames: collectiveSectors,
           units: units,
           providerCount: providerCount,
           managerByUnit: managerByUnit,
@@ -833,14 +869,28 @@ AppStore.ready.then(function () {
     var filteredData = getFilteredCollectivesData();
     ensureSelectedUnitExists(filteredData);
 
-    if (!filteredData.length) {
+    var total = filteredData.length;
+    var maxPage = Math.max(1, Math.ceil(total / state.COLLECTIVE_PAGE_SIZE));
+    if (state.collectivePage > maxPage) state.collectivePage = maxPage;
+
+    var start = (state.collectivePage - 1) * state.COLLECTIVE_PAGE_SIZE;
+    var pageData = filteredData.slice(
+      start,
+      start + state.COLLECTIVE_PAGE_SIZE,
+    );
+
+    if (!total) {
       el.collectivesGrid.innerHTML =
         '<div class="collective-card"><div class="collective-header"><div class="collective-info"><div class="collective-name">No collectives found</div><div class="collective-meta">Try changing filters or create a new collective.</div></div></div></div>';
+      el.collectivesTableInfo.textContent = "Showing 0-0 of 0 collectives";
+      el.collectivesPrevPageBtn.disabled = true;
+      el.collectivesNextPageBtn.disabled = true;
+      el.collectivesPages.innerHTML = "";
       renderProviders();
       return;
     }
 
-    el.collectivesGrid.innerHTML = filteredData
+    el.collectivesGrid.innerHTML = pageData
       .map(function (entry) {
         var collective = entry.collective;
         var iconClass =
@@ -851,9 +901,10 @@ AppStore.ready.then(function () {
         var activeSince = collective.created_at
           ? new Date(collective.created_at).getFullYear()
           : "-";
-        var regionText = entry.regions.length
-          ? entry.regions.join(", ")
-          : "Unmapped";
+        var sectorText =
+          entry.sectorNames && entry.sectorNames.length
+            ? entry.sectorNames.join(", ")
+            : "Unmapped";
 
         var unitsHtml = entry.units.length
           ? entry.units
@@ -900,7 +951,9 @@ AppStore.ready.then(function () {
               .join("")
           : '<div class="unit-row"><span class="unit-name">No units in this collective.</span></div>';
 
-        var cmName = entry.collectiveManager ? entry.collectiveManager.name : "Unassigned";
+        var cmName = entry.collectiveManager
+          ? entry.collectiveManager.name
+          : "Unassigned";
 
         return (
           '<div class="collective-card">' +
@@ -917,13 +970,17 @@ AppStore.ready.then(function () {
           escapeHtml(collective.collective_id) +
           ")</div>" +
           '<div class="collective-meta">' +
-          escapeHtml(regionText) +
+          escapeHtml(sectorText) +
           " • " +
           escapeHtml(statusText) +
           " since " +
           escapeHtml(activeSince) +
-          '<br>CM: <strong>' + escapeHtml(cmName) + '</strong> ' +
-          '<button type="button" class="btn-secondary" style="margin-left:8px; padding: 2px 8px; font-size: 11px; height: auto; min-height: 20px;" data-action="edit-collective" data-collective-id="' + escapeHtml(collective.collective_id) + '">Edit</button>' +
+          "<br>CM: <strong>" +
+          escapeHtml(cmName) +
+          "</strong> " +
+          '<button type="button" class="btn-secondary" style="margin-left:8px; padding: 2px 8px; font-size: 11px; height: auto; min-height: 20px;" data-action="edit-collective" data-collective-id="' +
+          escapeHtml(collective.collective_id) +
+          '">Edit</button>' +
           "</div>" +
           "</div>" +
           '<div class="collective-stats">' +
@@ -942,6 +999,37 @@ AppStore.ready.then(function () {
         );
       })
       .join("");
+
+    var shownStart = total ? start + 1 : 0;
+    var shownEnd = Math.min(start + state.COLLECTIVE_PAGE_SIZE, total);
+    el.collectivesTableInfo.textContent =
+      "Showing " +
+      shownStart +
+      "-" +
+      shownEnd +
+      " of " +
+      total +
+      " collectives";
+
+    el.collectivesPrevPageBtn.disabled = state.collectivePage <= 1;
+    el.collectivesNextPageBtn.disabled = state.collectivePage >= maxPage;
+
+    // Render page numbers
+    var pagesHtml = "";
+    if (maxPage > 1) {
+      for (var p = 1; p <= maxPage; p++) {
+        var activeClass = p === state.collectivePage ? " active" : "";
+        pagesHtml +=
+          '<button class="page-num' +
+          activeClass +
+          '" data-page="' +
+          p +
+          '">' +
+          p +
+          "</button>";
+      }
+    }
+    el.collectivesPages.innerHTML = pagesHtml;
 
     renderProviders();
   }
@@ -1829,20 +1917,23 @@ AppStore.ready.then(function () {
       renderCollectives();
     });
 
-    el.cityFilter.addEventListener("change", function (event) {
-      state.city = event.target.value;
+    el.sectorFilter.addEventListener("change", function (event) {
+      state.sector = event.target.value;
+      state.collectivePage = 1;
       state.providerPage = 1;
       renderCollectives();
     });
 
     el.managerFilter.addEventListener("change", function (event) {
       state.manager = event.target.value;
+      state.collectivePage = 1;
       state.providerPage = 1;
       renderCollectives();
     });
 
-    el.skillFilter.addEventListener("change", function (event) {
-      state.skill = event.target.value;
+    el.collectiveManagerFilter.addEventListener("change", function (event) {
+      state.collectiveManager = event.target.value;
+      state.collectivePage = 1;
       state.providerPage = 1;
       renderCollectives();
     });
@@ -1967,6 +2058,31 @@ AppStore.ready.then(function () {
       if (state.providerPage >= maxPage) return;
       state.providerPage += 1;
       renderProviders();
+    });
+
+    el.collectivesPrevPageBtn.addEventListener("click", function () {
+      if (state.collectivePage <= 1) return;
+      state.collectivePage -= 1;
+      renderCollectives();
+    });
+
+    el.collectivesNextPageBtn.addEventListener("click", function () {
+      var total = getFilteredCollectivesData().length;
+      var maxPage = Math.max(1, Math.ceil(total / state.COLLECTIVE_PAGE_SIZE));
+      if (state.collectivePage >= maxPage) return;
+      state.collectivePage += 1;
+      renderCollectives();
+    });
+
+    el.collectivesPages.addEventListener("click", function (event) {
+      var target = event.target;
+      if (target.classList.contains("page-num")) {
+        var page = parseInt(target.getAttribute("data-page"), 10);
+        if (!isNaN(page) && page !== state.collectivePage) {
+          state.collectivePage = page;
+          renderCollectives();
+        }
+      }
     });
 
     if (el.exportBtn) {

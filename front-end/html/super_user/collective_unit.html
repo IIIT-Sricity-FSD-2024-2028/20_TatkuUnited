@@ -245,9 +245,9 @@
             </div>
           </div>
           <div class="filter-group">
-            <label class="filter-label">CITY</label>
+            <label class="filter-label">SECTOR</label>
             <select class="filter-select" id="city-filter">
-              <option>All Cities</option>
+              <option>All Sectors</option>
             </select>
           </div>
           <div class="filter-group">
@@ -257,15 +257,33 @@
             </select>
           </div>
           <div class="filter-group">
-            <label class="filter-label">SKILL</label>
-            <select class="filter-select" id="skill-filter">
-              <option>All Skills</option>
+            <label class="filter-label">COLLECTIVE MANAGER</label>
+            <select class="filter-select" id="collective-manager-filter">
+              <option>All Managers</option>
             </select>
           </div>
         </div>
 
         <!-- Collectives Grid -->
         <div class="collectives-grid" id="collectives-grid"></div>
+
+        <!-- Collectives Pagination -->
+        <div class="table-footer" style="margin-bottom: 2rem; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 1rem 1.5rem;">
+          <span class="table-info" id="collectives-table-info">Showing 0-0 of 0 collectives</span>
+          <div class="pagination" id="collectives-pagination-container">
+            <button class="page-arrow" id="collectives-prev-page" type="button">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="15 18 9 12 15 6" />
+              </svg>
+            </button>
+            <div id="collectives-pages" class="page-numbers" style="display: flex; gap: 0.5rem;"></div>
+            <button class="page-arrow" id="collectives-next-page" type="button">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="9 18 15 12 9 6" />
+              </svg>
+            </button>
+          </div>
+        </div>
 
         <!-- Provider Management Table -->
         <div class="section-card">
