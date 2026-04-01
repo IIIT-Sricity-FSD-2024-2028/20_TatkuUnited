@@ -90,12 +90,15 @@
         var active = selectedServiceId
           ? service.service_id === selectedServiceId
           : index === 0;
+        var isUnavailable = service.is_available === false;
+        var unavailClass = isUnavailable ? ' unavailable' : '';
         return (
           '<button class="sub-service-card' +
           (active ? " active" : "") +
+          unavailClass +
           '" data-service="' +
           service.service_id +
-          '">' +
+          '" style="position:relative">' +
           '<div class="sub-service-img">' +
           '<img src="' +
           service.image_url +
@@ -157,8 +160,14 @@
         var serviceRatingFloor = Math.floor(serviceRating);
 
         var bullets = createBulletPoints(service, faqsByService);
+        var isUnavailable = service.is_available === false;
+        var unavailClass = isUnavailable ? ' unavailable' : '';
+        var bookBtnAttr = isUnavailable
+          ? ' style="background:#94a3b8;cursor:not-allowed;pointer-events:none"'
+          : '';
+        var bookBtnText = isUnavailable ? 'Unavailable' : 'Add to Cart';
         return (
-          '<div class="explore-item" id="service-' +
+          '<div class="explore-item' + unavailClass + '" id="service-' +
           service.service_id +
           '" data-rating="' +
           serviceRatingFloor +
@@ -206,7 +215,7 @@
           '" alt="' +
           service.service_name +
           '" /></div>' +
-          '<button class="btn-book-item">Add to Cart</button>' +
+          '<button class="btn-book-item"' + bookBtnAttr + '>' + bookBtnText + '</button>' +
           "</div>" +
           "</div>"
         );
@@ -376,7 +385,7 @@
     }
 
     var servicesInCategory = (data.services || []).filter(function (service) {
-      return service.is_available && service.category_id === selectedCategoryId;
+      return service.category_id === selectedCategoryId;
     });
 
     if (!servicesInCategory.length) {
