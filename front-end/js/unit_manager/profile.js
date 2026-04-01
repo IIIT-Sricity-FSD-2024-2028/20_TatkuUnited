@@ -62,7 +62,22 @@
   function populateFields() {
     setInput("full-name", um ? um.name : "Unit Manager");
     setInput("email", um ? um.email : "");
-    setInput("phone", um ? String(um.phone || "").replace(/^\+91/, "") : "");
+
+    // Parse phone: detect country code and strip it for the digit input
+    var rawPhone = um && um.phone ? String(um.phone) : "";
+    var codeSpan = document.getElementById("phone-code");
+    var CODES = ["+971", "+44", "+65", "+91", "+61", "+1"];
+    var matchedCode = "+91"; // Fallback
+    for (var ci = 0; ci < CODES.length; ci++) {
+      if (rawPhone && rawPhone.startsWith(CODES[ci])) {
+        matchedCode = CODES[ci];
+        rawPhone = rawPhone.slice(CODES[ci].length).trim();
+        break;
+      }
+    }
+    if (codeSpan) codeSpan.textContent = matchedCode;
+    setInput("phone", rawPhone);
+
     setInput("dob", um && um.dob ? um.dob : "");
 
     setInput("unit-name", unit ? unit.unit_name : "");
@@ -109,6 +124,8 @@
       var name = (document.getElementById("full-name").value || "").trim();
       var phone = (document.getElementById("phone").value || "").trim();
       var dob = (document.getElementById("dob").value || "").trim();
+      var codeSpan = document.getElementById("phone-code");
+      var countryCode = codeSpan ? codeSpan.textContent : "+91";
 
       if (!name) {
         showToast("Name cannot be empty.", "error");
@@ -120,7 +137,7 @@
       }
 
       um.name = name;
-      um.phone = phone ? "+91" + phone : "";
+      um.phone = phone ? countryCode + phone : "";
       um.dob = dob || null; // custom UI field, persisted in shared store
       um.updated_at = new Date().toISOString();
 

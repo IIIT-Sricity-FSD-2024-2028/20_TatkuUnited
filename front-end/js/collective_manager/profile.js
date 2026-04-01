@@ -91,7 +91,22 @@ function hydratePersonalCard(cm) {
 
   setVal('full-name', cm.name);
   setVal('email',     cm.email);
-  setVal('phone',     cm.phone);
+
+  // Parse phone: split country code from digits
+  var rawPhone = cm.phone || '';
+  var codeSpan = document.getElementById('phone-code');
+  var CODES = ['+971', '+44', '+65', '+91', '+61', '+1'];
+  var matchedCode = '+91';
+  var digits = rawPhone;
+  for (var i = 0; i < CODES.length; i++) {
+    if (rawPhone.startsWith(CODES[i])) {
+      matchedCode = CODES[i];
+      digits = rawPhone.slice(CODES[i].length);
+      break;
+    }
+  }
+  if (codeSpan) codeSpan.textContent = matchedCode;
+  setVal('phone', digits);
 
   // DOB not in mock data — leave blank
   const dobEl = document.getElementById('dob');
@@ -236,11 +251,53 @@ function syncEmail() {
    SAVE / MODAL / TOAST
 ───────────────────────────────────────────── */
 function saveSection(section) {
-  const msgs = {
-    personal:   'Personal information saved!',
-    collective: 'Collective details saved!',
-  };
-  showToast(msgs[section] || 'Changes saved!');
+  if (section === 'personal') {
+    if (!_cm) { showToast('Profile not loaded.'); return; }
+
+    var name  = (document.getElementById('full-name').value || '').trim();
+    var email = (document.getElementById('email').value || '').trim();
+    var rawPhone = (document.getElementById('phone').value || '').trim();
+    var dob  = (document.getElementById('dob') ? document.getElementById('dob').value : '') || '';
+    var codeSpan = document.getElementById('phone-code');
+    var countryCode = codeSpan ? codeSpan.textContent : '+91';
+
+    if (!name) { showToast('Name cannot be empty.'); return; }
+    if (rawPhone && !/^\d{10}$/.test(rawPhone)) {
+      showToast('Phone must be exactly 10 digits.'); return;
+    }
+
+    _cm.name  = name;
+    _cm.email = email;
+    _cm.phone = rawPhone ? countryCode + rawPhone : '';
+    if (dob) _cm.dob = dob;
+    _cm.updated_at = new Date().toISOString();
+
+    AppStore.save();
+
+    document.getElementById('hero-name').textContent  = name;
+    document.getElementById('hero-email').textContent = email;
+    showToast('Personal information saved ✓');
+    return;
+  }
+
+  if (section === 'collective') {
+    if (!_collective) { showToast('Collective not loaded.'); return; }
+
+    var collectiveName = (document.getElementById('collective-name').value || '').trim();
+    var region = (document.getElementById('region').value || '').trim();
+
+    if (!collectiveName) { showToast('Collective name cannot be empty.'); return; }
+
+    _collective.collective_name = collectiveName;
+    if (region) _collective.region = region;
+    _collective.updated_at = new Date().toISOString();
+
+    AppStore.save();
+    showToast('Collective details saved ✓');
+    return;
+  }
+
+  showToast('Changes saved!');
 }
 
 function openPwdModal()    { document.getElementById('pwd-modal').classList.add('open'); }

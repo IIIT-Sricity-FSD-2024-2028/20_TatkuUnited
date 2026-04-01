@@ -63,13 +63,20 @@ function saveSection(section) {
     if (session) {
       const nameVal = document.getElementById("full-name").value;
       const emailVal = document.getElementById("email").value;
-      const phoneVal = document.getElementById("phone").value;
+      const phoneVal = (document.getElementById("phone").value || "").trim();
       const dobVal = document.getElementById("dob").value;
+      const codeSpan = document.getElementById("phone-code");
+      const countryCode = codeSpan ? codeSpan.textContent : "+91";
+
+      if (phoneVal && !/^\d{10}$/.test(phoneVal)) {
+        showProfileToast("Phone must be exactly 10 digits.");
+        return;
+      }
 
       CRUD.updateRecord("customers", "customer_id", session.id, {
         full_name: nameVal,
         email: emailVal,
-        phone: phoneVal,
+        phone: phoneVal ? countryCode + phoneVal : "",
         dob: dobVal,
       });
       // Updating session state in sessionStorage using the correct key
@@ -405,7 +412,23 @@ AppStore.ready.then(() => {
 
   const phoneInput = document.getElementById("phone");
   const dobInput = document.getElementById("dob");
-  if (phoneInput && me.phone) phoneInput.value = me.phone;
+  const codeSpan = document.getElementById("phone-code");
+
+  // Parse phone: split country code from digits
+  const rawPhone = me.phone ? String(me.phone) : '';
+  const CODES = ['+971', '+44', '+65', '+91', '+61', '+1'];
+  let matchedCode = '+91'; // Default Fallback
+  let digits = rawPhone;
+  for (const c of CODES) {
+    if (rawPhone && rawPhone.startsWith(c)) {
+      matchedCode = c;
+      digits = rawPhone.slice(c.length);
+      break;
+    }
+  }
+  if (codeSpan) codeSpan.textContent = matchedCode;
+  if (phoneInput) phoneInput.value = digits;
+  
   if (dobInput && me.dob) dobInput.value = me.dob;
 
   // Load preferences
