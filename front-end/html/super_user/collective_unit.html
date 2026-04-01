@@ -90,17 +90,6 @@
           </svg>
           Platform Settings
         </a>
-        <a href="system_monitoring.html" class="nav-item">
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-          >
-            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
-          </svg>
-          System Monitoring
-        </a>
       </nav>
       <div class="sidebar-section-label">ACCOUNT</div>
       <nav class="sidebar-nav">
@@ -384,6 +373,18 @@
               <select id="collective-sector-select" multiple size="6"></select>
               <small class="field-error" id="collective-sector-error"></small>
             </div>
+
+            <div class="form-field form-field--full" style="position: relative;">
+              <label for="collective-manager-input">Collective Manager</label>
+              <input
+                id="collective-manager-input"
+                type="text"
+                placeholder="Search unassigned managers..."
+                autocomplete="off"
+              />
+              <div id="collective-manager-dropdown" class="cm-dropdown-list" style="display: none; position: absolute; top: 100%; left: 0; right: 0; background: #fff; border: 1px solid #e5e7eb; border-radius: 4px; z-index: 10; max-height: 150px; overflow-y: auto; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);"></div>
+              <small class="field-error" id="collective-manager-error"></small>
+            </div>
           </div>
 
           <div class="form-actions">
@@ -530,6 +531,111 @@
             </button>
             <button type="submit" class="btn-primary" id="reassign-submit-btn">
               Reassign
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="modal-overlay" id="reassign-cm-modal" aria-hidden="true">
+      <div
+        class="form-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="reassign-cm-modal-title"
+      >
+        <div class="form-modal-header">
+          <h3 id="reassign-cm-modal-title">Reassign Collective Manager</h3>
+          <button
+            type="button"
+            class="modal-close"
+            id="reassign-cm-modal-close"
+            aria-label="Close reassign form"
+          >
+            ×
+          </button>
+        </div>
+        <form id="reassign-cm-form" novalidate>
+          <div class="form-grid">
+            <div class="form-field form-field--full" style="position: relative;">
+              <label for="reassign-cm-input">Search Collective Manager</label>
+              <input
+                id="reassign-cm-input"
+                type="text"
+                placeholder="Search available managers..."
+                autocomplete="off"
+              />
+              <div id="reassign-cm-dropdown" class="cm-dropdown-list" style="display: none; position: absolute; top: 100%; left: 0; right: 0; background: #fff; border: 1px solid #e5e7eb; border-radius: 4px; z-index: 10; max-height: 150px; overflow-y: auto; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);"></div>
+              <small class="field-error" id="reassign-cm-error"></small>
+            </div>
+          </div>
+          <div class="form-actions">
+            <button
+              type="button"
+              class="btn-secondary"
+              id="reassign-cm-cancel-btn"
+            >
+              Cancel
+            </button>
+            <button type="submit" class="btn-primary" id="reassign-cm-submit-btn">
+              Reassign
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="modal-overlay" id="edit-collective-modal" aria-hidden="true">
+      <div
+        class="form-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="edit-collective-modal-title"
+      >
+        <div class="form-modal-header">
+          <h3 id="edit-collective-modal-title">Edit Collective</h3>
+          <button
+            type="button"
+            class="modal-close"
+            id="edit-collective-modal-close"
+            aria-label="Close edit form"
+          >
+            &times;
+          </button>
+        </div>
+        <form id="edit-collective-form" novalidate>
+          <div class="form-grid">
+            <div class="form-field form-field--full" style="position: relative;">
+              <label for="edit-collective-cm-input">Collective Manager</label>
+              <input
+                id="edit-collective-cm-input"
+                type="text"
+                placeholder="Search available managers..."
+                autocomplete="off"
+              />
+              <div id="edit-collective-cm-dropdown" class="cm-dropdown-list" style="display: none; position: absolute; top: 100%; left: 0; right: 0; background: #fff; border: 1px solid #e5e7eb; border-radius: 4px; z-index: 10; max-height: 150px; overflow-y: auto; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);"></div>
+              <small class="field-error" id="edit-collective-cm-error"></small>
+            </div>
+
+            <div class="form-field form-field--full">
+              <label for="edit-collective-sector-select"
+                >Sectors (select one or more)</label
+              >
+              <select id="edit-collective-sector-select" multiple size="6"></select>
+              <small class="field-error" id="edit-collective-sector-error"></small>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button
+              type="button"
+              class="btn-secondary"
+              id="edit-collective-cancel-btn"
+            >
+              Cancel
+            </button>
+            <button type="submit" class="btn-primary" id="edit-collective-submit-btn">
+              Save Changes
             </button>
           </div>
         </form>

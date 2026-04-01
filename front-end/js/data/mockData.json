@@ -16,8 +16,7 @@
       "is_active": true,
       "created_at": "2023-01-10T08:00:00Z",
       "sector_ids": [
-        "SEC002",
-        "SEC005"
+        "SEC002"
       ]
     },
     {
@@ -45,8 +44,7 @@
       "is_active": true,
       "created_at": "2023-07-01T10:00:00Z",
       "sector_ids": [
-        "SEC004",
-        "SEC006"
+        "SEC004"
       ]
     },
     {
@@ -55,8 +53,7 @@
       "is_active": true,
       "created_at": "2024-01-05T08:30:00Z",
       "sector_ids": [
-        "SEC005",
-        "SEC002"
+        "SEC005"
       ]
     }
   ],
@@ -224,6 +221,54 @@
       "centroid_lng": 80.21,
       "density_tier": "HIGH",
       "is_active": true
+    },
+    {
+      "sector_id": "SEC007",
+      "sector_name": "Harbor Zone",
+      "h3_index": "8a2a100d8dfffff",
+      "resolution": 10,
+      "state": "Tamil Nadu",
+      "region": "North East",
+      "centroid_lat": 13.12,
+      "centroid_lng": 80.29,
+      "density_tier": "MEDIUM",
+      "is_active": true
+    },
+    {
+      "sector_id": "SEC008",
+      "sector_name": "Airport Corridor",
+      "h3_index": "8a2a100d9dfffff",
+      "resolution": 10,
+      "state": "Tamil Nadu",
+      "region": "South",
+      "centroid_lat": 12.98,
+      "centroid_lng": 80.17,
+      "density_tier": "HIGH",
+      "is_active": true
+    },
+    {
+      "sector_id": "SEC009",
+      "sector_name": "University Belt",
+      "h3_index": "8a2a100dadfffff",
+      "resolution": 10,
+      "state": "Tamil Nadu",
+      "region": "Central",
+      "centroid_lat": 13.01,
+      "centroid_lng": 80.24,
+      "density_tier": "MEDIUM",
+      "is_active": true
+    },
+    {
+      "sector_id": "SEC010",
+      "sector_name": "Old City Quarter",
+      "h3_index": "8a2a100dbdfffff",
+      "resolution": 10,
+      "state": "Tamil Nadu",
+      "region": "North",
+      "centroid_lat": 13.09,
+      "centroid_lng": 80.28,
+      "density_tier": "LOW",
+      "is_active": true
     }
   ],
   "collective_managers": [
@@ -286,6 +331,30 @@
       "created_at": "2024-01-06T00:00:00Z",
       "updated_at": "2024-03-01T00:00:00Z",
       "collective_id": "COL005"
+    },
+    {
+      "cm_id": "CM006",
+      "name": "Deepa Sundaram",
+      "password": "Password@123",
+      "phone": "+919933445566",
+      "email": "deepa.s@collective.com",
+      "pfp_url": "https://i.pravatar.cc/150?img=41",
+      "is_active": true,
+      "created_at": "2024-06-10T00:00:00Z",
+      "updated_at": "2024-06-10T00:00:00Z",
+      "collective_id": null
+    },
+    {
+      "cm_id": "CM007",
+      "name": "Harish Raghavan",
+      "password": "Password@123",
+      "phone": "+919922334455",
+      "email": "harish.r@collective.com",
+      "pfp_url": "https://i.pravatar.cc/150?img=59",
+      "is_active": true,
+      "created_at": "2024-08-01T00:00:00Z",
+      "updated_at": "2024-08-01T00:00:00Z",
+      "collective_id": null
     }
   ],
   "unit_managers": [

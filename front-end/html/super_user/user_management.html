@@ -90,17 +90,6 @@
           </svg>
           Platform Settings
         </a>
-        <a href="system_monitoring.html" class="nav-item">
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-          >
-            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
-          </svg>
-          System Monitoring
-        </a>
       </nav>
       <div class="sidebar-section-label">ACCOUNT</div>
       <nav class="sidebar-nav">
@@ -217,7 +206,7 @@
               Manage and moderate platform users, roles, and security status.
             </p>
           </div>
-          <button class="btn-primary">
+          <button class="btn-primary" id="open-add-user-btn">
             <svg
               viewBox="0 0 24 24"
               fill="none"
@@ -299,28 +288,6 @@
             <p class="kpi-label">Suspended Users</p>
             <p class="kpi-value" id="kpi-suspended">0</p>
           </div>
-          <div class="kpi-card">
-            <div class="kpi-top">
-              <div class="kpi-icon kpi-icon--orange">
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                >
-                  <path
-                    d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"
-                  />
-                  <line x1="4" y1="22" x2="4" y2="15" />
-                </svg>
-              </div>
-              <span class="kpi-badge kpi-badge--green" id="kpi-flagged-badge"
-                >0%</span
-              >
-            </div>
-            <p class="kpi-label">Flagged Accounts</p>
-            <p class="kpi-value" id="kpi-flagged">0</p>
-          </div>
         </div>
 
         <!-- Filters -->
@@ -392,6 +359,40 @@
           </div>
         </div>
       </main>
+    </div>
+
+    <!-- Add New User Modal -->
+    <div class="modal-overlay" id="add-user-modal" style="display: none;">
+      <div class="modal-content">
+        <h2 class="modal-title">Add New User</h2>
+        <form id="add-user-form">
+          <div class="form-group">
+            <label for="new-user-role">Role <span style="color:red">*</span></label>
+            <select id="new-user-role" required>
+              <option value="" disabled selected>Select a role</option>
+              <option value="Unit Manager">Unit Manager</option>
+              <option value="Collective Manager">Collective Manager</option>
+              <option value="Super User">Super User</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="new-user-name">Full Name <span style="color:red">*</span></label>
+            <input type="text" id="new-user-name" placeholder="Enter full name" minlength="3" required />
+          </div>
+          <div class="form-group">
+            <label for="new-user-email">Email <span style="color:red">*</span></label>
+            <input type="email" id="new-user-email" placeholder="Enter email address" required />
+          </div>
+          <div class="form-group">
+            <label for="new-user-phone">Phone Number <span style="color:red">*</span></label>
+            <input type="tel" id="new-user-phone" placeholder="+919876543210" pattern="[\+]?[0-9]{10,13}" required title="Enter a valid phone number (e.g., +919876543210)" />
+          </div>
+          <div class="modal-actions">
+            <button type="button" class="btn-cancel" id="cancel-add-user">Cancel</button>
+            <button type="submit" class="btn-primary">Add User</button>
+          </div>
+        </form>
+      </div>
     </div>
 
     <script src="../../js/data/store.js"></script>
