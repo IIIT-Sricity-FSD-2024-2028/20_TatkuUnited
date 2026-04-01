@@ -1,4 +1,5 @@
 :root {
+  --maintenance-offset: 0px;
   --blue: #2563eb;
   --blue-light: #3b82f6;
   --blue-dark: #1d4ed8;
@@ -31,6 +32,50 @@ body {
   background: var(--white);
   color: var(--navy);
   overflow-x: hidden;
+}
+
+.maintenance-banner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 12000;
+  background: linear-gradient(90deg, #92400e 0%, #b45309 100%);
+  color: #fff7ed;
+  padding: 10px 20px;
+  box-shadow: 0 4px 20px rgba(146, 64, 14, 0.35);
+  text-align: center;
+}
+
+.maintenance-banner-title {
+  font-family: "Syne", sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+}
+
+.maintenance-banner-text {
+  font-size: 12.5px;
+  margin-top: 2px;
+}
+
+body.maintenance-mode {
+  padding-top: var(--maintenance-offset);
+}
+
+body.maintenance-mode nav {
+  top: var(--maintenance-offset);
+}
+
+body.maintenance-mode .progress-bar {
+  top: var(--maintenance-offset);
+}
+
+.maintenance-disabled-link {
+  opacity: 0.55;
+  pointer-events: none;
+  cursor: not-allowed;
+  filter: grayscale(0.35);
 }
 
 /* ── CURSOR ── */

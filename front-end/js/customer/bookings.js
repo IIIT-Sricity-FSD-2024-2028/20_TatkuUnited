@@ -21,6 +21,17 @@ let activeFilter = "All";
 let sortDesc = true;
 let reschedulingBookingId = null;
 
+function getBookingRules() {
+  if (!window.AppStore || typeof AppStore.getBookingRules !== "function") {
+    return {
+      maxAdvanceDays: 7,
+      cancelWindowLabel: "2 hours",
+      maxAdvanceLabel: "7 days",
+    };
+  }
+  return AppStore.getBookingRules();
+}
+
 function toggleSort() {
   sortDesc = !sortDesc;
   document.getElementById("sort-label").textContent = sortDesc
@@ -215,6 +226,17 @@ function closeDrawer(e) {
 function cancelBooking(id) {
   const b = bookings.find((x) => x.id === id);
   if (!b) return;
+
+  const canCancel =
+    window.AppStore && typeof AppStore.canCancelScheduledBooking === "function"
+      ? AppStore.canCancelScheduledBooking(b.rawDateISO)
+      : { valid: true };
+
+  if (!canCancel.valid) {
+    showToast(canCancel.error, "error");
+    return;
+  }
+
   CRUD.updateRecord("bookings", "booking_id", id, { status: "CANCELLED" });
   closeDrawerBtn();
   loadBookings();
@@ -223,9 +245,10 @@ function cancelBooking(id) {
 
 // ===== RESCHEDULE MODAL =====
 function getDateConstraints() {
+  const rules = getBookingRules();
   const today = new Date();
   const maxDate = new Date();
-  maxDate.setDate(today.getDate() + 7);
+  maxDate.setDate(today.getDate() + rules.maxAdvanceDays);
   const fmt = (d) => d.toISOString().split("T")[0];
   return { min: fmt(today), max: fmt(maxDate) };
 }
@@ -240,10 +263,10 @@ function openRescheduleModal(bookingId) {
   const { min, max } = getDateConstraints();
   dateInput.min = min;
   dateInput.max = max;
-  dateInput.value = '';
-  document.getElementById('reschedule-time').value = '';
-  document.getElementById('reschedule-modal').classList.add('open');
-  document.body.style.overflow = 'hidden';
+  dateInput.value = "";
+  document.getElementById("reschedule-time").value = "";
+  document.getElementById("reschedule-modal").classList.add("open");
+  document.body.style.overflow = "hidden";
 }
 
 function closeRescheduleModalBtn() {
@@ -260,14 +283,22 @@ function saveReschedule() {
   if (!reschedulingBookingId) return;
   const newDate = document.getElementById("reschedule-date").value;
   const newTime = document.getElementById("reschedule-time").value;
-  const { min, max } = getDateConstraints();
-  if (!newDate) { showToast('Please select a date.', 'error'); return; }
-  if (newDate < min || newDate > max) { showToast('Please select a date within 1 week from today.', 'error'); return; }
-  if (!newTime) { showToast('Please select a time.', 'error'); return; }
-  
-  const dateTimeISO = new Date(newDate + 'T' + newTime + ':00').toISOString();
-  CRUD.updateRecord('bookings', 'booking_id', reschedulingBookingId, { scheduled_at: dateTimeISO });
-  
+
+  const validation =
+    window.AppStore && typeof AppStore.validateScheduledSlot === "function"
+      ? AppStore.validateScheduledSlot(newDate, newTime)
+      : { valid: !!newDate && !!newTime, error: "Please select date/time." };
+
+  if (!validation.valid) {
+    showToast(validation.error, "error");
+    return;
+  }
+
+  const dateTimeISO = validation.scheduledAt;
+  CRUD.updateRecord("bookings", "booking_id", reschedulingBookingId, {
+    scheduled_at: dateTimeISO,
+  });
+
   closeRescheduleModalBtn();
   closeDrawerBtn();
   loadBookings();

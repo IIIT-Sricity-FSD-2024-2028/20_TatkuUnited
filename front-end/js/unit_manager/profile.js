@@ -206,6 +206,12 @@
     if (modal) {
       modal.classList.remove("open");
       removePwdError();
+      // Clear fields
+      var fields = ["pwd-current", "pwd-new", "pwd-confirm"];
+      fields.forEach(function (id) {
+        var el = document.getElementById(id);
+        if (el) el.value = "";
+      });
     }
   };
 
@@ -228,53 +234,38 @@
     fields.appendChild(p);
   }
 
-  function wirePasswordBtn() {
-    var modal = document.getElementById("pwd-modal");
-    if (!modal) return;
+  window.handlePasswordChange = function () {
+    var currentPwd = document.getElementById("pwd-current") ? document.getElementById("pwd-current").value : "";
+    var newPwd = document.getElementById("pwd-new") ? document.getElementById("pwd-new").value : "";
+    var confirmPwd = document.getElementById("pwd-confirm") ? document.getElementById("pwd-confirm").value : "";
 
-    var btn = modal.querySelector(".modal-btn-save");
-    if (!btn) return;
+    if (!currentPwd || !newPwd || !confirmPwd) {
+      showPwdError("Please fill in all password fields.");
+      return;
+    }
 
-    btn.removeAttribute("onclick");
-    btn.addEventListener("click", function () {
-      var inputs = modal.querySelectorAll('input[type="password"]');
-      var current = inputs[0] ? inputs[0].value : "";
-      var newPwd = inputs[1] ? inputs[1].value : "";
-      var confirm = inputs[2] ? inputs[2].value : "";
+    if (newPwd !== confirmPwd) {
+      showPwdError("New passwords do not match.");
+      return;
+    }
 
-      if (!current) {
-        showPwdError("Enter your current password.");
-        return;
-      }
-      if (um && um.password && current !== um.password) {
-        showPwdError("Current password is incorrect.");
-        if (inputs[0]) inputs[0].style.borderColor = "#f87171";
-        return;
-      }
-      if (newPwd.length < 8) {
-        showPwdError("New password must be at least 8 characters.");
-        if (inputs[1]) inputs[1].style.borderColor = "#f87171";
-        return;
-      }
-      if (newPwd === current) {
-        showPwdError("New password must differ from the current one.");
-        if (inputs[1]) inputs[1].style.borderColor = "#f87171";
-        return;
-      }
-      if (newPwd !== confirm) {
-        showPwdError("Passwords do not match.");
-        if (inputs[2]) inputs[2].style.borderColor = "#f87171";
-        return;
-      }
+    if (newPwd.length < 8) {
+      showPwdError("New password must be at least 8 characters.");
+      return;
+    }
 
-      um.password = newPwd;
-      um.updated_at = new Date().toISOString();
-      AppStore.save();
-
-      window.closePwdModalBtn();
+    var res = Auth.changePassword(currentPwd, newPwd);
+    if (res.success) {
       showToast("Password updated successfully ✓", "success");
-    });
-  }
+      window.closePwdModalBtn();
+    } else {
+      var errorMap = {
+        invalid_current_password: "Current password is incorrect.",
+        not_logged_in: "Session expired. Please log in again.",
+      };
+      showPwdError(errorMap[res.error] || "Failed to update password.");
+    }
+  };
 
   function computeUnitMetrics() {
     var allProviders = AppStore.getTable("service_providers") || [];
@@ -586,6 +577,6 @@
     renderHeroCardStats();
     renderPerformanceSummary();
     renderActivities();
-    wirePasswordBtn();
+    renderActivities();
   });
 })();

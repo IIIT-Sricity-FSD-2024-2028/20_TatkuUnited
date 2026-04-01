@@ -308,16 +308,20 @@ function showPasswordModal() {
 }
 function closePwdModalBtn() {
   document.getElementById("pwd-modal").classList.remove("open");
+  const fields = ["pwd-current", "pwd-new", "pwd-confirm"];
+  fields.forEach((id) => {
+    const el = document.getElementById(id);
+    if (el) el.value = "";
+  });
 }
 function closePwdModal(e) {
   if (e.target === document.getElementById("pwd-modal")) closePwdModalBtn();
 }
 
-function updatePassword() {
-  const inputs = document.querySelectorAll('#pwd-modal input[type="password"]');
-  const currentPwd = inputs[0].value;
-  const newPwd = inputs[1].value;
-  const confirmPwd = inputs[2].value;
+function handlePasswordChange() {
+  const currentPwd = document.getElementById("pwd-current")?.value;
+  const newPwd = document.getElementById("pwd-new")?.value;
+  const confirmPwd = document.getElementById("pwd-confirm")?.value;
 
   if (!currentPwd || !newPwd || !confirmPwd) {
     showToast("Please fill in all password fields.", true);
@@ -334,9 +338,17 @@ function updatePassword() {
     return;
   }
 
-  showToast("Password updated successfully!");
-  inputs.forEach((input) => (input.value = "")); // Clear inputs
-  closePwdModalBtn();
+  const res = Auth.changePassword(currentPwd, newPwd);
+  if (res.success) {
+    showToast("Password updated successfully!");
+    closePwdModalBtn();
+  } else {
+    const errorMap = {
+      invalid_current_password: "Current password is incorrect.",
+      not_logged_in: "Session expired. Please log in again.",
+    };
+    showToast(errorMap[res.error] || "Failed to update password.", true);
+  }
 }
 
 function confirmDeactivate() {

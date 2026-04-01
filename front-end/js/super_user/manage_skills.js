@@ -9,8 +9,7 @@ AppStore.ready.then(() => {
   /* ── 2. Pull tables ── */
   const allSkills = AppStore.getTable("skills") || [];
   const allProviderSkills = AppStore.getTable("provider_skills") || [];
-  const allProviders = AppStore.getTable("service_providers") || [];
-  const allServices = AppStore.getTable("services") || [];
+  const allServiceSkills = AppStore.getTable("service_skills") || [];
 
   /* ── 3. Transform and enrich skills ── */
   function transformSkills(skillsList) {
@@ -20,31 +19,20 @@ AppStore.ready.then(() => {
         (ps) => ps.skill_id === sk.skill_id,
       ).length;
 
-      // Count services related to this skill (approx)
-      const servicesForSkill =
-        allServices.filter(
-          (s) =>
-            s.service_name &&
-            s.service_name.toLowerCase().includes(sk.skill_name.toLowerCase()),
-        ).length || Math.floor(Math.random() * 30) + 10;
+      // Count unique services mapped to this skill from service_skills.
+      const servicesForSkill = new Set(
+        allServiceSkills
+          .filter((ss) => ss.skill_id === sk.skill_id)
+          .map((ss) => ss.service_id),
+      ).size;
 
-      // Determine status
+      // Determine status (derived from providers count)
       const status = providersWithSkill > 0 ? "Active" : "Inactive";
 
-      // Get category from skill name
-      const categories = [
-        "Trade",
-        "Creative",
-        "Technical",
-        "Management",
-        "Communication",
-      ];
-      const category = categories[idx % categories.length];
-
       return {
+        skillId: sk.skill_id,
         id: parseInt(sk.skill_id.replace("SKL", "")) || idx + 1,
         name: sk.skill_name,
-        category: category,
         desc: sk.description,
         providers: providersWithSkill,
         services: servicesForSkill,
@@ -54,6 +42,10 @@ AppStore.ready.then(() => {
   }
 
   let skills = transformSkills(allSkills);
+  function refreshSkillsFromStore() {
+    skills = transformSkills(AppStore.getTable("skills") || []);
+  }
+
   let editingId = null;
   let deletingId = null;
 
@@ -69,12 +61,10 @@ AppStore.ready.then(() => {
     const kpiTotal = document.getElementById("kpiTotal");
     const kpiActive = document.getElementById("kpiActive");
     const kpiInactive = document.getElementById("kpiInactive");
-    const kpiProviders = document.getElementById("kpiProviders");
 
     if (kpiTotal) kpiTotal.textContent = skills.length;
     if (kpiActive) kpiActive.textContent = active;
     if (kpiInactive) kpiInactive.textContent = inactive;
-    if (kpiProviders) kpiProviders.textContent = providers;
   }
 
   /* ── table ── */
@@ -84,27 +74,22 @@ AppStore.ready.then(() => {
     tbody.innerHTML = "";
 
     if (data.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:32px;color:var(--text-faint)">No skills found matching your filters.</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:32px;color:var(--text-faint)">No skills found matching your filters.</td></tr>`;
     } else {
       data.forEach((sk, idx) => {
         const tr = document.createElement("tr");
         tr.style.animationDelay = idx * 0.04 + "s";
         tr.innerHTML = `
           <td class="skill-name-col">${sk.name}</td>
-          <td><span class="cat-badge cat-${sk.category.replace(" ", "")}">${sk.category}</span></td>
           <td class="desc-cell" title="${sk.desc}">${truncate(sk.desc)}</td>
           <td class="num-cell">${sk.providers}</td>
           <td class="num-cell">${sk.services}</td>
-          <td><span class="status-badge status-badge--${sk.status.toLowerCase()}">${sk.status}</span></td>
           <td>
             <div class="tbl-actions">
               <button class="tbl-icon-btn btn-edit" data-id="${sk.id}" title="Edit Skill">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
               </button>
-              <button class="tbl-icon-btn btn-toggle" data-id="${sk.id}" title="Toggle Status">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
-              </button>
-              <button class="tbl-icon-btn btn-delete" data-id="${sk.id}" title="Delete Skill">
+              <button class="tbl-icon-btn btn-delete" data-skill-id="${sk.skillId}" title="Delete Skill">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
               </button>
             </div>
@@ -129,20 +114,9 @@ AppStore.ready.then(() => {
       });
     });
 
-    document.querySelectorAll(".btn-toggle").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        const sk = skills.find((s) => s.id === parseInt(btn.dataset.id));
-        if (sk) {
-          sk.status = sk.status === "Active" ? "Inactive" : "Active";
-          applyFilters();
-          showToast(`✓ "${sk.name}" marked as ${sk.status}`);
-        }
-      });
-    });
-
     document.querySelectorAll(".btn-delete").forEach((btn) => {
       btn.addEventListener("click", () => {
-        const sk = skills.find((s) => s.id === parseInt(btn.dataset.id));
+        const sk = skills.find((s) => s.skillId === btn.dataset.skillId);
         if (sk) openDeleteModal(sk);
       });
     });
@@ -152,15 +126,11 @@ AppStore.ready.then(() => {
   function applyFilters() {
     const search =
       document.getElementById("skillSearch")?.value.toLowerCase() || "";
-    const cat = document.getElementById("catFilter")?.value || "All";
-    const status = document.getElementById("statusFilter")?.value || "All";
     const filtered = skills.filter((sk) => {
       const matchSearch =
         sk.name.toLowerCase().includes(search) ||
         sk.desc.toLowerCase().includes(search);
-      const matchCat = cat === "All" || sk.category === cat;
-      const matchStatus = status === "All" || sk.status === status;
-      return matchSearch && matchCat && matchStatus;
+      return matchSearch;
     });
     renderTable(filtered);
     updateKPIs(filtered);
@@ -168,31 +138,23 @@ AppStore.ready.then(() => {
 
   function setupEventListeners() {
     const skillSearch = document.getElementById("skillSearch");
-    const catFilter = document.getElementById("catFilter");
-    const statusFilter = document.getElementById("statusFilter");
 
     if (skillSearch) skillSearch.addEventListener("input", applyFilters);
-    if (catFilter) catFilter.addEventListener("change", applyFilters);
-    if (statusFilter) statusFilter.addEventListener("change", applyFilters);
   }
 
   /* ── add/edit modal ── */
   function openModal(sk) {
-    editingId = sk ? sk.id : null;
+    editingId = sk ? sk.skillId : null;
     const modalTitle = document.getElementById("modalTitle");
     const skillName = document.getElementById("skillName");
-    const skillCategory = document.getElementById("skillCategory");
     const skillDesc = document.getElementById("skillDesc");
-    const skillStatus = document.getElementById("skillStatus");
     const btnSave = document.getElementById("btnSave");
     const modalOverlay = document.getElementById("modalOverlay");
 
     if (modalTitle)
       modalTitle.textContent = sk ? "Edit Skill" : "Add New Skill";
     if (skillName) skillName.value = sk ? sk.name : "";
-    if (skillCategory) skillCategory.value = sk ? sk.category : "Trade";
     if (skillDesc) skillDesc.value = sk ? sk.desc : "";
-    if (skillStatus) skillStatus.value = sk ? sk.status : "Active";
     if (btnSave) btnSave.textContent = sk ? "Save Changes" : "Add Skill";
     if (modalOverlay) modalOverlay.classList.add("open");
   }
@@ -203,23 +165,16 @@ AppStore.ready.then(() => {
   }
 
   function openDeleteModal(sk) {
-    deletingId = sk.id;
-    const confirmBtn = document.querySelector(".delete-confirm-btn");
-    if (confirmBtn) {
-      confirmBtn.onclick = () => {
-        skills = skills.filter((s) => s.id !== deletingId);
-        closeDeleteModal();
-        showToast(`✓ Skill deleted successfully`);
-        applyFilters();
-      };
-    }
-    const deleteModal = document.getElementById("deleteModal");
-    if (deleteModal) deleteModal.classList.add("open");
+    deletingId = sk.skillId;
+    const deleteSkillName = document.getElementById("deleteSkillName");
+    if (deleteSkillName) deleteSkillName.textContent = sk.name;
+    const deleteOverlay = document.getElementById("deleteOverlay");
+    if (deleteOverlay) deleteOverlay.classList.add("open");
   }
 
   function closeDeleteModal() {
-    const deleteModal = document.getElementById("deleteModal");
-    if (deleteModal) deleteModal.classList.remove("open");
+    const deleteOverlay = document.getElementById("deleteOverlay");
+    if (deleteOverlay) deleteOverlay.classList.remove("open");
   }
 
   function showToast(msg) {
@@ -236,7 +191,10 @@ AppStore.ready.then(() => {
   const btnCancel = document.getElementById("btnCancel");
   const btnSave = document.getElementById("btnSave");
   const modalOverlay = document.getElementById("modalOverlay");
-  const deleteCancel = document.getElementById("deleteCancel");
+  const deleteClose = document.getElementById("deleteClose");
+  const deleteCancelBtn = document.getElementById("deleteCancelBtn");
+  const deleteConfirmBtn = document.getElementById("deleteConfirmBtn");
+  const deleteOverlay = document.getElementById("deleteOverlay");
 
   if (btnAddSkill) btnAddSkill.addEventListener("click", () => openModal(null));
   if (modalClose) modalClose.addEventListener("click", closeModal);
@@ -246,14 +204,53 @@ AppStore.ready.then(() => {
       if (e.target === e.currentTarget) closeModal();
     });
   }
-  if (deleteCancel) deleteCancel.addEventListener("click", closeDeleteModal);
+  if (deleteClose) deleteClose.addEventListener("click", closeDeleteModal);
+  if (deleteCancelBtn)
+    deleteCancelBtn.addEventListener("click", closeDeleteModal);
+  if (deleteOverlay) {
+    deleteOverlay.addEventListener("click", (e) => {
+      if (e.target === e.currentTarget) closeDeleteModal();
+    });
+  }
+  if (deleteConfirmBtn) {
+    deleteConfirmBtn.addEventListener("click", () => {
+      const skillsTable = AppStore.getTable("skills") || [];
+      const providerSkillsTable = AppStore.getTable("provider_skills") || [];
+      const serviceSkillsTable = AppStore.getTable("service_skills") || [];
+      const storeSkill = skillsTable.find((s) => s.skill_id === deletingId);
+
+      if (storeSkill) {
+        const skillIndex = skillsTable.findIndex(
+          (s) => s.skill_id === deletingId,
+        );
+        if (skillIndex !== -1) skillsTable.splice(skillIndex, 1);
+
+        for (let i = providerSkillsTable.length - 1; i >= 0; i -= 1) {
+          if (providerSkillsTable[i].skill_id === deletingId) {
+            providerSkillsTable.splice(i, 1);
+          }
+        }
+
+        for (let i = serviceSkillsTable.length - 1; i >= 0; i -= 1) {
+          if (serviceSkillsTable[i].skill_id === deletingId) {
+            serviceSkillsTable.splice(i, 1);
+          }
+        }
+
+        AppStore.save();
+        refreshSkillsFromStore();
+        showToast(`✓ "${storeSkill.skill_name}" permanently deleted`);
+      }
+
+      closeDeleteModal();
+      applyFilters();
+    });
+  }
 
   if (btnSave) {
     btnSave.addEventListener("click", () => {
       const name = document.getElementById("skillName")?.value.trim();
-      const cat = document.getElementById("skillCategory")?.value;
       const desc = document.getElementById("skillDesc")?.value.trim();
-      const status = document.getElementById("skillStatus")?.value;
 
       if (!name) {
         showToast("⚠ Skill name is required");
@@ -264,22 +261,34 @@ AppStore.ready.then(() => {
         return;
       }
 
+      const skillsTable = AppStore.getTable("skills") || [];
+      const duplicateSkill = skillsTable.find(
+        (s) =>
+          s.skill_name.toLowerCase() === name.toLowerCase() &&
+          s.skill_id !== editingId,
+      );
+      if (duplicateSkill) {
+        showToast("⚠ Skill name already exists");
+        return;
+      }
+
       if (editingId) {
-        const sk = skills.find((s) => s.id === editingId);
-        if (sk) {
-          Object.assign(sk, { name, category: cat, desc, status });
+        const storeSkill = skillsTable.find((s) => s.skill_id === editingId);
+        if (storeSkill) {
+          storeSkill.skill_name = name;
+          storeSkill.description = desc;
+          AppStore.save();
+          refreshSkillsFromStore();
           showToast(`✓ "${name}" updated successfully`);
         }
       } else {
-        skills.push({
-          id: Date.now(),
-          name,
-          category: cat,
-          desc,
-          providers: 0,
-          services: 0,
-          status,
+        skillsTable.push({
+          skill_id: AppStore.nextId("SKL"),
+          skill_name: name,
+          description: desc,
         });
+        AppStore.save();
+        refreshSkillsFromStore();
         showToast(`✓ "${name}" added to skill catalog`);
       }
       closeModal();
@@ -300,45 +309,3 @@ AppStore.ready.then(() => {
     updateKPIs(skills);
   }
 });
-
-/* ── delete modal ── */
-function openDeleteModal(sk) {
-  deletingId = sk.id;
-  document.getElementById("deleteSkillName").textContent = sk.name;
-  document.getElementById("deleteOverlay").classList.add("open");
-}
-function closeDeleteModal() {
-  deletingId = null;
-  document.getElementById("deleteOverlay").classList.remove("open");
-}
-
-document
-  .getElementById("deleteClose")
-  .addEventListener("click", closeDeleteModal);
-document
-  .getElementById("deleteCancelBtn")
-  .addEventListener("click", closeDeleteModal);
-document.getElementById("deleteOverlay").addEventListener("click", (e) => {
-  if (e.target === e.currentTarget) closeDeleteModal();
-});
-
-document.getElementById("deleteConfirmBtn").addEventListener("click", () => {
-  const sk = skills.find((s) => s.id === deletingId);
-  if (sk) {
-    skills = skills.filter((s) => s.id !== deletingId);
-    showToast(`✓ "${sk.name}" permanently deleted`);
-  }
-  closeDeleteModal();
-  applyFilters();
-});
-
-/* ── toast ── */
-function showToast(msg) {
-  const t = document.getElementById("toast");
-  t.textContent = msg;
-  t.classList.add("show");
-  setTimeout(() => t.classList.remove("show"), 3000);
-}
-
-/* ── init ── */
-applyFilters();

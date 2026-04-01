@@ -1,4 +1,4 @@
-﻿/* user_management.css */
+/* user_management.css */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
@@ -224,6 +224,7 @@ body {
 .table-info { font-size: 13px; color: var(--text-muted); }
 .table-info strong { color: var(--text-primary); }
 .pagination { display: flex; align-items: center; gap: 4px; }
+#page-numbers { display: flex; align-items: center; gap: 4px; }
 .page-btn {
   width: 32px; height: 32px; border-radius: 7px; border: 1px solid var(--border);
   background: var(--surface); font-family: var(--font); font-size: 13px; font-weight: 500;
@@ -238,3 +239,42 @@ body {
 }
 .page-arrow svg { width: 15px; height: 15px; }
 .page-arrow:hover { background: var(--bg); }
+
+/* MODAL */
+.modal-overlay {
+  position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+  background: rgba(0,0,0,0.4); backdrop-filter: blur(2px);
+  display: flex; align-items: center; justify-content: center; z-index: 100;
+}
+.modal-content {
+  background: var(--surface); padding: 24px; border-radius: 12px;
+  width: 400px; box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+}
+.modal-title {
+  font-size: 18px; font-weight: 700; margin-bottom: 20px; color: var(--text-primary);
+}
+.form-group {
+  margin-bottom: 16px; display: flex; flex-direction: column; gap: 6px;
+}
+.form-group label {
+  font-size: 13px; font-weight: 600; color: var(--text-muted);
+}
+.form-group select, .form-group input {
+  padding: 10px 14px; border-radius: 8px; border: 1px solid var(--border);
+  font-family: var(--font); font-size: 14px; color: var(--text-primary);
+  width: 100%; outline: none; transition: border-color 0.2s;
+}
+.form-group select:focus, .form-group input:focus {
+  border-color: var(--blue); box-shadow: 0 0 0 3px var(--blue-light);
+}
+.modal-actions {
+  display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px;
+}
+.btn-cancel {
+  padding: 9px 18px; border-radius: 8px; border: 1px solid var(--border);
+  background: transparent; cursor: pointer; font-family: var(--font);
+  font-size: 13.5px; font-weight: 600; color: var(--text-muted);
+}
+.btn-cancel:hover {
+  background: var(--bg); color: var(--text-primary);
+}

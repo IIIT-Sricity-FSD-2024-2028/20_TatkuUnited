@@ -1,31 +1,111 @@
 ﻿/* platform_settings.js */
-document.addEventListener('DOMContentLoaded', () => {
-  const saveBtn = document.getElementById('save-btn');
+document.addEventListener("DOMContentLoaded", () => {
+  const settingFieldMap = {
+    maintenanceMode: "maintenance-mode",
+    accountSuspension: "account-suspension",
+    ratingThreshold: "rating-threshold",
+    instantBooking: "instant-booking",
+    maxAdvance: "max-advance",
+    minNotice: "min-notice",
+    cancelWindow: "cancel-window",
+  };
+
+  const defaultsFromUI = () => {
+    const out = {};
+    Object.entries(settingFieldMap).forEach(([key, id]) => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      out[key] = el.type === "checkbox" ? !!el.checked : el.value;
+    });
+    return out;
+  };
+
+  const readSettings = () => {
+    if (window.AppStore && typeof AppStore.getPlatformSettings === "function") {
+      return AppStore.getPlatformSettings();
+    }
+    return defaultsFromUI();
+  };
+
+  const applySettingsToUI = (settings) => {
+    Object.entries(settingFieldMap).forEach(([key, id]) => {
+      const el = document.getElementById(id);
+      if (!el || settings[key] === undefined || settings[key] === null) return;
+      if (el.type === "checkbox") {
+        el.checked = !!settings[key];
+      } else {
+        el.value = settings[key];
+      }
+    });
+  };
+
+  const saveSettings = (settings) => {
+    if (
+      window.AppStore &&
+      typeof AppStore.savePlatformSettings === "function"
+    ) {
+      return AppStore.savePlatformSettings(settings);
+    }
+    try {
+      localStorage.setItem("fsd_platform_settings", JSON.stringify(settings));
+    } catch (_) {}
+    return settings;
+  };
+
+  const saveBtn = document.getElementById("save-btn");
+  const lastUpdatedEl = document.getElementById("settings-last-updated");
   if (!saveBtn) return;
 
-  saveBtn.addEventListener('click', () => {
+  const renderLastUpdated = (settings) => {
+    if (!lastUpdatedEl) return;
+
+    if (!settings?.updatedAt) {
+      lastUpdatedEl.textContent = "Last updated: Never";
+      return;
+    }
+
+    const dt = new Date(settings.updatedAt);
+    const when = Number.isNaN(dt.getTime())
+      ? settings.updatedAt
+      : dt.toLocaleString("en-IN", {
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+        });
+    const by = settings.updatedBy || "Super User";
+    lastUpdatedEl.textContent = `Last updated: ${when} by ${by}`;
+  };
+
+  const initialSettings = readSettings();
+  applySettingsToUI(initialSettings);
+  renderLastUpdated(initialSettings);
+
+  // Ensure first open seeds the settings key and AppStore copy.
+  saveSettings(initialSettings);
+
+  saveBtn.addEventListener("click", () => {
+    const session =
+      window.Auth && typeof Auth.getSession === "function"
+        ? Auth.getSession()
+        : null;
+    const updatedBy = session?.name || "Super User";
+
     const settings = {
-      platformOnline:     document.getElementById('platform-online')?.checked,
-      maintenanceMode:    document.getElementById('maintenance-mode')?.checked,
-      accountSuspension:  document.getElementById('account-suspension')?.checked,
-      ratingThreshold:    document.getElementById('rating-threshold')?.value,
-      instantBooking:     document.getElementById('instant-booking')?.checked,
-      maxAdvance:         document.getElementById('max-advance')?.value,
-      minNotice:          document.getElementById('min-notice')?.value,
-      cancelWindow:       document.getElementById('cancel-window')?.value,
-      super_userApproval: document.getElementById('super_user-approval')?.checked,
-      docVerification:    document.getElementById('doc-verification')?.checked,
-      notifBooking:       document.getElementById('notif-booking')?.checked,
-      notifProvider:      document.getElementById('notif-provider')?.checked,
-      notifReminders:     document.getElementById('notif-reminders')?.checked,
+      ...defaultsFromUI(),
+      updatedAt: new Date().toISOString(),
+      updatedBy,
     };
 
-    console.log('Settings saved:', settings);
+    const savedSettings = saveSettings(settings);
+    renderLastUpdated(savedSettings);
+
+    console.log("Settings saved:", savedSettings);
 
     // Visual feedback
-    const orig = saveBtn.textContent;
-    saveBtn.textContent = '✓ Saved!';
-    saveBtn.style.background = '#16a34a';
+    saveBtn.textContent = "✓ Saved!";
+    saveBtn.style.background = "#16a34a";
     setTimeout(() => {
       saveBtn.innerHTML = `
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15">
@@ -34,7 +114,7 @@ document.addEventListener('DOMContentLoaded', () => {
           <polyline points="7 3 7 8 15 8"/>
         </svg>
         Save Changes`;
-      saveBtn.style.background = '';
+      saveBtn.style.background = "";
     }, 2000);
   });
 });

@@ -95,17 +95,6 @@
           </svg>
           Platform Settings
         </a>
-        <a href="system_monitoring.html" class="nav-item">
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-          >
-            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
-          </svg>
-          System Monitoring
-        </a>
       </nav>
       <div class="sidebar-section-label">ACCOUNT</div>
       <nav class="sidebar-nav">
@@ -300,25 +289,6 @@
             <p class="kpi-label">Inactive Skills</p>
             <p class="kpi-value" id="kpiInactive">0</p>
           </div>
-          <div class="kpi-card">
-            <div class="kpi-top">
-              <div class="kpi-icon kpi-icon--indigo">
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                >
-                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-                  <circle cx="9" cy="7" r="4" />
-                  <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-                  <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-                </svg>
-              </div>
-            </div>
-            <p class="kpi-label">Total Providers</p>
-            <p class="kpi-value" id="kpiProviders">0</p>
-          </div>
         </div>
 
         <!-- Table Card -->
@@ -340,32 +310,15 @@
                 id="skillSearch"
               />
             </div>
-            <div class="filter-right">
-              <select class="filter-select" id="catFilter">
-                <option value="All">All Categories</option>
-                <option value="Trade">Trade</option>
-                <option value="Creative">Creative</option>
-                <option value="Technical">Technical</option>
-                <option value="Management">Management</option>
-                <option value="Communication">Communication</option>
-              </select>
-              <select class="filter-select" id="statusFilter">
-                <option value="All">All Statuses</option>
-                <option value="Active">Active</option>
-                <option value="Inactive">Inactive</option>
-              </select>
-            </div>
           </div>
 
           <table class="skills-table">
             <thead>
               <tr>
                 <th>SKILL NAME</th>
-                <th>CATEGORY</th>
                 <th>DESCRIPTION</th>
                 <th>PROVIDERS</th>
                 <th>SERVICES</th>
-                <th>STATUS</th>
                 <th>ACTIONS</th>
               </tr>
             </thead>
@@ -405,29 +358,12 @@
             />
           </div>
           <div class="form-group">
-            <label class="form-label">Category</label>
-            <select class="form-input" id="skillCategory">
-              <option>Trade</option>
-              <option>Creative</option>
-              <option>Technical</option>
-              <option>Management</option>
-              <option>Communication</option>
-            </select>
-          </div>
-          <div class="form-group">
             <label class="form-label">Description</label>
             <textarea
               class="form-input form-textarea"
               id="skillDesc"
               placeholder="Brief description of this skill..."
             ></textarea>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Status</label>
-            <select class="form-input" id="skillStatus">
-              <option value="Active">Active</option>
-              <option value="Inactive">Inactive</option>
-            </select>
           </div>
         </div>
         <div class="modal-footer">
