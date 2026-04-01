@@ -1,4 +1,4 @@
-﻿/* notifications.js */
+/* notifications.js */
 // Depends on: store.js → auth.js (loaded before this script)
 
 AppStore.ready.then(() => {
@@ -7,7 +7,7 @@ AppStore.ready.then(() => {
   if (!session) return;
 
   /* ── 2. Pull tables ── */
-  const allNotifications = AppStore.getTable("admin_notifications") || [];
+  const allNotifications = AppStore.getTable("super_user_notifications") || [];
 
   /* ── 3. Transform notifications ── */
   function transformNotifications(notifList) {

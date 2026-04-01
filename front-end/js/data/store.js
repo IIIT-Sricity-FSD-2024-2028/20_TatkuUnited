@@ -26,6 +26,12 @@
     "job_assignments",
     "transactions",
     "reviews",
+    "super_users",
+    "super_user_platform_events",
+    "super_user_audit_logs",
+    "super_user_notifications",
+    "super_user_actions",
+    "super_user_system_performance",
   ];
 
   // ── Prefix → table mapping ───────────────────────────────────────────────────
@@ -49,6 +55,7 @@
     JA: "job_assignments",
     TXN: "transactions",
     REV: "reviews",
+    SU: "super_users",
   };
 
   // ── Empty data scaffold (used on fetch failure) ──────────────────────────────
@@ -76,7 +83,79 @@
     job_assignments: [],
     transactions: [],
     reviews: [],
+    super_users: [],
+    super_user_platform_events: [],
+    super_user_audit_logs: [],
+    super_user_notifications: [],
+    super_user_actions: [],
+    super_user_system_performance: [],
   };
+
+  const PLATFORM_SETTINGS_KEY = "fsd_platform_settings";
+  const DEFAULT_PLATFORM_SETTINGS = {
+    maintenanceMode: false,
+    accountSuspension: false,
+    ratingThreshold: "2.5 Stars",
+    instantBooking: true,
+    maxAdvance: "30 days",
+    minNotice: "1 hour",
+    cancelWindow: "2 hours",
+    updatedAt: null,
+    updatedBy: null,
+  };
+
+  function normalizePlatformSettings(settings) {
+    return {
+      maintenanceMode:
+        typeof settings?.maintenanceMode === "boolean"
+          ? settings.maintenanceMode
+          : DEFAULT_PLATFORM_SETTINGS.maintenanceMode,
+      accountSuspension:
+        typeof settings?.accountSuspension === "boolean"
+          ? settings.accountSuspension
+          : DEFAULT_PLATFORM_SETTINGS.accountSuspension,
+      ratingThreshold:
+        typeof settings?.ratingThreshold === "string" &&
+          settings.ratingThreshold.trim()
+          ? settings.ratingThreshold
+          : DEFAULT_PLATFORM_SETTINGS.ratingThreshold,
+      instantBooking:
+        typeof settings?.instantBooking === "boolean"
+          ? settings.instantBooking
+          : DEFAULT_PLATFORM_SETTINGS.instantBooking,
+      maxAdvance:
+        typeof settings?.maxAdvance === "string" && settings.maxAdvance.trim()
+          ? settings.maxAdvance
+          : DEFAULT_PLATFORM_SETTINGS.maxAdvance,
+      minNotice:
+        typeof settings?.minNotice === "string" && settings.minNotice.trim()
+          ? settings.minNotice
+          : DEFAULT_PLATFORM_SETTINGS.minNotice,
+      cancelWindow:
+        typeof settings?.cancelWindow === "string" &&
+          settings.cancelWindow.trim()
+          ? settings.cancelWindow
+          : DEFAULT_PLATFORM_SETTINGS.cancelWindow,
+      updatedAt:
+        typeof settings?.updatedAt === "string" && settings.updatedAt.trim()
+          ? settings.updatedAt
+          : DEFAULT_PLATFORM_SETTINGS.updatedAt,
+      updatedBy:
+        typeof settings?.updatedBy === "string" && settings.updatedBy.trim()
+          ? settings.updatedBy
+          : DEFAULT_PLATFORM_SETTINGS.updatedBy,
+    };
+  }
+
+  function getPlatformSettingsFromStorage() {
+    try {
+      var raw = localStorage.getItem(PLATFORM_SETTINGS_KEY);
+      if (!raw) return null;
+      return normalizePlatformSettings(JSON.parse(raw));
+    } catch (e) {
+      return null;
+    }
+  }
 
   // ── Bootstrap AppStore on window ─────────────────────────────────────────────
   var AppStore = {};
@@ -125,14 +204,148 @@
     if (VALID_TABLES.indexOf(name) === -1) {
       console.error(
         '[AppStore] getTable(): "' +
-          name +
-          '" is not a valid table name. ' +
-          "Valid tables: " +
-          VALID_TABLES.join(", "),
+        name +
+        '" is not a valid table name. ' +
+        "Valid tables: " +
+        VALID_TABLES.join(", "),
       );
       return undefined;
     }
     return AppStore.data[name];
+  };
+
+  AppStore.getPlatformSettings = function () {
+    if (AppStore.data && AppStore.data.platform_settings) {
+      return normalizePlatformSettings(AppStore.data.platform_settings);
+    }
+
+    var fromStorage = getPlatformSettingsFromStorage();
+    if (fromStorage) return fromStorage;
+
+    return normalizePlatformSettings(DEFAULT_PLATFORM_SETTINGS);
+  };
+
+  AppStore.savePlatformSettings = function (settings) {
+    var normalized = normalizePlatformSettings(settings || {});
+
+    if (AppStore.data) {
+      AppStore.data.platform_settings = normalized;
+      AppStore.save();
+    }
+
+    try {
+      localStorage.setItem(PLATFORM_SETTINGS_KEY, JSON.stringify(normalized));
+    } catch (err) {
+      console.error("[AppStore] savePlatformSettings() failed:", err);
+    }
+
+    return normalized;
+  };
+
+  function parseRuleToMinutes(rawValue, fallbackMinutes) {
+    var text = String(rawValue || "")
+      .trim()
+      .toLowerCase();
+    if (!text) return fallbackMinutes;
+
+    var match = text.match(
+      /(\d+(?:\.\d+)?)\s*(day|days|hour|hours|minute|minutes)/,
+    );
+    if (!match) return fallbackMinutes;
+
+    var amount = parseFloat(match[1]);
+    var unit = match[2];
+    if (isNaN(amount) || amount <= 0) return fallbackMinutes;
+
+    if (unit.indexOf("day") === 0) return Math.round(amount * 24 * 60);
+    if (unit.indexOf("hour") === 0) return Math.round(amount * 60);
+    return Math.round(amount);
+  }
+
+  AppStore.getBookingRules = function () {
+    var settings = AppStore.getPlatformSettings();
+
+    var maxAdvanceMinutes = parseRuleToMinutes(
+      settings.maxAdvance,
+      30 * 24 * 60,
+    );
+    var minNoticeMinutes = parseRuleToMinutes(settings.minNotice, 60);
+    var cancelWindowMinutes = parseRuleToMinutes(settings.cancelWindow, 120);
+
+    return {
+      instantBooking: !!settings.instantBooking,
+      maxAdvanceLabel: settings.maxAdvance,
+      minNoticeLabel: settings.minNotice,
+      cancelWindowLabel: settings.cancelWindow,
+      maxAdvanceMinutes: maxAdvanceMinutes,
+      maxAdvanceDays: Math.max(1, Math.floor(maxAdvanceMinutes / (24 * 60))),
+      minNoticeMinutes: minNoticeMinutes,
+      cancelWindowMinutes: cancelWindowMinutes,
+    };
+  };
+
+  AppStore.validateScheduledSlot = function (dateValue, timeValue) {
+    if (!dateValue) {
+      return { valid: false, error: "Please select a date." };
+    }
+    if (!timeValue) {
+      return { valid: false, error: "Please select a time." };
+    }
+
+    var scheduledAt = new Date(dateValue + "T" + timeValue + ":00");
+    if (isNaN(scheduledAt.getTime())) {
+      return { valid: false, error: "Invalid scheduled date/time." };
+    }
+
+    var rules = AppStore.getBookingRules();
+    var now = new Date();
+    var minAllowed = new Date(now.getTime() + rules.minNoticeMinutes * 60000);
+    var maxAllowed = new Date(now.getTime() + rules.maxAdvanceMinutes * 60000);
+
+    if (scheduledAt < minAllowed) {
+      return {
+        valid: false,
+        error:
+          "Scheduled time must be at least " +
+          rules.minNoticeLabel +
+          " from now.",
+      };
+    }
+
+    if (scheduledAt > maxAllowed) {
+      return {
+        valid: false,
+        error:
+          "Scheduled time must be within " +
+          rules.maxAdvanceLabel +
+          " from now.",
+      };
+    }
+
+    return { valid: true, scheduledAt: scheduledAt.toISOString() };
+  };
+
+  AppStore.canCancelScheduledBooking = function (scheduledAt) {
+    var target = new Date(scheduledAt);
+    if (isNaN(target.getTime())) {
+      return { valid: false, error: "Invalid booking schedule." };
+    }
+
+    var rules = AppStore.getBookingRules();
+    var now = new Date();
+    var diffMins = (target.getTime() - now.getTime()) / 60000;
+
+    if (diffMins < rules.cancelWindowMinutes) {
+      return {
+        valid: false,
+        error:
+          "Cancellation is allowed only up to " +
+          rules.cancelWindowLabel +
+          " before service time.",
+      };
+    }
+
+    return { valid: true };
   };
 
   // ── AppStore.nextId ───────────────────────────────────────────────────────────
@@ -141,10 +354,10 @@
     if (!tableName) {
       console.error(
         '[AppStore] nextId(): "' +
-          prefix +
-          '" is not a recognised prefix. ' +
-          "Valid prefixes: " +
-          Object.keys(PREFIX_TABLE_MAP).join(", "),
+        prefix +
+        '" is not a recognised prefix. ' +
+        "Valid prefixes: " +
+        Object.keys(PREFIX_TABLE_MAP).join(", "),
       );
       return null;
     }
@@ -238,7 +451,7 @@
       if (!sess) return null;
       var parsed = JSON.parse(sess);
       if (parsed && parsed.role === "provider" && parsed.id) return parsed.id;
-    } catch (e) {}
+    } catch (e) { }
     return null;
   }
 
@@ -435,16 +648,58 @@
 
   window.initData = function () {
     return new Promise(function (resolve) {
-      var expectedId = "SP001";
+      var expectedId = null;
+      var shouldBlockForMaintenance = false;
+      var shouldBlockProvider = false;
+      var hasProviderSession = false;
       try {
+        var platformSettings = AppStore.getPlatformSettings
+          ? AppStore.getPlatformSettings()
+          : getPlatformSettingsFromStorage();
+        shouldBlockForMaintenance = !!(
+          platformSettings && platformSettings.maintenanceMode
+        );
+
         var sess =
           sessionStorage.getItem("fsd_session") ||
           localStorage.getItem("fsd_session");
         if (sess) {
           var p = JSON.parse(sess);
-          if (p.role === "provider" && p.id) expectedId = p.id;
+          if (p.role === "provider" && p.id) {
+            hasProviderSession = true;
+            expectedId = p.id;
+            shouldBlockProvider = !!(
+              platformSettings && platformSettings.accountSuspension
+            );
+          }
         }
-      } catch (e) {}
+      } catch (e) { }
+
+      if (!hasProviderSession) {
+        window.location.replace("/front-end/html/auth_pages/login.html");
+        resolve();
+        return;
+      }
+
+      if (shouldBlockForMaintenance) {
+        sessionStorage.removeItem("fsd_session");
+        localStorage.removeItem("fsd_session");
+        window.location.replace(
+          "/front-end/html/landing_page.html?maintenance=1",
+        );
+        resolve();
+        return;
+      }
+
+      if (shouldBlockProvider) {
+        sessionStorage.removeItem("fsd_session");
+        localStorage.removeItem("fsd_session");
+        window.location.replace(
+          "/front-end/html/auth_pages/login.html?error=provider_suspended",
+        );
+        resolve();
+        return;
+      }
 
       var existing =
         localStorage.getItem("fsd_ui_state") ||

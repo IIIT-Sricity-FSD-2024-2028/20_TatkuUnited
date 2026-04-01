@@ -75,6 +75,34 @@
           </svg>
           Manage Skills
         </a>
+        <a href="manage_categories.html" class="nav-item">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path
+              d="M12 2L2 7v10c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5z"
+            />
+          </svg>
+          Manage Categories
+        </a>
+        <a href="manage_services.html" class="nav-item">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <circle cx="9" cy="21" r="1" />
+            <circle cx="20" cy="21" r="1" />
+            <path
+              d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"
+            />
+          </svg>
+          Manage Services
+        </a>
       </nav>
       <div class="sidebar-section-label">SYSTEM CONTROLS</div>
       <nav class="sidebar-nav">
@@ -91,17 +119,6 @@
             />
           </svg>
           Platform Settings
-        </a>
-        <a href="system_monitoring.html" class="nav-item">
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-          >
-            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
-          </svg>
-          System Monitoring
         </a>
       </nav>
       <div class="sidebar-section-label">ACCOUNT</div>
@@ -263,20 +280,16 @@
             <p class="profile-email" id="hero-email">super_user@tatku.com</p>
             <div class="profile-stats">
               <div class="profile-stat">
-                <span class="stat-num">12</span>
+                <span class="stat-num" id="hero-collectives">0</span>
                 <span class="stat-lbl">Collectives</span>
               </div>
               <div class="profile-stat">
-                <span class="stat-num">89</span>
+                <span class="stat-num" id="hero-units">0</span>
                 <span class="stat-lbl">Active Units</span>
               </div>
               <div class="profile-stat">
-                <span class="stat-num">1,842</span>
+                <span class="stat-num" id="hero-users">0</span>
                 <span class="stat-lbl">Total Users</span>
-              </div>
-              <div class="profile-stat">
-                <span class="stat-num">99.8%</span>
-                <span class="stat-lbl">System Uptime</span>
               </div>
             </div>
           </div>
@@ -315,7 +328,8 @@
                     type="email"
                     id="email"
                     value="super_user@tatku.com"
-                    oninput="syncEmail()"
+                    readonly
+                    class="readonly-field"
                   />
                 </div>
                 <div class="form-field">
@@ -329,6 +343,7 @@
                   <label>Super User ID</label>
                   <input
                     type="text"
+                    id="super-user-id"
                     value="ADM-001"
                     readonly
                     class="readonly-field"
@@ -364,151 +379,11 @@
                   Change Password
                 </button>
               </div>
-              <div class="divider"></div>
-              <div class="sec-row">
-                <div>
-                  <div class="sec-label">Two-Factor Authentication</div>
-                  <div class="sec-sub">
-                    Mandatory for all super_user accounts
-                  </div>
-                </div>
-                <label class="toggle">
-                  <input type="checkbox" checked disabled />
-                  <span class="toggle-track"></span>
-                </label>
-              </div>
-              <div class="divider"></div>
-              <div class="sec-row">
-                <div>
-                  <div class="sec-label">Session Timeout</div>
-                  <div class="sec-sub">Auto-logout after inactivity</div>
-                </div>
-                <select
-                  class="select-inline"
-                  onchange="showToast('Session timeout updated')"
-                >
-                  <option>30 minutes</option>
-                  <option selected>1 hour</option>
-                  <option>4 hours</option>
-                </select>
-              </div>
-              <div class="divider"></div>
-              <div class="sec-row">
-                <div>
-                  <div class="sec-label">Active Sessions</div>
-                  <div class="sec-sub">3 devices are currently logged in</div>
-                </div>
-                <button
-                  class="btn-outline-danger"
-                  onclick="showToast('All other sessions terminated')"
-                >
-                  Terminate All
-                </button>
-              </div>
-            </div>
-
-            <!-- Platform Preferences -->
-            <div class="section-card">
-              <h2 class="section-title">
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                >
-                  <circle cx="12" cy="12" r="3" />
-                  <path
-                    d="M19.07 4.93l-1.41 1.41M4.93 4.93l1.41 1.41M12 2v2M12 20v2M20 12h2M2 12h2M19.07 19.07l-1.41-1.41M4.93 19.07l1.41-1.41"
-                  />
-                </svg>
-                Platform Preferences
-              </h2>
-              <div class="pref-list">
-                <div class="pref-row">
-                  <div>
-                    <div class="pref-label">Critical System Alerts (Email)</div>
-                    <div class="pref-sub">
-                      Server errors, security breaches, downtime
-                    </div>
-                  </div>
-                  <label class="toggle">
-                    <input
-                      type="checkbox"
-                      checked
-                      onchange="showToast('Email alerts updated')"
-                    />
-                    <span class="toggle-track"></span>
-                  </label>
-                </div>
-                <div class="pref-row">
-                  <div>
-                    <div class="pref-label">Critical Alerts (SMS)</div>
-                    <div class="pref-sub">
-                      Immediate notification for P0 issues
-                    </div>
-                  </div>
-                  <label class="toggle">
-                    <input
-                      type="checkbox"
-                      checked
-                      onchange="showToast('SMS alerts updated')"
-                    />
-                    <span class="toggle-track"></span>
-                  </label>
-                </div>
-                <div class="pref-row">
-                  <div>
-                    <div class="pref-label">Daily System Digest</div>
-                    <div class="pref-sub">
-                      Summary of all platform activity at 8 AM
-                    </div>
-                  </div>
-                  <label class="toggle">
-                    <input
-                      type="checkbox"
-                      checked
-                      onchange="showToast('Daily digest updated')"
-                    />
-                    <span class="toggle-track"></span>
-                  </label>
-                </div>
-                <div class="pref-row">
-                  <div>
-                    <div class="pref-label">User Registration Alerts</div>
-                    <div class="pref-sub">
-                      Notify when new collectives or managers join
-                    </div>
-                  </div>
-                  <label class="toggle">
-                    <input
-                      type="checkbox"
-                      onchange="showToast('Registration alerts updated')"
-                    />
-                    <span class="toggle-track"></span>
-                  </label>
-                </div>
-              </div>
             </div>
           </div>
 
           <!-- RIGHT COLUMN -->
           <div class="profile-right">
-            <!-- System Overview -->
-            <div class="section-card">
-              <h2 class="section-title">
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                >
-                  <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
-                </svg>
-                System Overview
-              </h2>
-              <div class="sys-stats" id="sys-stats"></div>
-            </div>
-
             <!-- Super User Permissions -->
             <div class="section-card">
               <h2 class="section-title">
@@ -524,29 +399,6 @@
                 Super User Permissions
               </h2>
               <div class="perm-list" id="perm-list"></div>
-            </div>
-
-            <!-- Recent Super User Actions -->
-            <div class="section-card">
-              <h2 class="section-title">
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                >
-                  <circle cx="12" cy="12" r="10" />
-                  <polyline points="12 6 12 12 16 14" />
-                </svg>
-                Recent Super User Actions
-              </h2>
-              <div class="activity-list" id="activity-list"></div>
-              <button
-                class="download-log"
-                onclick="showToast('Action log downloaded')"
-              >
-                Download Action Log
-              </button>
             </div>
           </div>
         </div>
@@ -582,32 +434,34 @@
         <div class="modal-fields">
           <div class="form-field">
             <label>Current Password</label
-            ><input type="password" placeholder="Enter current password" />
+            ><input
+              type="password"
+              id="pwd-current"
+              placeholder="Enter current password"
+            />
           </div>
           <div class="form-field">
             <label>New Password</label
-            ><input type="password" placeholder="Min. 12 characters" />
+            ><input
+              type="password"
+              id="pwd-new"
+              placeholder="Min. 12 characters"
+            />
           </div>
           <div class="form-field">
             <label>Confirm New Password</label
-            ><input type="password" placeholder="Re-enter new password" />
-          </div>
-          <div class="form-field">
-            <label>2FA Code</label
-            ><input type="text" placeholder="Enter 6-digit code" />
+            ><input
+              type="password"
+              id="pwd-confirm"
+              placeholder="Re-enter new password"
+            />
           </div>
         </div>
         <div class="modal-btns">
           <button class="modal-btn-cancel" onclick="closePwdModalBtn()">
             Cancel
           </button>
-          <button
-            class="modal-btn-save"
-            onclick="
-              closePwdModalBtn();
-              showToast('Password updated successfully!');
-            "
-          >
+          <button class="modal-btn-save" onclick="handlePasswordChange()">
             Update Password
           </button>
         </div>

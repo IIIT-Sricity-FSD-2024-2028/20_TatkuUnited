@@ -18,6 +18,13 @@ function getCheckoutCart(customerId) {
   return CustomerState.getCart(customerId);
 }
 
+function getBookingRules() {
+  if (!window.AppStore || typeof AppStore.getBookingRules !== "function") {
+    return { instantBooking: true };
+  }
+  return AppStore.getBookingRules();
+}
+
 /* ── Address Edit ── */
 const changeAddrBtn = document.getElementById("changeAddrBtn");
 const addressForm = document.getElementById("addressForm");
@@ -91,6 +98,33 @@ confirmBtn.addEventListener("click", () => {
     if (!session) return;
 
     const cart = getCheckoutCart(session.id);
+    const rules = getBookingRules();
+
+    if (!rules.instantBooking && cart.some((item) => item.mode === "instant")) {
+      confirmBtn.textContent = "Confirm Booking";
+      confirmBtn.disabled = false;
+      showCheckoutToast(
+        "Instant booking is disabled. Please reschedule cart items before checkout.",
+      );
+      return;
+    }
+
+    for (let i = 0; i < cart.length; i += 1) {
+      const item = cart[i];
+      if (item.mode !== "scheduled") continue;
+
+      const validation =
+        window.AppStore && typeof AppStore.validateScheduledSlot === "function"
+          ? AppStore.validateScheduledSlot(item.date, item.time)
+          : { valid: true };
+
+      if (!validation.valid) {
+        confirmBtn.textContent = "Confirm Booking";
+        confirmBtn.disabled = false;
+        showCheckoutToast(validation.error);
+        return;
+      }
+    }
 
     let firstId = null;
     cart.forEach((item) => {

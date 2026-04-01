@@ -290,35 +290,23 @@ function openPwdModal() {
 function closePwdModalBtn() {
   document.getElementById("pwd-modal").classList.remove("open");
   document.body.style.overflow = "";
-  const c = document.getElementById("pwd-current");
-  const n = document.getElementById("pwd-new");
-  const cn = document.getElementById("pwd-confirm");
-  if (c) c.value = "";
-  if (n) n.value = "";
-  if (cn) cn.value = "";
+  const fields = ["pwd-current", "pwd-new", "pwd-confirm"];
+  fields.forEach((id) => {
+    const el = document.getElementById(id);
+    if (el) el.value = "";
+  });
 }
 function closePwdModal(e) {
   if (e.target === document.getElementById("pwd-modal")) closePwdModalBtn();
 }
 
 function savePassword() {
-  const currentVal = document.getElementById("pwd-current").value;
-  const newVal = document.getElementById("pwd-new").value;
-  const confirmVal = document.getElementById("pwd-confirm").value;
+  const currentVal = document.getElementById("pwd-current")?.value;
+  const newVal = document.getElementById("pwd-new")?.value;
+  const confirmVal = document.getElementById("pwd-confirm")?.value;
 
-  const session = Auth.getSession();
-  if (!session) return;
-
-  const allCustomers = AppStore.getTable("customers") || [];
-  const me = allCustomers.find((c) => c.customer_id === session.id);
-
-  if (!me) {
-    showProfileToast("Error tracking user profile details");
-    return;
-  }
-
-  if (currentVal !== me.password) {
-    showProfileToast("Current password is incorrect");
+  if (!currentVal || !newVal || !confirmVal) {
+    showProfileToast("Please fill in all password fields.");
     return;
   }
 
@@ -332,24 +320,24 @@ function savePassword() {
     return;
   }
 
-  CRUD.updateRecord("customers", "customer_id", session.id, {
-    password: newVal,
-  });
-
-  const registryEntry = (window.AuthRegistry || []).find(
-    (u) => u.id === session.id,
-  );
-  if (registryEntry) registryEntry.password = newVal;
-
-  closePwdModalBtn();
-  showProfileToast("Password successfully updated!");
+  const res = Auth.changePassword(currentVal, newVal);
+  if (res.success) {
+    showProfileToast("Password successfully updated!");
+    closePwdModalBtn();
+  } else {
+    const errorMap = {
+      invalid_current_password: "Current password is incorrect",
+      not_logged_in: "Session expired. Please log in again.",
+    };
+    showProfileToast(errorMap[res.error] || "Failed to update password");
+  }
 }
 
 // ===== DANGER & LOGOUT =====
 function confirmDelete() {
   // Bypassed native window.confirm to avoid browser dialog blocking
   showProfileToast(
-    "Account deletion request submitted. An admin will contact you.",
+    "Account deletion request submitted. A super user will contact you.",
   );
 }
 
