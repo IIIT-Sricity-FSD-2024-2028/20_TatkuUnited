@@ -9,6 +9,21 @@ AppStore.ready.then(() => {
   /* ── 2. Pull tables ── */
   const allCategories = AppStore.getTable("categories") || [];
 
+  function updateNotificationBadges() {
+    const unread = (AppStore.getTable("super_user_notifications") || []).filter(
+      (n) => !n.is_read,
+    ).length;
+    document.querySelectorAll(".notif-badge").forEach((badge) => {
+      if (unread > 0) {
+        badge.textContent = String(unread);
+        badge.style.display = "flex";
+      } else {
+        badge.textContent = "";
+        badge.style.display = "none";
+      }
+    });
+  }
+
   /* ── 3. Transform and enrich categories ── */
   function transformCategories(categoriesList) {
     return categoriesList.map((cat, idx) => {
@@ -20,7 +35,10 @@ AppStore.ready.then(() => {
         id: parseInt(cat.category_id.replace("CAT", "")) || idx + 1,
         name: cat.category_name,
         desc: cat.description,
-        rating: cat.average_rating || 0.0,
+        rating:
+          typeof cat.average_rating === "number" && (cat.rating_count || 0) > 0
+            ? cat.average_rating
+            : null,
         status: status,
         isAvailable: cat.is_available,
         parentId: cat.parent_id || null,
@@ -29,9 +47,13 @@ AppStore.ready.then(() => {
   }
 
   let categories = transformCategories(allCategories);
+  const PAGE_SIZE = 8;
+  let currentPage = 1;
+  let filteredCategories = categories.slice();
   let tableActionsBound = false;
   function refreshCategoriesFromStore() {
     categories = transformCategories(AppStore.getTable("categories") || []);
+    filteredCategories = categories.slice();
   }
 
   let editingId = null;
@@ -51,10 +73,14 @@ AppStore.ready.then(() => {
   function updateKPIs(data) {
     const active = data.filter((c) => c.status === "Active").length;
     const inactive = data.filter((c) => c.status === "Inactive").length;
+    const validRatings = data.filter((c) => typeof c.rating === "number");
     const avgRating =
-      data.length > 0
-        ? (data.reduce((sum, c) => sum + c.rating, 0) / data.length).toFixed(2)
-        : 0;
+      validRatings.length > 0
+        ? (
+            validRatings.reduce((sum, c) => sum + c.rating, 0) /
+            validRatings.length
+          ).toFixed(2)
+        : "N/A";
 
     const kpiTotal = document.getElementById("kpiTotal");
     const kpiActive = document.getElementById("kpiActive");
@@ -73,10 +99,18 @@ AppStore.ready.then(() => {
     if (!tbody) return;
     tbody.innerHTML = "";
 
-    if (data.length === 0) {
+    const totalRows = data.length;
+    const totalPages = Math.max(1, Math.ceil(totalRows / PAGE_SIZE));
+    if (currentPage > totalPages) currentPage = totalPages;
+    if (currentPage < 1) currentPage = 1;
+
+    const start = (currentPage - 1) * PAGE_SIZE;
+    const pageRows = data.slice(start, start + PAGE_SIZE);
+
+    if (totalRows === 0) {
       tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:32px;color:var(--text-faint)">No categories found matching your filters.</td></tr>`;
     } else {
-      data.forEach((cat, idx) => {
+      pageRows.forEach((cat, idx) => {
         const tr = document.createElement("tr");
         tr.style.animationDelay = idx * 0.04 + "s";
         const statusClass =
@@ -84,8 +118,10 @@ AppStore.ready.then(() => {
             ? "status-badge--active"
             : "status-badge--inactive";
         const ratingStars =
-          "★".repeat(Math.floor(cat.rating)) +
-          (cat.rating % 1 >= 0.5 ? "½" : "");
+          typeof cat.rating === "number"
+            ? "★".repeat(Math.floor(cat.rating)) +
+              (cat.rating % 1 >= 0.5 ? "½" : "")
+            : "";
 
         tr.innerHTML = `
           <td class="category-name-col">${cat.name}</td>
@@ -93,7 +129,7 @@ AppStore.ready.then(() => {
           <td>
             <span class="status-badge ${statusClass}">${cat.status}</span>
           </td>
-          <td class="rating-cell" title="${cat.rating} / 5.0">${cat.rating.toFixed(2)} ⭐</td>
+          <td class="rating-cell" title="${typeof cat.rating === "number" ? cat.rating + " / 5.0" : "No rating"}">${typeof cat.rating === "number" ? cat.rating.toFixed(2) + " ⭐" : "N/A"}</td>
           <td>
             <div class="tbl-actions">
               <button class="tbl-icon-btn btn-edit" data-id="${cat.id}" title="Edit Category">
@@ -113,7 +149,57 @@ AppStore.ready.then(() => {
     const active = data.filter((c) => c.status === "Active").length;
     const tableFooter = document.getElementById("tableFooter");
     if (tableFooter) {
-      tableFooter.innerHTML = `<span>${data.length} category${data.length !== 1 ? "ies" : ""} shown</span> · <span class="active-count">${active} active</span>`;
+      const shownEnd = Math.min(start + PAGE_SIZE, totalRows);
+      const shownText =
+        totalRows === 0
+          ? "Showing 0-0 of 0"
+          : `Showing ${start + 1}-${shownEnd} of ${totalRows}`;
+
+      const pageButtons = Array.from({ length: totalPages }, (_, i) => i + 1)
+        .map(
+          (pageNum) =>
+            `<button class="page-btn ${pageNum === currentPage ? "active" : ""}" data-page="${pageNum}" type="button">${pageNum}</button>`,
+        )
+        .join("");
+
+      tableFooter.innerHTML = `
+        <div class="table-meta">
+          <span>${shownText}</span> · <span class="active-count">${active} active</span>
+        </div>
+        <div class="pagination-wrap">
+          <button class="page-arrow" data-page-action="prev" type="button" ${currentPage <= 1 ? "disabled" : ""}>‹</button>
+          <div class="page-numbers">${pageButtons}</div>
+          <button class="page-arrow" data-page-action="next" type="button" ${currentPage >= totalPages ? "disabled" : ""}>›</button>
+        </div>
+      `;
+
+      tableFooter.querySelectorAll(".page-btn").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          currentPage = Number(btn.dataset.page);
+          renderTable(data);
+        });
+      });
+
+      const prevBtn = tableFooter.querySelector('[data-page-action="prev"]');
+      const nextBtn = tableFooter.querySelector('[data-page-action="next"]');
+
+      if (prevBtn) {
+        prevBtn.addEventListener("click", () => {
+          if (currentPage > 1) {
+            currentPage -= 1;
+            renderTable(data);
+          }
+        });
+      }
+
+      if (nextBtn) {
+        nextBtn.addEventListener("click", () => {
+          if (currentPage < totalPages) {
+            currentPage += 1;
+            renderTable(data);
+          }
+        });
+      }
     }
   }
 
@@ -145,17 +231,18 @@ AppStore.ready.then(() => {
   }
 
   /* ── filters ── */
-  function applyFilters() {
+  function applyFilters(resetPage = true) {
     const search =
       document.getElementById("categorySearch")?.value.toLowerCase() || "";
-    const filtered = categories.filter((cat) => {
+    filteredCategories = categories.filter((cat) => {
       const matchSearch =
         cat.name.toLowerCase().includes(search) ||
         cat.desc.toLowerCase().includes(search);
       return matchSearch;
     });
-    renderTable(filtered);
-    updateKPIs(filtered);
+    if (resetPage) currentPage = 1;
+    renderTable(filteredCategories);
+    updateKPIs(filteredCategories);
   }
 
   function setupEventListeners() {
@@ -355,7 +442,7 @@ AppStore.ready.then(() => {
             "https://placehold.co/400x200/6b7280/white?text=" +
             encodeURIComponent(name),
           is_available: isAvailable,
-          average_rating: 4.73,
+          average_rating: null,
           rating_count: 0,
           parent_id: parentId && parentId !== "" ? parentId : null,
         });
@@ -371,12 +458,14 @@ AppStore.ready.then(() => {
   /* ── Initialize on DOM ready ── */
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", () => {
+      updateNotificationBadges();
       setupEventListeners();
       bindTableActions();
       renderTable(categories);
       updateKPIs(categories);
     });
   } else {
+    updateNotificationBadges();
     setupEventListeners();
     bindTableActions();
     renderTable(categories);

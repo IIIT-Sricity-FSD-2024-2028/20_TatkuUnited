@@ -25,6 +25,39 @@ function getBookingRules() {
   return AppStore.getBookingRules();
 }
 
+function parseAmount(value) {
+  const parsed = Number(String(value || "").replace(/[^\d.]/g, ""));
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function mapPaymentMethod(value) {
+  if (value === "upi") return "UPI";
+  if (value === "card") return "CARD";
+  if (value === "netbank") return "NETBANK";
+  if (value === "wallet") return "WALLET";
+  return "CARD";
+}
+
+function resolveServiceIdByName(serviceName) {
+  if (!window.AppStore) return null;
+  const services = AppStore.getTable("services") || [];
+  const exactMatch = services.find(
+    (service) => service.service_name === serviceName,
+  );
+  if (exactMatch) return exactMatch.service_id;
+
+  const normalized = String(serviceName || "")
+    .trim()
+    .toLowerCase();
+  const softMatch = services.find(
+    (service) =>
+      String(service.service_name || "")
+        .trim()
+        .toLowerCase() === normalized,
+  );
+  return softMatch ? softMatch.service_id : null;
+}
+
 /* ── Address Edit ── */
 const changeAddrBtn = document.getElementById("changeAddrBtn");
 const addressForm = document.getElementById("addressForm");
@@ -90,6 +123,13 @@ paymentOptions.forEach((option) => {
 confirmBtn.addEventListener("click", () => {
   if (!selectedPayment) return;
 
+  if (selectedPayment === "cash") {
+    showCheckoutToast(
+      "Cash payment is no longer supported. Choose a digital payment method.",
+    );
+    return;
+  }
+
   confirmBtn.textContent = "Processing…";
   confirmBtn.disabled = true;
 
@@ -130,6 +170,8 @@ confirmBtn.addEventListener("click", () => {
     cart.forEach((item) => {
       const bId = AppStore.nextId("BKG");
       if (!firstId) firstId = bId;
+      const nowIso = new Date().toISOString();
+      const bookingAmount = parseAmount(item.price);
       const newBooking = {
         booking_id: bId,
         customer_id: session.id,
@@ -148,9 +190,59 @@ confirmBtn.addEventListener("click", () => {
                   (item.time ? item.time.split(" ")[0] + ":00" : "10:00:00"),
               ).toISOString()
             : new Date().toISOString(),
-        created_at: new Date().toISOString(),
+        created_at: nowIso,
       };
       CRUD.createRecord("bookings", newBooking);
+
+      const serviceId = resolveServiceIdByName(item.service);
+      if (serviceId) {
+        CRUD.createRecord("booking_services", {
+          booking_id: bId,
+          service_id: serviceId,
+          quantity: 1,
+          price_at_booking: bookingAmount,
+        });
+      }
+
+      CRUD.createRecord("transactions", {
+        transaction_id: AppStore.nextId("TXN"),
+        payment_gateway_ref: `PGR${Date.now()}${Math.floor(Math.random() * 1000)}`,
+        payment_method: mapPaymentMethod(selectedPayment),
+        idempotency_key: `idem-${String(bId).toLowerCase()}-001`,
+        payment_status: "SUCCESS",
+        amount: bookingAmount,
+        currency: "INR",
+        refund_amount: 0,
+        refund_reason: null,
+        transaction_at: nowIso,
+        verified_at: nowIso,
+        booking_id: bId,
+      });
+
+      // Auto-assign a provider via skill matching
+      if (window.AssignmentEngine) {
+        const result = AssignmentEngine.assignProviderForBooking(bId);
+        if (result.success) {
+          console.log(
+            "[Checkout] Provider " +
+              result.providerId +
+              " assigned to booking " +
+              bId,
+          );
+
+          // Create pending revenue split at booking time.
+          if (window.RevenueManager) {
+            window.RevenueManager.ensureLedgerEntriesForBooking(bId, {
+              payoutStatus: "PENDING",
+              providerId: result.providerId,
+            });
+          }
+        } else {
+          console.log(
+            "[Checkout] No provider assigned for " + bId + ": " + result.reason,
+          );
+        }
+      }
     });
 
     CustomerState.clearCart(session.id);

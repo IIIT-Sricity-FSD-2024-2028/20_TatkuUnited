@@ -11,6 +11,21 @@ AppStore.ready.then(() => {
   const allProviderSkills = AppStore.getTable("provider_skills") || [];
   const allServiceSkills = AppStore.getTable("service_skills") || [];
 
+  function updateNotificationBadges() {
+    const unread = (AppStore.getTable("super_user_notifications") || []).filter(
+      (n) => !n.is_read,
+    ).length;
+    document.querySelectorAll(".notif-badge").forEach((badge) => {
+      if (unread > 0) {
+        badge.textContent = String(unread);
+        badge.style.display = "flex";
+      } else {
+        badge.textContent = "";
+        badge.style.display = "none";
+      }
+    });
+  }
+
   /* ── 3. Transform and enrich skills ── */
   function transformSkills(skillsList) {
     return skillsList.map((sk, idx) => {
@@ -42,8 +57,12 @@ AppStore.ready.then(() => {
   }
 
   let skills = transformSkills(allSkills);
+  const PAGE_SIZE = 8;
+  let currentPage = 1;
+  let filteredSkills = skills.slice();
   function refreshSkillsFromStore() {
     skills = transformSkills(AppStore.getTable("skills") || []);
+    filteredSkills = skills.slice();
   }
 
   let editingId = null;
@@ -55,16 +74,8 @@ AppStore.ready.then(() => {
   }
 
   function updateKPIs(data) {
-    const active = data.filter((s) => s.status === "Active").length;
-    const inactive = data.filter((s) => s.status === "Inactive").length;
-    const providers = data.reduce((sum, s) => sum + s.providers, 0);
     const kpiTotal = document.getElementById("kpiTotal");
-    const kpiActive = document.getElementById("kpiActive");
-    const kpiInactive = document.getElementById("kpiInactive");
-
-    if (kpiTotal) kpiTotal.textContent = skills.length;
-    if (kpiActive) kpiActive.textContent = active;
-    if (kpiInactive) kpiInactive.textContent = inactive;
+    if (kpiTotal) kpiTotal.textContent = data.length;
   }
 
   /* ── table ── */
@@ -73,10 +84,18 @@ AppStore.ready.then(() => {
     if (!tbody) return;
     tbody.innerHTML = "";
 
-    if (data.length === 0) {
+    const totalRows = data.length;
+    const totalPages = Math.max(1, Math.ceil(totalRows / PAGE_SIZE));
+    if (currentPage > totalPages) currentPage = totalPages;
+    if (currentPage < 1) currentPage = 1;
+
+    const start = (currentPage - 1) * PAGE_SIZE;
+    const pageRows = data.slice(start, start + PAGE_SIZE);
+
+    if (totalRows === 0) {
       tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:32px;color:var(--text-faint)">No skills found matching your filters.</td></tr>`;
     } else {
-      data.forEach((sk, idx) => {
+      pageRows.forEach((sk, idx) => {
         const tr = document.createElement("tr");
         tr.style.animationDelay = idx * 0.04 + "s";
         tr.innerHTML = `
@@ -100,10 +119,59 @@ AppStore.ready.then(() => {
     }
 
     /* footer */
-    const active = data.filter((s) => s.status === "Active").length;
     const tableFooter = document.getElementById("tableFooter");
     if (tableFooter) {
-      tableFooter.innerHTML = `<span>${data.length} skill${data.length !== 1 ? "s" : ""} shown</span> · <span class="active-count">${active} active</span>`;
+      const shownEnd = Math.min(start + PAGE_SIZE, totalRows);
+      const shownText =
+        totalRows === 0
+          ? "Showing 0-0 of 0"
+          : `Showing ${start + 1}-${shownEnd} of ${totalRows}`;
+
+      const pageButtons = Array.from({ length: totalPages }, (_, i) => i + 1)
+        .map(
+          (pageNum) =>
+            `<button class="page-btn ${pageNum === currentPage ? "active" : ""}" data-page="${pageNum}" type="button">${pageNum}</button>`,
+        )
+        .join("");
+
+      tableFooter.innerHTML = `
+        <div class="table-meta">
+          <span>${shownText}</span>
+        </div>
+        <div class="pagination-wrap">
+          <button class="page-arrow" data-page-action="prev" type="button" ${currentPage <= 1 ? "disabled" : ""}>‹</button>
+          <div class="page-numbers">${pageButtons}</div>
+          <button class="page-arrow" data-page-action="next" type="button" ${currentPage >= totalPages ? "disabled" : ""}>›</button>
+        </div>
+      `;
+
+      tableFooter.querySelectorAll(".page-btn").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          currentPage = Number(btn.dataset.page);
+          renderTable(data);
+        });
+      });
+
+      const prevBtn = tableFooter.querySelector('[data-page-action="prev"]');
+      const nextBtn = tableFooter.querySelector('[data-page-action="next"]');
+
+      if (prevBtn) {
+        prevBtn.addEventListener("click", () => {
+          if (currentPage > 1) {
+            currentPage -= 1;
+            renderTable(data);
+          }
+        });
+      }
+
+      if (nextBtn) {
+        nextBtn.addEventListener("click", () => {
+          if (currentPage < totalPages) {
+            currentPage += 1;
+            renderTable(data);
+          }
+        });
+      }
     }
 
     /* event listeners */
@@ -123,17 +191,18 @@ AppStore.ready.then(() => {
   }
 
   /* ── filters ── */
-  function applyFilters() {
+  function applyFilters(resetPage = true) {
     const search =
       document.getElementById("skillSearch")?.value.toLowerCase() || "";
-    const filtered = skills.filter((sk) => {
+    filteredSkills = skills.filter((sk) => {
       const matchSearch =
         sk.name.toLowerCase().includes(search) ||
         sk.desc.toLowerCase().includes(search);
       return matchSearch;
     });
-    renderTable(filtered);
-    updateKPIs(filtered);
+    if (resetPage) currentPage = 1;
+    renderTable(filteredSkills);
+    updateKPIs(filteredSkills);
   }
 
   function setupEventListeners() {
@@ -299,11 +368,13 @@ AppStore.ready.then(() => {
   /* ── Initialize on DOM ready ── */
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", () => {
+      updateNotificationBadges();
       setupEventListeners();
       renderTable(skills);
       updateKPIs(skills);
     });
   } else {
+    updateNotificationBadges();
     setupEventListeners();
     renderTable(skills);
     updateKPIs(skills);

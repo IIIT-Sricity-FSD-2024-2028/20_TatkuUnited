@@ -16,6 +16,9 @@ window.Auth = (() => {
     customer: "/front-end/html/customer/home.html",
   };
 
+  let logoutConfirmEls = null;
+  let logoutConfirmBound = false;
+
   function _getPlatformSettings() {
     try {
       if (
@@ -196,6 +199,110 @@ window.Auth = (() => {
     window.location.replace("/front-end/html/auth_pages/logout.html");
   }
 
+  function _buildLogoutConfirmModal() {
+    if (logoutConfirmEls) return logoutConfirmEls;
+
+    const backdrop = document.createElement("div");
+    backdrop.id = "logout-confirm-backdrop";
+    backdrop.style.cssText = [
+      "position:fixed",
+      "inset:0",
+      "background:rgba(15,23,42,.55)",
+      "backdrop-filter:blur(2px)",
+      "display:none",
+      "align-items:center",
+      "justify-content:center",
+      "padding:20px",
+      "z-index:9999",
+    ].join(";");
+
+    const modal = document.createElement("div");
+    modal.style.cssText = [
+      "width:min(460px,100%)",
+      "background:#ffffff",
+      "border-radius:16px",
+      "box-shadow:0 24px 48px rgba(15,23,42,.28)",
+      "overflow:hidden",
+      "transform:translateY(10px) scale(.98)",
+      "opacity:0",
+      "transition:all .18s ease",
+      "font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif",
+    ].join(";");
+
+    modal.innerHTML = `
+      <div style="padding:18px 20px 14px;border-bottom:1px solid #e2e8f0">
+        <h3 style="margin:0;font-size:18px;font-weight:700;color:#0f172a">Confirm Logout</h3>
+      </div>
+      <div style="padding:16px 20px 4px;color:#334155;line-height:1.5;font-size:14px">
+        Are you sure you want to log out from your account?
+      </div>
+      <div style="display:flex;gap:10px;justify-content:flex-end;padding:16px 20px 20px">
+        <button type="button" id="logout-confirm-cancel" style="padding:9px 14px;border:1px solid #cbd5e1;background:#ffffff;color:#334155;border-radius:10px;font-weight:600;cursor:pointer">Stay Logged In</button>
+        <button type="button" id="logout-confirm-yes" style="padding:9px 14px;border:none;background:#dc2626;color:#ffffff;border-radius:10px;font-weight:700;cursor:pointer">Logout</button>
+      </div>
+    `;
+
+    backdrop.appendChild(modal);
+    document.body.appendChild(backdrop);
+
+    const close = () => {
+      modal.style.opacity = "0";
+      modal.style.transform = "translateY(10px) scale(.98)";
+      setTimeout(() => {
+        backdrop.style.display = "none";
+      }, 150);
+    };
+
+    const open = () => {
+      backdrop.style.display = "flex";
+      requestAnimationFrame(() => {
+        modal.style.opacity = "1";
+        modal.style.transform = "translateY(0) scale(1)";
+      });
+    };
+
+    const confirmBtn = modal.querySelector("#logout-confirm-yes");
+    const cancelBtn = modal.querySelector("#logout-confirm-cancel");
+
+    confirmBtn.addEventListener("click", () => {
+      close();
+      logout();
+    });
+
+    cancelBtn.addEventListener("click", close);
+    backdrop.addEventListener("click", (e) => {
+      if (e.target === backdrop) close();
+    });
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && backdrop.style.display === "flex") close();
+    });
+
+    logoutConfirmEls = { open, close };
+    return logoutConfirmEls;
+  }
+
+  function requestLogout() {
+    const modalApi = _buildLogoutConfirmModal();
+    modalApi.open();
+  }
+
+  function _bindLogoutConfirmation() {
+    if (logoutConfirmBound) return;
+    logoutConfirmBound = true;
+
+    document.addEventListener("click", (e) => {
+      const trigger = e.target.closest("a[href]");
+      if (!trigger) return;
+
+      const href = (trigger.getAttribute("href") || "").trim();
+      if (!/auth_pages\/logout\.html(?:[?#].*)?$/i.test(href)) return;
+
+      e.preventDefault();
+      requestLogout();
+    });
+  }
+
   /* =========================================================================
      Auth.requireSession(allowedRoles)
      ========================================================================= */
@@ -355,10 +462,63 @@ window.Auth = (() => {
     return { success: true };
   }
 
+  /* =========================================================================
+     Auth.updateProfilePicture(imageDataUrl)
+     ========================================================================= */
+  function updateProfilePicture(imageDataUrl) {
+    const user = getCurrentUser();
+    if (!user) return { success: false, error: "not_logged_in" };
+
+    const cleanValue = (imageDataUrl || "").trim();
+    if (!cleanValue) return { success: false, error: "invalid_image" };
+
+    const tableMap = {
+      super_user: "super_users",
+      collective_manager: "collective_managers",
+      unit_manager: "unit_managers",
+      provider: "service_providers",
+      customer: "customers",
+    };
+
+    const idKeyMap = {
+      super_user: "super_user_id",
+      collective_manager: "cm_id",
+      unit_manager: "um_id",
+      provider: "service_provider_id",
+      customer: "customer_id",
+    };
+
+    const tableName = tableMap[user.role];
+    const idKey = idKeyMap[user.role];
+    const table = AppStore.getTable(tableName);
+
+    if (!table) return { success: false, error: "table_not_found" };
+
+    const row = table.find((r) => r[idKey] === user.id);
+    if (!row) return { success: false, error: "user_not_found_in_store" };
+
+    row.pfp_url = cleanValue;
+    row.updated_at = new Date().toISOString();
+
+    AppStore.save();
+
+    const activeSession = getSession();
+    if (activeSession) {
+      activeSession.pfp_url = cleanValue;
+      sessionStorage.setItem("fsd_session", JSON.stringify(activeSession));
+    }
+
+    _buildRegistry();
+
+    return { success: true, pfp_url: cleanValue };
+  }
+
   /* ─── Initialise registry once AppStore is ready ─── */
   AppStore.ready.then(() => {
     _buildRegistry();
   });
+
+  _bindLogoutConfirmation();
 
   /* ─── Bfcache Back-Button Reload ─── */
   window.addEventListener("pageshow", (e) => {
@@ -371,6 +531,7 @@ window.Auth = (() => {
   return {
     login,
     logout,
+    requestLogout,
     requireSession,
     getSession,
     isLoggedIn,
@@ -378,6 +539,7 @@ window.Auth = (() => {
     getRedirectUrl,
     getCurrentUser,
     changePassword,
+    updateProfilePicture,
     isMaintenanceModeEnabled: _isMaintenanceModeEnabled,
   };
 })();

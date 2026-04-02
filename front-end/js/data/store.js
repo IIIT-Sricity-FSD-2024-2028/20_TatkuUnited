@@ -17,6 +17,7 @@
     "customers",
     "categories",
     "services",
+    "service_content",
     "service_skills",
     "service_faqs",
     "service_packages",
@@ -25,6 +26,7 @@
     "booking_services",
     "job_assignments",
     "transactions",
+    "revenue_ledger",
     "reviews",
     "super_users",
     "super_user_platform_events",
@@ -54,6 +56,7 @@
     BKG: "bookings",
     JA: "job_assignments",
     TXN: "transactions",
+    LDG: "revenue_ledger",
     REV: "reviews",
     SU: "super_users",
   };
@@ -74,6 +77,7 @@
     customers: [],
     categories: [],
     services: [],
+    service_content: [],
     service_skills: [],
     service_faqs: [],
     service_packages: [],
@@ -82,6 +86,7 @@
     booking_services: [],
     job_assignments: [],
     transactions: [],
+    revenue_ledger: [],
     reviews: [],
     super_users: [],
     super_user_platform_events: [],
@@ -116,7 +121,7 @@
           : DEFAULT_PLATFORM_SETTINGS.accountSuspension,
       ratingThreshold:
         typeof settings?.ratingThreshold === "string" &&
-          settings.ratingThreshold.trim()
+        settings.ratingThreshold.trim()
           ? settings.ratingThreshold
           : DEFAULT_PLATFORM_SETTINGS.ratingThreshold,
       instantBooking:
@@ -133,7 +138,7 @@
           : DEFAULT_PLATFORM_SETTINGS.minNotice,
       cancelWindow:
         typeof settings?.cancelWindow === "string" &&
-          settings.cancelWindow.trim()
+        settings.cancelWindow.trim()
           ? settings.cancelWindow
           : DEFAULT_PLATFORM_SETTINGS.cancelWindow,
       updatedAt:
@@ -204,10 +209,10 @@
     if (VALID_TABLES.indexOf(name) === -1) {
       console.error(
         '[AppStore] getTable(): "' +
-        name +
-        '" is not a valid table name. ' +
-        "Valid tables: " +
-        VALID_TABLES.join(", "),
+          name +
+          '" is not a valid table name. ' +
+          "Valid tables: " +
+          VALID_TABLES.join(", "),
       );
       return undefined;
     }
@@ -284,6 +289,167 @@
     };
   };
 
+  AppStore.recomputeRatingsFromReviews = function () {
+    if (!AppStore || !AppStore.data) return;
+
+    var reviews = AppStore.getTable("reviews") || [];
+    var services = AppStore.getTable("services") || [];
+    var categories = AppStore.getTable("categories") || [];
+    var providers = AppStore.getTable("service_providers") || [];
+    var bookings = AppStore.getTable("bookings") || [];
+    var assignments = AppStore.getTable("job_assignments") || [];
+
+    var serviceById = new Map();
+    services.forEach(function (svc) {
+      serviceById.set(svc.service_id, svc);
+    });
+
+    var bookingById = new Map();
+    bookings.forEach(function (booking) {
+      bookingById.set(booking.booking_id, booking);
+    });
+
+    var latestAssignmentByBooking = new Map();
+    assignments.forEach(function (assignment) {
+      var existing = latestAssignmentByBooking.get(assignment.booking_id);
+      if (!existing) {
+        latestAssignmentByBooking.set(assignment.booking_id, assignment);
+        return;
+      }
+
+      var existingTs = new Date(
+        existing.updated_at || existing.assigned_at || existing.created_at || 0,
+      ).getTime();
+      var currentTs = new Date(
+        assignment.updated_at ||
+          assignment.assigned_at ||
+          assignment.created_at ||
+          0,
+      ).getTime();
+
+      if (currentTs >= existingTs) {
+        latestAssignmentByBooking.set(assignment.booking_id, assignment);
+      }
+    });
+
+    var serviceStats = new Map();
+    var providerStats = new Map();
+
+    function getOrCreateStats(bucket, id) {
+      var stats = bucket.get(id);
+      if (!stats) {
+        stats = { sum: 0, count: 0 };
+        bucket.set(id, stats);
+      }
+      return stats;
+    }
+
+    reviews.forEach(function (review) {
+      var rating = Number(review && review.rating);
+      if (!Number.isFinite(rating)) return;
+      rating = Math.max(1, Math.min(5, rating));
+
+      var booking = review.booking_id
+        ? bookingById.get(review.booking_id)
+        : null;
+      var assignment = review.booking_id
+        ? latestAssignmentByBooking.get(review.booking_id)
+        : null;
+
+      var serviceId = review.service_id;
+      if (!serviceId && booking && booking.service_name) {
+        for (var i = 0; i < services.length; i++) {
+          if (services[i].service_name === booking.service_name) {
+            serviceId = services[i].service_id;
+            break;
+          }
+        }
+      }
+
+      var providerId =
+        review.provider_id ||
+        (booking && booking.provider_id) ||
+        (assignment && assignment.service_provider_id) ||
+        null;
+
+      if (serviceId) {
+        var serviceStat = getOrCreateStats(serviceStats, serviceId);
+        serviceStat.sum += rating;
+        serviceStat.count += 1;
+      }
+
+      if (providerId) {
+        var providerStat = getOrCreateStats(providerStats, providerId);
+        providerStat.sum += rating;
+        providerStat.count += 1;
+      }
+    });
+
+    services.forEach(function (service) {
+      var stats = serviceStats.get(service.service_id);
+      if (!stats || stats.count === 0) {
+        service.average_rating = null;
+        service.rating = null;
+        service.rating_count = 0;
+        return;
+      }
+
+      var avg = Math.round((stats.sum / stats.count) * 100) / 100;
+      service.average_rating = avg;
+      service.rating = avg;
+      service.rating_count = stats.count;
+    });
+
+    var categoryTotals = new Map();
+    services.forEach(function (service) {
+      var categoryId = service.category_id;
+      if (!categoryId) return;
+
+      var total = categoryTotals.get(categoryId);
+      if (!total) {
+        total = { weightedSum: 0, count: 0 };
+        categoryTotals.set(categoryId, total);
+      }
+
+      var count = Number(service.rating_count) || 0;
+      var avg = Number(service.average_rating);
+      if (count > 0 && Number.isFinite(avg)) {
+        total.weightedSum += avg * count;
+        total.count += count;
+      }
+    });
+
+    categories.forEach(function (category) {
+      var total = categoryTotals.get(category.category_id);
+      if (!total || total.count === 0) {
+        category.average_rating = null;
+        category.rating_count = 0;
+        return;
+      }
+
+      category.average_rating =
+        Math.round((total.weightedSum / total.count) * 100) / 100;
+      category.rating_count = total.count;
+    });
+
+    providers.forEach(function (provider) {
+      var stats = providerStats.get(provider.service_provider_id);
+      if (!stats || stats.count === 0) {
+        provider.rating = null;
+        provider.rating_count = 0;
+        provider.average_rating = null;
+        return;
+      }
+
+      var avg = Math.round((stats.sum / stats.count) * 100) / 100;
+      provider.rating = avg;
+      provider.rating_count = stats.count;
+      provider.average_rating = avg;
+    });
+
+    AppStore.save();
+  };
+
   AppStore.validateScheduledSlot = function (dateValue, timeValue) {
     if (!dateValue) {
       return { valid: false, error: "Please select a date." };
@@ -354,10 +520,10 @@
     if (!tableName) {
       console.error(
         '[AppStore] nextId(): "' +
-        prefix +
-        '" is not a recognised prefix. ' +
-        "Valid prefixes: " +
-        Object.keys(PREFIX_TABLE_MAP).join(", "),
+          prefix +
+          '" is not a recognised prefix. ' +
+          "Valid prefixes: " +
+          Object.keys(PREFIX_TABLE_MAP).join(", "),
       );
       return null;
     }
@@ -415,8 +581,234 @@
     _resolve = resolve;
   });
 
+  function _normalizePreExistingProgressStates() {
+    if (!AppStore.data) return false;
+
+    var bookings = AppStore.getTable("bookings") || [];
+    var assignments = AppStore.getTable("job_assignments") || [];
+    var bookingById = new Map(
+      bookings.map(function (b) {
+        return [b.booking_id, b];
+      }),
+    );
+
+    var changed = false;
+
+    assignments.forEach(function (ja) {
+      var status = String(ja.status || "").toUpperCase();
+      if (status !== "IN_PROGRESS") return;
+
+      var relatedBooking = bookingById.get(ja.booking_id);
+      var bookingStatus = String(
+        (relatedBooking && relatedBooking.status) || "",
+      ).toUpperCase();
+
+      var nextAssignmentStatus =
+        bookingStatus === "COMPLETED" ? "COMPLETED" : "ASSIGNED";
+      if (ja.status !== nextAssignmentStatus) {
+        ja.status = nextAssignmentStatus;
+        changed = true;
+      }
+    });
+
+    bookings.forEach(function (b) {
+      var status = String(b.status || "").toUpperCase();
+      if (status !== "IN_PROGRESS") return;
+
+      var relatedAssignment = assignments.find(function (ja) {
+        return ja.booking_id === b.booking_id;
+      });
+      var assignmentStatus = String(
+        (relatedAssignment && relatedAssignment.status) || "",
+      ).toUpperCase();
+
+      var nextBookingStatus =
+        assignmentStatus === "COMPLETED" ? "COMPLETED" : "CONFIRMED";
+      if (b.status !== nextBookingStatus) {
+        b.status = nextBookingStatus;
+        changed = true;
+      }
+    });
+
+    return changed;
+  }
+
+  function _upsertLedgerForExistingProviderAssignments() {
+    if (!AppStore.data) return false;
+
+    var ledger = AppStore.getTable("revenue_ledger") || [];
+    var assignments = AppStore.getTable("job_assignments") || [];
+    var bookings = AppStore.getTable("bookings") || [];
+    var transactions = AppStore.getTable("transactions") || [];
+    var providers = AppStore.getTable("service_providers") || [];
+    var units = AppStore.getTable("units") || [];
+    var collectives = AppStore.getTable("collectives") || [];
+    var superUsers = AppStore.getTable("super_users") || [];
+
+    var superUser = superUsers[0];
+    if (!superUser) return false;
+
+    var bookingById = new Map(
+      bookings.map(function (b) {
+        return [b.booking_id, b];
+      }),
+    );
+    var txnByBookingId = new Map();
+    transactions.forEach(function (t) {
+      if (String(t.payment_status || "").toUpperCase() === "SUCCESS") {
+        txnByBookingId.set(t.booking_id, t);
+      }
+    });
+
+    var changed = false;
+
+    function upsertEntry(entry) {
+      var idx = ledger.findIndex(function (l) {
+        return l.transaction_id === entry.transaction_id && l.role === entry.role;
+      });
+
+      if (idx >= 0) {
+        var existing = ledger[idx];
+        var existingStatus = String(existing.payout_status || "").toUpperCase();
+        var nextStatus = String(entry.payout_status || "").toUpperCase();
+        if (existingStatus !== "PAID" && nextStatus === "PAID") {
+          existing.payout_status = "PAID";
+          existing.payout_at = entry.payout_at;
+          changed = true;
+        }
+        return;
+      }
+
+      ledger.push(entry);
+      changed = true;
+    }
+
+    assignments.forEach(function (ja) {
+      var assignmentStatus = String(ja.status || "").toUpperCase();
+      if (assignmentStatus !== "ASSIGNED" && assignmentStatus !== "COMPLETED") {
+        return;
+      }
+
+      if (!ja.service_provider_id || !ja.booking_id) return;
+
+      var booking = bookingById.get(ja.booking_id);
+      if (!booking) return;
+
+      var txn = txnByBookingId.get(ja.booking_id);
+      if (!txn) return;
+
+      var provider = providers.find(function (sp) {
+        return sp.service_provider_id === ja.service_provider_id;
+      });
+      if (!provider) return;
+
+      var unit = units.find(function (u) {
+        return u.unit_id === provider.unit_id;
+      });
+      if (!unit) return;
+
+      var collective = collectives.find(function (c) {
+        return c.collective_id === unit.collective_id;
+      });
+      if (!collective) return;
+
+      var bookingSuffix = String(ja.booking_id).replace("BKG", "");
+      var totalAmount = Number(txn.amount || 0);
+      if (!Number.isFinite(totalAmount) || totalAmount <= 0) return;
+
+      var payoutStatus = assignmentStatus === "COMPLETED" ? "PAID" : "PENDING";
+      var createdAt =
+        txn.verified_at ||
+        ja.updated_at ||
+        ja.assigned_at ||
+        booking.updated_at ||
+        booking.created_at ||
+        new Date().toISOString();
+      var payoutAt =
+        payoutStatus === "PAID"
+          ? ja.updated_at || txn.verified_at || new Date().toISOString()
+          : null;
+
+      upsertEntry({
+        ledger_id: "LDG" + bookingSuffix + "_PROVIDER",
+        transaction_id: txn.transaction_id,
+        booking_id: ja.booking_id,
+        role: "provider",
+        service_provider_id: provider.service_provider_id,
+        amount: Math.round(totalAmount * 0.78 * 100) / 100,
+        percentage: 78,
+        payout_status: payoutStatus,
+        created_at: createdAt,
+        payout_at: payoutAt,
+      });
+
+      upsertEntry({
+        ledger_id: "LDG" + bookingSuffix + "_UNIT_MANAGER",
+        transaction_id: txn.transaction_id,
+        booking_id: ja.booking_id,
+        role: "unit_manager",
+        unit_id: unit.unit_id,
+        amount: Math.round(totalAmount * 0.07 * 100) / 100,
+        percentage: 7,
+        payout_status: payoutStatus,
+        created_at: createdAt,
+        payout_at: payoutAt,
+      });
+
+      upsertEntry({
+        ledger_id: "LDG" + bookingSuffix + "_COLLECTIVE_MANAGER",
+        transaction_id: txn.transaction_id,
+        booking_id: ja.booking_id,
+        role: "collective_manager",
+        collective_id: collective.collective_id,
+        amount: Math.round(totalAmount * 0.04 * 100) / 100,
+        percentage: 4,
+        payout_status: payoutStatus,
+        created_at: createdAt,
+        payout_at: payoutAt,
+      });
+
+      upsertEntry({
+        ledger_id: "LDG" + bookingSuffix + "_SUPER_USER",
+        transaction_id: txn.transaction_id,
+        booking_id: ja.booking_id,
+        role: "super_user",
+        super_user_id: superUser.super_user_id,
+        amount: Math.round(totalAmount * 0.11 * 100) / 100,
+        percentage: 11,
+        payout_status: payoutStatus,
+        created_at: createdAt,
+        payout_at: payoutAt,
+      });
+    });
+
+    AppStore.data.revenue_ledger = ledger;
+    return changed;
+  }
+
+  function _postReadyAudit() {
+    var normalized = _normalizePreExistingProgressStates();
+    var ledgerUpdated = _upsertLedgerForExistingProviderAssignments();
+    if (normalized || ledgerUpdated) {
+      AppStore.save();
+    }
+
+    // Run service availability audit after data is loaded
+    if (
+      window.AssignmentEngine &&
+      typeof AssignmentEngine.auditServiceAvailability === "function"
+    ) {
+      try {
+        AssignmentEngine.auditServiceAvailability();
+      } catch (e) {
+        console.warn("[AppStore] Service availability audit failed:", e);
+      }
+    }
+  }
+
   if (AppStore.restore()) {
     // Same session — data already loaded from sessionStorage
+    _postReadyAudit();
     _resolve();
   } else {
     // First startup or missing local data — fetch from mockData.json
@@ -432,7 +824,7 @@
         // Session logic is handled entirely by Auth.login() and requires no action here.
         // Persist the fresh state immediately
         AppStore.save();
-
+        _postReadyAudit();
         _resolve();
       })
       .catch(function (err) {
@@ -451,7 +843,7 @@
       if (!sess) return null;
       var parsed = JSON.parse(sess);
       if (parsed && parsed.role === "provider" && parsed.id) return parsed.id;
-    } catch (e) { }
+    } catch (e) {}
     return null;
   }
 
@@ -510,9 +902,18 @@
       provider.dob = state.provider.dob || provider.dob;
       provider.gender = state.provider.gender || provider.gender;
       provider.pfp_url = state.provider.pfp_url || provider.pfp_url;
-      provider.account_status = state.provider.account_status || provider.account_status || "active";
-      provider.deactivation_requested = state.provider.deactivation_requested !== undefined ? state.provider.deactivation_requested : (provider.deactivation_requested || false);
-      provider.is_active = state.provider.is_active !== undefined ? state.provider.is_active : (provider.is_active !== undefined ? provider.is_active : true);
+      provider.account_status =
+        state.provider.account_status || provider.account_status || "active";
+      provider.deactivation_requested =
+        state.provider.deactivation_requested !== undefined
+          ? state.provider.deactivation_requested
+          : provider.deactivation_requested || false;
+      provider.is_active =
+        state.provider.is_active !== undefined
+          ? state.provider.is_active
+          : provider.is_active !== undefined
+            ? provider.is_active
+            : true;
       provider.updated_at = nowIso;
     }
 
@@ -673,7 +1074,7 @@
             );
           }
         }
-      } catch (e) { }
+      } catch (e) {}
 
       if (!hasProviderSession) {
         window.location.replace("/front-end/html/auth_pages/login.html");
@@ -738,8 +1139,11 @@
           }) || {};
 
         providerProfile.skills = [];
-        providerProfile.account_status = providerProfile.account_status || (providerProfile.is_active ? "active" : "inactive");
-        providerProfile.deactivation_requested = providerProfile.deactivation_requested || false;
+        providerProfile.account_status =
+          providerProfile.account_status ||
+          (providerProfile.is_active ? "active" : "inactive");
+        providerProfile.deactivation_requested =
+          providerProfile.deactivation_requested || false;
         var mySkills = allProviderSkills.filter(function (ps) {
           return ps.service_provider_id === providerId;
         });
@@ -810,11 +1214,12 @@
 
             jobs.push({
               id: ja.assignment_id,
+              booking_id: ja.booking_id,
               service: serviceName,
               category: catName,
               customer: cus.full_name || cus.name || "Unknown User",
               address: bkg.service_address || "Unknown Address",
-              phone: cus.phone || "+91 0000000000",
+              phone: cus.phone || "9876543210",
               date: ja.scheduled_date,
               time: ja.hour_start + " - " + ja.hour_end,
               startTime: ja.hour_start,
@@ -933,6 +1338,26 @@
             },
           ],
         };
+
+        // Inject dynamic provider notifications from AssignmentEngine
+        if (
+          window.AssignmentEngine &&
+          typeof AssignmentEngine.getProviderNotifications === "function"
+        ) {
+          var dynamicNotifs =
+            AssignmentEngine.getProviderNotifications(providerId);
+          if (dynamicNotifs && dynamicNotifs.length > 0) {
+            dynamicNotifs.forEach(function (dn) {
+              // Only inject if not already present by id
+              var exists = state.notifications.some(function (n) {
+                return n.id === dn.id;
+              });
+              if (!exists) {
+                state.notifications.unshift(dn);
+              }
+            });
+          }
+        }
 
         localStorage.setItem("fsd_ui_state", JSON.stringify(state));
         // Remove legacy session copy to avoid stale reads in current tab.

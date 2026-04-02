@@ -1,30 +1,53 @@
-'use strict';
-// ── Collective Manager – Profile JS ──
-// Depends on: store.js, auth.js
+// ── Collective Manager Profile JS ──
+// Loaded after store.js + auth.js
 
-var _session    = null;
-var _cm         = null;   // collective_managers row (live reference)
-var _collective = null;   // collectives row (live reference)
-var _myUnits    = [];
+let _session = null;
+let _cm = null; // collective_manager row
+let _collective = null; // collective row
+let _myUnits = []; // units belonging to this collective
 
-/* ══════════════════════════════════════════════
-   UTILITIES
-══════════════════════════════════════════════ */
+/* ─────────────────────────────────────────────
+   BOOT — wait for AppStore then hydrate page
+───────────────────────────────────────────── */
+AppStore.ready.then(() => {
+  // 1. Require a valid collective_manager session
+  _session = Auth.requireSession(["collective_manager"]);
+  if (!_session) return; // redirected by Auth
 
-var _toastTimer;
-function showToast(msg, type) {
-  var toast = document.getElementById('toast');
-  if (!toast) return;
-  toast.textContent = msg;
-  toast.className = 'toast show' + (type === 'error' ? ' toast-error' : '');
-  clearTimeout(_toastTimer);
-  _toastTimer = setTimeout(function () { toast.className = 'toast'; }, 3500);
-}
+  const cmId = _session.id;
+  const collectiveId = _session.collectiveId;
+
+  // 2. Fetch rows from AppStore
+  const allCMs = AppStore.getTable("collective_managers") || [];
+  const allCollectives = AppStore.getTable("collectives") || [];
+  const allUnits = AppStore.getTable("units") || [];
+  const allProviders = AppStore.getTable("service_providers") || [];
+  const allSectors = AppStore.getTable("sectors") || [];
+
+  _cm = allCMs.find((c) => c.cm_id === cmId) || null;
+  _collective =
+    allCollectives.find((c) => c.collective_id === collectiveId) || null;
+  _myUnits = allUnits.filter((u) => u.collective_id === collectiveId);
+
+  // 3. Hydrate all UI sections
+  hydrateHero(_cm, _collective, _myUnits, allProviders);
+  hydratePersonalCard(_cm);
+  hydrateCollectiveCard(_collective, allSectors);
+  renderUnits(_myUnits, (allUnit) =>
+    getUnitProviderCount(allUnit, allProviders),
+  );
+  renderActivities(_collective, _myUnits);
+});
+
+/* ─────────────────────────────────────────────
+   HYDRATION HELPERS
+───────────────────────────────────────────── */
 
 function getInitials(name) {
-  if (!name) return 'CM';
-  var parts = name.trim().split(/\s+/).filter(Boolean);
-  if (parts.length >= 2) return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  if (!name) return "CM";
+  const parts = name.trim().split(" ").filter(Boolean);
+  if (parts.length >= 2)
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
   return parts[0].slice(0, 2).toUpperCase();
 }
 
@@ -386,9 +409,9 @@ function closePwdModalBtn() {
 }
 
 function handlePasswordChange() {
-  var currentPwd = getVal('pwd-current');
-  var newPwd     = getVal('pwd-new');
-  var confirmPwd = getVal('pwd-confirm');
+  const currentPwd = document.getElementById("pwd-current")?.value;
+  const newPwd = document.getElementById("pwd-new")?.value;
+  const confirmPwd = document.getElementById("pwd-confirm")?.value;
 
   if (!currentPwd || !newPwd || !confirmPwd) {
     showToast('Please fill in all password fields.', 'error'); return;

@@ -56,15 +56,10 @@
         encodeURIComponent(price);
       return;
     }
-    var orig = btn.textContent;
-    btn.textContent = "Booked!";
-    btn.style.background = "#15803d";
-    btn.disabled = true;
-    setTimeout(function () {
-      btn.textContent = orig;
-      btn.style.background = "";
-      btn.disabled = false;
-    }, 2000);
+    var next = encodeURIComponent(
+      window.location.pathname + window.location.search + window.location.hash,
+    );
+    window.location.href = "/front-end/html/auth_pages/login.html?next=" + next;
   }
 
   function initAuthNav() {
@@ -75,8 +70,8 @@
           var navAuth = document.querySelector(".nav-auth");
           if (navAuth) {
             navAuth.innerHTML =
-              '<a href="../customer/cart.html" style="margin-right: 20px; text-decoration: none; color: #1e293b; font-weight: 500; display:flex; align-items:center; gap:6px;"><svg viewBox="0 0 24 24" style="width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2;"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>Cart</a>' +
-              '<a href="../customer/home.html" style="background: var(--primary, #1e3a8a); color: #fff; padding: 0.5rem 1.25rem; border-radius: 6px; font-weight: 500; text-decoration: none; display:flex; align-items:center; gap:8px;"><svg viewBox="0 0 24 24" style="width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Dashboard</a>';
+              '<a href="../customer/cart.html" class="cart-btn" title="Cart"><svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" /><line x1="3" y1="6" x2="21" y2="6" /><path d="M16 10a4 4 0 01-8 0" /></svg></a>' +
+              '<a href="../customer/home.html" class="user-avatar-btn" title="Dashboard"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" /><circle cx="12" cy="7" r="4" /></svg></a>';
           }
           var navLinks = document.querySelector(".nav-links");
           if (navLinks) {
@@ -225,7 +220,64 @@
     );
 
     var reviews = [];
+    var reviewedBookingIds = new Set();
+
+    // Prefer explicit customer-submitted reviews.
+    if (typeof AppStore !== "undefined" && AppStore.data) {
+      var allReviews = AppStore.getTable("reviews") || [];
+      var customerMap = new Map(
+        (AppStore.getTable("customers") || []).map(function (c) {
+          return [c.customer_id, c];
+        }),
+      );
+
+      var serviceReviews = allReviews.filter(function (r) {
+        return (
+          r.service_id === serviceId ||
+          (r.booking_id && bookingIds.has(r.booking_id))
+        );
+      });
+
+      serviceReviews.forEach(function (review) {
+        var rating = Number(review.rating);
+        if (!Number.isFinite(rating)) {
+          return;
+        }
+
+        var safeRating = Math.max(1, Math.min(5, rating));
+        var customer = customerMap.get(review.customer_id);
+        var reviewerName = customer ? customer.full_name : "Tatku Customer";
+        var reviewDate =
+          review.updated_at || review.created_at || new Date().toISOString();
+        var dateLabel = new Date(reviewDate).toLocaleDateString("en-IN", {
+          year: "numeric",
+          month: "short",
+          day: "numeric",
+        });
+
+        if (review.booking_id) {
+          reviewedBookingIds.add(review.booking_id);
+        }
+
+        reviews.push({
+          id: review.review_id || review.booking_id || String(Math.random()),
+          stars: Math.round(safeRating),
+          score: safeRating,
+          date: reviewDate,
+          name: reviewerName,
+          meta: dateLabel + " • Verified review",
+          initials: reviewerName.charAt(0).toUpperCase(),
+          text: review.review_text || "",
+        });
+      });
+    }
+
+    // Fallback rating entries from completed jobs without explicit review text.
     bookingIds.forEach(function (bookingId) {
+      if (reviewedBookingIds.has(bookingId)) {
+        return;
+      }
+
       var booking = bookingById.get(bookingId);
       if (!booking || booking.status !== "COMPLETED") {
         return;
@@ -236,7 +288,11 @@
       var score =
         assignment && typeof assignment.assignment_score === "number"
           ? assignment.assignment_score
-          : (customer && customer.rating) || 4.5;
+          : null;
+      if (typeof score !== "number") {
+        return;
+      }
+
       var rounded = Math.max(1, Math.min(5, Math.round(score)));
       var reviewerName = customer ? customer.full_name : "Tatku Customer";
       var dateLabel = new Date(booking.scheduled_at).toLocaleDateString(
@@ -260,62 +316,53 @@
       });
     });
 
-    // Also add real reviews from AppStore if available
-    if (typeof AppStore !== "undefined" && AppStore.data) {
-      var allReviews = AppStore.getTable("reviews") || [];
-      var serviceReviews = allReviews.filter(function (r) {
-        return r.service_id === serviceId;
-      });
-      var customerMap = new Map(
-        (AppStore.getTable("customers") || []).map(function (c) {
-          return [c.customer_id, c];
-        }),
-      );
-
-      serviceReviews.forEach(function (review) {
-        var customer = customerMap.get(review.customer_id);
-        var reviewerName = customer ? customer.full_name : "Tatku Customer";
-        var dateLabel = new Date(review.created_at).toLocaleDateString(
-          "en-IN",
-          {
-            year: "numeric",
-            month: "short",
-            day: "numeric",
-          },
-        );
-
-        reviews.push({
-          id: review.review_id,
-          stars: review.rating || 4,
-          score: review.rating || 4,
-          date: review.created_at,
-          name: reviewerName,
-          meta: dateLabel + " • Verified review",
-          initials: reviewerName.charAt(0).toUpperCase(),
-          text: review.review_text || "",
-        });
-      });
-    }
-
-    if (!reviews.length) {
-      reviews = [
-        {
-          id: "fallback-1",
-          stars: 5,
-          score: 4.8,
-          date: "2026-01-01T10:00:00Z",
-          name: "Tatku User",
-          meta: "Recent booking • Verified customer",
-          initials: "T",
-          text: "Good quality service and professional behavior. Booking and execution were both seamless.",
-        },
-      ];
-    }
-
     return reviews;
   }
 
+  function getServiceRatingMeta(service, reviews) {
+    var hasReviewData = reviews.length > 0;
+    var ratingFromService = Number(service && service.average_rating);
+    var countFromService = Number(service && service.rating_count);
+
+    if (hasReviewData) {
+      var avgFromReviews =
+        reviews.reduce(function (sum, review) {
+          return sum + review.score;
+        }, 0) / reviews.length;
+      return {
+        average: avgFromReviews,
+        count: reviews.length,
+        source: "reviews",
+      };
+    }
+
+    if (Number.isFinite(ratingFromService) && countFromService > 0) {
+      return {
+        average: ratingFromService,
+        count: countFromService,
+        source: "service",
+      };
+    }
+
+    return {
+      average: null,
+      count: 0,
+      source: "none",
+    };
+  }
+
   function renderReviewCards(reviewList, reviews) {
+    if (!reviews.length) {
+      reviewList.innerHTML =
+        '<div class="review-card">' +
+        '<div class="review-header">' +
+        '<div><div class="reviewer-name">N/A</div><div class="reviewer-meta">No reviews available</div></div>' +
+        "</div>" +
+        "<p>N/A</p>" +
+        "</div>";
+      return;
+    }
+
     reviewList.innerHTML = reviews
       .map(function (review) {
         return (
@@ -352,7 +399,65 @@
       .join("");
   }
 
-  function updateReviewSummary(reviews) {
+  function updateReviewSummary(reviews, ratingMeta) {
+    var overallNum = document.querySelector(".overall-num");
+    var overallCount = document.querySelector(".overall-count");
+    var resolvedMeta = ratingMeta || {
+      average: null,
+      count: reviews.length,
+      source: reviews.length ? "reviews" : "none",
+    };
+
+    if (resolvedMeta.source === "service") {
+      var serviceAverage = resolvedMeta.average;
+      var serviceTotal = resolvedMeta.count;
+      var roundedBucket = Math.max(1, Math.min(5, Math.round(serviceAverage)));
+
+      if (overallNum) {
+        overallNum.textContent = serviceAverage.toFixed(2);
+      }
+      if (overallCount) {
+        overallCount.textContent = serviceTotal + " reviews";
+      }
+
+      document.querySelectorAll(".rating-bar-row").forEach(function (row) {
+        var label = Number(
+          (row.querySelector(".rb-label") || {}).textContent || 0,
+        );
+        var count = label === roundedBucket ? serviceTotal : 0;
+        var pct = label === roundedBucket ? 100 : 0;
+        var fill = row.querySelector(".rb-fill");
+        var countNode = row.querySelector(".rb-count");
+        if (fill) {
+          fill.style.width = pct + "%";
+        }
+        if (countNode) {
+          countNode.textContent = String(count);
+        }
+      });
+      return;
+    }
+
+    if (!reviews.length) {
+      if (overallNum) {
+        overallNum.textContent = "N/A";
+      }
+      if (overallCount) {
+        overallCount.textContent = "N/A";
+      }
+      document.querySelectorAll(".rating-bar-row").forEach(function (row) {
+        var fill = row.querySelector(".rb-fill");
+        var countNode = row.querySelector(".rb-count");
+        if (fill) {
+          fill.style.width = "0%";
+        }
+        if (countNode) {
+          countNode.textContent = "N/A";
+        }
+      });
+      return;
+    }
+
     var average =
       reviews.reduce(function (sum, r) {
         return sum + r.score;
@@ -364,8 +469,6 @@
       counts[review.stars] += 1;
     });
 
-    var overallNum = document.querySelector(".overall-num");
-    var overallCount = document.querySelector(".overall-count");
     if (overallNum) {
       overallNum.textContent = average.toFixed(2);
     }
@@ -644,13 +747,25 @@
       .join("");
   }
 
-  async function initDynamicContent() {
+  async function loadData() {
+    if (
+      typeof AppStore !== "undefined" &&
+      AppStore.data &&
+      Array.isArray(AppStore.data.services)
+    ) {
+      return AppStore.data;
+    }
+
     var response = await fetch(MOCK_DATA_PATH);
     if (!response.ok) {
       throw new Error("Unable to load mock data");
     }
 
-    var data = await response.json();
+    return response.json();
+  }
+
+  async function initDynamicContent() {
+    var data = await loadData();
     var availableServices = (data.services || []).filter(function (service) {
       return service.is_available;
     });
@@ -659,12 +774,46 @@
       return;
     }
 
-    var serviceId =
-      getQueryParam("serviceId") || availableServices[0].service_id;
-    var service =
-      availableServices.find(function (item) {
-        return item.service_id === serviceId;
-      }) || availableServices[0];
+    var requestedServiceId = getQueryParam("serviceId");
+    var serviceId = requestedServiceId || availableServices[0].service_id;
+    var service = availableServices.find(function (item) {
+      return item.service_id === serviceId;
+    });
+
+    if (!service) {
+      var svcTitleMissing = document.querySelector(".svc-title");
+      var svcMetaRatingMissing = document.querySelector(".svc-meta strong");
+      var svcMetaReviewsMissing = document.querySelector(".svc-reviews");
+      var svcBulletsMissing = document.querySelector(".svc-bullets");
+      var heroImageMissing = document.querySelector(".svc-hero-img-wrap img");
+      var bookButtonMissing = document.getElementById("btnBookNow");
+
+      document.title = "Service unavailable – Tatku United";
+      if (svcTitleMissing) {
+        svcTitleMissing.textContent = "Service unavailable";
+      }
+      if (svcMetaRatingMissing) {
+        svcMetaRatingMissing.textContent = "N/A";
+      }
+      if (svcMetaReviewsMissing) {
+        svcMetaReviewsMissing.textContent = "(N/A)";
+      }
+      if (svcBulletsMissing) {
+        svcBulletsMissing.innerHTML =
+          "<li>The selected service could not be found.</li>" +
+          "<li>It may have been removed or is not available right now.</li>";
+      }
+      if (heroImageMissing) {
+        heroImageMissing.src =
+          "https://placehold.co/1200x800?text=Service+Unavailable";
+        heroImageMissing.alt = "Service unavailable";
+      }
+      if (bookButtonMissing) {
+        bookButtonMissing.disabled = true;
+        bookButtonMissing.textContent = "Unavailable";
+      }
+      return;
+    }
 
     var faqs = (data.service_faqs || [])
       .filter(function (faq) {
@@ -676,11 +825,8 @@
 
     var serviceContent = getServiceContent(data, service.service_id) || {};
     var reviews = buildReviewData(data, service.service_id);
-    var avgRating =
-      service.rating ||
-      reviews.reduce(function (sum, review) {
-        return sum + review.score;
-      }, 0) / reviews.length;
+    var ratingMeta = getServiceRatingMeta(service, reviews);
+    var avgRating = ratingMeta.average;
 
     document.title = service.service_name + " – Tatku United";
 
@@ -706,11 +852,29 @@
       svcTitle.textContent = service.service_name;
     }
     if (svcMetaRating) {
-      svcMetaRating.textContent = avgRating.toFixed(2);
+      svcMetaRating.textContent =
+        typeof avgRating === "number" ? avgRating.toFixed(2) : "N/A";
     }
     if (svcMetaReviews) {
-      svcMetaReviews.textContent = "(" + reviews.length + " reviews)";
+      svcMetaReviews.textContent =
+        ratingMeta.count > 0 ? "(" + ratingMeta.count + " reviews)" : "(N/A)";
     }
+
+    var trustItems = document.querySelectorAll(".trust-list li");
+    if (trustItems && trustItems[1]) {
+      var trustText =
+        ratingMeta.count > 0 && typeof avgRating === "number"
+          ? "Average " + avgRating.toFixed(2) + " ratings"
+          : "No ratings yet";
+      trustItems[1].innerHTML =
+        '<span class="trust-icon">' +
+        '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8">' +
+        '<path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z" />' +
+        "</svg>" +
+        "</span>" +
+        trustText;
+    }
+
     if (svcBullets) {
       svcBullets.innerHTML = [
         "<li>" + service.description + "</li>",
@@ -777,7 +941,7 @@
     if (reviewList) {
       renderReviewCards(reviewList, reviews);
     }
-    updateReviewSummary(reviews);
+    updateReviewSummary(reviews, ratingMeta);
 
     initBookButtons();
     initFaqAccordion();

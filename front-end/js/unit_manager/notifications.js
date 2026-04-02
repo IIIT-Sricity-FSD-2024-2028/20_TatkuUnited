@@ -10,6 +10,7 @@
   var notifications = [];
   var currentFilter = "all";
   var state = { dismissed: [], read: [], overrides: {} };
+  var TOAST_DURATION_MS = 2200;
 
   function ensureState() {
     if (
@@ -56,7 +57,7 @@
       setTimeout(function () {
         if (el.parentNode) el.remove();
       }, 320);
-    }, 3000);
+    }, TOAST_DURATION_MS);
   }
 
   function showModal(title, bodyHtml, buttons) {
@@ -139,6 +140,21 @@
         return p.unit_id === session.unitId;
       },
     );
+    var providersById = {};
+    providers.forEach(function (p) {
+      providersById[p.service_provider_id] = p;
+    });
+
+    var bookingsById = {};
+    (AppStore.getTable("bookings") || []).forEach(function (b) {
+      bookingsById[b.booking_id] = b;
+    });
+
+    var customersById = {};
+    (AppStore.getTable("customers") || []).forEach(function (c) {
+      customersById[c.customer_id] = c;
+    });
+
     var providerIds = new Set(
       providers.map(function (p) {
         return p.service_provider_id;
@@ -150,11 +166,6 @@
         return providerIds.has(a.service_provider_id);
       },
     );
-
-    var bookingsById = {};
-    (AppStore.getTable("bookings") || []).forEach(function (b) {
-      bookingsById[b.booking_id] = b;
-    });
 
     var bookingIds = new Set(
       assignments.map(function (a) {
@@ -261,18 +272,53 @@
       });
     }
 
-    if (!base.length) {
-      base.push({
-        id: 5,
-        type: "info",
-        iconClass: "blue",
-        title: "No Notifications",
-        desc: "No current alerts for your unit.",
-        time: "recently",
-        actions: [],
-        icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>',
+    var assignmentNotifs = assignments
+      .filter(function (a) {
+        return a.status === "ASSIGNED" || a.status === "IN_PROGRESS";
+      })
+      .sort(function (a, b) {
+        var aTs = new Date(
+          a.updated_at || a.assigned_at || a.created_at || 0,
+        ).getTime();
+        var bTs = new Date(
+          b.updated_at || b.assigned_at || b.created_at || 0,
+        ).getTime();
+        return bTs - aTs;
+      })
+      .slice(0, 20)
+      .map(function (a) {
+        var booking = bookingsById[a.booking_id] || {};
+        var provider = providersById[a.service_provider_id] || {};
+        var customer = customersById[booking.customer_id] || {};
+        var providerName = provider.name || "Assigned provider";
+        var customerName = customer.full_name || customer.name || "customer";
+        var serviceName = booking.service_name || "service";
+        var actionText =
+          a.status === "IN_PROGRESS" ? "in progress" : "assigned";
+
+        return {
+          id: "assign_" + a.assignment_id,
+          type: "info",
+          iconClass: "blue",
+          title: "Provider Assignment Update",
+          desc:
+            providerName +
+            " is " +
+            actionText +
+            " for " +
+            serviceName +
+            " (" +
+            customerName +
+            ") [" +
+            a.assignment_id +
+            "].",
+          time: fmtAgo(a.updated_at || a.assigned_at || a.created_at),
+          actions: ["View Providers", "Dismiss"],
+          icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><polyline points="17 11 19 13 23 9"/></svg>',
+        };
       });
-    }
+
+    base = assignmentNotifs.concat(base);
 
     return base;
   }
@@ -440,6 +486,13 @@
       return currentFilter === "all" || n.type === currentFilter;
     });
 
+    function idLiteral(value) {
+      if (typeof value === "number") return String(value);
+      return (
+        "'" + String(value).replace(/\\/g, "\\\\").replace(/'/g, "\\'") + "'"
+      );
+    }
+
     list.innerHTML = "";
 
     if (!vis.length) {
@@ -468,7 +521,7 @@
             '" onclick="handleAction(\'' +
             lbl +
             "'," +
-            n.id +
+            idLiteral(n.id) +
             ')">' +
             lbl +
             "</button>";
@@ -500,7 +553,7 @@
         btns +
         "</div>" +
         '<button class="notif-dismiss" onclick="dismissNotif(' +
-        n.id +
+        idLiteral(n.id) +
         ')" title="Dismiss">&times;</button>';
 
       (function (nid) {

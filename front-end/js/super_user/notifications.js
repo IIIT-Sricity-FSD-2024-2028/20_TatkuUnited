@@ -82,6 +82,9 @@ AppStore.ready.then(() => {
   }
 
   let notifications = transformNotifications(allNotifications);
+  const PAGE_SIZE = 4;
+  const TOAST_DURATION_MS = 2200;
+  let visibleCount = PAGE_SIZE;
 
   const tabs = [
     { key: "all", label: "All" },
@@ -92,6 +95,10 @@ AppStore.ready.then(() => {
   ];
 
   let activeTab = "all";
+
+  function resetPagination() {
+    visibleCount = PAGE_SIZE;
+  }
 
   function getFiltered() {
     const q = (
@@ -130,6 +137,7 @@ AppStore.ready.then(() => {
 
   function setTab(key) {
     activeTab = key;
+    resetPagination();
     renderTabs();
     renderNotifications();
   }
@@ -141,6 +149,7 @@ AppStore.ready.then(() => {
     const list = document.getElementById("notif-list");
     if (!list) return;
     const filtered = getFiltered();
+    const visible = filtered.slice(0, visibleCount);
     if (filtered.length === 0) {
       list.innerHTML = `<div class="empty-state">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
@@ -149,9 +158,10 @@ AppStore.ready.then(() => {
         </svg>
         <p>No notifications</p><span>You're all caught up!</span>
       </div>`;
+      updateLoadMoreButton(0, 0);
       return;
     }
-    list.innerHTML = filtered
+    list.innerHTML = visible
       .map(
         (n, i) => `
       <div class="notif-item ${n.read ? "" : "unread"} ${n.urgent ? "urgent" : ""}" id="notif-${n.id}" style="animation-delay:${i * 0.04}s">
@@ -171,12 +181,97 @@ AppStore.ready.then(() => {
     `,
       )
       .join("");
+    updateLoadMoreButton(visible.length, filtered.length);
     updateBadge();
+  }
+
+  function updateLoadMoreButton(visible, total) {
+    const btn = document.querySelector(".load-more-btn");
+    if (!btn) return;
+    const remaining = Math.max(0, total - visible);
+    if (remaining <= 0) {
+      btn.textContent = "No more notifications";
+      btn.disabled = true;
+      return;
+    }
+    btn.textContent = `Load previous notifications (${remaining})`;
+    btn.disabled = false;
+  }
+
+  function showToast(message, type = "info") {
+    const previous = document.getElementById("su-notif-toast");
+    if (previous) previous.remove();
+
+    const colors = {
+      success: "#16a34a",
+      warning: "#d97706",
+      error: "#dc2626",
+      info: "#2563eb",
+    };
+
+    const toast = document.createElement("div");
+    toast.id = "su-notif-toast";
+    toast.textContent = message;
+    toast.style.cssText =
+      "position:fixed;right:20px;bottom:20px;z-index:1200;padding:10px 14px;border-radius:10px;" +
+      "color:#fff;font-size:.85rem;font-weight:600;box-shadow:0 12px 28px rgba(0,0,0,.35);" +
+      "font-family:'DM Sans',sans-serif;opacity:0;transform:translateY(8px);transition:all .2s ease;";
+    toast.style.background = colors[type] || colors.info;
+    document.body.appendChild(toast);
+
+    requestAnimationFrame(() => {
+      toast.style.opacity = "1";
+      toast.style.transform = "translateY(0)";
+    });
+
+    setTimeout(() => {
+      toast.style.opacity = "0";
+      toast.style.transform = "translateY(8px)";
+      setTimeout(() => toast.remove(), 220);
+    }, TOAST_DURATION_MS);
   }
 
   function handleAction(id, label) {
     const n = notifications.find((x) => x.id === id);
     if (n) n.read = true;
+
+    switch (label) {
+      case "Dismiss":
+        dismiss(id);
+        return;
+      case "Lock Account":
+        showToast("Opening user management queue", "warning");
+        window.location.href = "user_management.html";
+        return;
+      case "Investigate":
+        showToast("Opening security-related records", "info");
+        window.location.href = "user_management.html";
+        return;
+      case "Troubleshoot":
+        showToast("Opening platform settings", "info");
+        window.location.href = "platform_settings.html";
+        return;
+      case "Reassign Manually":
+        showToast("Opening dashboard for manual reassignment", "info");
+        window.location.href = "super_user_dashboard.html";
+        return;
+      case "Open Queue":
+        window.location.href = "user_management.html";
+        return;
+      case "Delegate":
+        showToast("Task delegated", "success");
+        break;
+      case "View Report":
+        window.location.href = "super_user_dashboard.html";
+        return;
+      case "View":
+        window.location.href = "super_user_dashboard.html";
+        return;
+      default:
+        showToast(label + " completed", "success");
+        break;
+    }
+
     renderTabs();
     renderNotifications();
   }
@@ -194,6 +289,7 @@ AppStore.ready.then(() => {
   }
 
   function filterNotifications() {
+    resetPagination();
     renderNotifications();
   }
 
@@ -207,11 +303,9 @@ AppStore.ready.then(() => {
   }
 
   function loadMore() {
-    const btn = document.querySelector(".load-more-btn");
-    if (btn) {
-      btn.textContent = "No more notifications";
-      btn.disabled = true;
-    }
+    const total = getFiltered().length;
+    visibleCount = Math.min(total, visibleCount + PAGE_SIZE);
+    renderNotifications();
   }
 
   // Make functions globally accessible

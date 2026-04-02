@@ -165,6 +165,8 @@ function renderPulse() {
 function renderAdmissions() {
   const admissionList = document.getElementById('admissionRequestsList');
   const skillList = document.getElementById('skillVerificationList');
+  const admissionsMetric = document.getElementById('metric-admissions-count');
+  const verificationsMetric = document.getElementById('metric-verifications-count');
   
   admissionList.innerHTML = '';
   skillList.innerHTML = '';
@@ -206,8 +208,10 @@ function renderAdmissions() {
   });
 
   // Render Skill Verification Cards
+  if (verificationsMetric) verificationsMetric.textContent = String(skillRequests.length);
+
   if (skillRequests.length === 0) {
-    skillList.innerHTML = `<div class="empty-notif">No pending skill verifications.</div>`;
+    skillList.innerHTML = `<div class="admissions-empty">No pending skill verifications.</div>`;
   } else {
     skillRequests.forEach((req, idx) => {
       const card = buildAdmissionCard(req, idx, 'skill', (card) => {
@@ -218,7 +222,9 @@ function renderAdmissions() {
           AppStore.save();
           showToast(`✓ Verified ${req.skill} for ${req.name}`);
           card.remove();
-          if (skillList.children.length === 0) skillList.innerHTML = `<div class="empty-notif">No pending skill verifications.</div>`;
+          const remaining = skillList.querySelectorAll('.applicant-card').length;
+          if (verificationsMetric) verificationsMetric.textContent = String(remaining);
+          if (remaining === 0) skillList.innerHTML = `<div class="admissions-empty">No pending skill verifications.</div>`;
         }
       });
       skillList.appendChild(card);
@@ -227,9 +233,10 @@ function renderAdmissions() {
 
   // --- 3b. New Admission Requests (Unassigned Unit) ---
   const unitRequests = allProvidersTable.filter(p => !p.unit_id);
+  if (admissionsMetric) admissionsMetric.textContent = String(unitRequests.length);
 
   if (unitRequests.length === 0) {
-    admissionList.innerHTML = `<div class="empty-notif">No new admission requests.</div>`;
+    admissionList.innerHTML = `<div class="admissions-empty">No new admission requests.</div>`;
   } else {
     unitRequests.forEach((p, idx) => {
       const initials = getInitials(p.name);
@@ -286,6 +293,14 @@ window.assignUnit = (providerId, btn) => {
       AppStore.save();
       showToast('✓ Provider assigned successfully');
       btn.closest('.applicant-card').remove();
+
+      const admissionList = document.getElementById('admissionRequestsList');
+      const remainingAdmissions = admissionList.querySelectorAll('.applicant-card').length;
+      const admissionsMetric = document.getElementById('metric-admissions-count');
+      if (admissionsMetric) admissionsMetric.textContent = String(remainingAdmissions);
+      if (remainingAdmissions === 0) {
+        admissionList.innerHTML = `<div class="admissions-empty">No new admission requests.</div>`;
+      }
    }
 };
 

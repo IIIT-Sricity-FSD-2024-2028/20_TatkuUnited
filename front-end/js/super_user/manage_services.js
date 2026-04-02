@@ -9,6 +9,22 @@ AppStore.ready.then(() => {
   /* ── 2. Pull tables ── */
   const allServices = AppStore.getTable("services") || [];
   const allCategories = AppStore.getTable("categories") || [];
+  let allServiceContent = AppStore.getTable("service_content") || [];
+
+  function updateNotificationBadges() {
+    const unread = (AppStore.getTable("super_user_notifications") || []).filter(
+      (n) => !n.is_read,
+    ).length;
+    document.querySelectorAll(".notif-badge").forEach((badge) => {
+      if (unread > 0) {
+        badge.textContent = String(unread);
+        badge.style.display = "flex";
+      } else {
+        badge.textContent = "";
+        badge.style.display = "none";
+      }
+    });
+  }
 
   /* ── 3. Transform and enrich services ── */
   function transformServices(servicesList) {
@@ -31,7 +47,10 @@ AppStore.ready.then(() => {
         categoryName: categoryName,
         basePrice: svc.base_price,
         duration: svc.estimated_duration_min,
-        rating: svc.average_rating || 4.73,
+        rating:
+          typeof svc.average_rating === "number" && (svc.rating_count || 0) > 0
+            ? svc.average_rating
+            : null,
         ratingCount: svc.rating_count || 0,
         isAvailable: svc.is_available,
         status: status,
@@ -41,10 +60,15 @@ AppStore.ready.then(() => {
   }
 
   let services = transformServices(allServices);
+  const PAGE_SIZE = 8;
+  let currentPage = 1;
+  let filteredServices = services.slice();
   let tableActionsBound = false;
 
   function refreshServicesFromStore() {
     services = transformServices(AppStore.getTable("services") || []);
+    filteredServices = services.slice();
+    allServiceContent = AppStore.getTable("service_content") || [];
   }
 
   let editingId = null;
@@ -57,16 +81,25 @@ AppStore.ready.then(() => {
 
   function populateCategoryDropdown() {
     const categorySelect = document.getElementById("serviceCategory");
+    const categoryFilter = document.getElementById("categoryFilter");
     if (!categorySelect) return;
 
     // Clear existing options except the first one
     categorySelect.innerHTML = '<option value="">Select a category</option>';
+    if (categoryFilter) {
+      categoryFilter.innerHTML = '<option value="">All Categories</option>';
+    }
 
     allCategories.forEach((cat) => {
       const option = document.createElement("option");
       option.value = cat.category_id;
       option.textContent = cat.category_name;
       categorySelect.appendChild(option);
+
+      if (categoryFilter) {
+        const filterOption = option.cloneNode(true);
+        categoryFilter.appendChild(filterOption);
+      }
     });
   }
 
@@ -89,16 +122,25 @@ AppStore.ready.then(() => {
     if (!tbody) return;
     tbody.innerHTML = "";
 
-    if (data.length === 0) {
+    const totalRows = data.length;
+    const totalPages = Math.max(1, Math.ceil(totalRows / PAGE_SIZE));
+    if (currentPage > totalPages) currentPage = totalPages;
+    if (currentPage < 1) currentPage = 1;
+
+    const start = (currentPage - 1) * PAGE_SIZE;
+    const pageRows = data.slice(start, start + PAGE_SIZE);
+
+    if (totalRows === 0) {
       tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:32px;color:var(--text-faint)">No services found matching your filters.</td></tr>`;
     } else {
-      data.forEach((svc, idx) => {
+      pageRows.forEach((svc, idx) => {
         const tr = document.createElement("tr");
         tr.style.animationDelay = idx * 0.04 + "s";
 
         const statusClass =
           svc.status === "Active" ? "status-active" : "status-inactive";
-        const ratingDisplay = svc.rating ? svc.rating.toFixed(2) : "N/A";
+        const ratingDisplay =
+          typeof svc.rating === "number" ? svc.rating.toFixed(2) : "N/A";
         const toggleClass = svc.isAvailable ? "is-on" : "is-off";
         const toggleTitle = svc.isAvailable
           ? "Deactivate Service"
@@ -137,7 +179,57 @@ AppStore.ready.then(() => {
     const active = data.filter((s) => s.status === "Active").length;
     const tableFooter = document.getElementById("tableFooter");
     if (tableFooter) {
-      tableFooter.innerHTML = `<span>${data.length} service${data.length !== 1 ? "s" : ""} shown</span> · <span class="active-count">${active} active</span>`;
+      const shownEnd = Math.min(start + PAGE_SIZE, totalRows);
+      const shownText =
+        totalRows === 0
+          ? "Showing 0-0 of 0"
+          : `Showing ${start + 1}-${shownEnd} of ${totalRows}`;
+
+      const pageButtons = Array.from({ length: totalPages }, (_, i) => i + 1)
+        .map(
+          (pageNum) =>
+            `<button class="page-btn ${pageNum === currentPage ? "active" : ""}" data-page="${pageNum}" type="button">${pageNum}</button>`,
+        )
+        .join("");
+
+      tableFooter.innerHTML = `
+        <div class="table-meta">
+          <span>${shownText}</span> · <span class="active-count">${active} active</span>
+        </div>
+        <div class="pagination-wrap">
+          <button class="page-arrow" data-page-action="prev" type="button" ${currentPage <= 1 ? "disabled" : ""}>‹</button>
+          <div class="page-numbers">${pageButtons}</div>
+          <button class="page-arrow" data-page-action="next" type="button" ${currentPage >= totalPages ? "disabled" : ""}>›</button>
+        </div>
+      `;
+
+      tableFooter.querySelectorAll(".page-btn").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          currentPage = Number(btn.dataset.page);
+          renderTable(data);
+        });
+      });
+
+      const prevBtn = tableFooter.querySelector('[data-page-action="prev"]');
+      const nextBtn = tableFooter.querySelector('[data-page-action="next"]');
+
+      if (prevBtn) {
+        prevBtn.addEventListener("click", () => {
+          if (currentPage > 1) {
+            currentPage -= 1;
+            renderTable(data);
+          }
+        });
+      }
+
+      if (nextBtn) {
+        nextBtn.addEventListener("click", () => {
+          if (currentPage < totalPages) {
+            currentPage += 1;
+            renderTable(data);
+          }
+        });
+      }
     }
   }
 
@@ -190,28 +282,40 @@ AppStore.ready.then(() => {
   }
 
   /* ── Filters ── */
-  function applyFilters() {
+  function applyFilters(resetPage = true) {
     const search =
       document.getElementById("serviceSearch")?.value.toLowerCase() || "";
-    const filtered = services.filter((svc) => {
+    const categoryFilter = document.getElementById("categoryFilter")?.value || "";
+
+    filteredServices = services.filter((svc) => {
       const matchSearch =
         svc.name.toLowerCase().includes(search) ||
         svc.desc.toLowerCase().includes(search) ||
         svc.categoryName.toLowerCase().includes(search);
-      return matchSearch;
+      
+      const matchCategory = !categoryFilter || svc.categoryId === categoryFilter;
+
+      return matchSearch && matchCategory;
     });
-    renderTable(filtered);
-    updateKPIs(filtered);
+    if (resetPage) currentPage = 1;
+    renderTable(filteredServices);
+    updateKPIs(filteredServices);
   }
 
   function setupEventListeners() {
     const serviceSearch = document.getElementById("serviceSearch");
     if (serviceSearch) serviceSearch.addEventListener("input", applyFilters);
+
+    const categoryFilter = document.getElementById("categoryFilter");
+    if (categoryFilter) categoryFilter.addEventListener("change", applyFilters);
   }
 
   /* ── Add/Edit Modal ── */
   function openModal(svc) {
     editingId = svc ? svc.serviceId : null;
+    // Refresh service_content from store
+    allServiceContent = AppStore.getTable("service_content") || [];
+
     const modalTitle = document.getElementById("modalTitle");
     const serviceName = document.getElementById("serviceName");
     const serviceCategory = document.getElementById("serviceCategory");
@@ -219,6 +323,11 @@ AppStore.ready.then(() => {
     const servicePrice = document.getElementById("servicePrice");
     const serviceDuration = document.getElementById("serviceDuration");
     const serviceAvailable = document.getElementById("serviceAvailable");
+    const serviceHowItWorks = document.getElementById("serviceHowItWorks");
+    const serviceWhatCovered = document.getElementById("serviceWhatCovered");
+    const serviceWhatNotCovered = document.getElementById(
+      "serviceWhatNotCovered",
+    );
     const btnSave = document.getElementById("btnSave");
     const modalOverlay = document.getElementById("modalOverlay");
 
@@ -231,6 +340,39 @@ AppStore.ready.then(() => {
     if (serviceDuration) serviceDuration.value = svc ? svc.duration : "";
     if (serviceAvailable)
       serviceAvailable.checked = svc ? svc.isAvailable : true;
+
+    // Populate service_content fields when editing
+    if (
+      svc &&
+      serviceHowItWorks &&
+      serviceWhatCovered &&
+      serviceWhatNotCovered
+    ) {
+      const content = allServiceContent.find(
+        (c) => c.service_id === svc.serviceId,
+      );
+      if (content) {
+        // Format how_it_works array into textarea format
+        const howItWorksText = content.how_it_works
+          .map((step) => `${step.step_title} | ${step.step_description}`)
+          .join("\n");
+        serviceHowItWorks.value = howItWorksText;
+
+        // Format what_is_covered array into textarea format
+        const whatCoveredText = content.what_is_covered.join("\n");
+        serviceWhatCovered.value = whatCoveredText;
+
+        // Format what_is_not_covered array into textarea format
+        const whatNotCoveredText = content.what_is_not_covered.join("\n");
+        serviceWhatNotCovered.value = whatNotCoveredText;
+      }
+    } else {
+      // Clear service_content fields when adding new service
+      if (serviceHowItWorks) serviceHowItWorks.value = "";
+      if (serviceWhatCovered) serviceWhatCovered.value = "";
+      if (serviceWhatNotCovered) serviceWhatNotCovered.value = "";
+    }
+
     if (btnSave) btnSave.textContent = svc ? "Save Changes" : "Add Service";
     if (modalOverlay) modalOverlay.classList.add("open");
   }
@@ -329,6 +471,12 @@ AppStore.ready.then(() => {
       );
       const isAvailable =
         document.getElementById("serviceAvailable")?.checked || true;
+      const howItWorksText =
+        document.getElementById("serviceHowItWorks")?.value.trim() || "";
+      const whatCoveredText =
+        document.getElementById("serviceWhatCovered")?.value.trim() || "";
+      const whatNotCoveredText =
+        document.getElementById("serviceWhatNotCovered")?.value.trim() || "";
 
       // Validation
       if (!name) {
@@ -363,6 +511,41 @@ AppStore.ready.then(() => {
         return;
       }
 
+      // Helper to parse service content
+      function parseServiceContent(
+        howItWorksText,
+        whatCoveredText,
+        whatNotCoveredText,
+      ) {
+        // Parse how_it_works: "Title | Description" format
+        const howItWorks = howItWorksText
+          .split("\n")
+          .filter((line) => line.trim())
+          .map((line) => {
+            const [title, description] = line.split("|").map((s) => s.trim());
+            return {
+              step_title: title || "",
+              step_description: description || "",
+            };
+          });
+
+        // Parse what_is_covered: one item per line
+        const whatIsCovered = whatCoveredText
+          .split("\n")
+          .filter((line) => line.trim());
+
+        // Parse what_is_not_covered: one item per line
+        const whatIsNotCovered = whatNotCoveredText
+          .split("\n")
+          .filter((line) => line.trim());
+
+        return {
+          how_it_works: howItWorks,
+          what_is_covered: whatIsCovered,
+          what_is_not_covered: whatIsNotCovered,
+        };
+      }
+
       if (editingId) {
         const storeService = servicesTable.find(
           (s) => s.service_id === editingId,
@@ -374,6 +557,27 @@ AppStore.ready.then(() => {
           storeService.base_price = price;
           storeService.estimated_duration_min = duration;
           storeService.is_available = isAvailable;
+
+          // Update or create service_content
+          const serviceContentTable =
+            AppStore.getTable("service_content") || [];
+          let contentRecord = serviceContentTable.find(
+            (c) => c.service_id === editingId,
+          );
+          if (!contentRecord) {
+            contentRecord = { service_id: editingId };
+            serviceContentTable.push(contentRecord);
+          }
+
+          const parsedContent = parseServiceContent(
+            howItWorksText,
+            whatCoveredText,
+            whatNotCoveredText,
+          );
+          contentRecord.how_it_works = parsedContent.how_it_works;
+          contentRecord.what_is_covered = parsedContent.what_is_covered;
+          contentRecord.what_is_not_covered = parsedContent.what_is_not_covered;
+
           AppStore.save();
           refreshServicesFromStore();
           showToast(`✓ "${name}" updated successfully`);
@@ -391,10 +595,25 @@ AppStore.ready.then(() => {
             encodeURIComponent(name),
           base_price: price,
           estimated_duration_min: duration,
-          average_rating: 4.73,
+          average_rating: null,
           rating_count: 0,
           is_available: isAvailable,
         });
+
+        // Create service_content for new service
+        const serviceContentTable = AppStore.getTable("service_content") || [];
+        const parsedContent = parseServiceContent(
+          howItWorksText,
+          whatCoveredText,
+          whatNotCoveredText,
+        );
+        serviceContentTable.push({
+          service_id: nextId,
+          how_it_works: parsedContent.how_it_works,
+          what_is_covered: parsedContent.what_is_covered,
+          what_is_not_covered: parsedContent.what_is_not_covered,
+        });
+
         AppStore.save();
         refreshServicesFromStore();
         showToast(`✓ "${name}" added to service catalog`);
@@ -406,6 +625,7 @@ AppStore.ready.then(() => {
 
   /* ── Initialize on DOM ready ── */
   function init() {
+    updateNotificationBadges();
     populateCategoryDropdown();
     setupEventListeners();
     bindTableActions();

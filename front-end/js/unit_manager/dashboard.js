@@ -95,9 +95,20 @@ function loadDashboardDataFromStore(session) {
   );
   const unitBookingIds = new Set(unitAssignments.map((a) => a.booking_id));
 
+  const allCustomers = AppStore.getTable("customers") || [];
   BOOKINGS = allBookings
     .filter((b) => unitBookingIds.has(b.booking_id))
-    .map((b) => ({ id: b.booking_id, status: b.status }));
+    .map((b) => {
+      const cust = allCustomers.find((c) => c.customer_id === b.customer_id);
+      return {
+        id: b.booking_id,
+        status: b.status,
+        customerName: cust ? cust.full_name : "Guest",
+        serviceName: b.service_name || "Home Service",
+        scheduledAt: b.scheduled_at,
+        price: b.price,
+      };
+    });
 
   TRANSACTIONS = allTxns
     .filter((t) => unitBookingIds.has(t.booking_id))
@@ -605,37 +616,77 @@ window.escalate = function () {
 };
 
 /* ─────────────────────────────────────────────
-   16. BUTTON: "Dismiss"
+   16. TOTAL BOOKINGS MODAL
    ───────────────────────────────────────────── */
 
-document.getElementById("btnDismiss").addEventListener("click", function () {
-  const alertCard = document.getElementById("alertRating");
-  if (!alertCard) return;
-  alertCard.style.transition =
-    "opacity .4s, max-height .4s, margin .4s, padding .4s";
-  alertCard.style.overflow = "hidden";
-  alertCard.style.opacity = "0";
-  alertCard.style.maxHeight = "0";
-  alertCard.style.marginTop = "0";
-  alertCard.style.paddingTop = "0";
-  alertCard.style.paddingBottom = "0";
-  setTimeout(() => alertCard.remove(), 450);
-  showToast("Rating alert dismissed", "info");
-});
+function showBookingsModal() {
+  const tableRows = BOOKINGS.map((b) => {
+    const d = new Date(b.scheduledAt);
+    const dateStr = d.toLocaleDateString("en-IN", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+    });
+    const timeStr = d.toLocaleTimeString("en-IN", {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
 
-/* ─────────────────────────────────────────────
-   17. LOGOUT
-   ───────────────────────────────────────────── */
+    const statusBadgeCls = {
+      PENDING: "background:#fef3c7;color:#92400e;",
+      ASSIGNED: "background:#dcfce7;color:#166534;",
+      IN_PROGRESS: "background:#dbeafe;color:#1e40af;",
+      COMPLETED: "background:#f0fdf4;color:#15803d;",
+      CANCELLED: "background:#fee2e2;color:#991b1b;",
+    }[b.status.toUpperCase()] || "background:#f1f5f9;color:#475569;";
 
-const logoutBtn = document.getElementById("logout-btn");
-if (logoutBtn) {
-  logoutBtn.addEventListener("click", (e) => {
-    if (!confirm("Are you sure you want to logout?")) e.preventDefault();
-  });
+    return `
+      <tr style="border-bottom:1px solid var(--border,#334155)">
+        <td style="padding:12px 8px;font-size:0.8rem;color:var(--text-primary,#f1f5f9);font-family:monospace">${b.id}</td>
+        <td style="padding:12px 8px;font-size:0.85rem;color:var(--text-primary,#f1f5f9);font-weight:500">${b.customerName}</td>
+        <td style="padding:12px 8px;font-size:0.85rem;color:var(--text-secondary,#94a3b8)">${b.serviceName}</td>
+        <td style="padding:12px 8px;font-size:0.8rem;color:var(--text-secondary,#94a3b8)">${dateStr}<br/>${timeStr}</td>
+        <td style="padding:12px 8px;font-size:0.85rem;color:var(--text-primary,#f1f5f9);font-weight:600">${rupee(b.price)}</td>
+        <td style="padding:12px 8px;font-size:0.75rem">
+          <span style="padding:4px 8px;border-radius:6px;font-weight:600;${statusBadgeCls}">${b.status}</span>
+        </td>
+      </tr>
+    `;
+  }).join("");
+
+  const bodyHtml = `
+    <div style="overflow-x:auto;max-height:400px;margin-top:10px;">
+      <table style="width:100%;border-collapse:collapse;text-align:left;">
+        <thead>
+          <tr style="border-bottom:2px solid var(--border,#334155)">
+            <th style="padding:8px;font-size:0.75rem;color:var(--text-secondary,#94a3b8);text-transform:uppercase">ID</th>
+            <th style="padding:8px;font-size:0.75rem;color:var(--text-secondary,#94a3b8);text-transform:uppercase">Customer</th>
+            <th style="padding:8px;font-size:0.75rem;color:var(--text-secondary,#94a3b8);text-transform:uppercase">Service</th>
+            <th style="padding:8px;font-size:0.75rem;color:var(--text-secondary,#94a3b8);text-transform:uppercase">Scheduled</th>
+            <th style="padding:8px;font-size:0.75rem;color:var(--text-secondary,#94a3b8);text-transform:uppercase">Price</th>
+            <th style="padding:8px;font-size:0.75rem;color:var(--text-secondary,#94a3b8);text-transform:uppercase">Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${tableRows || '<tr><td colspan="6" style="padding:20px;text-align:center;color:var(--text-secondary,#94a3b8)">No bookings found</td></tr>'}
+        </tbody>
+      </table>
+    </div>
+  `;
+
+  // Briefly widen modal for the table
+  buildModal();
+  modalEl.style.width = "min(640px, 95vw)";
+  
+  openModal(
+    `📋 Customer Bookings (${BOOKINGS.length})`,
+    bodyHtml,
+    `<button onclick="modalEl.style.width='min(420px, 90vw)';closeModal()" style="padding:8px 16px;border-radius:8px;border:1px solid var(--border,#334155);background:none;color:var(--text-secondary,#94a3b8);cursor:pointer">Close</button>`
+  );
 }
 
 /* ─────────────────────────────────────────────
-   18. INITIALISE
+  17. INITIALISE
    ───────────────────────────────────────────── */
 
 AppStore.ready.then(() => {
@@ -646,4 +697,10 @@ AppStore.ready.then(() => {
   renderStatCards(false);
   renderCapacity();
   renderBarChart(CHART_DATA_ALL);
+
+  // Bind Total Bookings Card
+  const totalBookingsCard = document.getElementById("totalBookingsCard");
+  if (totalBookingsCard) {
+    totalBookingsCard.addEventListener("click", showBookingsModal);
+  }
 });

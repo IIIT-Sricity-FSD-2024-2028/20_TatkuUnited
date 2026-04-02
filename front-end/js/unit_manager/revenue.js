@@ -5,7 +5,7 @@
  * No DOMContentLoaded wrapper needed.
  *
  * Features:
- *  - Stat cards driven from real transaction mock data
+ *  - Stat cards driven from live transaction data
  *  - Revenue Trend chart (pure canvas, deferred one tick for layout)
  *  - Transaction table with pagination
  *  - ⋮ (details) button shows a slide-in detail panel per transaction
@@ -22,8 +22,8 @@ let ALL_TRANSACTIONS = [];
 /**
  * Use the LATEST transaction date as the "current date" reference.
  * This ensures "Last 30 Days" always produces meaningful results
- * regardless of when the app is opened relative to the mock data.
- * (The mock data spans 2024–2026; using real `new Date()` would
+ * regardless of when the app is opened relative to stored history.
+ * (The seeded history spans 2024–2026; using real `new Date()` would
  *  return 0 results since most entries are far in the past or future.)
  */
 let LATEST_TXN_DATE = new Date();
@@ -40,12 +40,12 @@ const BTN30_SVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" st
    2. STATE
    ───────────────────────────────────────────── */
 
-const FEE_RATE = 0.07;
 const PER_PAGE = 5;
 
 let activeTxns = [];
 let txnPage = 1;
 let is30DayMode = false;
+let unitGMVData = {}; // Track GMV and unit manager earnings
 
 function mapMethod(m) {
   return (
@@ -56,33 +56,36 @@ function mapMethod(m) {
 }
 
 function loadRevenueDataFromStore(session) {
-  const allAssignments = AppStore.getTable("job_assignments") || [];
-  const allProviders = AppStore.getTable("service_providers") || [];
+  const allLedger = AppStore.getTable("revenue_ledger") || [];
   const allTxns = AppStore.getTable("transactions") || [];
 
-  const unitProviderIds = new Set(
-    allProviders
-      .filter((p) => p.unit_id === session.unitId)
-      .map((p) => p.service_provider_id),
+  const unitId = session.unitId;
+
+  // Filter ledger entries for this unit manager
+  const unitLedgerEntries = allLedger.filter(
+    (entry) => entry.role === "unit_manager" && entry.unit_id === unitId,
   );
 
-  const unitBookingIds = new Set(
-    allAssignments
-      .filter((a) => unitProviderIds.has(a.service_provider_id))
-      .map((a) => a.booking_id),
-  );
+  // Build transaction map
+  const txnById = new Map(allTxns.map((t) => [t.transaction_id, t]));
 
-  ALL_TRANSACTIONS = allTxns
-    .filter((t) => unitBookingIds.has(t.booking_id))
-    .map((t) => ({
-      id: t.transaction_id,
-      method: mapMethod(t.payment_method),
-      status: t.payment_status,
-      amount: Number(t.amount || 0),
-      refund: Number(t.refund_amount || 0),
-      date: t.verified_at || t.transaction_at || new Date().toISOString(),
-      booking_id: t.booking_id,
-    }));
+  // Convert ledger entries to transaction view
+  ALL_TRANSACTIONS = unitLedgerEntries.map((ledger_entry) => {
+    const txn = txnById.get(ledger_entry.transaction_id);
+    const status = "SUCCESS"; // Ledger entries are only for successful transactions
+
+    return {
+      id: ledger_entry.transaction_id,
+      method: txn ? mapMethod(txn.payment_method) : "Unknown",
+      status,
+      amount: Number(txn ? txn.amount || 0 : 0), // Gross amount
+      unitManagerCut: Number(ledger_entry.amount || 0), // 7% cut for unit manager
+      refund: 0,
+      date: ledger_entry.created_at,
+      booking_id: txn ? txn.booking_id : "-",
+      ledgerId: ledger_entry.ledger_id,
+    };
+  });
 
   if (ALL_TRANSACTIONS.length) {
     LATEST_TXN_DATE = new Date(
@@ -91,6 +94,16 @@ function loadRevenueDataFromStore(session) {
   }
 
   activeTxns = [...ALL_TRANSACTIONS];
+
+  // Calculate unit-level GMV
+  unitGMVData = {
+    totalGMV: ALL_TRANSACTIONS.reduce((sum, t) => sum + t.amount, 0),
+    unitManagerCut: ALL_TRANSACTIONS.reduce(
+      (sum, t) => sum + t.unitManagerCut,
+      0,
+    ),
+    transactionCount: ALL_TRANSACTIONS.length,
+  };
 }
 
 /* ─────────────────────────────────────────────
@@ -137,26 +150,24 @@ function getSuccessTxns(txns) {
    ───────────────────────────────────────────── */
 
 function renderStatCards() {
-  const success = getSuccessTxns(activeTxns);
-  const totalRevenue = success.reduce((s, t) => s + t.amount, 0);
-  const platformFees = totalRevenue * FEE_RATE;
-  const netEarnings = totalRevenue - platformFees;
+  const success = activeTxns.filter((t) => t.status === "SUCCESS");
+  const totalGMV = unitGMVData.totalGMV || 0;
+  const unitManagerCut = unitGMVData.unitManagerCut || 0;
   const count = success.length;
 
-  document.getElementById("statTotalRevenue").textContent = rupee(totalRevenue);
-  document.getElementById("statTotalFees").textContent = rupee(platformFees);
-  document.getElementById("statNetEarnings").textContent = rupee(netEarnings);
+  document.getElementById("statTotalRevenue").textContent = rupee(totalGMV);
+  document.getElementById("statTotalFees").textContent = rupee(unitManagerCut);
+  document.getElementById("statNetEarnings").textContent = rupee(
+    totalGMV - unitManagerCut,
+  );
 
   document.getElementById("statRevenueBadge").textContent =
-    count > 0
-      ? `\u2191 ${count} paid booking${count !== 1 ? "s" : ""}`
-      : "No data";
+    count > 0 ? `\u2191 ${count} booking${count !== 1 ? "s" : ""}` : "No data";
 
-  document.getElementById("statFeesBadge").textContent =
-    `${(FEE_RATE * 100).toFixed(0)}% platform cut`;
+  document.getElementById("statFeesBadge").textContent = `7% unit manager cut`;
   document.getElementById("statEarningsBadge").textContent =
-    totalRevenue > 0
-      ? `\u2191 ${((netEarnings / totalRevenue) * 100).toFixed(1)}% margin`
+    totalGMV > 0
+      ? `\u2191 ${((unitManagerCut / totalGMV) * 100).toFixed(1)}% to unit`
       : "\u2014";
 }
 
@@ -168,10 +179,12 @@ function renderStatCards() {
 
 function buildMonthlyData(txns) {
   const map = {};
-  getSuccessTxns(txns).forEach((t) => {
-    const d = new Date(t.date);
-    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
-    map[key] = (map[key] || 0) + t.amount;
+  txns.forEach((t) => {
+    if (t.status === "SUCCESS") {
+      const d = new Date(t.date);
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+      map[key] = (map[key] || 0) + t.amount; // GMV amount
+    }
   });
   return Object.entries(map)
     .sort(([a], [b]) => a.localeCompare(b))
@@ -332,23 +345,16 @@ const STATUS_LBL = {
 function buildRow(t) {
   const tr = document.createElement("tr");
 
-  const amountCell =
-    t.status === "REFUNDED"
-      ? `<span style="color:#f59e0b">${rupee(t.refund)} refunded</span>`
-      : `<strong>${rupee(t.amount)}</strong>`;
-
-  const feeCell =
-    t.status === "SUCCESS"
-      ? `<span class="fee-neg">-${rupee(t.amount * FEE_RATE)}</span>`
-      : t.status === "REFUNDED"
-        ? `<span style="color:#16a34a">+${rupee(t.refund)}</span>`
-        : `<span style="opacity:.4">—</span>`;
+  const grossAmount = `<strong>${rupee(t.amount)}</strong>`;
+  const unitCut = `<span class="fee-neg">${rupee(t.unitManagerCut)}</span>`;
+  const providerShare = `<span style="color:#3b82f6">${rupee(t.amount - t.unitManagerCut)}</span>`;
 
   tr.innerHTML = `
     <td><span class="txn-id">${t.id}</span></td>
     <td>${niceDate(t.date)}</td>
-    <td>${amountCell}</td>
-    <td>${feeCell}</td>
+    <td>${grossAmount}</td>
+    <td>${unitCut}</td>
+    <td>${providerShare}</td>
     <td><span class="status-pill ${STATUS_CSS[t.status] || "pending"}">${STATUS_LBL[t.status] || t.status}</span></td>
     <td><button class="more-btn" data-id="${t.id}" title="View details">&#8942;</button></td>
   `;
@@ -371,7 +377,7 @@ function renderTransactions() {
   tbody.innerHTML = "";
 
   if (slice.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:30px;opacity:.5">
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:30px;opacity:.5">
       No transactions found for this period.</td></tr>`;
   } else {
     const frag = document.createDocumentFragment();
@@ -482,12 +488,11 @@ function showDetail(t) {
     FAILED: "#dc2626",
   };
 
-  const displayAmount =
-    t.status === "REFUNDED" ? rupee(t.refund) + " (refunded)" : rupee(t.amount);
-
-  const fee = t.status === "SUCCESS" ? rupee(t.amount * FEE_RATE) : "—";
-  const net =
-    t.status === "SUCCESS" ? rupee(t.amount - t.amount * FEE_RATE) : "—";
+  const grossAmount = rupee(t.amount);
+  const unitManagerCut = rupee(t.unitManagerCut);
+  const providerShare = rupee(t.amount - t.unitManagerCut);
+  const collectiveManagerShare = rupee(t.amount * 0.04); // 4%
+  const superUserShare = rupee(t.amount * 0.11); // 11%
 
   function row(label, value, valueStyle = "") {
     return `
@@ -500,7 +505,7 @@ function showDetail(t) {
 
   content.innerHTML = `
     <div style="text-align:center;padding:16px 0 24px">
-      <div style="font-size:1.6rem;font-weight:700;color:var(--text-primary,#f1f5f9)">${displayAmount}</div>
+      <div style="font-size:1.6rem;font-weight:700;color:var(--text-primary,#f1f5f9)">${grossAmount}</div>
       <span style="display:inline-block;margin-top:8px;padding:3px 12px;border-radius:999px;
         font-size:.75rem;font-weight:600;background:${statusColor[t.status] || "#94a3b8"}22;
         color:${statusColor[t.status] || "#94a3b8"}">${STATUS_LBL[t.status] || t.status}</span>
@@ -509,10 +514,13 @@ function showDetail(t) {
     ${row("Booking Ref", t.booking_id)}
     ${row("Date & Time", niceDateTime(t.date))}
     ${row("Payment Method", t.method)}
-    ${row("Gross Amount", t.status !== "REFUNDED" ? rupee(t.amount) : "—")}
-    ${row("Platform Fee", fee, "color:#f59e0b")}
-    ${row("Net Earnings", net, "color:#16a34a")}
-    ${t.status === "REFUNDED" ? row("Refund Amount", rupee(t.refund), "color:#3b82f6") : ""}
+    <div style="margin-top:24px;padding:12px;background:rgba(37,99,235,0.1);border-radius:6px">
+      <div style="font-size:.75rem;font-weight:600;text-transform:uppercase;color:#64748b;margin-bottom:12px">Revenue Split</div>
+      ${row("Provider (78%)", rupee(t.amount * 0.78), "color:#3b82f6")}
+      ${row("Unit Manager (7%)", unitManagerCut, "color:#10b981")}
+      ${row("Collective Manager (4%)", collectiveManagerShare, "color:#f59e0b")}
+      ${row("Super User (11%)", superUserShare, "color:#ec4899")}
+    </div>
   `;
 
   document.getElementById("detailBackdrop").style.display = "block";
@@ -527,12 +535,6 @@ document.getElementById("btn30Days").addEventListener("click", function () {
   is30DayMode = !is30DayMode;
 
   if (is30DayMode) {
-    /*
-     * Cutoff = LATEST_TXN_DATE − 30 days.
-     * Using the latest transaction date (Apr 14 2026) as the reference
-     * means the window is Mar 15 → Apr 14 2026, which captures
-     * TXN004, TXN005, TXN007 — real data, not an empty set.
-     */
     const cutoff = new Date(LATEST_TXN_DATE);
     cutoff.setDate(cutoff.getDate() - 30);
     activeTxns = ALL_TRANSACTIONS.filter((t) => new Date(t.date) >= cutoff);
@@ -543,6 +545,13 @@ document.getElementById("btn30Days").addEventListener("click", function () {
     this.innerHTML = BTN30_SVG + " Last 30 Days";
     this.style.outline = "";
   }
+
+  // Recalculate GMV data for active transactions
+  unitGMVData = {
+    totalGMV: activeTxns.reduce((sum, t) => sum + t.amount, 0),
+    unitManagerCut: activeTxns.reduce((sum, t) => sum + t.unitManagerCut, 0),
+    transactionCount: activeTxns.length,
+  };
 
   txnPage = 1;
   renderStatCards();

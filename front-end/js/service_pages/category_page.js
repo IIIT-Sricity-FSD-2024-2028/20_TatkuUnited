@@ -75,7 +75,7 @@
       ? ratings.reduce(function (a, b) {
           return a + b;
         }, 0) / ratings.length
-      : 4.6;
+      : null;
 
     return {
       avgRating: avgRating,
@@ -84,18 +84,20 @@
   }
 
   function renderSubServices(grid, services, selectedServiceId) {
-    var limited = services.slice(0, 4);
-    grid.innerHTML = limited
+    grid.innerHTML = services
       .map(function (service, index) {
         var active = selectedServiceId
           ? service.service_id === selectedServiceId
           : index === 0;
+        var isUnavailable = service.is_available === false;
+        var unavailClass = isUnavailable ? " unavailable" : "";
         return (
           '<button class="sub-service-card' +
           (active ? " active" : "") +
+          unavailClass +
           '" data-service="' +
           service.service_id +
-          '">' +
+          '" style="position:relative">' +
           '<div class="sub-service-img">' +
           '<img src="' +
           service.image_url +
@@ -112,6 +114,23 @@
       .join("");
   }
 
+  async function loadData() {
+    if (
+      typeof AppStore !== "undefined" &&
+      AppStore.data &&
+      Array.isArray(AppStore.data.services)
+    ) {
+      return AppStore.data;
+    }
+
+    var response = await fetch(MOCK_DATA_PATH);
+    if (!response.ok) {
+      throw new Error("Unable to load mock data");
+    }
+
+    return response.json();
+  }
+
   function createBulletPoints(service, faqsByService) {
     var faqs = faqsByService.get(service.service_id) || [];
     var bullets = [];
@@ -126,6 +145,31 @@
         ".",
     );
     return bullets.slice(0, 3);
+  }
+
+  function renderCategoryEmptyState(subServicesGrid, exploreMain, message) {
+    if (subServicesGrid) {
+      subServicesGrid.innerHTML =
+        '<div class="empty-state-card empty-state-wide">' +
+        '<h3 class="empty-state-title">No services exist</h3>' +
+        '<p class="empty-state-copy">' +
+        message +
+        "</p>" +
+        '<a href="service_discovery.html" class="empty-state-link">Back to services</a>' +
+        "</div>";
+    }
+
+    if (exploreMain) {
+      exploreMain.innerHTML =
+        '<h2 class="section-heading">Explore services</h2>' +
+        '<div class="empty-state-card">' +
+        '<h3 class="empty-state-title">No services exist</h3>' +
+        '<p class="empty-state-copy">' +
+        message +
+        "</p>" +
+        '<a href="service_discovery.html" class="empty-state-link">Browse all services</a>' +
+        "</div>";
+    }
   }
 
   function renderExploreList(exploreMain, services, faqsByService, data) {
@@ -149,16 +193,29 @@
     var items = services
       .map(function (service) {
         var stats = statsPerService.get(service.service_id) || { ratings: [] };
-        var serviceRating = stats.ratings.length
+        var hasRating = stats.ratings.length > 0;
+        var serviceRating = hasRating
           ? stats.ratings.reduce(function (a, b) {
               return a + b;
             }, 0) / stats.ratings.length
-          : 4.6;
-        var serviceRatingFloor = Math.floor(serviceRating);
+          : null;
+        var serviceRatingFloor = hasRating ? Math.floor(serviceRating) : 0;
+        var serviceRatingText = hasRating ? serviceRating.toFixed(1) : "N/A";
+        var reviewCountText = hasRating
+          ? stats.ratings.length + " reviews"
+          : "N/A";
 
         var bullets = createBulletPoints(service, faqsByService);
+        var isUnavailable = service.is_available === false;
+        var unavailClass = isUnavailable ? " unavailable" : "";
+        var bookBtnAttr = isUnavailable
+          ? ' style="background:#94a3b8;cursor:not-allowed;pointer-events:none"'
+          : "";
+        var bookBtnText = isUnavailable ? "Unavailable" : "Add to Cart";
         return (
-          '<div class="explore-item" id="service-' +
+          '<div class="explore-item' +
+          unavailClass +
+          '" id="service-' +
           service.service_id +
           '" data-rating="' +
           serviceRatingFloor +
@@ -172,11 +229,11 @@
           '<svg viewBox="0 0 20 20" fill="#f5a623"><path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"/></svg>' +
           "</span>" +
           '<span class="item-rating">' +
-          serviceRating.toFixed(1) +
+          serviceRatingText +
           "</span>" +
           '<span class="item-reviews">(' +
-          stats.ratings.length +
-          " reviews)</span>" +
+          reviewCountText +
+          ")</span>" +
           "</div>" +
           '<div class="item-price-row">' +
           '<span class="item-price">' +
@@ -206,7 +263,11 @@
           '" alt="' +
           service.service_name +
           '" /></div>' +
-          '<button class="btn-book-item">Add to Cart</button>' +
+          '<button class="btn-book-item"' +
+          bookBtnAttr +
+          ">" +
+          bookBtnText +
+          "</button>" +
           "</div>" +
           "</div>"
         );
@@ -238,48 +299,51 @@
       btn.addEventListener("click", function (e) {
         e.stopPropagation();
         e.preventDefault();
-        var session = typeof Auth !== 'undefined' ? Auth.getCurrentUser() : null;
-        if (session && session.role === 'customer') {
-           var item = btn.closest('.explore-item');
-           var svcName = item ? item.querySelector('h3').textContent : '';
-           var price = item ? item.querySelector('.item-price').textContent : '';
-           window.location.href = '../customer/schedule.html?service=' + encodeURIComponent(svcName) + '&price=' + encodeURIComponent(price);
-           return;
+        var session =
+          typeof Auth !== "undefined" ? Auth.getCurrentUser() : null;
+        if (session && session.role === "customer") {
+          var item = btn.closest(".explore-item");
+          var svcName = item ? item.querySelector("h3").textContent : "";
+          var price = item ? item.querySelector(".item-price").textContent : "";
+          window.location.href =
+            "../customer/schedule.html?service=" +
+            encodeURIComponent(svcName) +
+            "&price=" +
+            encodeURIComponent(price);
+          return;
         }
-        var orig = btn.textContent;
-        btn.textContent = "Booked!";
-        btn.style.background = "#15803d";
-        btn.disabled = true;
-        setTimeout(function () {
-          btn.textContent = orig;
-          btn.style.background = "";
-          btn.disabled = false;
-        }, 1800);
+        var next = encodeURIComponent(
+          window.location.pathname +
+            window.location.search +
+            window.location.hash,
+        );
+        window.location.href =
+          "/front-end/html/auth_pages/login.html?next=" + next;
       });
     });
   }
 
   function initAuthNav() {
-    if (typeof AppStore !== 'undefined' && typeof Auth !== 'undefined') {
-      AppStore.ready.then(function() {
+    if (typeof AppStore !== "undefined" && typeof Auth !== "undefined") {
+      AppStore.ready.then(function () {
         var session = Auth.getCurrentUser();
-        if (session && session.role === 'customer') {
-          var navAuth = document.querySelector('.nav-auth');
+        if (session && session.role === "customer") {
+          var navAuth = document.querySelector(".nav-auth");
           if (navAuth) {
-            navAuth.innerHTML = 
-              '<a href="../customer/cart.html" style="margin-right: 20px; text-decoration: none; color: #1e293b; font-weight: 500; display:flex; align-items:center; gap:6px;"><svg viewBox="0 0 24 24" style="width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2;"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>Cart</a>' +
-              '<a href="../customer/home.html" style="background: var(--primary, #1e3a8a); color: #fff; padding: 0.5rem 1.25rem; border-radius: 6px; font-weight: 500; text-decoration: none; display:flex; align-items:center; gap:8px;"><svg viewBox="0 0 24 24" style="width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Dashboard</a>';
+            navAuth.innerHTML =
+              '<a href="../customer/cart.html" class="cart-btn" title="Cart"><svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" /><line x1="3" y1="6" x2="21" y2="6" /><path d="M16 10a4 4 0 01-8 0" /></svg></a>' +
+              '<a href="../customer/home.html" class="user-avatar-btn" title="Dashboard"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" /><circle cx="12" cy="7" r="4" /></svg></a>';
           }
-          var navLinks = document.querySelector('.nav-links');
+          var navLinks = document.querySelector(".nav-links");
           if (navLinks) {
-            navLinks.innerHTML = 
+            navLinks.innerHTML =
               '<li><a href="../customer/home.html">Home</a></li>' +
               '<li><a href="service_discovery.html">Services</a></li>' +
               '<li><a href="../customer/bookings.html">Bookings</a></li>';
           }
-          var mobileMenu = document.querySelector('#mobileMenu ul');
+          var mobileMenu = document.querySelector("#mobileMenu ul");
           if (mobileMenu) {
-            mobileMenu.innerHTML = 
+            mobileMenu.innerHTML =
               '<li><a href="../customer/home.html" style="color:var(--primary); font-weight:600;">Dashboard</a></li>' +
               '<li><a href="service_discovery.html">Services</a></li>' +
               '<li><a href="../customer/cart.html">Cart</a></li>';
@@ -353,12 +417,7 @@
   }
 
   async function initDynamicContent() {
-    var response = await fetch(MOCK_DATA_PATH);
-    if (!response.ok) {
-      throw new Error("Unable to load mock data");
-    }
-
-    var data = await response.json();
+    var data = await loadData();
     var categories = (data.categories || []).filter(function (category) {
       return category.is_available;
     });
@@ -368,24 +427,49 @@
       }),
     );
 
+    var requestedCategoryId = getQueryParam("categoryId");
     var selectedCategoryId =
-      getQueryParam("categoryId") ||
-      (categories[0] && categories[0].category_id);
-    if (!categoryById.has(selectedCategoryId) && categories[0]) {
-      selectedCategoryId = categories[0].category_id;
-    }
+      requestedCategoryId || (categories[0] && categories[0].category_id);
+    var category = selectedCategoryId
+      ? categoryById.get(selectedCategoryId)
+      : null;
 
-    var servicesInCategory = (data.services || []).filter(function (service) {
-      return service.is_available && service.category_id === selectedCategoryId;
-    });
+    if (!category) {
+      var unavailableTitle = document.querySelector(".cat-title");
+      var unavailableMeta = document.querySelector(".cat-meta");
+      var unavailableImage = document.querySelector(".cat-hero-img-wrap img");
+      var unavailableGrid = document.getElementById("subServicesGrid");
+      var unavailableExplore = document.querySelector(".explore-main");
 
-    if (!servicesInCategory.length) {
+      document.title = "Category unavailable – Tatku United";
+      if (unavailableTitle) {
+        unavailableTitle.textContent = "Category unavailable";
+      }
+      if (unavailableMeta) {
+        unavailableMeta.innerHTML =
+          '<span class="cat-bookings">This category is not available right now.</span>';
+      }
+      if (unavailableImage) {
+        unavailableImage.src = "https://placehold.co/700x420?text=Unavailable";
+        unavailableImage.alt = "Category unavailable";
+      }
+      renderCategoryEmptyState(
+        unavailableGrid,
+        unavailableExplore,
+        "This category cannot be loaded right now. Please choose another service category.",
+      );
+      initRatingFilter();
+      initExploreReveal();
       return;
     }
 
+    var servicesInCategory = (data.services || []).filter(function (service) {
+      return service.category_id === selectedCategoryId;
+    });
+
     var selectedServiceId =
-      getQueryParam("serviceId") || servicesInCategory[0].service_id;
-    var category = categoryById.get(selectedCategoryId);
+      getQueryParam("serviceId") ||
+      (servicesInCategory[0] && servicesInCategory[0].service_id);
     var stats = calcCategoryStats(data, servicesInCategory);
     var faqsByService = new Map();
 
@@ -414,14 +498,30 @@
       catTitle.textContent = category.category_name;
     }
     if (catRating) {
-      catRating.textContent = stats.avgRating.toFixed(2);
+      catRating.textContent =
+        typeof stats.avgRating === "number"
+          ? stats.avgRating.toFixed(2)
+          : "N/A";
     }
     if (catBookings) {
-      catBookings.textContent = "(" + stats.bookingsCount + " bookings)";
+      catBookings.textContent = servicesInCategory.length
+        ? "(" + stats.bookingsCount + " bookings)"
+        : "(No services yet)";
     }
     if (heroImage) {
       heroImage.src = category.image_url;
       heroImage.alt = category.category_name;
+    }
+
+    if (!servicesInCategory.length) {
+      renderCategoryEmptyState(
+        subServicesGrid,
+        exploreMain,
+        "No services exist in this category yet.",
+      );
+      initRatingFilter();
+      initExploreReveal();
+      return;
     }
 
     if (subServicesGrid) {
@@ -439,7 +539,16 @@
 
   initHamburger();
   initAuthNav();
-  initDynamicContent().catch(function (error) {
-    console.error(error);
-  });
+
+  if (typeof AppStore !== "undefined" && AppStore.ready) {
+    AppStore.ready.then(function () {
+      initDynamicContent().catch(function (error) {
+        console.error(error);
+      });
+    });
+  } else {
+    initDynamicContent().catch(function (error) {
+      console.error(error);
+    });
+  }
 })();

@@ -199,7 +199,7 @@
               <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
               <path d="M13.73 21a2 2 0 0 1-3.46 0" />
             </svg>
-            <span class="notif-badge">3</span>
+            <span class="notif-badge"></span>
           </a>
           <div class="topbar-user">
             <div class="user-info">
@@ -273,9 +273,9 @@
             </div>
           </div>
           <div class="filter-group">
-            <label class="filter-label">CITY</label>
+            <label class="filter-label">SECTOR</label>
             <select class="filter-select" id="city-filter">
-              <option>All Cities</option>
+              <option>All Sectors</option>
             </select>
           </div>
           <div class="filter-group">
@@ -285,15 +285,33 @@
             </select>
           </div>
           <div class="filter-group">
-            <label class="filter-label">SKILL</label>
-            <select class="filter-select" id="skill-filter">
-              <option>All Skills</option>
+            <label class="filter-label">COLLECTIVE MANAGER</label>
+            <select class="filter-select" id="collective-manager-filter">
+              <option>All Managers</option>
             </select>
           </div>
         </div>
 
         <!-- Collectives Grid -->
         <div class="collectives-grid" id="collectives-grid"></div>
+
+        <!-- Collectives Pagination -->
+        <div class="table-footer" style="margin-bottom: 2rem; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 1rem 1.5rem;">
+          <span class="table-info" id="collectives-table-info">Showing 0-0 of 0 collectives</span>
+          <div class="pagination" id="collectives-pagination-container">
+            <button class="page-arrow" id="collectives-prev-page" type="button">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="15 18 9 12 15 6" />
+              </svg>
+            </button>
+            <div id="collectives-pages" class="page-numbers" style="display: flex; gap: 0.5rem;"></div>
+            <button class="page-arrow" id="collectives-next-page" type="button">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="9 18 15 12 9 6" />
+              </svg>
+            </button>
+          </div>
+        </div>
 
         <!-- Provider Management Table -->
         <div class="section-card">
@@ -402,7 +420,7 @@
               <small class="field-error" id="collective-sector-error"></small>
             </div>
 
-            <div class="form-field form-field--full" style="position: relative">
+            <div class="form-field form-field--full" style="position: relative;">
               <label for="collective-manager-input">Collective Manager</label>
               <input
                 id="collective-manager-input"
@@ -410,24 +428,7 @@
                 placeholder="Search unassigned managers..."
                 autocomplete="off"
               />
-              <div
-                id="collective-manager-dropdown"
-                class="cm-dropdown-list"
-                style="
-                  display: none;
-                  position: absolute;
-                  top: 100%;
-                  left: 0;
-                  right: 0;
-                  background: #fff;
-                  border: 1px solid #e5e7eb;
-                  border-radius: 4px;
-                  z-index: 10;
-                  max-height: 150px;
-                  overflow-y: auto;
-                  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-                "
-              ></div>
+              <div id="collective-manager-dropdown" class="cm-dropdown-list" style="display: none; position: absolute; top: 100%; left: 0; right: 0; background: #fff; border: 1px solid #e5e7eb; border-radius: 4px; z-index: 10; max-height: 150px; overflow-y: auto; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);"></div>
               <small class="field-error" id="collective-manager-error"></small>
             </div>
           </div>
@@ -602,7 +603,7 @@
         </div>
         <form id="reassign-cm-form" novalidate>
           <div class="form-grid">
-            <div class="form-field form-field--full" style="position: relative">
+            <div class="form-field form-field--full" style="position: relative;">
               <label for="reassign-cm-input">Search Collective Manager</label>
               <input
                 id="reassign-cm-input"
@@ -610,24 +611,7 @@
                 placeholder="Search available managers..."
                 autocomplete="off"
               />
-              <div
-                id="reassign-cm-dropdown"
-                class="cm-dropdown-list"
-                style="
-                  display: none;
-                  position: absolute;
-                  top: 100%;
-                  left: 0;
-                  right: 0;
-                  background: #fff;
-                  border: 1px solid #e5e7eb;
-                  border-radius: 4px;
-                  z-index: 10;
-                  max-height: 150px;
-                  overflow-y: auto;
-                  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-                "
-              ></div>
+              <div id="reassign-cm-dropdown" class="cm-dropdown-list" style="display: none; position: absolute; top: 100%; left: 0; right: 0; background: #fff; border: 1px solid #e5e7eb; border-radius: 4px; z-index: 10; max-height: 150px; overflow-y: auto; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);"></div>
               <small class="field-error" id="reassign-cm-error"></small>
             </div>
           </div>
@@ -639,11 +623,7 @@
             >
               Cancel
             </button>
-            <button
-              type="submit"
-              class="btn-primary"
-              id="reassign-cm-submit-btn"
-            >
+            <button type="submit" class="btn-primary" id="reassign-cm-submit-btn">
               Reassign
             </button>
           </div>
@@ -671,7 +651,7 @@
         </div>
         <form id="edit-collective-form" novalidate>
           <div class="form-grid">
-            <div class="form-field form-field--full" style="position: relative">
+            <div class="form-field form-field--full" style="position: relative;">
               <label for="edit-collective-cm-input">Collective Manager</label>
               <input
                 id="edit-collective-cm-input"
@@ -679,24 +659,7 @@
                 placeholder="Search available managers..."
                 autocomplete="off"
               />
-              <div
-                id="edit-collective-cm-dropdown"
-                class="cm-dropdown-list"
-                style="
-                  display: none;
-                  position: absolute;
-                  top: 100%;
-                  left: 0;
-                  right: 0;
-                  background: #fff;
-                  border: 1px solid #e5e7eb;
-                  border-radius: 4px;
-                  z-index: 10;
-                  max-height: 150px;
-                  overflow-y: auto;
-                  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-                "
-              ></div>
+              <div id="edit-collective-cm-dropdown" class="cm-dropdown-list" style="display: none; position: absolute; top: 100%; left: 0; right: 0; background: #fff; border: 1px solid #e5e7eb; border-radius: 4px; z-index: 10; max-height: 150px; overflow-y: auto; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);"></div>
               <small class="field-error" id="edit-collective-cm-error"></small>
             </div>
 
@@ -704,15 +667,8 @@
               <label for="edit-collective-sector-select"
                 >Sectors (select one or more)</label
               >
-              <select
-                id="edit-collective-sector-select"
-                multiple
-                size="6"
-              ></select>
-              <small
-                class="field-error"
-                id="edit-collective-sector-error"
-              ></small>
+              <select id="edit-collective-sector-select" multiple size="6"></select>
+              <small class="field-error" id="edit-collective-sector-error"></small>
             </div>
           </div>
 
@@ -724,11 +680,7 @@
             >
               Cancel
             </button>
-            <button
-              type="submit"
-              class="btn-primary"
-              id="edit-collective-submit-btn"
-            >
+            <button type="submit" class="btn-primary" id="edit-collective-submit-btn">
               Save Changes
             </button>
           </div>

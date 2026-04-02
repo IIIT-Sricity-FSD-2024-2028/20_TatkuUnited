@@ -1,5 +1,23 @@
 ﻿/* platform_settings.js */
 document.addEventListener("DOMContentLoaded", () => {
+  const updateNotificationBadges = () => {
+    if (!window.AppStore || typeof AppStore.getTable !== "function") return;
+    const unread = (AppStore.getTable("super_user_notifications") || []).filter(
+      (n) => !n.is_read,
+    ).length;
+    document.querySelectorAll(".notif-badge").forEach((badge) => {
+      if (unread > 0) {
+        badge.textContent = String(unread);
+        badge.style.display = "flex";
+      } else {
+        badge.textContent = "";
+        badge.style.display = "none";
+      }
+    });
+  };
+
+  updateNotificationBadges();
+
   const settingFieldMap = {
     maintenanceMode: "maintenance-mode",
     accountSuspension: "account-suspension",

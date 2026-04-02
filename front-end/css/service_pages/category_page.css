@@ -138,6 +138,59 @@ button {
   margin-left: auto;
 }
 
+.cart-btn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 9px;
+  border: 1.5px solid var(--border);
+  background: var(--white);
+  color: var(--text-muted);
+  transition: all 0.15s;
+}
+
+.cart-btn:hover {
+  border-color: var(--blue);
+  color: var(--blue);
+}
+
+.cart-btn svg {
+  width: 17px;
+  height: 17px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 2;
+}
+
+.user-avatar-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 1.5px solid var(--border);
+  background: var(--bg);
+  display: grid;
+  place-items: center;
+  color: var(--text-muted);
+  transition: all 0.15s;
+}
+
+.user-avatar-btn:hover {
+  border-color: var(--blue);
+  color: var(--blue);
+  background: var(--blue-light);
+}
+
+.user-avatar-btn svg {
+  width: 16px;
+  height: 16px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 2;
+}
+
 .btn-login {
   font-size: 14px;
   font-weight: 500;
@@ -316,6 +369,59 @@ button {
   padding: 8px 10px;
   display: block;
   line-height: 1.3;
+}
+
+.empty-state-card {
+  border: 1.5px dashed var(--border);
+  border-radius: var(--radius);
+  background: var(--white);
+  padding: 28px 24px;
+  text-align: center;
+  display: grid;
+  gap: 10px;
+  justify-items: center;
+}
+
+.empty-state-wide {
+  min-height: 180px;
+  align-content: center;
+}
+
+.empty-state-title {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--text);
+}
+
+.empty-state-copy {
+  font-size: 14px;
+  color: var(--text-muted);
+  max-width: 440px;
+  line-height: 1.6;
+}
+
+.empty-state-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 40px;
+  padding: 0 16px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--blue-light);
+  color: var(--blue);
+  font-size: 13px;
+  font-weight: 700;
+  transition:
+    border-color 0.15s,
+    transform 0.15s,
+    background 0.15s;
+}
+
+.empty-state-link:hover {
+  border-color: var(--blue);
+  transform: translateY(-1px);
+  background: #e8f1ff;
 }
 
 .cat-hero-right {
