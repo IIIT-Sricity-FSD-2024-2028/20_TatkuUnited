@@ -20,6 +20,10 @@ let bookings = [];
 let activeFilter = "All";
 let sortDesc = true;
 let reschedulingBookingId = null;
+let currentPage = 1;
+let filteredCount = 0;
+
+const BOOKINGS_PER_PAGE = 5;
 
 function getBookingRules() {
   if (!window.AppStore || typeof AppStore.getBookingRules !== "function") {
@@ -38,6 +42,71 @@ function toggleSort() {
     ? "Sort: Newest"
     : "Sort: Oldest";
   renderBookings();
+}
+
+function getPaginationItems(totalPages, activePage) {
+  if (totalPages <= 7) {
+    return Array.from({ length: totalPages }, (_, index) => index + 1);
+  }
+
+  const pages = new Set([
+    1,
+    totalPages,
+    activePage - 1,
+    activePage,
+    activePage + 1,
+  ]);
+  const validPages = Array.from(pages)
+    .filter((page) => page >= 1 && page <= totalPages)
+    .sort((a, b) => a - b);
+
+  const result = [];
+  for (let i = 0; i < validPages.length; i += 1) {
+    const page = validPages[i];
+    const prev = validPages[i - 1];
+    if (i > 0 && page - prev > 1) {
+      result.push("ellipsis");
+    }
+    result.push(page);
+  }
+  return result;
+}
+
+function changePage(page) {
+  const totalPages = Math.max(1, Math.ceil(filteredCount / BOOKINGS_PER_PAGE));
+  const nextPage = Math.min(Math.max(page, 1), totalPages);
+  if (nextPage === currentPage) return;
+  currentPage = nextPage;
+  renderBookings();
+}
+
+function renderPagination(totalPages) {
+  const paginationEl = document.getElementById("pagination");
+  if (!paginationEl) return;
+
+  if (totalPages <= 1) {
+    paginationEl.innerHTML = "";
+    return;
+  }
+
+  const pageItems = getPaginationItems(totalPages, currentPage)
+    .map((item) => {
+      if (item === "ellipsis") {
+        return '<span class="page-ellipsis" aria-hidden="true">...</span>';
+      }
+      return `<button class="page-btn ${item === currentPage ? "active" : ""}" onclick="changePage(${item})" aria-label="Go to page ${item}">${item}</button>`;
+    })
+    .join("");
+
+  paginationEl.innerHTML = `
+    <button class="page-btn" ${currentPage === 1 ? "disabled" : ""} onclick="changePage(${currentPage - 1})" aria-label="Previous page">
+      <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
+    ${pageItems}
+    <button class="page-btn" ${currentPage === totalPages ? "disabled" : ""} onclick="changePage(${currentPage + 1})" aria-label="Next page">
+      <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+    </button>
+  `;
 }
 
 const badgeMap = {
@@ -67,6 +136,7 @@ function renderFilters() {
 }
 function setFilter(f) {
   activeFilter = f;
+  currentPage = 1;
   renderFilters();
   renderBookings();
 }
@@ -102,6 +172,8 @@ function renderBookings() {
     return sortDesc ? d2 - d1 : d1 - d2;
   });
   if (filtered.length === 0) {
+    filteredCount = 0;
+    currentPage = 1;
     document.getElementById("bookings-list").innerHTML = `
       <div class="empty-state" style="text-align: center; padding: 4rem 1rem; color: var(--text-2);">
         <svg viewBox="0 0 24 24" style="width:48px;height:48px;stroke:currentColor;fill:none;stroke-width:1;margin:0 auto 1rem;"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
@@ -112,7 +184,20 @@ function renderBookings() {
     document.getElementById("pagination").innerHTML = "";
     return;
   }
-  document.getElementById("bookings-list").innerHTML = filtered
+
+  const totalPages = Math.max(
+    1,
+    Math.ceil(filtered.length / BOOKINGS_PER_PAGE),
+  );
+  filteredCount = filtered.length;
+  if (currentPage > totalPages) {
+    currentPage = totalPages;
+  }
+
+  const startIndex = (currentPage - 1) * BOOKINGS_PER_PAGE;
+  const pageRows = filtered.slice(startIndex, startIndex + BOOKINGS_PER_PAGE);
+
+  document.getElementById("bookings-list").innerHTML = pageRows
     .map(
       (b, i) => `
     <div class="booking-row ${b.status === "cancelled" ? "cancelled" : ""}" style="animation-delay:${i * 0.06}s" onclick="openDrawer('${b.id}')">
@@ -140,15 +225,7 @@ function renderBookings() {
     )
     .join("");
 
-  document.getElementById("pagination").innerHTML = `
-    <button class="page-btn"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button>
-    <button class="page-btn active">1</button>
-    <button class="page-btn">2</button>
-    <button class="page-btn">3</button>
-    <button class="page-btn">…</button>
-    <button class="page-btn">6</button>
-    <button class="page-btn"><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></button>
-  `;
+  renderPagination(totalPages);
 }
 
 function openDrawer(id) {
@@ -323,25 +400,33 @@ function downloadBookingReceipt(bookingId) {
     return;
   }
 
-  const content = [
-    "===================================",
-    "      TATKU UNITED — RECEIPT",
-    "===================================",
-    "",
-    `Booking ID      : #${context.bookingId}`,
-    `Service         : ${context.serviceName}`,
-    `Amount Paid     : ${context.totalAmount}`,
-    `Payment Method  : ${context.paymentMethod}`,
-    `Transaction Date: ${context.transactionDate}`,
-    "Status          : PAID ✓",
-    "",
-    "===================================",
-    "  Tatku United Inc. © 2026",
-    "  support@tatkuunited.com",
-    "===================================",
-  ].join("\n");
+  const entries = [
+    ["Booking ID", `#${context.bookingId}`],
+    ["Service", context.serviceName],
+    ["Amount Paid", context.totalAmount],
+    ["Payment Method", context.paymentMethod],
+    ["Transaction Date", context.transactionDate],
+    ["Status", "PAID ✓"],
+  ];
 
-  const blob = new Blob([content], { type: "text/plain" });
+  const labelWidth = Math.max(...entries.map(([label]) => label.length));
+  const formatLine = (label, value) =>
+    `${label.padEnd(labelWidth, " ")} : ${String(value || "-")}`;
+
+  let formattedText = "==============================================\n";
+  formattedText += "                TATKU UNITED                  \n";
+  formattedText += "             BOOKING RECEIPT                 \n";
+  formattedText += "==============================================\n\n";
+
+  entries.forEach(([label, value]) => {
+    formattedText += formatLine(label, value) + "\n";
+  });
+
+  formattedText += "\n==============================================\n";
+  formattedText += "               © 2026 Tatku United Inc.       \n";
+  formattedText += "            support@tatkuunited.com           \n";
+
+  const blob = new Blob([formattedText], { type: "text/plain;charset=utf-8" });
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.href = url;
@@ -593,6 +678,7 @@ function loadBookings() {
         actions: actions,
       };
     });
+  currentPage = 1;
   renderFilters();
   renderBookings();
   updateCartBadge();

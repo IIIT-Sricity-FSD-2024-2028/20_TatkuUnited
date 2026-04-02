@@ -26,6 +26,7 @@
     "booking_services",
     "job_assignments",
     "transactions",
+    "revenue_ledger",
     "reviews",
     "super_users",
     "super_user_platform_events",
@@ -55,6 +56,7 @@
     BKG: "bookings",
     JA: "job_assignments",
     TXN: "transactions",
+    LDG: "revenue_ledger",
     REV: "reviews",
     SU: "super_users",
   };
@@ -84,6 +86,7 @@
     booking_services: [],
     job_assignments: [],
     transactions: [],
+    revenue_ledger: [],
     reviews: [],
     super_users: [],
     super_user_platform_events: [],
@@ -346,7 +349,9 @@
       if (!Number.isFinite(rating)) return;
       rating = Math.max(1, Math.min(5, rating));
 
-      var booking = review.booking_id ? bookingById.get(review.booking_id) : null;
+      var booking = review.booking_id
+        ? bookingById.get(review.booking_id)
+        : null;
       var assignment = review.booking_id
         ? latestAssignmentByBooking.get(review.booking_id)
         : null;
@@ -422,7 +427,8 @@
         return;
       }
 
-      category.average_rating = Math.round((total.weightedSum / total.count) * 100) / 100;
+      category.average_rating =
+        Math.round((total.weightedSum / total.count) * 100) / 100;
       category.rating_count = total.count;
     });
 
@@ -997,6 +1003,7 @@
 
             jobs.push({
               id: ja.assignment_id,
+              booking_id: ja.booking_id,
               service: serviceName,
               category: catName,
               customer: cus.full_name || cus.name || "Unknown User",

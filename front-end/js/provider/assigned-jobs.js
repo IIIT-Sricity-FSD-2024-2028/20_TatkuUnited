@@ -1,15 +1,31 @@
 let jobs = [];
 
-const statusMap = { inprogress: 'badge-inprogress', assigned: 'badge-assigned', pending: 'badge-pending', completed: 'badge-completed', cancelled: 'badge-pending' };
-let activeFilter = 'all';
+const statusMap = {
+  inprogress: "badge-inprogress",
+  assigned: "badge-assigned",
+  pending: "badge-pending",
+  completed: "badge-completed",
+  cancelled: "badge-pending",
+};
+let activeFilter = "all";
 
 // Render filters
 function renderFilters() {
-  const filters = ['all', 'assigned', 'inprogress', 'completed'];
-  const labels = { all: 'All', assigned: 'Assigned', inprogress: 'In Progress', pending: 'Pending', completed: 'Completed' };
-  document.getElementById('filter-row').innerHTML = filters.map(f => `
-    <button class="filter-btn ${f === activeFilter ? 'active' : ''}" onclick="setFilter('${f}')">${labels[f]}</button>
-  `).join('');
+  const filters = ["all", "assigned", "inprogress", "completed"];
+  const labels = {
+    all: "All",
+    assigned: "Assigned",
+    inprogress: "In Progress",
+    pending: "Pending",
+    completed: "Completed",
+  };
+  document.getElementById("filter-row").innerHTML = filters
+    .map(
+      (f) => `
+    <button class="filter-btn ${f === activeFilter ? "active" : ""}" onclick="setFilter('${f}')">${labels[f]}</button>
+  `,
+    )
+    .join("");
 }
 
 function setFilter(f) {
@@ -19,21 +35,32 @@ function setFilter(f) {
 }
 
 function formatDateDisplay(dStr) {
-  if (!dStr) return '';
+  if (!dStr) return "";
   const d = new Date(dStr);
-  return isNaN(d) ? dStr : d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  return isNaN(d)
+    ? dStr
+    : d.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      });
 }
 
 function renderJobs() {
-  const list = document.getElementById('jobs-list');
-  const filtered = activeFilter === 'all' ? jobs : jobs.filter(j => j.status === activeFilter);
-  list.innerHTML = filtered.map((j, i) => `
+  const list = document.getElementById("jobs-list");
+  const filtered =
+    activeFilter === "all"
+      ? jobs
+      : jobs.filter((j) => j.status === activeFilter);
+  list.innerHTML = filtered
+    .map(
+      (j, i) => `
     <div class="job-row" style="animation-delay:${i * 0.06}s" onclick="openDetail('${j.id}')">
       <div class="job-meta">
         <div class="job-top">
           <span class="job-service">${j.service}</span>
           <span class="job-cat">${j.category}</span>
-          <span class="badge ${statusMap[j.status] || 'badge-pending'}">${j.statusLabel}</span>
+          <span class="badge ${statusMap[j.status] || "badge-pending"}">${j.statusLabel}</span>
         </div>
         <div class="job-details">
           <div class="jd-item">
@@ -58,36 +85,46 @@ function renderJobs() {
         <div class="job-arrow"><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></div>
       </div>
     </div>
-  `).join('');
+  `,
+    )
+    .join("");
 }
 
 function openDetail(id) {
-  const job = jobs.find(j => j.id === id);
+  const job = jobs.find((j) => j.id === id);
   if (!job) return;
-  const steps = ['Assigned', 'In Progress', 'Completed'];
+  const steps = ["Assigned", "In Progress", "Completed"];
   const stepStatus = { assigned: 0, inprogress: 1, completed: 2 };
-  const current = stepStatus[job.status] ?? (job.status === 'pending' ? -1 : 0);
-  document.getElementById('modal-content').innerHTML = `
+  const current = stepStatus[job.status] ?? (job.status === "pending" ? -1 : 0);
+  document.getElementById("modal-content").innerHTML = `
     <div class="modal-job-title">${job.service}</div>
     <div class="modal-job-id">Job #${job.id}</div>
 
     <div class="modal-section">
       <div class="modal-section-title">Job Status</div>
       <div class="status-stepper">
-        ${steps.map((s, i) => `
-          ${i > 0 ? `<div class="step-line ${i <= current ? 'done' : ''}"></div>` : ''}
+        ${steps
+          .map(
+            (s, i) => `
+          ${i > 0 ? `<div class="step-line ${i <= current ? "done" : ""}"></div>` : ""}
           <div class="step">
-            <div class="step-dot ${i <= current ? 'done' : ''}">
+            <div class="step-dot ${i <= current ? "done" : ""}">
               <svg viewBox="0 0 24 24" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
             </div>
-            <span class="step-label ${i === current ? 'active' : ''}">${s}</span>
+            <span class="step-label ${i === current ? "active" : ""}">${s}</span>
           </div>
-        `).join('')}
+        `,
+          )
+          .join("")}
       </div>
-      ${job.status !== 'completed' && job.status !== 'cancelled' ? `
-        ${job.status === 'assigned' ? `<button class="modal-btn modal-btn-primary" onclick="updateStatus('${job.id}', 'inprogress')">Mark In Progress</button>` : ''}
+      ${
+        job.status !== "completed" && job.status !== "cancelled"
+          ? `
+        ${job.status === "assigned" ? `<button class="modal-btn modal-btn-primary" onclick="updateStatus('${job.id}', 'inprogress')">Mark In Progress</button>` : ""}
         <button class="modal-btn modal-btn-success" onclick="updateStatus('${job.id}', 'completed')">Mark Completed</button>
-      ` : ''}
+      `
+          : ""
+      }
     </div>
 
     <div class="modal-section">
@@ -115,32 +152,34 @@ function openDetail(id) {
       </div>
     </div>
   `;
-  document.getElementById('modal-overlay').classList.add('open');
+  document.getElementById("modal-overlay").classList.add("open");
 }
 
 function closeDetailModal() {
-  document.getElementById('modal-overlay').classList.remove('open');
+  document.getElementById("modal-overlay").classList.remove("open");
 }
 function closeModal(e) {
-  if (e.target === document.getElementById('modal-overlay')) closeDetailModal();
+  if (e.target === document.getElementById("modal-overlay")) closeDetailModal();
 }
 function updateStatus(id, newStatus) {
   const data = window.getData();
-  const job = data.jobs.find(j => j.id === id);
-  
+  const job = data.jobs.find((j) => j.id === id);
+
   if (job) {
     // Validation: Do not allow future jobs to be marked as completed or in progress early
-    if (newStatus === 'completed' || newStatus === 'inprogress') {
+    if (newStatus === "completed" || newStatus === "inprogress") {
       try {
         // Build an exact strict native Javascript Date object using ISO matching format String
         // format: "YYYY-MM-DDTHH:MM:00" mapping against correct job.startTime
-        const isoString = `${job.date}T${job.startTime || job.time.split(' ')[0]}:00`;
+        const isoString = `${job.date}T${job.startTime || job.time.split(" ")[0]}:00`;
         const jobDateTime = new Date(isoString);
         const currentRealTime = new Date();
 
         // If parsed date valid, and it's strictly in the future timestamp
         if (!isNaN(jobDateTime.getTime()) && jobDateTime > currentRealTime) {
-          alert(`Security Check: You cannot change the status to '${newStatus === 'completed' ? 'Completed' : 'In Progress'}' for a job scheduled in the future.\n\nCurrent Real Time: ${currentRealTime.toLocaleString()}\nAssigned Time: ${jobDateTime.toLocaleString()}`);
+          alert(
+            `Security Check: You cannot change the status to '${newStatus === "completed" ? "Completed" : "In Progress"}' for a job scheduled in the future.\n\nCurrent Real Time: ${currentRealTime.toLocaleString()}\nAssigned Time: ${jobDateTime.toLocaleString()}`,
+          );
           return;
         }
       } catch (e) {
@@ -149,12 +188,59 @@ function updateStatus(id, newStatus) {
     }
 
     job.status = newStatus;
-    job.statusLabel = { inprogress: 'In Progress', completed: 'Completed', assigned: 'Assigned', pending: 'Pending Confirmation' }[newStatus];
+    job.statusLabel = {
+      inprogress: "In Progress",
+      completed: "Completed",
+      assigned: "Assigned",
+      pending: "Pending Confirmation",
+    }[newStatus];
+
+    // Persist status to source tables so state survives reload.
+    const assignment = (data.job_assignments || []).find(
+      (ja) => ja.assignment_id === id,
+    );
+    if (assignment) {
+      const statusDbMap = {
+        assigned: "ASSIGNED",
+        inprogress: "IN_PROGRESS",
+        completed: "COMPLETED",
+        pending: "PENDING",
+      };
+      assignment.status = statusDbMap[newStatus] || assignment.status;
+      assignment.updated_at = new Date().toISOString();
+    }
+
+    if (newStatus === "completed" && job.booking_id) {
+      const booking = (data.bookings || []).find(
+        (b) => b.booking_id === job.booking_id,
+      );
+      if (booking) {
+        booking.status = "COMPLETED";
+        booking.updated_at = new Date().toISOString();
+      }
+    }
+
+    // ✅ AUTO-GENERATE LEDGER ENTRIES when provider marks work complete
+    if (newStatus === "completed" && window.RevenueManager) {
+      const bookingId = job.booking_id;
+      if (bookingId) {
+        const success = window.RevenueManager.markBookingPayoutPaid(bookingId);
+        if (success) {
+          console.log(`✅ Ledger payout marked PAID for ${bookingId}`);
+        }
+      }
+    }
 
     // Check for pending deactivation
-    if (newStatus === 'completed' && data.provider && data.provider.account_status === "pending_deactivation") {
-      const remainingUnfinished = data.jobs.filter((j) =>
-        j.id !== id && ["assigned", "inprogress", "pending"].includes(j.status),
+    if (
+      newStatus === "completed" &&
+      data.provider &&
+      data.provider.account_status === "pending_deactivation"
+    ) {
+      const remainingUnfinished = data.jobs.filter(
+        (j) =>
+          j.id !== id &&
+          ["assigned", "inprogress", "pending"].includes(j.status),
       );
       if (remainingUnfinished.length === 0) {
         data.provider.account_status = "inactive";
@@ -166,9 +252,9 @@ function updateStatus(id, newStatus) {
       }
     }
   }
-  
+
   window.setData(data); // Sync globally
-  jobs = data.jobs;     // Sync locally
+  jobs = data.jobs; // Sync locally
   openDetail(id);
   renderJobs();
 }
@@ -179,9 +265,11 @@ window.initData().then(() => {
 
   // Use dynamic provider data from mockData.json
   if (data.provider) {
-    document.querySelectorAll('.user-chip span').forEach(el => el.textContent = data.provider.name || 'Provider');
+    document
+      .querySelectorAll(".user-chip span")
+      .forEach((el) => (el.textContent = data.provider.name || "Provider"));
     if (data.provider.pfp_url) {
-      document.querySelectorAll('.user-avatar').forEach(el => {
+      document.querySelectorAll(".user-avatar").forEach((el) => {
         el.innerHTML = `<img src="${data.provider.pfp_url}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
       });
     }

@@ -331,7 +331,6 @@ function saveSection(section) {
 }
 
 function openPwdModal() {
-  wirePasswordVisibilityToggles();
   document.getElementById("pwd-modal").classList.add("open");
 }
 function closePwdModal(e) {
@@ -342,44 +341,9 @@ function closePwdModalBtn() {
   const fields = ["pwd-current", "pwd-new", "pwd-confirm"];
   fields.forEach((id) => {
     const el = document.getElementById(id);
-    if (el) {
-      el.value = "";
-      el.type = "password";
-    }
-  });
-  resetPasswordVisibilityToggles();
-}
-
-function wirePasswordVisibilityToggles() {
-  document.querySelectorAll(".pwd-toggle").forEach((btn) => {
-    if (btn.dataset.wired === "1") return;
-    btn.dataset.wired = "1";
-    btn.addEventListener("click", () => {
-      const targetId = btn.getAttribute("data-target");
-      const input = document.getElementById(targetId);
-      if (!input) return;
-
-      const shouldShow = input.type === "password";
-      input.type = shouldShow ? "text" : "password";
-
-      const eyeOpen = btn.querySelector(".eye-open");
-      const eyeClosed = btn.querySelector(".eye-closed");
-      if (eyeOpen) eyeOpen.style.display = shouldShow ? "none" : "inline";
-      if (eyeClosed) eyeClosed.style.display = shouldShow ? "inline" : "none";
-    });
+    if (el) el.value = "";
   });
 }
-
-function resetPasswordVisibilityToggles() {
-  document.querySelectorAll(".pwd-toggle").forEach((btn) => {
-    const eyeOpen = btn.querySelector(".eye-open");
-    const eyeClosed = btn.querySelector(".eye-closed");
-    if (eyeOpen) eyeOpen.style.display = "inline";
-    if (eyeClosed) eyeClosed.style.display = "none";
-  });
-}
-
-wirePasswordVisibilityToggles();
 
 function handlePasswordChange() {
   const currentPwd = document.getElementById("pwd-current")?.value;
@@ -396,16 +360,8 @@ function handlePasswordChange() {
     return;
   }
 
-  const passwordCheck =
-    window.Auth && typeof Auth.validatePasswordPolicy === "function"
-      ? Auth.validatePasswordPolicy(newPwd)
-      : { valid: newPwd.length >= 8 };
-
-  if (!passwordCheck.valid) {
-    showToast(
-      passwordCheck.error ||
-        "Password must be at least 8 characters and include uppercase, lowercase, number, and special character with no spaces.",
-    );
+  if (newPwd.length < 8) {
+    showToast("New password must be at least 8 characters.");
     return;
   }
 
@@ -416,11 +372,6 @@ function handlePasswordChange() {
   } else {
     const errorMap = {
       invalid_current_password: "Current password is incorrect.",
-      invalid_new_password:
-        res.message ||
-        "Password must be at least 8 characters and include uppercase, lowercase, number, and special character with no spaces.",
-      new_password_same_as_current:
-        "New password must be different from current password.",
       not_logged_in: "Session expired. Please log in again.",
     };
     showToast(errorMap[res.error] || "Failed to update password.");

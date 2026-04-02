@@ -195,16 +195,11 @@
     var modal = document.getElementById("pwd-modal");
     if (!modal) return;
 
-    ["pwd-current", "pwd-new", "pwd-confirm"].forEach(function (id) {
-      var i = document.getElementById(id);
-      if (!i) return;
+    modal.querySelectorAll('input[type="password"]').forEach(function (i) {
       i.value = "";
-      i.type = "password";
       i.style.borderColor = "";
     });
 
-    wirePasswordVisibilityToggles();
-    resetPasswordVisibilityToggles();
     removePwdError();
     modal.classList.add("open");
   };
@@ -223,46 +218,10 @@
       var fields = ["pwd-current", "pwd-new", "pwd-confirm"];
       fields.forEach(function (id) {
         var el = document.getElementById(id);
-        if (el) {
-          el.value = "";
-          el.type = "password";
-        }
+        if (el) el.value = "";
       });
-      resetPasswordVisibilityToggles();
     }
   };
-
-  function wirePasswordVisibilityToggles() {
-    document.querySelectorAll(".pwd-toggle").forEach(function (btn) {
-      if (btn.dataset.wired === "1") return;
-      btn.dataset.wired = "1";
-
-      btn.addEventListener("click", function () {
-        var targetId = btn.getAttribute("data-target");
-        var input = document.getElementById(targetId);
-        if (!input) return;
-
-        var shouldShow = input.type === "password";
-        input.type = shouldShow ? "text" : "password";
-
-        var eyeOpen = btn.querySelector(".eye-open");
-        var eyeClosed = btn.querySelector(".eye-closed");
-        if (eyeOpen) eyeOpen.style.display = shouldShow ? "none" : "inline";
-        if (eyeClosed) eyeClosed.style.display = shouldShow ? "inline" : "none";
-      });
-    });
-  }
-
-  function resetPasswordVisibilityToggles() {
-    document.querySelectorAll(".pwd-toggle").forEach(function (btn) {
-      var eyeOpen = btn.querySelector(".eye-open");
-      var eyeClosed = btn.querySelector(".eye-closed");
-      if (eyeOpen) eyeOpen.style.display = "inline";
-      if (eyeClosed) eyeClosed.style.display = "none";
-    });
-  }
-
-  wirePasswordVisibilityToggles();
 
   function removePwdError() {
     var e = document.getElementById("pwdErrMsg");
@@ -304,16 +263,8 @@
       return;
     }
 
-    var passwordCheck =
-      window.Auth && typeof Auth.validatePasswordPolicy === "function"
-        ? Auth.validatePasswordPolicy(newPwd)
-        : { valid: newPwd.length >= 8 };
-
-    if (!passwordCheck.valid) {
-      showPwdError(
-        passwordCheck.error ||
-          "Password must be at least 8 characters and include uppercase, lowercase, number, and special character with no spaces.",
-      );
+    if (newPwd.length < 8) {
+      showPwdError("New password must be at least 8 characters.");
       return;
     }
 
@@ -324,11 +275,6 @@
     } else {
       var errorMap = {
         invalid_current_password: "Current password is incorrect.",
-        invalid_new_password:
-          res.message ||
-          "Password must be at least 8 characters and include uppercase, lowercase, number, and special character with no spaces.",
-        new_password_same_as_current:
-          "New password must be different from current password.",
         not_logged_in: "Session expired. Please log in again.",
       };
       showPwdError(errorMap[res.error] || "Failed to update password.");

@@ -21,11 +21,15 @@ AppStore.ready.then(() => {
   const allCollectives = AppStore.getTable("collectives") || [];
   const allServices = AppStore.getTable("services") || [];
   const allCategories = AppStore.getTable("categories") || [];
+  const allLedger = AppStore.getTable("revenue_ledger") || [];
 
   /* ── 3. Transform platform events ── */
   function transformEvents(events) {
     return events
-      .filter((e) => e.title !== "Provider verification pending from Unit 24 Logistics")
+      .filter(
+        (e) =>
+          e.title !== "Provider verification pending from Unit 24 Logistics",
+      )
       .slice(0, 4)
       .map((e) => ({
         time: new Date(e.timestamp).toLocaleTimeString("en-IN", {
@@ -84,13 +88,18 @@ AppStore.ready.then(() => {
 
   /* ── 6. Render ── */
   function renderKPIs() {
-    const activeCustomers = allCustomers.filter((c) => c.is_active !== false).length;
-    const activeProviders = allProviders.filter((p) => p.is_active || p.account_status === "active").length;
+    const activeCustomers = allCustomers.filter(
+      (c) => c.is_active !== false,
+    ).length;
+    const activeProviders = allProviders.filter(
+      (p) => p.is_active || p.account_status === "active",
+    ).length;
     const activeCMs = allCMs.filter((m) => m.is_active).length;
     const activeUMs = allUMs.filter((m) => m.is_active).length;
     const activeSUs = allSUs.filter((u) => u.is_active).length;
 
-    const activeUsers = activeCustomers + activeProviders + activeCMs + activeUMs + activeSUs;
+    const activeUsers =
+      activeCustomers + activeProviders + activeCMs + activeUMs + activeSUs;
 
     const failedAssignments = allAssignments.filter(
       (a) => a.status === "CANCELLED" || a.status === "FAILED",
@@ -104,70 +113,77 @@ AppStore.ready.then(() => {
   }
 
   function renderRevenue() {
-    let totalRevenue = 0;
-    const collectiveRevMap = {};
+    // Calculate revenue split from ledger entries
+    const revenueBYRole = {
+      provider: { label: "Providers (78%)", amount: 0 },
+      unit_manager: { label: "Unit Managers (7%)", amount: 0 },
+      collective_manager: { label: "Collective Managers (4%)", amount: 0 },
+      super_user: { label: "Platform / Super User (11%)", amount: 0 },
+    };
 
-    allCollectives.forEach((c) => {
-      collectiveRevMap[c.collective_id] = { name: c.collective_name, amount: 0 };
-    });
-    collectiveRevMap["unassigned"] = { name: "Other / Direct (Unassigned)", amount: 0 };
-
-    allTransactions.forEach((tx) => {
-      if (tx.payment_status === "SUCCESS" || tx.payment_status === "COMPLETED" || tx.payment_status === "completed") {
-        const netAmount = (tx.amount || 0) - (tx.refund_amount || 0);
-        totalRevenue += netAmount;
-
-        const booking = allBookings.find((b) => b.booking_id === tx.booking_id);
-        let assignedColId = "unassigned";
-
-        if (booking) {
-          const assignment = allAssignments.find(
-            (a) => a.booking_id === booking.booking_id && a.service_provider_id,
-          );
-          if (assignment) {
-            const provider = allProviders.find(
-              (p) => p.service_provider_id === assignment.service_provider_id,
-            );
-            if (provider && provider.unit_id) {
-              const unit = allUnits.find((u) => u.unit_id === provider.unit_id);
-              if (unit && unit.collective_id) {
-                assignedColId = unit.collective_id;
-              }
-            }
-          }
-        }
-        if (!collectiveRevMap[assignedColId]) {
-          collectiveRevMap[assignedColId] = { name: `Unknown (${assignedColId})`, amount: 0 };
-        }
-        collectiveRevMap[assignedColId].amount += netAmount;
+    // Sum up ledger entries by role
+    allLedger.forEach((entry) => {
+      if (revenueBYRole[entry.role]) {
+        revenueBYRole[entry.role].amount += Number(entry.amount || 0);
       }
     });
 
+    const totalPlatformGMV =
+      Object.keys(revenueBYRole).reduce(
+        (sum, role) => sum + revenueBYRole[role].amount,
+        0,
+      ) / 0.000000001; // Divide by near-zero to approximate GMV
+
+    // Actually, calculate total GMV from transactions with SUCCESS status
+    let totalGMV = 0;
+    allTransactions.forEach((tx) => {
+      if (
+        tx.payment_status === "SUCCESS" ||
+        tx.payment_status === "COMPLETED"
+      ) {
+        totalGMV += Number(tx.amount || 0) - Number(tx.refund_amount || 0);
+      }
+    });
+
+    // Calculate total distributed amount from ledger
+    const totalDistributed = Object.keys(revenueBYRole).reduce(
+      (sum, role) => sum + revenueBYRole[role].amount,
+      0,
+    );
+
     const revEl = document.getElementById("totalRevenueValue");
     if (revEl) {
-      revEl.textContent = `₹${totalRevenue.toLocaleString("en-IN")}`;
+      revEl.textContent = `₹${totalGMV.toLocaleString("en-IN")}`;
     }
 
     const tbody = document.getElementById("revenue-tbody");
     if (tbody) {
-      const sortedCols = Object.values(collectiveRevMap)
-        .filter((c) => c.amount > 0 || c.name !== "Other / Direct (Unassigned)")
-        .sort((a, b) => b.amount - a.amount);
+      const roles = [
+        { role: "provider", label: "Providers (78%)" },
+        { role: "unit_manager", label: "Unit Managers (7%)" },
+        { role: "collective_manager", label: "Collective Managers (4%)" },
+        { role: "super_user", label: "Platform / Super User (11%)" },
+      ];
 
-      if (sortedCols.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="2" style="text-align:center; color:var(--text-faint);">No revenue data available.</td></tr>`;
-      } else {
-        tbody.innerHTML = sortedCols
-          .map(
-            (c) => `
+      const rows = roles
+        .map(
+          (r) => `
           <tr>
-            <td><strong>${c.name}</strong></td>
-            <td style="text-align: right; font-family: var(--font-mono); font-weight: 500;">₹${c.amount.toLocaleString("en-IN")}</td>
+            <td><strong>${r.label}</strong></td>
+            <td style="text-align: right; font-family: var(--font-mono); font-weight: 500;">₹${revenueBYRole[r.role].amount.toLocaleString("en-IN")}</td>
           </tr>
         `,
-          )
-          .join("");
-      }
+        )
+        .join("");
+
+      tbody.innerHTML =
+        rows +
+        `
+        <tr style="border-top: 2px solid var(--border); font-weight: 600;">
+          <td><strong>Total GMV</strong></td>
+          <td style="text-align: right; font-family: var(--font-mono); font-weight: 500;">₹${totalGMV.toLocaleString("en-IN")}</td>
+        </tr>
+      `;
     }
   }
 

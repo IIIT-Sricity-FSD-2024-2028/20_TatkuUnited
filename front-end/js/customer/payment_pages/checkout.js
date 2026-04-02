@@ -229,6 +229,14 @@ confirmBtn.addEventListener("click", () => {
               " assigned to booking " +
               bId,
           );
+
+          // Create pending revenue split at booking time.
+          if (window.RevenueManager) {
+            window.RevenueManager.ensureLedgerEntriesForBooking(bId, {
+              payoutStatus: "PENDING",
+              providerId: result.providerId,
+            });
+          }
         } else {
           console.log(
             "[Checkout] No provider assigned for " + bId + ": " + result.reason,

@@ -41,6 +41,22 @@ AppStore.ready.then(() => {
     platformSettings && platformSettings.accountSuspension
   );
 
+  function getSafeNextUrl() {
+    const rawNext = new URLSearchParams(window.location.search).get("next");
+    if (!rawNext) return null;
+
+    try {
+      const nextUrl = new URL(rawNext, window.location.origin);
+      const isSameOrigin = nextUrl.origin === window.location.origin;
+      const isAppPath = nextUrl.pathname.startsWith("/front-end/html/");
+      if (!isSameOrigin || !isAppPath) return null;
+
+      return nextUrl.pathname + nextUrl.search + nextUrl.hash;
+    } catch (_) {
+      return null;
+    }
+  }
+
   /* ── Helpers ── */
   function showError(msg) {
     errorEl.textContent = msg;
@@ -131,7 +147,8 @@ AppStore.ready.then(() => {
       setLoading(false);
 
       if (result.success) {
-        window.location.replace(Auth.getRedirectUrl());
+        const nextUrl = getSafeNextUrl();
+        window.location.replace(nextUrl || Auth.getRedirectUrl());
         return;
       }
 
