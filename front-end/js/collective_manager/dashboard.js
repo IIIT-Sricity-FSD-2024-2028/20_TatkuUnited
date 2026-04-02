@@ -2,75 +2,49 @@
 // Depends on: store.js → auth.js (loaded before this script)
 
 AppStore.ready.then(() => {
+  /* ── 1. Auth gate ── */
   const session = Auth.requireSession(['collective_manager']);
   if (!session) return;
 
   const collectiveId = session.collectiveId;
 
-  function renderCollectiveDashboard() {
-    const allUnits = AppStore.getTable('units') || [];
-    const allProviders = AppStore.getTable('service_providers') || [];
-    const allAssignments = AppStore.getTable('job_assignments') || [];
-    const allTransactions = AppStore.getTable('transactions') || [];
-    const allCollectives = AppStore.getTable('collectives') || [];
+  /* ── 2. Pull tables ── */
+  const allUnits       = AppStore.getTable('units')           || [];
+  const allProviders   = AppStore.getTable('service_providers') || [];
+  const allAssignments = AppStore.getTable('job_assignments')  || [];
+  const allTransactions= AppStore.getTable('transactions')     || [];
+  const allBookings    = AppStore.getTable('bookings')         || [];
+  const collective     = (AppStore.getTable('collectives') || [])
+                           .find(c => c.collective_id === collectiveId);
 
-    const collective = allCollectives.find((c) => c.collective_id === collectiveId);
-    const myUnits = allUnits.filter((u) => u.collective_id === collectiveId);
-    const myUnitIds = new Set(myUnits.map((u) => u.unit_id));
-    const myProviders = allProviders.filter((p) => myUnitIds.has(p.unit_id));
-    const myProviderIds = new Set(myProviders.map((p) => p.service_provider_id));
+  /* ── 3. Scope data to this collective ── */
+  const myUnits       = allUnits.filter(u => u.collective_id === collectiveId);
+  const myUnitIds     = new Set(myUnits.map(u => u.unit_id));
+  const myProviders   = allProviders.filter(p => myUnitIds.has(p.unit_id));
+  const myProviderIds = new Set(myProviders.map(p => p.service_provider_id));
 
-    const myAssignments = allAssignments.filter((a) => myProviderIds.has(a.service_provider_id));
-    const myBookingIds = new Set(myAssignments.map((a) => a.booking_id));
+  // Assignments where the provider belongs to this collective
+  const myAssignments = allAssignments.filter(a => myProviderIds.has(a.service_provider_id));
+  const myBookingIds  = new Set(myAssignments.map(a => a.booking_id));
 
-    const metrics = AppStore.getDerivedMetrics({ collectiveId });
+  // Completed assignments
+  const completedAssignments = myAssignments.filter(a => a.status === 'COMPLETED');
 
-    const completedAssignments = myAssignments.filter((a) => a.status === 'COMPLETED');
+  // Revenue: sum of SUCCESS transactions for this collective's bookings
+  const totalRevenue = allTransactions
+    .filter(t => myBookingIds.has(t.booking_id) && t.payment_status === 'SUCCESS')
+    .reduce((sum, t) => sum + (t.amount || 0), 0);
 
-    const totalProviders = myProviders.length;
-    const activeUnits = myUnits.filter((u) => u.is_active).length;
+  /* ── 4. Stat counters ── */
+  const totalProviders   = myProviders.length;
+  const activeUnits      = myUnits.filter(u => u.is_active).length;
+  const completedServices = completedAssignments.length;
 
-    setStatCard('stat-providers', totalProviders);
-    setStatCard('stat-active-units', activeUnits);
-    setStatCard('stat-completed', metrics.completedBookings);
-    setText('stat-revenue', formatCurrency(metrics.revenue));
-
-    const initials = getInitials(session.name);
-    setText('topbar-avatar', initials);
-    setText('page-greeting', `Welcome back, ${session.name.split(' ')[0]}!`);
-
-    const allSectors = AppStore.getTable('sectors') || [];
-    setText('collective-name', collective ? collective.collective_name : '—');
-    setText('collective-units', myUnits.length.toString());
-
-    if (collective && Array.isArray(collective.sector_ids)) {
-      const sectorNames = collective.sector_ids
-        .map((sid) => {
-          const sec = allSectors.find((s) => s.sector_id === sid);
-          return sec ? sec.sector_name : sid;
-        })
-        .join(', ');
-      setText('collective-sectors', sectorNames || '—');
-    } else {
-      setText('collective-sectors', '—');
-    }
-
-    setText('collective-manager-name', session.name);
-    const statusBadge = document.getElementById('collective-status-badge');
-    if (statusBadge) {
-      const isActive = collective && collective.is_active;
-      statusBadge.textContent = isActive ? 'Active' : 'Inactive';
-      statusBadge.style.background = isActive ? 'rgba(34,197,94,0.15)' : 'rgba(239,68,68,0.15)';
-      statusBadge.style.color = isActive ? '#22c55e' : '#ef4444';
-    }
-
-    renderRevenueChart(allTransactions, myBookingIds);
-    renderActivity(myAssignments, AppStore.getTable('bookings') || [], allProviders, myUnits);
-  }
-
-  renderCollectiveDashboard();
-  AppStore.subscribe(renderCollectiveDashboard);
-});
+  /* ── 5. Render stat cards ── */
+  setStatCard('stat-providers',        totalProviders);
+  setStatCard('stat-active-units',     activeUnits);
+  setStatCard('stat-completed',        completedServices);
+  setText('stat-revenue',              formatCurrency(totalRevenue));
 
   /* ── 6. Topbar: name initial + avatar ── */
   const initials = getInitials(session.name);
