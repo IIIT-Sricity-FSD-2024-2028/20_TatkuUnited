@@ -31,24 +31,27 @@ AppStore.ready.then(() => {
   /* ── 3. Transform platform events ── */
   function transformEvents(events) {
     return events
-      .filter((e) => e.title !== "Provider verification pending from Unit 24 Logistics")
+      .filter(
+        (e) =>
+          e.title !== "Provider verification pending from Unit 24 Logistics",
+      )
       .slice(0, 4)
       .map((e) => ({
-      time: new Date(e.timestamp).toLocaleTimeString("en-IN", {
-        hour: "2-digit",
-        minute: "2-digit",
-      }),
-      type:
-        e.event_type === "security"
-          ? "security"
-          : e.event_type === "system"
-            ? "system"
-            : e.event_type === "user"
-              ? "user"
-              : "action",
-      typeLabel: e.event_type.toUpperCase(),
-      desc: e.title,
-    }));
+        time: new Date(e.timestamp).toLocaleTimeString("en-IN", {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
+        type:
+          e.event_type === "security"
+            ? "security"
+            : e.event_type === "system"
+              ? "system"
+              : e.event_type === "user"
+                ? "user"
+                : "action",
+        typeLabel: e.event_type.toUpperCase(),
+        desc: e.title,
+      }));
   }
 
   /* ── 4. Transform super user actions ── */
@@ -90,7 +93,7 @@ AppStore.ready.then(() => {
   const TOP_SERVICES = getTopRatedServices();
   const TOP_CATEGORIES = getTopRatedCategories();
 
-  /* ── 5. Render ── */
+  /* ── 6. Render ── */
   function renderKPIs() {
     const derived = AppStore.getDerivedMetrics();
     const activeUsers = derived.userCount;
@@ -120,63 +123,75 @@ AppStore.ready.then(() => {
     allCollectives.forEach((c) => {
       collectiveRevMap[c.collective_id] = { name: c.collective_name, amount: 0 };
     });
-    collectiveRevMap['unassigned'] = { name: 'Other / Direct (Unassigned)', amount: 0 };
 
-    allTransactions.forEach(tx => {
-      if (tx.payment_status === 'SUCCESS' || tx.payment_status === 'COMPLETED' || tx.payment_status === 'completed') {
-        const netAmount = (tx.amount || 0) - (tx.refund_amount || 0);
-        totalRevenue += netAmount;
+    const totalPlatformGMV =
+      Object.keys(revenueBYRole).reduce(
+        (sum, role) => sum + revenueBYRole[role].amount,
+        0,
+      ) / 0.000000001; // Divide by near-zero to approximate GMV
 
-        const booking = allBookings.find(b => b.booking_id === tx.booking_id);
-        let assignedColId = 'unassigned';
-
-        if (booking) {
-          const assignment = allAssignments.find(a => a.booking_id === booking.booking_id && a.service_provider_id);
-          if (assignment) {
-            const provider = allProviders.find(p => p.service_provider_id === assignment.service_provider_id);
-            if (provider && provider.unit_id) {
-              const unit = allUnits.find(u => u.unit_id === provider.unit_id);
-              if (unit && unit.collective_id) {
-                assignedColId = unit.collective_id;
-              }
-            }
-          }
-        }
-        
-        if (!collectiveRevMap[assignedColId]) {
-          collectiveRevMap[assignedColId] = { name: `Unknown (${assignedColId})`, amount: 0 };
-        }
-        collectiveRevMap[assignedColId].amount += netAmount;
+    // Actually, calculate total GMV from transactions with SUCCESS status
+    let totalGMV = 0;
+    allTransactions.forEach((tx) => {
+      if (
+        tx.payment_status === "SUCCESS" ||
+        tx.payment_status === "COMPLETED"
+      ) {
+        totalGMV += Number(tx.amount || 0) - Number(tx.refund_amount || 0);
       }
     });
 
+    // Calculate total distributed amount from ledger
+    const totalDistributed = Object.keys(revenueBYRole).reduce(
+      (sum, role) => sum + revenueBYRole[role].amount,
+      0,
+    );
+
     const revEl = document.getElementById("totalRevenueValue");
     if (revEl) {
-      revEl.textContent = `₹${totalRevenue.toLocaleString("en-IN")}`;
+      revEl.textContent = `₹${totalGMV.toLocaleString("en-IN")}`;
     }
 
     const tbody = document.getElementById("revenue-tbody");
     if (tbody) {
-      const sortedCols = Object.values(collectiveRevMap)
-        .filter(c => c.amount > 0 || c.name !== 'Other / Direct (Unassigned)')
-        .sort((a, b) => b.amount - a.amount);
-      
-      if (sortedCols.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="2" style="text-align:center; color:var(--text-faint);">No revenue data available.</td></tr>`;
-      } else {
-        tbody.innerHTML = sortedCols.map(c => `
+      const roles = [
+        { role: "provider", label: "Providers (78%)" },
+        { role: "unit_manager", label: "Unit Managers (7%)" },
+        { role: "collective_manager", label: "Collective Managers (4%)" },
+        { role: "super_user", label: "Platform / Super User (11%)" },
+      ];
+
+      const rows = roles
+        .map(
+          (r) => `
           <tr>
-            <td><strong>${c.name}</strong></td>
-            <td style="text-align: right; font-family: var(--font-mono); font-weight: 500;">₹${c.amount.toLocaleString("en-IN")}</td>
+            <td><strong>${r.label}</strong></td>
+            <td style="text-align: right; font-family: var(--font-mono); font-weight: 500;">₹${revenueBYRole[r.role].amount.toLocaleString("en-IN")}</td>
           </tr>
-        `).join("");
-      }
+        `,
+        )
+        .join("");
+
+      tbody.innerHTML =
+        rows +
+        `
+        <tr style="border-top: 2px solid var(--border); font-weight: 600;">
+          <td><strong>Total GMV</strong></td>
+          <td style="text-align: right; font-family: var(--font-mono); font-weight: 500;">₹${totalGMV.toLocaleString("en-IN")}</td>
+        </tr>
+      `;
     }
   }
 
   function renderEvents() {
     const tbody = document.getElementById("events-tbody");
     if (!tbody) return;
+
+    if (EVENTS.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; padding: 24px; color:var(--text-faint); font-size: 13px;">No recent system events.</td></tr>`;
+      return;
+    }
+
     tbody.innerHTML = EVENTS.map(
       (e) => `
       <tr>
@@ -272,12 +287,14 @@ AppStore.ready.then(() => {
     }
   }
 
-  /* ── 6. Initialize on DOM ready ── */
+  /* ── 7. Initialize on DOM ready ── */
   function initDashboard() {
     renderKPIs();
     renderRevenue();
     renderEvents();
     renderSuperUserActions();
+    renderTopServices();
+    renderTopCategories();
     setupDownloadLog();
   }
 
@@ -289,7 +306,9 @@ AppStore.ready.then(() => {
           alert("No recent actions to download.");
           return;
         }
-        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(SUPER_USER_ACTIONS, null, 2));
+        const dataStr =
+          "data:text/json;charset=utf-8," +
+          encodeURIComponent(JSON.stringify(SUPER_USER_ACTIONS, null, 2));
         const anchor = document.createElement("a");
         anchor.setAttribute("href", dataStr);
         anchor.setAttribute("download", "action_log.json");

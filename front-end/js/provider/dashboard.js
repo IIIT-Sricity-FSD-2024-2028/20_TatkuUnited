@@ -6,17 +6,23 @@ let currentProviderId = null;
 
 // ===== BADGE MAP =====
 const badgeMap = {
-  completed: 'badge-completed',
-  inprogress: 'badge-inprogress',
-  assigned: 'badge-assigned',
-  pending: 'badge-pending',
-  cancelled: 'badge-pending'
+  completed: "badge-completed",
+  inprogress: "badge-inprogress",
+  assigned: "badge-assigned",
+  pending: "badge-pending",
+  cancelled: "badge-pending",
 };
 
 function formatDateDisplay(dStr) {
-  if (!dStr) return '';
+  if (!dStr) return "";
   const d = new Date(dStr);
-  return isNaN(d) ? dStr : d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  return isNaN(d)
+    ? dStr
+    : d.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      });
 }
 
 function updateProviderDashboard() {
@@ -100,7 +106,7 @@ function updateProviderDashboard() {
 }
 
 function renderTimeline() {
-  const grid = document.getElementById('timeline-grid');
+  const grid = document.getElementById("timeline-grid");
   const upcoming = jobs.slice(0, 4);
   if (!grid) return;
   grid.innerHTML = upcoming

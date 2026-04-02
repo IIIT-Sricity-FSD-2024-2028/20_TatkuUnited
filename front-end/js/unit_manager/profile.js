@@ -62,7 +62,10 @@
   function populateFields() {
     setInput("full-name", um ? um.name : "Unit Manager");
     setInput("email", um ? um.email : "");
-    setInput("phone", um ? String(um.phone || "").replace(/^\+91/, "") : "");
+
+    var rawPhone = um && um.phone ? String(um.phone) : "";
+    setInput("phone", rawPhone.replace(/\D/g, "").slice(-10));
+
     setInput("dob", um && um.dob ? um.dob : "");
 
     setInput("unit-name", unit ? unit.unit_name : "");
@@ -109,6 +112,8 @@
       var name = (document.getElementById("full-name").value || "").trim();
       var phone = (document.getElementById("phone").value || "").trim();
       var dob = (document.getElementById("dob").value || "").trim();
+      var codeSpan = document.getElementById("phone-code");
+      var countryCode = codeSpan ? codeSpan.textContent : "+91";
 
       if (!name) {
         showToast("Name cannot be empty.", "error");
@@ -120,7 +125,7 @@
       }
 
       um.name = name;
-      um.phone = phone ? "+91" + phone : "";
+      um.phone = phone;
       um.dob = dob || null; // custom UI field, persisted in shared store
       um.updated_at = new Date().toISOString();
 
@@ -174,9 +179,14 @@
 
     var reader = new FileReader();
     reader.onload = function (e) {
-      um.pfp_url = e.target.result;
-      um.updated_at = new Date().toISOString();
-      AppStore.save();
+      var imageData = e.target.result;
+      var res = Auth.updateProfilePicture(imageData);
+      if (!res.success) {
+        showToast("Unable to update profile photo.", "error");
+        return;
+      }
+
+      um.pfp_url = imageData;
       renderAvatar(um.pfp_url, um.name);
       showToast("Profile photo updated ✓", "success");
     };
@@ -235,9 +245,15 @@
   }
 
   window.handlePasswordChange = function () {
-    var currentPwd = document.getElementById("pwd-current") ? document.getElementById("pwd-current").value : "";
-    var newPwd = document.getElementById("pwd-new") ? document.getElementById("pwd-new").value : "";
-    var confirmPwd = document.getElementById("pwd-confirm") ? document.getElementById("pwd-confirm").value : "";
+    var currentPwd = document.getElementById("pwd-current")
+      ? document.getElementById("pwd-current").value
+      : "";
+    var newPwd = document.getElementById("pwd-new")
+      ? document.getElementById("pwd-new").value
+      : "";
+    var confirmPwd = document.getElementById("pwd-confirm")
+      ? document.getElementById("pwd-confirm").value
+      : "";
 
     if (!currentPwd || !newPwd || !confirmPwd) {
       showPwdError("Please fill in all password fields.");

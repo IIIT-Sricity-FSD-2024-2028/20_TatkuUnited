@@ -99,7 +99,10 @@ function saveSection(section) {
 
         if (nameEl) data.provider.name = nameEl.value;
         if (emailEl) data.provider.email = emailEl.value;
-        if (phoneEl) data.provider.phone = "+91 " + phoneEl.value;
+        if (phoneEl) {
+          data.provider.phone = (phoneEl.value || "").trim();
+        }
+
         if (addrEl) data.provider.address = addrEl.value;
 
         // Update topbar instantly
@@ -108,8 +111,9 @@ function saveSection(section) {
           .forEach((el) => (el.textContent = data.provider.name || "Provider"));
       } else if (section === "professional") {
         const skillsRows = document.querySelectorAll(".skill-row");
-        data.provider.skills = Array.from(skillsRows)
-          .map((row) => row.getAttribute("data-skill"));
+        data.provider.skills = Array.from(skillsRows).map((row) =>
+          row.getAttribute("data-skill"),
+        );
 
         // Serialize File objects generically for JSON mock-storage safety
         data.provider.resumeFiles = uploadedFiles["resume-list"].map((f) => ({
@@ -137,6 +141,69 @@ function saveSection(section) {
       ? "Personal info saved!"
       : "Professional details saved!",
   );
+}
+
+function renderProviderAvatar(imageSrc, name) {
+  const avatarEl = document.getElementById("profile-avatar");
+  if (!avatarEl) return;
+
+  if (imageSrc) {
+    avatarEl.innerHTML = `<img src="${imageSrc}" alt="Provider avatar" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+    return;
+  }
+
+  const fallback = (name || "Provider")
+    .trim()
+    .split(" ")
+    .filter(Boolean)
+    .map((w) => w[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
+  avatarEl.textContent = fallback || "P";
+}
+
+function updateAvatar(input) {
+  if (!input || !input.files || !input.files[0]) return;
+  const file = input.files[0];
+
+  if (!file.type.startsWith("image/")) {
+    showToast("Please choose a valid image file.", true);
+    return;
+  }
+
+  if (file.size > 2 * 1024 * 1024) {
+    showToast("Profile photo must be under 2 MB.", true);
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const imageData = e.target.result;
+    const authRes = Auth.updateProfilePicture(imageData);
+    if (!authRes.success) {
+      showToast("Unable to update profile photo.", true);
+      return;
+    }
+
+    if (window.getData && window.setData) {
+      const data = window.getData();
+      if (data && data.provider) {
+        data.provider.pfp_url = imageData;
+        window.setData(data);
+      }
+    }
+
+    renderProviderAvatar(
+      imageData,
+      document.getElementById("full-name")?.value,
+    );
+    document.querySelectorAll(".user-avatar").forEach((el) => {
+      el.innerHTML = `<img src="${imageData}" alt="Provider" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
+    });
+    showToast("Profile photo updated ✓");
+  };
+  reader.readAsDataURL(file);
 }
 
 // ── Resume & Certificates Upload ─────────────────────────────────────────────
@@ -260,7 +327,6 @@ function removeUploadedFile(btn, listId) {
   setTimeout(() => item.remove(), 180);
 }
 
-
 function toggleAddSkill() {
   const panel = document.getElementById("add-skill-panel");
   const toggle = document.getElementById("add-skill-toggle");
@@ -295,9 +361,9 @@ function requestVerifySkill() {
     btn.disabled = false;
     select.value = "";
     toggleAddSkill();
-    
+
     // Auto-save the new skill to global state
-    saveSection('professional');
+    saveSection("professional");
   }, 1000);
 
   showToast(`Skill "${skill}" requested for verification.`);
@@ -436,6 +502,8 @@ document.addEventListener("DOMContentLoaded", () => {
         });
       }
 
+      renderProviderAvatar(sp.pfp_url, sp.name);
+
       // Fill Personal Information
       const nameEl = document.getElementById("full-name");
       const emailEl = document.getElementById("email");
@@ -445,11 +513,8 @@ document.addEventListener("DOMContentLoaded", () => {
       if (nameEl) nameEl.value = sp.name || "";
       if (emailEl) emailEl.value = sp.email || "";
       if (phoneEl) {
-        // Simple extraction of phone excluding +91 if needed, assuming the mockdata is just 10 digits
-        let rawPhone = sp.phone || "";
-        if (rawPhone.startsWith("+91"))
-          rawPhone = rawPhone.replace("+91", "").trim();
-        phoneEl.value = rawPhone;
+        const rawPhone = sp.phone ? String(sp.phone) : "";
+        phoneEl.value = rawPhone.replace(/\D/g, "").slice(-10);
       }
       if (addrEl) addrEl.value = sp.address || "";
 

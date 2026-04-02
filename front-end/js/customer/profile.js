@@ -28,10 +28,26 @@ function showProfileToast(msg) {
 function updateAvatar(input) {
   const file = input.files[0];
   if (!file) return;
+  if (!file.type.startsWith("image/")) {
+    showProfileToast("Please choose a valid image file.");
+    return;
+  }
+  if (file.size > 2 * 1024 * 1024) {
+    showProfileToast("Profile photo must be under 2 MB.");
+    return;
+  }
+
   const reader = new FileReader();
   reader.onload = (e) => {
+    const imageData = e.target.result;
+    const res = Auth.updateProfilePicture(imageData);
+    if (!res.success) {
+      showProfileToast("Unable to update profile photo. Please try again.");
+      return;
+    }
+
     const el = document.getElementById("profile-avatar");
-    el.innerHTML = `<img src="${e.target.result}" alt="avatar"/>`;
+    el.innerHTML = `<img src="${imageData}" alt="avatar"/>`;
   };
   reader.readAsDataURL(file);
   showProfileToast("Profile photo updated!");
@@ -63,13 +79,25 @@ function saveSection(section) {
     if (session) {
       const nameVal = document.getElementById("full-name").value;
       const emailVal = document.getElementById("email").value;
-      const phoneVal = document.getElementById("phone").value;
+      const phoneVal = (document.getElementById("phone").value || "").trim();
       const dobVal = document.getElementById("dob").value;
+      const codeSpan = document.getElementById("phone-code");
+      const countryCode = codeSpan ? codeSpan.textContent : "+91";
+
+      if (phoneVal && !/^\d{10}$/.test(phoneVal)) {
+        showProfileToast("Phone must be exactly 10 digits.");
+        return;
+      }
+
+      if (phoneVal && !/^\d{10}$/.test(phoneVal)) {
+        showProfileToast("Phone must be exactly 10 digits.");
+        return;
+      }
 
       CRUD.updateRecord("customers", "customer_id", session.id, {
         full_name: nameVal,
         email: emailVal,
-        phone: phoneVal,
+        phone: phoneVal ? countryCode + phoneVal : "",
         dob: dobVal,
       });
       // Updating session state in sessionStorage using the correct key
@@ -284,6 +312,7 @@ function renderActivity() {
 
 // ===== PASSWORD MODAL =====
 function openPwdModal() {
+  wirePasswordVisibilityToggles();
   document.getElementById("pwd-modal").classList.add("open");
   document.body.style.overflow = "hidden";
 }
@@ -293,12 +322,47 @@ function closePwdModalBtn() {
   const fields = ["pwd-current", "pwd-new", "pwd-confirm"];
   fields.forEach((id) => {
     const el = document.getElementById(id);
-    if (el) el.value = "";
+    if (el) {
+      el.value = "";
+      el.type = "password";
+    }
   });
+  resetPasswordVisibilityToggles();
 }
 function closePwdModal(e) {
   if (e.target === document.getElementById("pwd-modal")) closePwdModalBtn();
 }
+
+function wirePasswordVisibilityToggles() {
+  document.querySelectorAll(".pwd-toggle").forEach((btn) => {
+    if (btn.dataset.wired === "1") return;
+    btn.dataset.wired = "1";
+    btn.addEventListener("click", () => {
+      const targetId = btn.getAttribute("data-target");
+      const input = document.getElementById(targetId);
+      if (!input) return;
+
+      const shouldShow = input.type === "password";
+      input.type = shouldShow ? "text" : "password";
+
+      const eyeOpen = btn.querySelector(".eye-open");
+      const eyeClosed = btn.querySelector(".eye-closed");
+      if (eyeOpen) eyeOpen.style.display = shouldShow ? "none" : "inline";
+      if (eyeClosed) eyeClosed.style.display = shouldShow ? "inline" : "none";
+    });
+  });
+}
+
+function resetPasswordVisibilityToggles() {
+  document.querySelectorAll(".pwd-toggle").forEach((btn) => {
+    const eyeOpen = btn.querySelector(".eye-open");
+    const eyeClosed = btn.querySelector(".eye-closed");
+    if (eyeOpen) eyeOpen.style.display = "inline";
+    if (eyeClosed) eyeClosed.style.display = "none";
+  });
+}
+
+wirePasswordVisibilityToggles();
 
 function savePassword() {
   const currentVal = document.getElementById("pwd-current")?.value;
@@ -310,13 +374,21 @@ function savePassword() {
     return;
   }
 
-  if (newVal.length < 8) {
-    showProfileToast("New password must be strictly at least 8 characters");
+  if (newVal !== confirmVal) {
+    showProfileToast("Your new passwords do not perfectly match");
     return;
   }
 
-  if (newVal !== confirmVal) {
-    showProfileToast("Your new passwords do not perfectly match");
+  const passwordCheck =
+    window.Auth && typeof Auth.validatePasswordPolicy === "function"
+      ? Auth.validatePasswordPolicy(newVal)
+      : { valid: newVal.length >= 8 };
+
+  if (!passwordCheck.valid) {
+    showProfileToast(
+      passwordCheck.error ||
+        "Password must be at least 8 characters and include uppercase, lowercase, number, and special character with no spaces.",
+    );
     return;
   }
 
@@ -327,6 +399,11 @@ function savePassword() {
   } else {
     const errorMap = {
       invalid_current_password: "Current password is incorrect",
+      invalid_new_password:
+        res.message ||
+        "Password must be at least 8 characters and include uppercase, lowercase, number, and special character with no spaces.",
+      new_password_same_as_current:
+        "New password must be different from current password.",
       not_logged_in: "Session expired. Please log in again.",
     };
     showProfileToast(errorMap[res.error] || "Failed to update password");
@@ -335,10 +412,39 @@ function savePassword() {
 
 // ===== DANGER & LOGOUT =====
 function confirmDelete() {
-  // Bypassed native window.confirm to avoid browser dialog blocking
-  showProfileToast(
-    "Account deletion request submitted. A super user will contact you.",
-  );
+  const session = Auth.getSession();
+  if (!session || session.role !== "customer") {
+    showProfileToast("Session expired. Please log in again.");
+    return;
+  }
+
+  showConfirmDialog({
+    title: "Delete Account",
+    message:
+      "Are you sure you want to permanently delete your account? This action cannot be reverted.",
+    confirmLabel: "Delete Permanently",
+    cancelLabel: "Cancel",
+    onConfirm: () => {
+      const customers = AppStore.getTable("customers") || [];
+      const index = customers.findIndex((c) => c.customer_id === session.id);
+
+      if (index === -1) {
+        showProfileToast("Account not found.");
+        return;
+      }
+
+      customers.splice(index, 1);
+
+      if (Array.isArray(window.AuthRegistry)) {
+        window.AuthRegistry = window.AuthRegistry.filter(
+          (u) => !(u.role === "customer" && u.id === session.id),
+        );
+      }
+
+      AppStore.save();
+      Auth.logout();
+    },
+  });
 }
 
 function confirmLogout() {
@@ -371,8 +477,13 @@ AppStore.ready.then(() => {
     .slice(0, 2)
     .toUpperCase();
   const avatar = document.getElementById("profile-avatar");
-  if (avatar && !avatar.querySelector("img"))
-    avatar.textContent = initials || "U";
+  if (avatar) {
+    if (session.pfp_url) {
+      avatar.innerHTML = `<img src="${session.pfp_url}" alt="avatar"/>`;
+    } else if (!avatar.querySelector("img")) {
+      avatar.textContent = initials || "U";
+    }
+  }
 
   // Load customer data to populate addresses/payments
   const customers = AppStore.getTable("customers") || [];
@@ -405,7 +516,12 @@ AppStore.ready.then(() => {
 
   const phoneInput = document.getElementById("phone");
   const dobInput = document.getElementById("dob");
-  if (phoneInput && me.phone) phoneInput.value = me.phone;
+
+  // Keep backward compatibility for old values with country code.
+  const rawPhone = me.phone ? String(me.phone) : "";
+  const digits = rawPhone.replace(/\D/g, "").slice(-10);
+  if (phoneInput) phoneInput.value = digits;
+
   if (dobInput && me.dob) dobInput.value = me.dob;
 
   // Load preferences

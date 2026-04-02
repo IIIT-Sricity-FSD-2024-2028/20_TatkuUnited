@@ -90,7 +90,7 @@
           ? service.service_id === selectedServiceId
           : index === 0;
         var isUnavailable = service.is_available === false;
-        var unavailClass = isUnavailable ? ' unavailable' : '';
+        var unavailClass = isUnavailable ? " unavailable" : "";
         return (
           '<button class="sub-service-card' +
           (active ? " active" : "") +
@@ -207,13 +207,15 @@
 
         var bullets = createBulletPoints(service, faqsByService);
         var isUnavailable = service.is_available === false;
-        var unavailClass = isUnavailable ? ' unavailable' : '';
+        var unavailClass = isUnavailable ? " unavailable" : "";
         var bookBtnAttr = isUnavailable
           ? ' style="background:#94a3b8;cursor:not-allowed;pointer-events:none"'
-          : '';
-        var bookBtnText = isUnavailable ? 'Unavailable' : 'Add to Cart';
+          : "";
+        var bookBtnText = isUnavailable ? "Unavailable" : "Add to Cart";
         return (
-          '<div class="explore-item' + unavailClass + '" id="service-' +
+          '<div class="explore-item' +
+          unavailClass +
+          '" id="service-' +
           service.service_id +
           '" data-rating="' +
           serviceRatingFloor +
@@ -261,7 +263,11 @@
           '" alt="' +
           service.service_name +
           '" /></div>' +
-          '<button class="btn-book-item"' + bookBtnAttr + '>' + bookBtnText + '</button>' +
+          '<button class="btn-book-item"' +
+          bookBtnAttr +
+          ">" +
+          bookBtnText +
+          "</button>" +
           "</div>" +
           "</div>"
         );
@@ -306,15 +312,13 @@
             encodeURIComponent(price);
           return;
         }
-        var orig = btn.textContent;
-        btn.textContent = "Booked!";
-        btn.style.background = "#15803d";
-        btn.disabled = true;
-        setTimeout(function () {
-          btn.textContent = orig;
-          btn.style.background = "";
-          btn.disabled = false;
-        }, 1800);
+        var next = encodeURIComponent(
+          window.location.pathname +
+            window.location.search +
+            window.location.hash,
+        );
+        window.location.href =
+          "/front-end/html/auth_pages/login.html?next=" + next;
       });
     });
   }
@@ -327,8 +331,8 @@
           var navAuth = document.querySelector(".nav-auth");
           if (navAuth) {
             navAuth.innerHTML =
-              '<a href="../customer/cart.html" style="margin-right: 20px; text-decoration: none; color: #1e293b; font-weight: 500; display:flex; align-items:center; gap:6px;"><svg viewBox="0 0 24 24" style="width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2;"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>Cart</a>' +
-              '<a href="../customer/home.html" style="background: var(--primary, #1e3a8a); color: #fff; padding: 0.5rem 1.25rem; border-radius: 6px; font-weight: 500; text-decoration: none; display:flex; align-items:center; gap:8px;"><svg viewBox="0 0 24 24" style="width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Dashboard</a>';
+              '<a href="../customer/cart.html" class="cart-btn" title="Cart"><svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" /><line x1="3" y1="6" x2="21" y2="6" /><path d="M16 10a4 4 0 01-8 0" /></svg></a>' +
+              '<a href="../customer/home.html" class="user-avatar-btn" title="Dashboard"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" /><circle cx="12" cy="7" r="4" /></svg></a>';
           }
           var navLinks = document.querySelector(".nav-links");
           if (navLinks) {
@@ -495,7 +499,9 @@
     }
     if (catRating) {
       catRating.textContent =
-        typeof stats.avgRating === "number" ? stats.avgRating.toFixed(2) : "N/A";
+        typeof stats.avgRating === "number"
+          ? stats.avgRating.toFixed(2)
+          : "N/A";
     }
     if (catBookings) {
       catBookings.textContent = servicesInCategory.length
