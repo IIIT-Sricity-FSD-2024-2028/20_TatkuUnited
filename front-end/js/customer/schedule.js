@@ -27,6 +27,22 @@ function normalizeText(value) {
     .trim();
 }
 
+function getCurrentCustomerAddress(customerId) {
+  if (!window.AppStore || typeof AppStore.getTable !== "function") return "";
+  if (!customerId) return "";
+
+  const customers = AppStore.getTable("customers") || [];
+  const me = customers.find((c) => c.customer_id === customerId);
+  if (!me) return "";
+
+  if (Array.isArray(me.saved_addresses) && me.saved_addresses.length > 0) {
+    const primary = me.saved_addresses[0];
+    if (primary && primary.text) return primary.text;
+  }
+
+  return me.address || "";
+}
+
 function getServiceLocationFromMockData(serviceName) {
   if (!window.AppStore || typeof AppStore.getTable !== "function") return "";
 
@@ -158,11 +174,12 @@ function addToCart() {
     }
   }
   const cart = getCart();
+  const liveCustomerAddress = getCurrentCustomerAddress(session.id);
   const item = {
     id: Date.now(),
     service: serviceName,
     price: servicePrice,
-    location: serviceLocation,
+    location: liveCustomerAddress || serviceLocation,
     mode: currentMode,
     date:
       currentMode === "scheduled"
@@ -202,7 +219,7 @@ AppStore.ready.then(() => {
   serviceName = params.get("service") || "Home Deep Cleaning";
   servicePrice = params.get("price") || "₹ 1200";
   serviceLocation =
-    getServiceLocationFromMockData(serviceName) ||
+    getCurrentCustomerAddress(session.id) ||
     params.get("location") ||
     "Location unavailable";
 

@@ -23,6 +23,28 @@ function parsePrice(p) {
   return parseInt((p || "0").replace(/[^\d]/g, "")) || 0;
 }
 
+function getCurrentCustomerAddress() {
+  const customerId = getCustomerSessionId();
+  if (
+    !customerId ||
+    !window.AppStore ||
+    typeof AppStore.getTable !== "function"
+  ) {
+    return "";
+  }
+
+  const customers = AppStore.getTable("customers") || [];
+  const me = customers.find((c) => c.customer_id === customerId);
+  if (!me) return "";
+
+  if (Array.isArray(me.saved_addresses) && me.saved_addresses.length > 0) {
+    const primary = me.saved_addresses[0];
+    if (primary && primary.text) return primary.text;
+  }
+
+  return me.address || "";
+}
+
 function getBookingRules() {
   if (!window.AppStore || typeof AppStore.getBookingRules !== "function") {
     return {
@@ -135,6 +157,9 @@ function render() {
 
   document.getElementById("cart-items").innerHTML = cart
     .map((item, idx) => {
+      const customerAddress = getCurrentCustomerAddress();
+      const displayLocation =
+        customerAddress || item.location || "Location unavailable";
       const isScheduled = item.mode === "scheduled";
       const displayDate =
         item.date && item.date !== "ASAP"
@@ -164,7 +189,7 @@ function render() {
           <div class="cart-item-meta">
             <div class="cart-item-meta-row">
               <svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
-              ${item.location}
+              ${displayLocation}
             </div>
             <div class="cart-item-meta-row">
               <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>

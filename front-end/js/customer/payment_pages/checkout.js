@@ -58,6 +58,97 @@ function resolveServiceIdByName(serviceName) {
   return softMatch ? softMatch.service_id : null;
 }
 
+function getCurrentCustomerRecord(customerId) {
+  if (
+    !customerId ||
+    !window.AppStore ||
+    typeof AppStore.getTable !== "function"
+  ) {
+    return null;
+  }
+
+  const customers = AppStore.getTable("customers") || [];
+  return customers.find((c) => c.customer_id === customerId) || null;
+}
+
+function resolveCustomerAddress(customer) {
+  if (!customer) return "";
+  if (
+    Array.isArray(customer.saved_addresses) &&
+    customer.saved_addresses.length > 0
+  ) {
+    const primary = customer.saved_addresses[0];
+    if (primary && primary.text) return primary.text;
+  }
+  return customer.address || "";
+}
+
+function parseAddressParts(addressText) {
+  const raw = String(addressText || "").trim();
+  if (!raw) return { line1: "", line2: "" };
+
+  const parts = raw
+    .split(",")
+    .map((part) => part.trim())
+    .filter(Boolean);
+
+  if (parts.length <= 1) {
+    return { line1: raw, line2: "" };
+  }
+
+  return {
+    line1: parts.slice(0, -1).join(", "),
+    line2: parts[parts.length - 1],
+  };
+}
+
+function buildAddressText(line1, line2) {
+  const a = String(line1 || "").trim();
+  const b = String(line2 || "").trim();
+  return b ? `${a}, ${b}` : a;
+}
+
+function setAddressCardUI(name, phone, line1, line2) {
+  document.getElementById("addrName").textContent = name || "Customer";
+  document.getElementById("addrPhone").innerHTML = `
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px;stroke:#94a3b8;flex-shrink:0"><path d="M22 16.92v3a2 2 0 0 1-2.18 2A19.79 19.79 0 0 1 3.1 5.18 2 2 0 0 1 5.09 3h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L9.09 10.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 17v-.08z"/></svg>
+    ${phone || "N/A"}
+  `;
+  document.getElementById("addrLine1").textContent =
+    line1 || "Address not available";
+  document.getElementById("addrLine2").textContent = line2 || "";
+}
+
+function setAddressFormUI(name, phone, line1, line2) {
+  document.getElementById("inputName").value = name || "";
+  document.getElementById("inputPhone").value = phone || "";
+  document.getElementById("inputLine1").value = line1 || "";
+  document.getElementById("inputLine2").value = line2 || "";
+}
+
+function persistCustomerAddress(session, name, phone, line1, line2) {
+  const customer = getCurrentCustomerRecord(session.id);
+  if (!customer) return;
+
+  const fullAddress = buildAddressText(line1, line2);
+  customer.full_name = name || customer.full_name;
+  customer.phone = phone || customer.phone;
+  customer.address = fullAddress;
+
+  if (
+    Array.isArray(customer.saved_addresses) &&
+    customer.saved_addresses.length > 0
+  ) {
+    customer.saved_addresses[0].text = fullAddress;
+  } else {
+    customer.saved_addresses = [{ id: 1, tag: "Home", text: fullAddress }];
+  }
+
+  if (window.AppStore && typeof AppStore.save === "function") {
+    AppStore.save();
+  }
+}
+
 /* ── Address Edit ── */
 const changeAddrBtn = document.getElementById("changeAddrBtn");
 const addressForm = document.getElementById("addressForm");
@@ -78,6 +169,9 @@ cancelAddrBtn.addEventListener("click", () => {
 });
 
 saveAddrBtn.addEventListener("click", () => {
+  const session = Auth.getSession();
+  if (!session || session.role !== "customer") return;
+
   const name = document.getElementById("inputName").value.trim();
   const phone = document.getElementById("inputPhone").value.trim();
   const line1 = document.getElementById("inputLine1").value.trim();
@@ -88,13 +182,14 @@ saveAddrBtn.addEventListener("click", () => {
     return;
   }
 
-  document.getElementById("addrName").textContent = name;
-  document.getElementById("addrPhone").innerHTML = `
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px;stroke:#94a3b8;flex-shrink:0"><path d="M22 16.92v3a2 2 0 0 1-2.18 2A19.79 19.79 0 0 1 3.1 5.18 2 2 0 0 1 5.09 3h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L9.09 10.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 17v-.08z"/></svg>
-    ${phone}
-  `;
-  document.getElementById("addrLine1").textContent = line1;
-  document.getElementById("addrLine2").textContent = line2;
+  setAddressCardUI(name, phone, line1, line2);
+  persistCustomerAddress(session, name, phone, line1, line2);
+
+  const cart = getCheckoutCart(session.id).map((item) => ({
+    ...item,
+    location: buildAddressText(line1, line2),
+  }));
+  CustomerState.setCart(session.id, cart);
 
   addressForm.classList.remove("visible");
   addressCard.style.opacity = "1";
@@ -172,13 +267,17 @@ confirmBtn.addEventListener("click", () => {
       if (!firstId) firstId = bId;
       const nowIso = new Date().toISOString();
       const bookingAmount = parseAmount(item.price);
+      const checkoutAddress = buildAddressText(
+        document.getElementById("addrLine1").textContent,
+        document.getElementById("addrLine2").textContent,
+      );
+
       const newBooking = {
         booking_id: bId,
         customer_id: session.id,
         booking_type: item.mode === "instant" ? "INSTANT" : "SCHEDULED",
         status: "PENDING",
-        service_address:
-          item.location || document.getElementById("addrLine1").textContent,
+        service_address: checkoutAddress || item.location,
         service_name: item.service,
         price: item.price,
         provider_id: null,
@@ -304,16 +403,21 @@ AppStore.ready.then(() => {
     totalAmountEl.textContent = "₹" + total.toLocaleString("en-IN");
   }
 
-  // Populate address from AppStore if available
-  const customers = AppStore.getTable("customers") || [];
-  const me = customers.find((c) => c.customer_id === session.id);
-  if (me && me.full_name) {
-    document.getElementById("addrName").textContent = me.full_name;
-    if (me.phone) {
-      document.getElementById("addrPhone").innerHTML = `
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px;stroke:#94a3b8;flex-shrink:0"><path d="M22 16.92v3a2 2 0 0 1-2.18 2A19.79 19.79 0 0 1 3.1 5.18 2 2 0 0 1 5.09 3h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L9.09 10.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 17v-.08z"/></svg>
-        ${me.phone}
-      `;
-    }
+  // Populate address and form from AppStore customer record
+  const me = getCurrentCustomerRecord(session.id);
+  if (me) {
+    const name = me.full_name || session.name || "Customer";
+    const phone = me.phone || "";
+    const resolvedAddress = resolveCustomerAddress(me);
+    const addressParts = parseAddressParts(resolvedAddress);
+
+    setAddressCardUI(name, phone, addressParts.line1, addressParts.line2);
+    setAddressFormUI(name, phone, addressParts.line1, addressParts.line2);
+
+    const cartWithCurrentAddress = cart.map((item) => ({
+      ...item,
+      location: resolvedAddress || item.location,
+    }));
+    CustomerState.setCart(session.id, cartWithCurrentAddress);
   }
 });
