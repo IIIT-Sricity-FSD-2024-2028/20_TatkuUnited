@@ -300,13 +300,13 @@
             encodeURIComponent(price);
           return;
         }
-        var orig = btn.textContent;
-        btn.textContent = "Booked!";
-        btn.style.background = "#15803d";
-        setTimeout(function () {
-          btn.textContent = orig;
-          btn.style.background = "";
-        }, 1500);
+        var next = encodeURIComponent(
+          window.location.pathname +
+            window.location.search +
+            window.location.hash,
+        );
+        window.location.href =
+          "/front-end/html/auth_pages/login.html?next=" + next;
       });
     });
   }
@@ -319,8 +319,8 @@
           var navAuth = document.querySelector(".nav-auth");
           if (navAuth) {
             navAuth.innerHTML =
-              '<a href="../customer/cart.html" style="margin-right: 20px; text-decoration: none; color: #1e293b; font-weight: 500; display:flex; align-items:center; gap:6px;"><svg viewBox="0 0 24 24" style="width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2;"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>Cart</a>' +
-              '<a href="../customer/home.html" style="background: var(--primary, #1e3a8a); color: #fff; padding: 0.5rem 1.25rem; border-radius: 6px; font-weight: 500; text-decoration: none; display:flex; align-items:center; gap:8px;"><svg viewBox="0 0 24 24" style="width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Dashboard</a>';
+              '<a href="../customer/cart.html" class="cart-btn" title="Cart"><svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" /><line x1="3" y1="6" x2="21" y2="6" /><path d="M16 10a4 4 0 01-8 0" /></svg></a>' +
+              '<a href="../customer/home.html" class="user-avatar-btn" title="Dashboard"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" /><circle cx="12" cy="7" r="4" /></svg></a>';
           }
           var navLinks = document.querySelector(".nav-links");
           if (navLinks) {

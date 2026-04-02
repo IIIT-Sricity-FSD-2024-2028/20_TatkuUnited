@@ -1056,31 +1056,8 @@ svg {
   gap: 14px;
   margin-bottom: 22px;
 }
-.pwd-input-wrap {
-  position: relative;
-}
 .modal-form .form-field input {
   width: 100%;
-}
-.pwd-input-wrap input {
-  padding-right: 42px;
-}
-.pwd-toggle {
-  position: absolute;
-  right: 10px;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 28px;
-  height: 28px;
-  border: none;
-  background: transparent;
-  color: var(--text-2);
-  cursor: pointer;
-  display: grid;
-  place-items: center;
-}
-.pwd-toggle:hover {
-  color: var(--text-1);
 }
 .modal-footer {
   display: flex;

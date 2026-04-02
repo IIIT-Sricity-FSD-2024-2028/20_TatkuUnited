@@ -82,6 +82,15 @@ function setMode(mode) {
 }
 
 function addToCart() {
+  const session = Auth.getSession();
+  if (!session || session.role !== "customer") {
+    const next = encodeURIComponent(
+      window.location.pathname + window.location.search + window.location.hash,
+    );
+    window.location.href = "/front-end/html/auth_pages/login.html?next=" + next;
+    return;
+  }
+
   const rules = getBookingRules();
 
   if (currentMode === "instant" && !rules.instantBooking) {

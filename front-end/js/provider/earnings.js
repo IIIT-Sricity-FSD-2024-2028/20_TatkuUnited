@@ -63,50 +63,47 @@ function normalizePaymentStatus(rawStatus) {
 }
 
 function buildPayoutRows() {
-  const assignments =
-    (window.AppStore && AppStore.getTable("job_assignments")) || [];
+  // Get current provider's ID from session/data
+  const providerId =
+    (window.providerSession && window.providerSession.providerId) || "SP001";
+
+  const ledger = (window.AppStore && AppStore.getTable("revenue_ledger")) || [];
   const transactions =
     (window.AppStore && AppStore.getTable("transactions")) || [];
 
-  const assignmentById = new Map(assignments.map((a) => [a.assignment_id, a]));
+  // Filter ledger entries for this provider (role = "provider")
+  const providerLedgerEntries = ledger.filter(
+    (entry) =>
+      entry.role === "provider" && entry.service_provider_id === providerId,
+  );
 
-  payoutRows = userJobs.map((job) => {
-    const assignment = assignmentById.get(job.id);
-    const latestTxn = getLatestTransaction(
-      assignment && assignment.booking_id,
-      transactions,
-    );
-    const status = normalizePaymentStatus(
-      latestTxn && latestTxn.payment_status,
-    );
-    const amount = latestTxn
-      ? Number(latestTxn.amount || 0)
-      : Number(job.price || 0);
-    const payoutDate =
-      (latestTxn && (latestTxn.verified_at || latestTxn.transaction_at)) ||
-      (assignment && assignment.updated_at) ||
-      job.date ||
-      null;
-    const refId =
-      (latestTxn && latestTxn.transaction_id) ||
-      (assignment && assignment.assignment_id) ||
-      job.id;
+  // Build transaction map to get transaction details
+  const txnById = new Map(transactions.map((t) => [t.transaction_id, t]));
+
+  // Convert ledger entries to payout rows
+  payoutRows = providerLedgerEntries.map((ledger_entry) => {
+    const txn = txnById.get(ledger_entry.transaction_id);
+    const status =
+      ledger_entry.payout_status.toLowerCase() === "paid" ? "paid" : "pending";
+    const effectiveDate =
+      status === "paid"
+        ? ledger_entry.payout_at || ledger_entry.created_at
+        : ledger_entry.created_at;
 
     return {
-      ref: refId,
-      date: payoutDate,
-      displayDate: formatDisplayDate(payoutDate),
-      amount,
-      amountLabel: formatCurrency(amount),
+      ref: ledger_entry.ledger_id,
+      date: effectiveDate,
+      displayDate: formatDisplayDate(effectiveDate),
+      amount: Number(ledger_entry.amount || 0),
+      amountLabel: formatCurrency(ledger_entry.amount),
       status,
-      customer: job.customer || "-",
-      service: job.service || "-",
-      bookingId: assignment ? assignment.booking_id : null,
-      paymentMethod: latestTxn ? latestTxn.payment_method || "-" : "-",
-      transactionId: latestTxn ? latestTxn.transaction_id || "-" : "-",
-      paymentStatusRaw: latestTxn
-        ? latestTxn.payment_status || "PENDING"
-        : "PENDING",
+      customer: txn ? txn.booking_id : "-",
+      service: txn ? txn.booking_id : "-",
+      bookingId: txn ? txn.booking_id : null,
+      paymentMethod: txn ? txn.payment_method || "-" : "-",
+      transactionId: txn ? txn.transaction_id || "-" : "-",
+      paymentStatusRaw: txn ? txn.payment_status || "PENDING" : "PENDING",
+      originalAmount: txn ? Number(txn.amount || 0) : 0,
     };
   });
 
@@ -123,36 +120,36 @@ function renderStats() {
     .filter((row) => row.status === "pending")
     .reduce((sum, row) => sum + row.amount, 0);
 
-  const completedCount = userJobs.filter(
-    (job) => job.status === "completed",
-  ).length;
+  const grossEarnings = payoutRows
+    .filter((row) => row.status === "paid")
+    .reduce((sum, row) => sum + row.originalAmount, 0);
 
   const paidCount = payoutRows.filter((row) => row.status === "paid").length;
   const avgValue = paidCount > 0 ? Math.round(totalRevenue / paidCount) : 0;
 
   const dynamicStats = [
     {
-      label: "Total Revenue",
+      label: "Total Earnings",
       value: formatCurrency(totalRevenue),
-      sub: "Lifetime earnings",
+      sub: `${paidCount} bookings completed`,
       subClass: "stat-change positive",
     },
     {
       label: "Pending Payout",
       value: formatCurrency(pendingPayout),
-      sub: "Jobs in progress",
+      sub: "Awaiting settlement",
       subClass: "stat-sub",
     },
     {
-      label: "Completed Jobs",
-      value: completedCount.toString(),
-      sub: "Total successful jobs",
+      label: "Platform GMV",
+      value: formatCurrency(grossEarnings),
+      sub: "Your 78% cut earnings",
       subClass: "stat-blue",
     },
     {
-      label: "Average Job Value",
+      label: "Average Booking Value",
       value: formatCurrency(avgValue),
-      sub: "Based on completed jobs",
+      sub: "78% of customer payment",
       subClass: "stat-sub",
     },
   ];
@@ -277,26 +274,36 @@ function closeReceipt() {
 function downloadReceipt() {
   if (!activeReceiptRef) return;
 
-  const detailsNode = document.getElementById("receipt-details");
-  if (!detailsNode) return;
+  const row = payoutByRef.get(activeReceiptRef);
+  if (!row) return;
 
-  const rawLines = detailsNode.innerText
-    .split("\n")
-    .map((line) => line.trim())
-    .filter((line) => line.length > 0);
+  const entries = [
+    ["Ref #", row.ref],
+    ["Date", row.displayDate],
+    ["Customer", row.customer],
+    ["Service", row.service],
+    ["Transaction ID", row.transactionId],
+    ["Payment Method", row.paymentMethod],
+    ["Total Payout", row.amountLabel],
+    ["Status", row.paymentStatusRaw],
+  ];
 
-  let formattedText = "===================================\n";
-  formattedText += "           TATKU UNITED            \n";
-  formattedText += "      PROVIDER PAYOUT RECEIPT      \n";
-  formattedText += "===================================\n\n";
+  const labelWidth = Math.max(...entries.map(([label]) => label.length));
+  const formatLine = (label, value) =>
+    `${label.padEnd(labelWidth, " ")} : ${String(value || "-")}`;
 
-  // Format the key-value pairs nicely
-  rawLines.forEach((line) => {
-    formattedText += line + "\n";
+  let formattedText = "==============================================\n";
+  formattedText += "                TATKU UNITED                  \n";
+  formattedText += "           PROVIDER PAYOUT RECEIPT            \n";
+  formattedText += "==============================================\n\n";
+
+  entries.forEach(([label, value]) => {
+    formattedText += formatLine(label, value) + "\n";
   });
 
-  formattedText += "\n===================================\n";
-  formattedText += "   Powered by Tatku United Inc.    \n";
+  formattedText += "\n==============================================\n";
+  formattedText += "       Payout deposited to registered account.\n";
+  formattedText += "            Powered by Tatku United Inc.      \n";
 
   const blob = new Blob([formattedText], { type: "text/plain;charset=utf-8" });
   const url = URL.createObjectURL(blob);
@@ -408,6 +415,43 @@ function setRange(r) {
   buildChart(r);
 }
 
+function backfillMissingLedgerForProvider() {
+  if (!window.RevenueManager || !window.getData) return;
+
+  const data = window.getData();
+  if (!data) return;
+
+  const providerId =
+    (window.providerSession && window.providerSession.providerId) ||
+    (data.provider && data.provider.service_provider_id) ||
+    "SP001";
+
+  const assignments = (data.job_assignments || []).filter(
+    (ja) =>
+      ja.service_provider_id === providerId &&
+      String(ja.status || "").toUpperCase() === "COMPLETED",
+  );
+
+  assignments.forEach((ja) => {
+    const bookingId = ja.booking_id;
+    const txn = (data.transactions || []).find(
+      (t) =>
+        t.booking_id === bookingId &&
+        String(t.payment_status || "").toUpperCase() === "SUCCESS",
+    );
+
+    if (!txn) return;
+
+    const hasLedger = (data.revenue_ledger || []).some(
+      (l) => l.transaction_id === txn.transaction_id,
+    );
+
+    if (!hasLedger) {
+      window.RevenueManager.generateLedgerEntriesForBooking(bookingId);
+    }
+  });
+}
+
 function init() {
   if (window.initData) {
     window.initData().then(() => {
@@ -428,6 +472,9 @@ function init() {
       if (data.jobs) {
         userJobs = data.jobs;
       }
+
+      // Self-heal older records where job completion happened before ledger generation was added.
+      backfillMissingLedgerForProvider();
 
       buildPayoutRows();
       renderStats();

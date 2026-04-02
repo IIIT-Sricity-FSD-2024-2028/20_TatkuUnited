@@ -94,13 +94,23 @@ function getReviewContext(session, serviceIdFromStorage, bookingIdFromStorage) {
     return { bookingId: null, serviceId, providerId: null };
   }
 
-  if (!serviceId && booking.service_name) {
+  if (!serviceId) {
+    const bookingServices = AppStore.getTable("booking_services") || [];
     const services = AppStore.getTable("services") || [];
-    const service = services.find(
-      (s) => s.service_name === booking.service_name,
+
+    const bookingService = bookingServices.find(
+      (bs) => bs.booking_id === booking.booking_id,
     );
-    if (service) {
-      serviceId = service.service_id;
+
+    if (bookingService && bookingService.service_id) {
+      serviceId = bookingService.service_id;
+    } else if (booking.service_name) {
+      const service = services.find(
+        (s) => s.service_name === booking.service_name,
+      );
+      if (service) {
+        serviceId = service.service_id;
+      }
     }
   }
 
@@ -278,6 +288,11 @@ AppStore.ready.then(() => {
 
   const params = new URLSearchParams(window.location.search);
   const bookingId = params.get("bookingId");
+  const requestedServiceId = params.get("serviceId");
+
+  if (requestedServiceId) {
+    sessionStorage.setItem("review_service_id", requestedServiceId);
+  }
 
   if (bookingId) {
     // Load booking details

@@ -32,9 +32,13 @@ AppStore.ready.then(() => {
   }
 
   let categories = transformCategories(allCategories);
+  const PAGE_SIZE = 8;
+  let currentPage = 1;
+  let filteredCategories = categories.slice();
   let tableActionsBound = false;
   function refreshCategoriesFromStore() {
     categories = transformCategories(AppStore.getTable("categories") || []);
+    filteredCategories = categories.slice();
   }
 
   let editingId = null;
@@ -80,10 +84,18 @@ AppStore.ready.then(() => {
     if (!tbody) return;
     tbody.innerHTML = "";
 
-    if (data.length === 0) {
+    const totalRows = data.length;
+    const totalPages = Math.max(1, Math.ceil(totalRows / PAGE_SIZE));
+    if (currentPage > totalPages) currentPage = totalPages;
+    if (currentPage < 1) currentPage = 1;
+
+    const start = (currentPage - 1) * PAGE_SIZE;
+    const pageRows = data.slice(start, start + PAGE_SIZE);
+
+    if (totalRows === 0) {
       tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:32px;color:var(--text-faint)">No categories found matching your filters.</td></tr>`;
     } else {
-      data.forEach((cat, idx) => {
+      pageRows.forEach((cat, idx) => {
         const tr = document.createElement("tr");
         tr.style.animationDelay = idx * 0.04 + "s";
         const statusClass =
@@ -122,7 +134,57 @@ AppStore.ready.then(() => {
     const active = data.filter((c) => c.status === "Active").length;
     const tableFooter = document.getElementById("tableFooter");
     if (tableFooter) {
-      tableFooter.innerHTML = `<span>${data.length} category${data.length !== 1 ? "ies" : ""} shown</span> · <span class="active-count">${active} active</span>`;
+      const shownEnd = Math.min(start + PAGE_SIZE, totalRows);
+      const shownText =
+        totalRows === 0
+          ? "Showing 0-0 of 0"
+          : `Showing ${start + 1}-${shownEnd} of ${totalRows}`;
+
+      const pageButtons = Array.from({ length: totalPages }, (_, i) => i + 1)
+        .map(
+          (pageNum) =>
+            `<button class="page-btn ${pageNum === currentPage ? "active" : ""}" data-page="${pageNum}" type="button">${pageNum}</button>`,
+        )
+        .join("");
+
+      tableFooter.innerHTML = `
+        <div class="table-meta">
+          <span>${shownText}</span> · <span class="active-count">${active} active</span>
+        </div>
+        <div class="pagination-wrap">
+          <button class="page-arrow" data-page-action="prev" type="button" ${currentPage <= 1 ? "disabled" : ""}>‹</button>
+          <div class="page-numbers">${pageButtons}</div>
+          <button class="page-arrow" data-page-action="next" type="button" ${currentPage >= totalPages ? "disabled" : ""}>›</button>
+        </div>
+      `;
+
+      tableFooter.querySelectorAll(".page-btn").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          currentPage = Number(btn.dataset.page);
+          renderTable(data);
+        });
+      });
+
+      const prevBtn = tableFooter.querySelector('[data-page-action="prev"]');
+      const nextBtn = tableFooter.querySelector('[data-page-action="next"]');
+
+      if (prevBtn) {
+        prevBtn.addEventListener("click", () => {
+          if (currentPage > 1) {
+            currentPage -= 1;
+            renderTable(data);
+          }
+        });
+      }
+
+      if (nextBtn) {
+        nextBtn.addEventListener("click", () => {
+          if (currentPage < totalPages) {
+            currentPage += 1;
+            renderTable(data);
+          }
+        });
+      }
     }
   }
 
@@ -154,17 +216,18 @@ AppStore.ready.then(() => {
   }
 
   /* ── filters ── */
-  function applyFilters() {
+  function applyFilters(resetPage = true) {
     const search =
       document.getElementById("categorySearch")?.value.toLowerCase() || "";
-    const filtered = categories.filter((cat) => {
+    filteredCategories = categories.filter((cat) => {
       const matchSearch =
         cat.name.toLowerCase().includes(search) ||
         cat.desc.toLowerCase().includes(search);
       return matchSearch;
     });
-    renderTable(filtered);
-    updateKPIs(filtered);
+    if (resetPage) currentPage = 1;
+    renderTable(filteredCategories);
+    updateKPIs(filteredCategories);
   }
 
   function setupEventListeners() {

@@ -119,7 +119,6 @@ AppStore.ready.then(() => {
 
   function openPwdModal() {
     const pwdModal = document.getElementById("pwd-modal");
-    wirePasswordVisibilityToggles();
     if (pwdModal) pwdModal.classList.add("open");
   }
 
@@ -134,40 +133,7 @@ AppStore.ready.then(() => {
     const fields = ["pwd-current", "pwd-new", "pwd-confirm"];
     fields.forEach((id) => {
       const el = document.getElementById(id);
-      if (el) {
-        el.value = "";
-        el.type = "password";
-      }
-    });
-    resetPasswordVisibilityToggles();
-  }
-
-  function wirePasswordVisibilityToggles() {
-    document.querySelectorAll(".pwd-toggle").forEach((btn) => {
-      if (btn.dataset.wired === "1") return;
-      btn.dataset.wired = "1";
-      btn.addEventListener("click", () => {
-        const targetId = btn.getAttribute("data-target");
-        const input = document.getElementById(targetId);
-        if (!input) return;
-
-        const shouldShow = input.type === "password";
-        input.type = shouldShow ? "text" : "password";
-
-        const eyeOpen = btn.querySelector(".eye-open");
-        const eyeClosed = btn.querySelector(".eye-closed");
-        if (eyeOpen) eyeOpen.style.display = shouldShow ? "none" : "inline";
-        if (eyeClosed) eyeClosed.style.display = shouldShow ? "inline" : "none";
-      });
-    });
-  }
-
-  function resetPasswordVisibilityToggles() {
-    document.querySelectorAll(".pwd-toggle").forEach((btn) => {
-      const eyeOpen = btn.querySelector(".eye-open");
-      const eyeClosed = btn.querySelector(".eye-closed");
-      if (eyeOpen) eyeOpen.style.display = "inline";
-      if (eyeClosed) eyeClosed.style.display = "none";
+      if (el) el.value = "";
     });
   }
 
@@ -186,16 +152,8 @@ AppStore.ready.then(() => {
       return;
     }
 
-    const passwordCheck =
-      window.Auth && typeof Auth.validatePasswordPolicy === "function"
-        ? Auth.validatePasswordPolicy(newPwd)
-        : { valid: newPwd.length >= 8 };
-
-    if (!passwordCheck.valid) {
-      showToast(
-        passwordCheck.error ||
-          "Password must be at least 8 characters and include uppercase, lowercase, number, and special character with no spaces.",
-      );
+    if (newPwd.length < 12) {
+      showToast("New password must be at least 12 characters.");
       return;
     }
 
@@ -206,11 +164,6 @@ AppStore.ready.then(() => {
     } else {
       const errorMap = {
         invalid_current_password: "Current password is incorrect.",
-        invalid_new_password:
-          res.message ||
-          "Password must be at least 8 characters and include uppercase, lowercase, number, and special character with no spaces.",
-        new_password_same_as_current:
-          "New password must be different from current password.",
         not_logged_in: "Session expired. Please log in again.",
       };
       showToast(errorMap[res.error] || "Failed to update password.");
@@ -226,8 +179,6 @@ AppStore.ready.then(() => {
   window.syncEmail = syncEmail;
   window.saveSection = saveSection;
   window.updateAvatar = updateAvatar;
-
-  wirePasswordVisibilityToggles();
 
   function updateAvatar(input) {
     if (!input.files || !input.files[0]) return;

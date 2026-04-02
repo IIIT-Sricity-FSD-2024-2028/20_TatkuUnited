@@ -45,10 +45,14 @@ AppStore.ready.then(() => {
   }
 
   let services = transformServices(allServices);
+  const PAGE_SIZE = 8;
+  let currentPage = 1;
+  let filteredServices = services.slice();
   let tableActionsBound = false;
 
   function refreshServicesFromStore() {
     services = transformServices(AppStore.getTable("services") || []);
+    filteredServices = services.slice();
     allServiceContent = AppStore.getTable("service_content") || [];
   }
 
@@ -103,10 +107,18 @@ AppStore.ready.then(() => {
     if (!tbody) return;
     tbody.innerHTML = "";
 
-    if (data.length === 0) {
+    const totalRows = data.length;
+    const totalPages = Math.max(1, Math.ceil(totalRows / PAGE_SIZE));
+    if (currentPage > totalPages) currentPage = totalPages;
+    if (currentPage < 1) currentPage = 1;
+
+    const start = (currentPage - 1) * PAGE_SIZE;
+    const pageRows = data.slice(start, start + PAGE_SIZE);
+
+    if (totalRows === 0) {
       tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:32px;color:var(--text-faint)">No services found matching your filters.</td></tr>`;
     } else {
-      data.forEach((svc, idx) => {
+      pageRows.forEach((svc, idx) => {
         const tr = document.createElement("tr");
         tr.style.animationDelay = idx * 0.04 + "s";
 
@@ -152,7 +164,57 @@ AppStore.ready.then(() => {
     const active = data.filter((s) => s.status === "Active").length;
     const tableFooter = document.getElementById("tableFooter");
     if (tableFooter) {
-      tableFooter.innerHTML = `<span>${data.length} service${data.length !== 1 ? "s" : ""} shown</span> · <span class="active-count">${active} active</span>`;
+      const shownEnd = Math.min(start + PAGE_SIZE, totalRows);
+      const shownText =
+        totalRows === 0
+          ? "Showing 0-0 of 0"
+          : `Showing ${start + 1}-${shownEnd} of ${totalRows}`;
+
+      const pageButtons = Array.from({ length: totalPages }, (_, i) => i + 1)
+        .map(
+          (pageNum) =>
+            `<button class="page-btn ${pageNum === currentPage ? "active" : ""}" data-page="${pageNum}" type="button">${pageNum}</button>`,
+        )
+        .join("");
+
+      tableFooter.innerHTML = `
+        <div class="table-meta">
+          <span>${shownText}</span> · <span class="active-count">${active} active</span>
+        </div>
+        <div class="pagination-wrap">
+          <button class="page-arrow" data-page-action="prev" type="button" ${currentPage <= 1 ? "disabled" : ""}>‹</button>
+          <div class="page-numbers">${pageButtons}</div>
+          <button class="page-arrow" data-page-action="next" type="button" ${currentPage >= totalPages ? "disabled" : ""}>›</button>
+        </div>
+      `;
+
+      tableFooter.querySelectorAll(".page-btn").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          currentPage = Number(btn.dataset.page);
+          renderTable(data);
+        });
+      });
+
+      const prevBtn = tableFooter.querySelector('[data-page-action="prev"]');
+      const nextBtn = tableFooter.querySelector('[data-page-action="next"]');
+
+      if (prevBtn) {
+        prevBtn.addEventListener("click", () => {
+          if (currentPage > 1) {
+            currentPage -= 1;
+            renderTable(data);
+          }
+        });
+      }
+
+      if (nextBtn) {
+        nextBtn.addEventListener("click", () => {
+          if (currentPage < totalPages) {
+            currentPage += 1;
+            renderTable(data);
+          }
+        });
+      }
     }
   }
 
@@ -205,12 +267,12 @@ AppStore.ready.then(() => {
   }
 
   /* ── Filters ── */
-  function applyFilters() {
+  function applyFilters(resetPage = true) {
     const search =
       document.getElementById("serviceSearch")?.value.toLowerCase() || "";
     const categoryFilter = document.getElementById("categoryFilter")?.value || "";
 
-    const filtered = services.filter((svc) => {
+    filteredServices = services.filter((svc) => {
       const matchSearch =
         svc.name.toLowerCase().includes(search) ||
         svc.desc.toLowerCase().includes(search) ||
@@ -220,8 +282,9 @@ AppStore.ready.then(() => {
 
       return matchSearch && matchCategory;
     });
-    renderTable(filtered);
-    updateKPIs(filtered);
+    if (resetPage) currentPage = 1;
+    renderTable(filteredServices);
+    updateKPIs(filteredServices);
   }
 
   function setupEventListeners() {
