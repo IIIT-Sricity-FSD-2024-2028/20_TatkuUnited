@@ -17,6 +17,55 @@ function updateCartBadge() {
 
 let currentRating = 4;
 
+function applyRatingToUi(value) {
+  const safe = Math.max(1, Math.min(5, Number(value) || 4));
+  setRating(safe);
+}
+
+function applyBookingContextUi(booking, providerName) {
+  const serviceName = (booking && booking.service_name) || "Home Service";
+  const dateText = booking
+    ? new Date(booking.scheduled_at).toLocaleDateString("en-US", {
+        month: "long",
+        day: "numeric",
+        year: "numeric",
+      })
+    : "N/A";
+  const displayProvider = providerName || "Tatku Provider";
+
+  document
+    .querySelectorAll(".service-header-name, .success-service-name")
+    .forEach((el) => {
+      el.textContent = serviceName;
+    });
+  document.querySelectorAll(".date-value").forEach((el) => {
+    el.textContent = dateText;
+  });
+  document
+    .querySelectorAll(
+      ".service-header-provider strong, .success-service-provider strong",
+    )
+    .forEach((el) => {
+      el.textContent = displayProvider;
+    });
+}
+
+function hydrateExistingReview(session, bookingId) {
+  if (!bookingId) return;
+  const reviews = AppStore.getTable("reviews") || [];
+  const existing = reviews.find(
+    (r) => r.booking_id === bookingId && r.customer_id === session.id,
+  );
+  if (!existing) return;
+
+  const reviewBox = document.getElementById("review-text");
+  if (reviewBox) {
+    reviewBox.value = existing.review_text || "";
+    updateCharCount();
+  }
+  applyRatingToUi(existing.rating);
+}
+
 function setRating(val) {
   currentRating = val;
   document
@@ -26,31 +75,58 @@ function setRating(val) {
     );
 }
 
-function updateServiceRatingsFromReviews() {
-  const allReviews = AppStore.getTable("reviews") || [];
-  const allServices = AppStore.getTable("services") || [];
+function getReviewContext(session, serviceIdFromStorage, bookingIdFromStorage) {
+  const bookingId = bookingIdFromStorage || null;
+  let serviceId = serviceIdFromStorage || null;
+  let providerId = null;
 
-  const reviewsByService = {};
-  allReviews.forEach((review) => {
-    if (!reviewsByService[review.service_id]) {
-      reviewsByService[review.service_id] = [];
+  if (!bookingId) {
+    return { bookingId, serviceId, providerId };
+  }
+
+  const bookings = AppStore.getTable("bookings") || [];
+  const assignments = AppStore.getTable("job_assignments") || [];
+  const booking = bookings.find(
+    (b) => b.booking_id === bookingId && b.customer_id === session.id,
+  );
+
+  if (!booking) {
+    return { bookingId: null, serviceId, providerId: null };
+  }
+
+  if (!serviceId && booking.service_name) {
+    const services = AppStore.getTable("services") || [];
+    const service = services.find(
+      (s) => s.service_name === booking.service_name,
+    );
+    if (service) {
+      serviceId = service.service_id;
     }
-    reviewsByService[review.service_id].push(review.rating);
-  });
+  }
 
-  allServices.forEach((service) => {
-    if (
-      reviewsByService[service.service_id] &&
-      reviewsByService[service.service_id].length > 0
-    ) {
-      const ratings = reviewsByService[service.service_id];
-      const average = ratings.reduce((a, b) => a + b, 0) / ratings.length;
-      service.rating = Math.round(average * 100) / 100;
-      service.rating_count = ratings.length;
-    }
-  });
+  providerId = booking.provider_id || null;
 
-  AppStore.save();
+  const latestAssignment = assignments
+    .filter((a) => a.booking_id === booking.booking_id)
+    .sort((a, b) => {
+      const at = new Date(
+        a.updated_at || a.assigned_at || a.created_at || 0,
+      ).getTime();
+      const bt = new Date(
+        b.updated_at || b.assigned_at || b.created_at || 0,
+      ).getTime();
+      return bt - at;
+    })[0];
+
+  if (!providerId && latestAssignment) {
+    providerId = latestAssignment.service_provider_id || null;
+  }
+
+  return {
+    bookingId: booking.booking_id,
+    serviceId: serviceId || null,
+    providerId,
+  };
 }
 function updateCharCount() {
   document.getElementById("char-count").textContent =
@@ -128,8 +204,9 @@ function submitReview() {
 
   const serviceId = sessionStorage.getItem("review_service_id");
   const bookingId = sessionStorage.getItem("review_booking_id");
+  const context = getReviewContext(session, serviceId, bookingId);
 
-  if (!serviceId) {
+  if (!context.serviceId) {
     showToast(
       "Service information is missing. Please try again from your bookings.",
       "error",
@@ -137,19 +214,47 @@ function submitReview() {
     return;
   }
 
-  const reviewRecord = {
-    review_id: AppStore.nextId("REV"),
-    customer_id: session.id,
-    service_id: serviceId,
-    booking_id: bookingId || null,
-    rating: currentRating,
-    review_text: reviewText,
-    photos: [],
-    created_at: new Date().toISOString(),
-  };
+  const reviews = AppStore.getTable("reviews") || [];
+  const existingReview = reviews.find(
+    (r) =>
+      r.customer_id === session.id &&
+      context.bookingId &&
+      r.booking_id === context.bookingId,
+  );
 
-  CRUD.createRecord("reviews", reviewRecord);
-  updateServiceRatingsFromReviews();
+  const nowIso = new Date().toISOString();
+
+  if (existingReview) {
+    existingReview.service_id = context.serviceId;
+    existingReview.provider_id = context.providerId;
+    existingReview.rating = currentRating;
+    existingReview.review_text = reviewText;
+    existingReview.photos = [];
+    existingReview.updated_at = nowIso;
+    AppStore.save();
+  } else {
+    const reviewRecord = {
+      review_id: AppStore.nextId("REV"),
+      customer_id: session.id,
+      service_id: context.serviceId,
+      provider_id: context.providerId,
+      booking_id: context.bookingId,
+      rating: currentRating,
+      review_text: reviewText,
+      photos: [],
+      created_at: nowIso,
+      updated_at: nowIso,
+    };
+
+    CRUD.createRecord("reviews", reviewRecord);
+  }
+
+  if (typeof AppStore.recomputeRatingsFromReviews === "function") {
+    AppStore.recomputeRatingsFromReviews();
+  }
+
+  // Force provider pages to rebuild fresh profile/state from AppStore.
+  localStorage.removeItem("fsd_ui_state");
 
   document.getElementById("success-stars").innerHTML =
     `<span style="color:var(--orange)">${"★".repeat(currentRating)}</span><span style="color:#d1d5db">${"☆".repeat(5 - currentRating)}</span>`;
@@ -177,21 +282,33 @@ AppStore.ready.then(() => {
   if (bookingId) {
     // Load booking details
     const allBookings = AppStore.getTable("bookings") || [];
+    const allAssignments = AppStore.getTable("job_assignments") || [];
+    const allProviders = AppStore.getTable("service_providers") || [];
     const booking = allBookings.find(
       (b) => b.booking_id === bookingId && b.customer_id === session.id,
     );
 
     if (booking) {
-      // Update page with booking details
-      document.querySelector(".service-header-name").textContent =
-        booking.service_name || "Home Service";
-      document.querySelector(".date-value").textContent = new Date(
-        booking.scheduled_at,
-      ).toLocaleDateString("en-US", {
-        month: "long",
-        day: "numeric",
-        year: "numeric",
-      });
+      const latestAssignment = allAssignments
+        .filter((a) => a.booking_id === booking.booking_id)
+        .sort((a, b) => {
+          const at = new Date(
+            a.updated_at || a.assigned_at || a.created_at || 0,
+          ).getTime();
+          const bt = new Date(
+            b.updated_at || b.assigned_at || b.created_at || 0,
+          ).getTime();
+          return bt - at;
+        })[0];
+
+      const providerId =
+        booking.provider_id ||
+        (latestAssignment && latestAssignment.service_provider_id) ||
+        null;
+      const provider = providerId
+        ? allProviders.find((p) => p.service_provider_id === providerId)
+        : null;
+      applyBookingContextUi(booking, provider ? provider.name : null);
 
       // Find service to get ID
       const allServices = AppStore.getTable("services") || [];
@@ -202,8 +319,11 @@ AppStore.ready.then(() => {
         sessionStorage.setItem("review_service_id", service.service_id);
       }
       sessionStorage.setItem("review_booking_id", bookingId);
+      hydrateExistingReview(session, bookingId);
     }
   }
+
+  updateCharCount();
 
   renderNeed();
   updateCartBadge();

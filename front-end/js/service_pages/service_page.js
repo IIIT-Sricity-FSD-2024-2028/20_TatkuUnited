@@ -724,7 +724,8 @@
           "<li>It may have been removed or is not available right now.</li>";
       }
       if (heroImageMissing) {
-        heroImageMissing.src = "https://placehold.co/1200x800?text=Service+Unavailable";
+        heroImageMissing.src =
+          "https://placehold.co/1200x800?text=Service+Unavailable";
         heroImageMissing.alt = "Service unavailable";
       }
       if (bookButtonMissing) {
@@ -781,6 +782,22 @@
       svcMetaReviews.textContent =
         reviews.length > 0 ? "(" + reviews.length + " reviews)" : "(N/A)";
     }
+
+    var trustItems = document.querySelectorAll(".trust-list li");
+    if (trustItems && trustItems[1]) {
+      var trustText =
+        reviews.length > 0 && typeof avgRating === "number"
+          ? "Average " + avgRating.toFixed(2) + " ratings"
+          : "No ratings yet";
+      trustItems[1].innerHTML =
+        '<span class="trust-icon">' +
+        '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8">' +
+        '<path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z" />' +
+        "</svg>" +
+        "</span>" +
+        trustText;
+    }
+
     if (svcBullets) {
       svcBullets.innerHTML = [
         "<li>" + service.description + "</li>",

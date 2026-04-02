@@ -286,6 +286,164 @@
     };
   };
 
+  AppStore.recomputeRatingsFromReviews = function () {
+    if (!AppStore || !AppStore.data) return;
+
+    var reviews = AppStore.getTable("reviews") || [];
+    var services = AppStore.getTable("services") || [];
+    var categories = AppStore.getTable("categories") || [];
+    var providers = AppStore.getTable("service_providers") || [];
+    var bookings = AppStore.getTable("bookings") || [];
+    var assignments = AppStore.getTable("job_assignments") || [];
+
+    var serviceById = new Map();
+    services.forEach(function (svc) {
+      serviceById.set(svc.service_id, svc);
+    });
+
+    var bookingById = new Map();
+    bookings.forEach(function (booking) {
+      bookingById.set(booking.booking_id, booking);
+    });
+
+    var latestAssignmentByBooking = new Map();
+    assignments.forEach(function (assignment) {
+      var existing = latestAssignmentByBooking.get(assignment.booking_id);
+      if (!existing) {
+        latestAssignmentByBooking.set(assignment.booking_id, assignment);
+        return;
+      }
+
+      var existingTs = new Date(
+        existing.updated_at || existing.assigned_at || existing.created_at || 0,
+      ).getTime();
+      var currentTs = new Date(
+        assignment.updated_at ||
+          assignment.assigned_at ||
+          assignment.created_at ||
+          0,
+      ).getTime();
+
+      if (currentTs >= existingTs) {
+        latestAssignmentByBooking.set(assignment.booking_id, assignment);
+      }
+    });
+
+    var serviceStats = new Map();
+    var providerStats = new Map();
+
+    function getOrCreateStats(bucket, id) {
+      var stats = bucket.get(id);
+      if (!stats) {
+        stats = { sum: 0, count: 0 };
+        bucket.set(id, stats);
+      }
+      return stats;
+    }
+
+    reviews.forEach(function (review) {
+      var rating = Number(review && review.rating);
+      if (!Number.isFinite(rating)) return;
+      rating = Math.max(1, Math.min(5, rating));
+
+      var booking = review.booking_id ? bookingById.get(review.booking_id) : null;
+      var assignment = review.booking_id
+        ? latestAssignmentByBooking.get(review.booking_id)
+        : null;
+
+      var serviceId = review.service_id;
+      if (!serviceId && booking && booking.service_name) {
+        for (var i = 0; i < services.length; i++) {
+          if (services[i].service_name === booking.service_name) {
+            serviceId = services[i].service_id;
+            break;
+          }
+        }
+      }
+
+      var providerId =
+        review.provider_id ||
+        (booking && booking.provider_id) ||
+        (assignment && assignment.service_provider_id) ||
+        null;
+
+      if (serviceId) {
+        var serviceStat = getOrCreateStats(serviceStats, serviceId);
+        serviceStat.sum += rating;
+        serviceStat.count += 1;
+      }
+
+      if (providerId) {
+        var providerStat = getOrCreateStats(providerStats, providerId);
+        providerStat.sum += rating;
+        providerStat.count += 1;
+      }
+    });
+
+    services.forEach(function (service) {
+      var stats = serviceStats.get(service.service_id);
+      if (!stats || stats.count === 0) {
+        service.average_rating = null;
+        service.rating = null;
+        service.rating_count = 0;
+        return;
+      }
+
+      var avg = Math.round((stats.sum / stats.count) * 100) / 100;
+      service.average_rating = avg;
+      service.rating = avg;
+      service.rating_count = stats.count;
+    });
+
+    var categoryTotals = new Map();
+    services.forEach(function (service) {
+      var categoryId = service.category_id;
+      if (!categoryId) return;
+
+      var total = categoryTotals.get(categoryId);
+      if (!total) {
+        total = { weightedSum: 0, count: 0 };
+        categoryTotals.set(categoryId, total);
+      }
+
+      var count = Number(service.rating_count) || 0;
+      var avg = Number(service.average_rating);
+      if (count > 0 && Number.isFinite(avg)) {
+        total.weightedSum += avg * count;
+        total.count += count;
+      }
+    });
+
+    categories.forEach(function (category) {
+      var total = categoryTotals.get(category.category_id);
+      if (!total || total.count === 0) {
+        category.average_rating = null;
+        category.rating_count = 0;
+        return;
+      }
+
+      category.average_rating = Math.round((total.weightedSum / total.count) * 100) / 100;
+      category.rating_count = total.count;
+    });
+
+    providers.forEach(function (provider) {
+      var stats = providerStats.get(provider.service_provider_id);
+      if (!stats || stats.count === 0) {
+        provider.rating = null;
+        provider.rating_count = 0;
+        provider.average_rating = null;
+        return;
+      }
+
+      var avg = Math.round((stats.sum / stats.count) * 100) / 100;
+      provider.rating = avg;
+      provider.rating_count = stats.count;
+      provider.average_rating = avg;
+    });
+
+    AppStore.save();
+  };
+
   AppStore.validateScheduledSlot = function (dateValue, timeValue) {
     if (!dateValue) {
       return { valid: false, error: "Please select a date." };
@@ -419,9 +577,14 @@
 
   function _postReadyAudit() {
     // Run service availability audit after data is loaded
-    if (window.AssignmentEngine && typeof AssignmentEngine.auditServiceAvailability === 'function') {
-      try { AssignmentEngine.auditServiceAvailability(); } catch (e) {
-        console.warn('[AppStore] Service availability audit failed:', e);
+    if (
+      window.AssignmentEngine &&
+      typeof AssignmentEngine.auditServiceAvailability === "function"
+    ) {
+      try {
+        AssignmentEngine.auditServiceAvailability();
+      } catch (e) {
+        console.warn("[AppStore] Service availability audit failed:", e);
       }
     }
   }
@@ -838,7 +1001,7 @@
               category: catName,
               customer: cus.full_name || cus.name || "Unknown User",
               address: bkg.service_address || "Unknown Address",
-              phone: cus.phone || "+91 0000000000",
+              phone: cus.phone || "9876543210",
               date: ja.scheduled_date,
               time: ja.hour_start + " - " + ja.hour_end,
               startTime: ja.hour_start,
@@ -959,12 +1122,18 @@
         };
 
         // Inject dynamic provider notifications from AssignmentEngine
-        if (window.AssignmentEngine && typeof AssignmentEngine.getProviderNotifications === 'function') {
-          var dynamicNotifs = AssignmentEngine.getProviderNotifications(providerId);
+        if (
+          window.AssignmentEngine &&
+          typeof AssignmentEngine.getProviderNotifications === "function"
+        ) {
+          var dynamicNotifs =
+            AssignmentEngine.getProviderNotifications(providerId);
           if (dynamicNotifs && dynamicNotifs.length > 0) {
             dynamicNotifs.forEach(function (dn) {
               // Only inject if not already present by id
-              var exists = state.notifications.some(function (n) { return n.id === dn.id; });
+              var exists = state.notifications.some(function (n) {
+                return n.id === dn.id;
+              });
               if (!exists) {
                 state.notifications.unshift(dn);
               }

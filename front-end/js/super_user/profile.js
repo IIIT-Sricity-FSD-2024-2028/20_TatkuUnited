@@ -12,8 +12,6 @@ AppStore.ready.then(() => {
   const allSuperUsers = AppStore.getTable("super_users") || [];
   const currentUser = Auth.getCurrentUser();
 
-
-
   const permissions = [
     {
       name: "Full User Management",
@@ -47,8 +45,6 @@ AppStore.ready.then(() => {
     },
   ];
 
-
-
   /* ── 5. Render functions ── */
   function renderPermissions() {
     const el = document.getElementById("perm-list");
@@ -72,8 +68,6 @@ AppStore.ready.then(() => {
       .join("");
   }
 
-
-
   function syncName() {
     const v = document.getElementById("full-name")?.value.trim();
     const heroName = document.getElementById("hero-name");
@@ -89,38 +83,43 @@ AppStore.ready.then(() => {
   }
 
   function saveSection(section) {
-    if (section === 'personal') {
-      const suTable = AppStore.getTable('super_users') || [];
+    if (section === "personal") {
+      const suTable = AppStore.getTable("super_users") || [];
       const session = Auth.getSession();
-      const suRow = suTable.find(s => s.super_user_id === (session && session.id));
+      const suRow = suTable.find(
+        (s) => s.super_user_id === (session && session.id),
+      );
 
-      const name  = (document.getElementById('full-name')?.value || '').trim();
-      const rawPhone = (document.getElementById('phone')?.value || '').trim();
-      const codeSpan = document.getElementById('phone-code');
-      const countryCode = codeSpan ? codeSpan.textContent : '+91';
+      const name = (document.getElementById("full-name")?.value || "").trim();
+      const rawPhone = (document.getElementById("phone")?.value || "").trim();
 
-      if (!name) { showToast('Name cannot be empty.'); return; }
+      if (!name) {
+        showToast("Name cannot be empty.");
+        return;
+      }
       if (rawPhone && !/^\d{10}$/.test(rawPhone)) {
-        showToast('Phone must be exactly 10 digits.'); return;
+        showToast("Phone must be exactly 10 digits.");
+        return;
       }
 
       if (suRow) {
-        suRow.name  = name;
-        suRow.phone = rawPhone ? countryCode + rawPhone : (suRow.phone || '');
+        suRow.name = name;
+        suRow.phone = rawPhone;
         suRow.updated_at = new Date().toISOString();
         AppStore.save();
       }
 
       syncName();
       syncEmail();
-      showToast('Super User profile saved successfully ✓');
+      showToast("Super User profile saved successfully ✓");
       return;
     }
-    showToast('Changes saved!');
+    showToast("Changes saved!");
   }
 
   function openPwdModal() {
     const pwdModal = document.getElementById("pwd-modal");
+    wirePasswordVisibilityToggles();
     if (pwdModal) pwdModal.classList.add("open");
   }
 
@@ -135,7 +134,40 @@ AppStore.ready.then(() => {
     const fields = ["pwd-current", "pwd-new", "pwd-confirm"];
     fields.forEach((id) => {
       const el = document.getElementById(id);
-      if (el) el.value = "";
+      if (el) {
+        el.value = "";
+        el.type = "password";
+      }
+    });
+    resetPasswordVisibilityToggles();
+  }
+
+  function wirePasswordVisibilityToggles() {
+    document.querySelectorAll(".pwd-toggle").forEach((btn) => {
+      if (btn.dataset.wired === "1") return;
+      btn.dataset.wired = "1";
+      btn.addEventListener("click", () => {
+        const targetId = btn.getAttribute("data-target");
+        const input = document.getElementById(targetId);
+        if (!input) return;
+
+        const shouldShow = input.type === "password";
+        input.type = shouldShow ? "text" : "password";
+
+        const eyeOpen = btn.querySelector(".eye-open");
+        const eyeClosed = btn.querySelector(".eye-closed");
+        if (eyeOpen) eyeOpen.style.display = shouldShow ? "none" : "inline";
+        if (eyeClosed) eyeClosed.style.display = shouldShow ? "inline" : "none";
+      });
+    });
+  }
+
+  function resetPasswordVisibilityToggles() {
+    document.querySelectorAll(".pwd-toggle").forEach((btn) => {
+      const eyeOpen = btn.querySelector(".eye-open");
+      const eyeClosed = btn.querySelector(".eye-closed");
+      if (eyeOpen) eyeOpen.style.display = "inline";
+      if (eyeClosed) eyeClosed.style.display = "none";
     });
   }
 
@@ -154,8 +186,16 @@ AppStore.ready.then(() => {
       return;
     }
 
-    if (newPwd.length < 12) {
-      showToast("New password must be at least 12 characters.");
+    const passwordCheck =
+      window.Auth && typeof Auth.validatePasswordPolicy === "function"
+        ? Auth.validatePasswordPolicy(newPwd)
+        : { valid: newPwd.length >= 8 };
+
+    if (!passwordCheck.valid) {
+      showToast(
+        passwordCheck.error ||
+          "Password must be at least 8 characters and include uppercase, lowercase, number, and special character with no spaces.",
+      );
       return;
     }
 
@@ -166,6 +206,11 @@ AppStore.ready.then(() => {
     } else {
       const errorMap = {
         invalid_current_password: "Current password is incorrect.",
+        invalid_new_password:
+          res.message ||
+          "Password must be at least 8 characters and include uppercase, lowercase, number, and special character with no spaces.",
+        new_password_same_as_current:
+          "New password must be different from current password.",
         not_logged_in: "Session expired. Please log in again.",
       };
       showToast(errorMap[res.error] || "Failed to update password.");
@@ -182,15 +227,37 @@ AppStore.ready.then(() => {
   window.saveSection = saveSection;
   window.updateAvatar = updateAvatar;
 
+  wirePasswordVisibilityToggles();
+
   function updateAvatar(input) {
     if (!input.files || !input.files[0]) return;
+    const file = input.files[0];
+    if (!file.type.startsWith("image/")) {
+      showToast("Please choose a valid image file.");
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      showToast("Profile photo must be under 2 MB.");
+      return;
+    }
+
     const reader = new FileReader();
     reader.onload = (e) => {
+      const imageData = e.target.result;
+      const res = Auth.updateProfilePicture(imageData);
+      if (!res.success) {
+        showToast("Unable to update profile photo.");
+        return;
+      }
+
+      if (currentUser) currentUser.pfp_url = imageData;
+
       const av = document.getElementById("profile-avatar");
-      if (av)
-        av.innerHTML = `<img src="${e.target.result}" alt="Super User" />`;
+      if (av) av.innerHTML = `<img src="${imageData}" alt="Super User" />`;
+
+      showToast("Profile photo updated ✓");
     };
-    reader.readAsDataURL(input.files[0]);
+    reader.readAsDataURL(file);
   }
 
   let toastTimer;
@@ -220,46 +287,37 @@ AppStore.ready.then(() => {
       const codeSpan = document.getElementById("phone-code");
       const idEl = document.getElementById("super-user-id");
 
-      if(nameEl) nameEl.value = currentUser.name || '';
-      if(emailEl) emailEl.value = currentUser.email || '';
+      if (nameEl) nameEl.value = currentUser.name || "";
+      if (emailEl) emailEl.value = currentUser.email || "";
 
-      // Parse phone: detect and strip country code
-      const rawPhone = currentUser.phone || '';
-      const CODES = ['+971', '+44', '+65', '+91', '+61', '+1'];
-      let matchedCode = '+91';
-      let digits = rawPhone;
-      for (const c of CODES) {
-        if (rawPhone.startsWith(c)) {
-          matchedCode = c;
-          digits = rawPhone.slice(c.length);
-          break;
-        }
-      }
-      if (codeSpan) codeSpan.textContent = matchedCode;
-      if (phoneEl) phoneEl.value = digits;
+      const rawPhone = currentUser.phone || "";
+      if (phoneEl)
+        phoneEl.value = String(rawPhone).replace(/\D/g, "").slice(-10);
 
-      if(idEl) idEl.value = currentUser.id || '';
+      if (idEl) idEl.value = currentUser.id || "";
 
       const avatarEl = document.getElementById("profile-avatar");
-      if(avatarEl && currentUser.pfp_url) {
+      if (avatarEl && currentUser.pfp_url) {
         avatarEl.innerHTML = `<img src="${currentUser.pfp_url}" alt="Super User" style="border-radius:50%;width:100%;height:100%;object-fit:cover;" />`;
       }
       syncName();
       syncEmail();
     }
-    
+
     // Populate Hero Stats dynamically
     const collectivesCount = (AppStore.getTable("collectives") || []).length;
-    const unitsCount = (AppStore.getTable("units") || []).filter(u => u.is_active).length;
+    const unitsCount = (AppStore.getTable("units") || []).filter(
+      (u) => u.is_active,
+    ).length;
     const totalUsers = (window.AuthRegistry || []).length;
-    
+
     const collEl = document.getElementById("hero-collectives");
     const unitsEl = document.getElementById("hero-units");
     const usersEl = document.getElementById("hero-users");
-    
-    if(collEl) collEl.textContent = collectivesCount;
-    if(unitsEl) unitsEl.textContent = unitsCount;
-    if(usersEl) usersEl.textContent = totalUsers;
+
+    if (collEl) collEl.textContent = collectivesCount;
+    if (unitsEl) unitsEl.textContent = unitsCount;
+    if (usersEl) usersEl.textContent = totalUsers;
 
     renderPermissions();
   }

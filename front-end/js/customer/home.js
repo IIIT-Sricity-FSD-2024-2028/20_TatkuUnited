@@ -24,6 +24,30 @@ AppStore.ready.then(() => {
   if (heroName) heroName.textContent = session.name + "!";
 
   const allBookings = AppStore.getTable("bookings") || [];
+  const allAssignments = AppStore.getTable("job_assignments") || [];
+  const allProviders = AppStore.getTable("service_providers") || [];
+
+  const assignmentByBooking = new Map();
+  allAssignments.forEach((assignment) => {
+    const existing = assignmentByBooking.get(assignment.booking_id);
+    if (!existing) {
+      assignmentByBooking.set(assignment.booking_id, assignment);
+      return;
+    }
+    const existingTs = new Date(
+      existing.updated_at || existing.assigned_at || existing.created_at || 0,
+    ).getTime();
+    const currentTs = new Date(
+      assignment.updated_at ||
+        assignment.assigned_at ||
+        assignment.created_at ||
+        0,
+    ).getTime();
+    if (currentTs >= existingTs) {
+      assignmentByBooking.set(assignment.booking_id, assignment);
+    }
+  });
+
   const myBookings = allBookings
     .filter((b) => b.customer_id === session.id)
     .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
@@ -54,6 +78,12 @@ AppStore.ready.then(() => {
       .map((b, i) => {
         const dateObj = new Date(b.scheduled_at);
         const rawStatus = (b.status || "PENDING").toUpperCase();
+        const assignment = assignmentByBooking.get(b.booking_id) || null;
+        const normalizedStatus =
+          rawStatus === "CONFIRMED" ? "ASSIGNED" : rawStatus;
+        const effectiveStatus = assignment
+          ? String(assignment.status || normalizedStatus).toUpperCase()
+          : normalizedStatus;
         const statusMap = {
           PENDING: { label: "Pending", badge: "badge-pending" },
           ASSIGNED: { label: "Assigned", badge: "badge-assigned" },
@@ -61,20 +91,16 @@ AppStore.ready.then(() => {
           COMPLETED: { label: "Completed", badge: "badge-completed" },
           CANCELLED: { label: "Cancelled", badge: "badge-cancelled" },
         };
-        const sObj = statusMap[rawStatus] || statusMap["PENDING"];
-
-        const allProviders = AppStore.getTable("service_providers") || [];
+        const sObj = statusMap[effectiveStatus] || statusMap["PENDING"];
 
         let providerName = "Awaiting Assignment";
-        if (b.provider_id) {
+        const resolvedProviderId =
+          (assignment && assignment.service_provider_id) || b.provider_id;
+        if (resolvedProviderId) {
           const found = allProviders.find(
-            (p) => p.service_provider_id === b.provider_id,
+            (p) => p.service_provider_id === resolvedProviderId,
           );
           providerName = found ? found.name : "Tatku Provider";
-        } else if (
-          ["COMPLETED", "IN_PROGRESS", "ASSIGNED"].includes(rawStatus)
-        ) {
-          providerName = "Tatku Professional";
         }
 
         const dateStr = dateObj.toLocaleDateString("en-US", {

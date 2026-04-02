@@ -507,24 +507,6 @@ label {
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
 }
 
-.phone-prefix {
-  border-right: 1.5px solid var(--border);
-  background: #f9fafb;
-}
-
-.phone-prefix select {
-  appearance: none;
-  -webkit-appearance: none;
-  padding: 12px 10px;
-  font-size: 13.5px;
-  background: transparent;
-  border: none;
-  outline: none;
-  color: var(--dark);
-  cursor: pointer;
-  font-family: var(--font-ui);
-}
-
 .phone-wrapper input {
   flex: 1;
   padding: 12px 16px;

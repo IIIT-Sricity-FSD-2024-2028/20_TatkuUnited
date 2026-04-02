@@ -7,7 +7,8 @@
 window.Validators = (() => {
   /* ─── Internal helpers ─── */
   const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  const PHONE_RE = /^\d{10}$/;
+  const PHONE_RE = /^(?!([0-9])\1{9})\d{10}$/;
+  const NAME_RE = /^[A-Za-z]+(?:\s+[A-Za-z]+)*$/;
 
   function _isValidEmail(val) {
     return EMAIL_RE.test((val || "").trim());
@@ -15,6 +16,10 @@ window.Validators = (() => {
 
   function _isValidPhone(val) {
     return PHONE_RE.test((val || "").trim());
+  }
+
+  function _isValidName(val) {
+    return NAME_RE.test((val || "").trim());
   }
 
   function _ok() {
@@ -121,8 +126,13 @@ window.Validators = (() => {
     if (!(name || "").trim()) return _fail("Name is required.");
     if ((name || "").trim().length < 2)
       return _fail("Name must be at least 2 characters.");
+    if (!_isValidName(name))
+      return _fail("Name can contain letters and spaces only.");
 
-    if (!_isValidPhone(phone)) return _fail("Phone must be a 10-digit number.");
+    if (!_isValidPhone(phone))
+      return _fail(
+        "Phone must be a valid 10-digit number (digits only, not all same digit).",
+      );
 
     if (!_isValidEmail(email))
       return _fail("Please enter a valid email address.");
@@ -207,8 +217,13 @@ window.Validators = (() => {
     if (!(name || "").trim()) return _fail("Name is required.");
     if ((name || "").trim().length < 2)
       return _fail("Name must be at least 2 characters.");
+    if (!_isValidName(name))
+      return _fail("Name can contain letters and spaces only.");
 
-    if (!_isValidPhone(phone)) return _fail("Phone must be a 10-digit number.");
+    if (!_isValidPhone(phone))
+      return _fail(
+        "Phone must be a valid 10-digit number (digits only, not all same digit).",
+      );
 
     if (!_isValidEmail(email))
       return _fail("Please enter a valid email address.");

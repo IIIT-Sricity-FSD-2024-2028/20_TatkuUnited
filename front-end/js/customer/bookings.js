@@ -209,7 +209,9 @@ function openDrawer(id) {
       </div>
     </div>
     <div class="drawer-divider"></div>
-    ${b.provider && b.provider !== "Awaiting assignment" ? `
+    ${
+      b.provider && b.provider !== "Awaiting assignment"
+        ? `
     <div class="drawer-section">
       <div class="drawer-section-title">Service Provider</div>
       <div style="display:flex;align-items:center;gap:14px;padding:12px 16px;background:#f0fdf4;border-radius:10px;border:1px solid #bbf7d0;">
@@ -220,13 +222,15 @@ function openDrawer(id) {
           <div style="font-weight:700;font-size:14.5px;color:#1e293b;">${b.provider}</div>
           <div style="display:flex;align-items:center;gap:6px;margin-top:3px;">
             <svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:#64748b;fill:none;stroke-width:2"><path d="M22 16.92v3a2 2 0 01-2.18 2A19.79 19.79 0 013.1 5.18 2 2 0 015.09 3h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L9.09 10.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 17v-.08z"/></svg>
-            <span style="font-size:13px;color:#475569;font-weight:500;">${b.providerPhone || 'Not available'}</span>
+            <span style="font-size:13px;color:#475569;font-weight:500;">${b.providerPhone || "Not available"}</span>
           </div>
         </div>
       </div>
     </div>
     <div class="drawer-divider"></div>
-    ` : ''}
+    `
+        : ""
+    }
     <div class="drawer-section">${b.actions.map((a) => actionBtns[a] || "").join("")}</div>
   `;
   document.getElementById("drawer-overlay").classList.add("open");
@@ -370,7 +374,10 @@ function cancelBooking(id) {
   }
 
   // Cascade cancellation to provider (job_assignment + notification)
-  if (window.AssignmentEngine && typeof AssignmentEngine.cancelAssignment === "function") {
+  if (
+    window.AssignmentEngine &&
+    typeof AssignmentEngine.cancelAssignment === "function"
+  ) {
     AssignmentEngine.cancelAssignment(id);
   }
 
@@ -447,12 +454,42 @@ let currentSession = null;
 function loadBookings() {
   if (!currentSession) return;
   const allBookings = AppStore.getTable("bookings") || [];
+  const allAssignments = AppStore.getTable("job_assignments") || [];
+  const allProviders = AppStore.getTable("service_providers") || [];
+
+  const assignmentByBooking = new Map();
+  allAssignments.forEach((assignment) => {
+    const existing = assignmentByBooking.get(assignment.booking_id);
+    if (!existing) {
+      assignmentByBooking.set(assignment.booking_id, assignment);
+      return;
+    }
+    const existingTs = new Date(
+      existing.updated_at || existing.assigned_at || existing.created_at || 0,
+    ).getTime();
+    const currentTs = new Date(
+      assignment.updated_at ||
+        assignment.assigned_at ||
+        assignment.created_at ||
+        0,
+    ).getTime();
+    if (currentTs >= existingTs) {
+      assignmentByBooking.set(assignment.booking_id, assignment);
+    }
+  });
+
   bookings = allBookings
     .filter((b) => b.customer_id === currentSession.id)
     .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
     .map((b) => {
       const dateObj = new Date(b.scheduled_at);
-      const rawStatus = (b.status || "PENDING").toUpperCase();
+      const assignment = assignmentByBooking.get(b.booking_id) || null;
+      const bookingStatus = (b.status || "PENDING").toUpperCase();
+      const normalizedBookingStatus =
+        bookingStatus === "CONFIRMED" ? "ASSIGNED" : bookingStatus;
+      const rawStatus = assignment
+        ? String(assignment.status || normalizedBookingStatus).toUpperCase()
+        : normalizedBookingStatus;
 
       const statusMap = {
         PENDING: { label: "Pending", css: "pending", badge: "badge-pending" },
@@ -487,18 +524,16 @@ function loadBookings() {
         actions = ["invoice", "review", "rebook"];
       else if (rawStatus === "CANCELLED") actions = ["rebook"];
 
-      const allProviders = AppStore.getTable("service_providers") || [];
-
       let providerName = "Awaiting assignment";
       let providerPhone = null;
-      if (b.provider_id) {
+      const resolvedProviderId =
+        (assignment && assignment.service_provider_id) || b.provider_id;
+      if (resolvedProviderId) {
         const found = allProviders.find(
-          (p) => p.service_provider_id === b.provider_id,
+          (p) => p.service_provider_id === resolvedProviderId,
         );
         providerName = found ? found.name : "Tatku Provider";
         providerPhone = found ? found.phone : null;
-      } else if (["COMPLETED", "IN_PROGRESS", "ASSIGNED"].includes(rawStatus)) {
-        providerName = "Tatku Professional";
       }
 
       const providerTimelineSub =
