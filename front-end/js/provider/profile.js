@@ -99,7 +99,11 @@ function saveSection(section) {
 
         if (nameEl) data.provider.name = nameEl.value;
         if (emailEl) data.provider.email = emailEl.value;
-        if (phoneEl) data.provider.phone = "+91 " + phoneEl.value;
+        if (phoneEl) {
+          const codeSpan = document.getElementById('phone-code');
+          data.provider.phone = phoneEl.value ? (codeSpan ? codeSpan.textContent : '+91') + phoneEl.value : (data.provider.phone || '');
+        }
+
         if (addrEl) data.provider.address = addrEl.value;
 
         // Update topbar instantly
@@ -445,10 +449,19 @@ document.addEventListener("DOMContentLoaded", () => {
       if (nameEl) nameEl.value = sp.name || "";
       if (emailEl) emailEl.value = sp.email || "";
       if (phoneEl) {
-        // Simple extraction of phone excluding +91 if needed, assuming the mockdata is just 10 digits
-        let rawPhone = sp.phone || "";
-        if (rawPhone.startsWith("+91"))
-          rawPhone = rawPhone.replace("+91", "").trim();
+        // Detect and strip country code from stored phone
+        let rawPhone = sp.phone ? String(sp.phone) : "";
+        const CODES = ['+971', '+44', '+65', '+91', '+61', '+1'];
+        const codeSpan = document.getElementById('phone-code');
+        let matchedCode = '+91'; // Fallback
+        for (const c of CODES) {
+          if (rawPhone && rawPhone.startsWith(c)) {
+            matchedCode = c;
+            rawPhone = rawPhone.slice(c.length).trim();
+            break;
+          }
+        }
+        if (codeSpan) codeSpan.textContent = matchedCode;
         phoneEl.value = rawPhone;
       }
       if (addrEl) addrEl.value = sp.address || "";

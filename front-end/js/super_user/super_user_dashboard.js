@@ -19,6 +19,8 @@ AppStore.ready.then(() => {
   const allBookings = AppStore.getTable("bookings") || [];
   const allUnits = AppStore.getTable("units") || [];
   const allCollectives = AppStore.getTable("collectives") || [];
+  const allServices = AppStore.getTable("services") || [];
+  const allCategories = AppStore.getTable("categories") || [];
 
   /* ── 3. Transform platform events ── */
   function transformEvents(events) {
@@ -26,21 +28,21 @@ AppStore.ready.then(() => {
       .filter((e) => e.title !== "Provider verification pending from Unit 24 Logistics")
       .slice(0, 4)
       .map((e) => ({
-      time: new Date(e.timestamp).toLocaleTimeString("en-IN", {
-        hour: "2-digit",
-        minute: "2-digit",
-      }),
-      type:
-        e.event_type === "security"
-          ? "security"
-          : e.event_type === "system"
-            ? "system"
-            : e.event_type === "user"
-              ? "user"
-              : "action",
-      typeLabel: e.event_type.toUpperCase(),
-      desc: e.title,
-    }));
+        time: new Date(e.timestamp).toLocaleTimeString("en-IN", {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
+        type:
+          e.event_type === "security"
+            ? "security"
+            : e.event_type === "system"
+              ? "system"
+              : e.event_type === "user"
+                ? "user"
+                : "action",
+        typeLabel: e.event_type.toUpperCase(),
+        desc: e.title,
+      }));
   }
 
   /* ── 4. Transform super user actions ── */
@@ -80,10 +82,10 @@ AppStore.ready.then(() => {
   const TOP_SERVICES = getTopRatedServices();
   const TOP_CATEGORIES = getTopRatedCategories();
 
-  /* ── 5. Render ── */
+  /* ── 6. Render ── */
   function renderKPIs() {
-    const activeCustomers = allCustomers.filter((c) => c.is_active !== false).length; // Handle default true if property missing
-    const activeProviders = allProviders.filter((p) => p.is_active || p.account_status === 'active').length;
+    const activeCustomers = allCustomers.filter((c) => c.is_active !== false).length;
+    const activeProviders = allProviders.filter((p) => p.is_active || p.account_status === "active").length;
     const activeCMs = allCMs.filter((m) => m.is_active).length;
     const activeUMs = allUMs.filter((m) => m.is_active).length;
     const activeSUs = allSUs.filter((u) => u.is_active).length;
@@ -105,32 +107,35 @@ AppStore.ready.then(() => {
     let totalRevenue = 0;
     const collectiveRevMap = {};
 
-    allCollectives.forEach(c => {
+    allCollectives.forEach((c) => {
       collectiveRevMap[c.collective_id] = { name: c.collective_name, amount: 0 };
     });
-    collectiveRevMap['unassigned'] = { name: 'Other / Direct (Unassigned)', amount: 0 };
+    collectiveRevMap["unassigned"] = { name: "Other / Direct (Unassigned)", amount: 0 };
 
-    allTransactions.forEach(tx => {
-      if (tx.payment_status === 'SUCCESS' || tx.payment_status === 'COMPLETED' || tx.payment_status === 'completed') {
+    allTransactions.forEach((tx) => {
+      if (tx.payment_status === "SUCCESS" || tx.payment_status === "COMPLETED" || tx.payment_status === "completed") {
         const netAmount = (tx.amount || 0) - (tx.refund_amount || 0);
         totalRevenue += netAmount;
 
-        const booking = allBookings.find(b => b.booking_id === tx.booking_id);
-        let assignedColId = 'unassigned';
+        const booking = allBookings.find((b) => b.booking_id === tx.booking_id);
+        let assignedColId = "unassigned";
 
         if (booking) {
-          const assignment = allAssignments.find(a => a.booking_id === booking.booking_id && a.service_provider_id);
+          const assignment = allAssignments.find(
+            (a) => a.booking_id === booking.booking_id && a.service_provider_id,
+          );
           if (assignment) {
-            const provider = allProviders.find(p => p.service_provider_id === assignment.service_provider_id);
+            const provider = allProviders.find(
+              (p) => p.service_provider_id === assignment.service_provider_id,
+            );
             if (provider && provider.unit_id) {
-              const unit = allUnits.find(u => u.unit_id === provider.unit_id);
+              const unit = allUnits.find((u) => u.unit_id === provider.unit_id);
               if (unit && unit.collective_id) {
                 assignedColId = unit.collective_id;
               }
             }
           }
         }
-        
         if (!collectiveRevMap[assignedColId]) {
           collectiveRevMap[assignedColId] = { name: `Unknown (${assignedColId})`, amount: 0 };
         }
@@ -146,18 +151,22 @@ AppStore.ready.then(() => {
     const tbody = document.getElementById("revenue-tbody");
     if (tbody) {
       const sortedCols = Object.values(collectiveRevMap)
-        .filter(c => c.amount > 0 || c.name !== 'Other / Direct (Unassigned)')
+        .filter((c) => c.amount > 0 || c.name !== "Other / Direct (Unassigned)")
         .sort((a, b) => b.amount - a.amount);
-      
+
       if (sortedCols.length === 0) {
         tbody.innerHTML = `<tr><td colspan="2" style="text-align:center; color:var(--text-faint);">No revenue data available.</td></tr>`;
       } else {
-        tbody.innerHTML = sortedCols.map(c => `
+        tbody.innerHTML = sortedCols
+          .map(
+            (c) => `
           <tr>
             <td><strong>${c.name}</strong></td>
             <td style="text-align: right; font-family: var(--font-mono); font-weight: 500;">₹${c.amount.toLocaleString("en-IN")}</td>
           </tr>
-        `).join("");
+        `,
+          )
+          .join("");
       }
     }
   }
@@ -165,6 +174,12 @@ AppStore.ready.then(() => {
   function renderEvents() {
     const tbody = document.getElementById("events-tbody");
     if (!tbody) return;
+
+    if (EVENTS.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; padding: 24px; color:var(--text-faint); font-size: 13px;">No recent system events.</td></tr>`;
+      return;
+    }
+
     tbody.innerHTML = EVENTS.map(
       (e) => `
       <tr>
@@ -260,12 +275,14 @@ AppStore.ready.then(() => {
     }
   }
 
-  /* ── 6. Initialize on DOM ready ── */
+  /* ── 7. Initialize on DOM ready ── */
   function initDashboard() {
     renderKPIs();
     renderRevenue();
     renderEvents();
     renderSuperUserActions();
+    renderTopServices();
+    renderTopCategories();
     setupDownloadLog();
   }
 
@@ -277,7 +294,9 @@ AppStore.ready.then(() => {
           alert("No recent actions to download.");
           return;
         }
-        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(SUPER_USER_ACTIONS, null, 2));
+        const dataStr =
+          "data:text/json;charset=utf-8," +
+          encodeURIComponent(JSON.stringify(SUPER_USER_ACTIONS, null, 2));
         const anchor = document.createElement("a");
         anchor.setAttribute("href", dataStr);
         anchor.setAttribute("download", "action_log.json");

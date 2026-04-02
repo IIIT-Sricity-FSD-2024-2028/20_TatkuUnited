@@ -89,7 +89,34 @@ AppStore.ready.then(() => {
   }
 
   function saveSection(section) {
-    showToast("Super User profile saved successfully!");
+    if (section === 'personal') {
+      const suTable = AppStore.getTable('super_users') || [];
+      const session = Auth.getSession();
+      const suRow = suTable.find(s => s.super_user_id === (session && session.id));
+
+      const name  = (document.getElementById('full-name')?.value || '').trim();
+      const rawPhone = (document.getElementById('phone')?.value || '').trim();
+      const codeSpan = document.getElementById('phone-code');
+      const countryCode = codeSpan ? codeSpan.textContent : '+91';
+
+      if (!name) { showToast('Name cannot be empty.'); return; }
+      if (rawPhone && !/^\d{10}$/.test(rawPhone)) {
+        showToast('Phone must be exactly 10 digits.'); return;
+      }
+
+      if (suRow) {
+        suRow.name  = name;
+        suRow.phone = rawPhone ? countryCode + rawPhone : (suRow.phone || '');
+        suRow.updated_at = new Date().toISOString();
+        AppStore.save();
+      }
+
+      syncName();
+      syncEmail();
+      showToast('Super User profile saved successfully ✓');
+      return;
+    }
+    showToast('Changes saved!');
   }
 
   function openPwdModal() {
@@ -145,11 +172,15 @@ AppStore.ready.then(() => {
     }
   }
 
-  // Export to window for HTML onclick handlers
+  // Export to window for HTML onclick/oninput handlers
   window.openPwdModal = openPwdModal;
   window.closePwdModal = closePwdModal;
   window.closePwdModalBtn = closePwdModalBtn;
   window.handlePasswordChange = handlePasswordChange;
+  window.syncName = syncName;
+  window.syncEmail = syncEmail;
+  window.saveSection = saveSection;
+  window.updateAvatar = updateAvatar;
 
   function updateAvatar(input) {
     if (!input.files || !input.files[0]) return;
@@ -186,13 +217,29 @@ AppStore.ready.then(() => {
       const nameEl = document.getElementById("full-name");
       const emailEl = document.getElementById("email");
       const phoneEl = document.getElementById("phone");
+      const codeSpan = document.getElementById("phone-code");
       const idEl = document.getElementById("super-user-id");
-      
+
       if(nameEl) nameEl.value = currentUser.name || '';
       if(emailEl) emailEl.value = currentUser.email || '';
-      if(phoneEl) phoneEl.value = currentUser.phone ? currentUser.phone.replace('+91', '') : '';
-      if(idEl) idEl.value = currentUser.id || 'ADM-001';
-      
+
+      // Parse phone: detect and strip country code
+      const rawPhone = currentUser.phone || '';
+      const CODES = ['+971', '+44', '+65', '+91', '+61', '+1'];
+      let matchedCode = '+91';
+      let digits = rawPhone;
+      for (const c of CODES) {
+        if (rawPhone.startsWith(c)) {
+          matchedCode = c;
+          digits = rawPhone.slice(c.length);
+          break;
+        }
+      }
+      if (codeSpan) codeSpan.textContent = matchedCode;
+      if (phoneEl) phoneEl.value = digits;
+
+      if(idEl) idEl.value = currentUser.id || '';
+
       const avatarEl = document.getElementById("profile-avatar");
       if(avatarEl && currentUser.pfp_url) {
         avatarEl.innerHTML = `<img src="${currentUser.pfp_url}" alt="Super User" style="border-radius:50%;width:100%;height:100%;object-fit:cover;" />`;
