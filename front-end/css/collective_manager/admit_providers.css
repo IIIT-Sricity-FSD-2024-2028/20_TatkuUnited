@@ -127,6 +127,199 @@ body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); co
 /* Re-using admission card styles with minor tweaks for full-width */
 .applicant-card { display: flex; align-items: center; gap: 14px; padding: 14px; border: 1px solid var(--border); border-radius: 10px; background: #fff; transition: box-shadow .15s; width: 100%; }
 
+.admission-requests-layout .requests-col {
+  padding: 20px;
+  border-color: #dbe3ef;
+  background: linear-gradient(180deg, #ffffff 0%, #fbfcff 100%);
+}
+
+.onboarding-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 14px;
+}
+
+.section-desc {
+  margin-top: 5px;
+  font-size: 13px;
+  color: #64748b;
+}
+
+.onboarding-metrics {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.metric-pill {
+  min-width: 124px;
+  border: 1px solid #d6e5ff;
+  border-radius: 10px;
+  padding: 8px 12px;
+  background: #eff6ff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.metric-pill-amber {
+  background: #fffbeb;
+  border-color: #fde68a;
+}
+
+.metric-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: .03em;
+  color: #64748b;
+  font-weight: 700;
+}
+
+.metric-value {
+  font-size: 19px;
+  font-weight: 800;
+  color: #0f172a;
+  line-height: 1;
+}
+
+.tab-selector {
+  margin-bottom: 14px;
+  width: fit-content;
+  border: 1px solid #e2e8f0;
+}
+
+.onboarding-tab-content {
+  margin-top: 0;
+}
+
+.requests-heading-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+
+.requests-hint {
+  font-size: 12px;
+  color: #64748b;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 999px;
+  padding: 3px 10px;
+}
+
+.applicant-card {
+  border-color: #e2e8f0;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, .05);
+  transition: border-color .18s ease, box-shadow .18s ease, transform .18s ease;
+}
+
+.applicant-card:hover {
+  border-color: #bfdbfe;
+  box-shadow: 0 8px 20px rgba(30, 64, 175, .10);
+  transform: translateY(-1px);
+}
+
+.applicant-avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.applicant-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.applicant-name {
+  font-weight: 700;
+  color: #0f172a;
+  font-size: 14px;
+}
+
+.applicant-meta {
+  font-size: 12px;
+  color: #64748b;
+  margin-top: 3px;
+}
+
+.skill-tags {
+  margin-top: 6px;
+}
+
+.skill-tag {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  background: #eef2ff;
+  border: 1px solid #c7d2fe;
+  color: #4338ca;
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.applicant-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.unit-assign-select {
+  min-width: 138px;
+  background: #f8fafc;
+}
+
+.btn-verify,
+.btn-view {
+  border: none;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.btn-verify {
+  background: #2563eb;
+  color: #fff;
+}
+
+.btn-verify:hover {
+  background: #1d4ed8;
+}
+
+.btn-view {
+  background: #e2e8f0;
+  color: #1e293b;
+}
+
+.btn-view:hover {
+  background: #cbd5e1;
+}
+
+.admissions-empty {
+  border: 1px dashed #cbd5e1;
+  border-radius: 10px;
+  padding: 20px;
+  text-align: center;
+  color: #64748b;
+  font-size: 13px;
+  background: #f8fafc;
+}
+
 /* Modal */
 .details-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.4); z-index: 1000; display: none; align-items: center; justify-content: center; }
 .details-overlay.open { display: flex; }
@@ -142,4 +335,54 @@ body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); co
 @media (max-width: 1024px) {
   .providers-dash-grid { grid-template-columns: 1fr; }
   .grid-col-alerts { order: -1; }
+
+  .onboarding-head {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .tab-selector {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .tab-btn {
+    text-align: center;
+  }
+
+  .applicant-card {
+    flex-wrap: wrap;
+  }
+
+  .applicant-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+}
+
+@media (max-width: 640px) {
+  .main {
+    padding: 20px 16px;
+  }
+
+  .admission-requests-layout .requests-col {
+    padding: 16px;
+  }
+
+  .metric-pill {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .applicant-actions {
+    justify-content: stretch;
+    flex-wrap: wrap;
+  }
+
+  .unit-assign-select,
+  .btn-verify,
+  .btn-view {
+    width: 100%;
+  }
 }

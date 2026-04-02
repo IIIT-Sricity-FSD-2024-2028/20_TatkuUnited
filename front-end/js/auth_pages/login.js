@@ -27,8 +27,6 @@ AppStore.ready.then(() => {
   const toggleIcon = document.getElementById("toggle-icon");
   const errorEl = document.getElementById("login-error");
   const submitBtn = document.getElementById("btn-login");
-  const demoTiles = document.querySelectorAll(".demo-tile");
-  const demoSection = document.querySelector(".demo-section");
 
   const platformSettings =
     window.AppStore && typeof AppStore.getPlatformSettings === "function"
@@ -73,39 +71,7 @@ AppStore.ready.then(() => {
     submitBtn.textContent = isLoading ? "Signing in…" : "Sign In";
   }
 
-  function renderSuspensionBanner() {
-    if ((!isProviderSuspended && !isMaintenanceMode) || !demoSection) return;
-
-    const existing = document.getElementById("provider-suspension-banner");
-    if (existing) return;
-
-    const banner = document.createElement("p");
-    banner.id = "provider-suspension-banner";
-    banner.className = "platform-warning";
-    banner.textContent = isMaintenanceMode
-      ? "Maintenance mode is active. Only Super User admin login is available right now."
-      : "Provider access is temporarily suspended by Super User platform settings.";
-    demoSection.insertAdjacentElement("afterbegin", banner);
-  }
-
-  function applyDemoTileSuspensionState() {
-    if (!isProviderSuspended && !isMaintenanceMode) return;
-
-    demoTiles.forEach((tile) => {
-      const isSuperUserTile = tile.classList.contains("demo-tile--superuser");
-      const shouldDisable = isMaintenanceMode
-        ? !isSuperUserTile
-        : tile.classList.contains("demo-tile--provider");
-
-      if (!shouldDisable) return;
-
-      tile.classList.add("demo-tile--disabled");
-      tile.setAttribute("aria-disabled", "true");
-      tile.title = isMaintenanceMode
-        ? "Only Super User login is allowed during maintenance mode"
-        : "Provider login is suspended by platform settings";
-    });
-
+  function applyRegisterRestrictionState() {
     const registerHintLink = document.querySelector(".register-link");
     if (isMaintenanceMode && registerHintLink) {
       registerHintLink.classList.add("register-link--disabled");
@@ -114,8 +80,7 @@ AppStore.ready.then(() => {
     }
   }
 
-  renderSuspensionBanner();
-  applyDemoTileSuspensionState();
+  applyRegisterRestrictionState();
 
   const urlError = new URLSearchParams(window.location.search).get("error");
   if (urlError === "provider_suspended") {
@@ -186,43 +151,5 @@ AppStore.ready.then(() => {
     passwordVisible = !passwordVisible;
     passwordInput.type = passwordVisible ? "text" : "password";
     toggleIcon.textContent = passwordVisible ? "🙈" : "👁";
-  });
-
-  /* ── Demo tile click: fill fields and login immediately ── */
-  demoTiles.forEach((tile) => {
-    tile.addEventListener("click", () => {
-      if (
-        isMaintenanceMode &&
-        !tile.classList.contains("demo-tile--superuser")
-      ) {
-        showError(
-          "Maintenance mode is active. Only Super User admin access is available right now.",
-        );
-        return;
-      }
-
-      if (
-        isProviderSuspended &&
-        tile.classList.contains("demo-tile--provider")
-      ) {
-        showError(
-          "Provider access is currently suspended by platform settings. Contact Super User.",
-        );
-        return;
-      }
-
-      const email = tile.dataset.email;
-      const password = tile.dataset.password;
-
-      emailInput.value = email;
-      passwordInput.value = password;
-
-      /* Show password briefly so user sees it was filled */
-      passwordInput.type = "text";
-      toggleIcon.textContent = "🙈";
-      passwordVisible = true;
-
-      attemptLogin(email, password);
-    });
   });
 });

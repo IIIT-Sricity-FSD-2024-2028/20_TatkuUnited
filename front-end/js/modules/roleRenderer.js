@@ -123,7 +123,7 @@ window.RoleRenderer = (() => {
 
         <!-- Logout -->
         <div style="padding:1rem 1.25rem;border-top:1px solid rgba(255,255,255,.08)">
-          <button onclick="Auth.logout()"
+            <button onclick="Auth.requestLogout()"
                   style="width:100%;padding:.6rem 1rem;background:#ef4444;color:#fff;
                          border:none;border-radius:.5rem;cursor:pointer;font-size:.875rem;
                          font-weight:600;display:flex;align-items:center;

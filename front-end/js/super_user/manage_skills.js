@@ -11,6 +11,21 @@ AppStore.ready.then(() => {
   const allProviderSkills = AppStore.getTable("provider_skills") || [];
   const allServiceSkills = AppStore.getTable("service_skills") || [];
 
+  function updateNotificationBadges() {
+    const unread = (AppStore.getTable("super_user_notifications") || []).filter(
+      (n) => !n.is_read,
+    ).length;
+    document.querySelectorAll(".notif-badge").forEach((badge) => {
+      if (unread > 0) {
+        badge.textContent = String(unread);
+        badge.style.display = "flex";
+      } else {
+        badge.textContent = "";
+        badge.style.display = "none";
+      }
+    });
+  }
+
   /* ── 3. Transform and enrich skills ── */
   function transformSkills(skillsList) {
     return skillsList.map((sk, idx) => {
@@ -353,11 +368,13 @@ AppStore.ready.then(() => {
   /* ── Initialize on DOM ready ── */
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", () => {
+      updateNotificationBadges();
       setupEventListeners();
       renderTable(skills);
       updateKPIs(skills);
     });
   } else {
+    updateNotificationBadges();
     setupEventListeners();
     renderTable(skills);
     updateKPIs(skills);

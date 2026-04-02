@@ -11,6 +11,21 @@ AppStore.ready.then(() => {
   const allCategories = AppStore.getTable("categories") || [];
   let allServiceContent = AppStore.getTable("service_content") || [];
 
+  function updateNotificationBadges() {
+    const unread = (AppStore.getTable("super_user_notifications") || []).filter(
+      (n) => !n.is_read,
+    ).length;
+    document.querySelectorAll(".notif-badge").forEach((badge) => {
+      if (unread > 0) {
+        badge.textContent = String(unread);
+        badge.style.display = "flex";
+      } else {
+        badge.textContent = "";
+        badge.style.display = "none";
+      }
+    });
+  }
+
   /* ── 3. Transform and enrich services ── */
   function transformServices(servicesList) {
     return servicesList.map((svc, idx) => {
@@ -610,6 +625,7 @@ AppStore.ready.then(() => {
 
   /* ── Initialize on DOM ready ── */
   function init() {
+    updateNotificationBadges();
     populateCategoryDropdown();
     setupEventListeners();
     bindTableActions();

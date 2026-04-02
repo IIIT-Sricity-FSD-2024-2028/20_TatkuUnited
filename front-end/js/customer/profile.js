@@ -448,8 +448,7 @@ function confirmDelete() {
 }
 
 function confirmLogout() {
-  // Removed native window.confirm to avoid silent failures in test browsers
-  Auth.logout();
+  Auth.requestLogout();
 }
 
 // ===== INIT =====
