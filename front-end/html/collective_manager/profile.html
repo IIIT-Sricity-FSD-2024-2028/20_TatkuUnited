@@ -11,6 +11,7 @@
       href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
       rel="stylesheet"
     />
+    <style>.toast.toast-error{background:#dc2626;}</style>
   </head>
   <body>
     <!-- Sidebar -->
@@ -184,21 +185,11 @@
               <div class="card-grid">
                 <div class="form-field">
                   <label>Full Name</label>
-                  <input
-                    type="text"
-                    id="full-name"
-                    value=""
-                    oninput="syncName()"
-                  />
+                  <input type="text" id="full-name" autocomplete="off" oninput="syncName()" />
                 </div>
                 <div class="form-field">
                   <label>Email Address</label>
-                  <input
-                    type="email"
-                    id="email"
-                    value=""
-                    oninput="syncEmail()"
-                  />
+                  <input type="email" id="email" autocomplete="off" oninput="syncEmail()" />
                 </div>
                 <div class="form-field">
                   <label>Phone Number</label>
@@ -215,7 +206,7 @@
                 </div>
                 <div class="form-field">
                   <label>Date of Birth</label>
-                  <input type="date" id="dob" value="" />
+                  <input type="date" id="dob" autocomplete="off" />
                 </div>
               </div>
               <div class="card-footer">
@@ -238,7 +229,7 @@
               <div class="card-grid">
                 <div class="form-field">
                   <label>Collective Name</label>
-                  <input type="text" id="collective-name" value="" />
+                  <input type="text" id="collective-name" autocomplete="off" />
                 </div>
                 <div class="form-field">
                   <label>Collective ID</label>
@@ -253,14 +244,14 @@
                 <div class="form-field">
                   <label>Primary Service Domain</label>
                   <select id="domain">
-                    <option selected>Home Services</option>
+                    <option>Home Services</option>
                     <option>Commercial Services</option>
                     <option>Industrial Services</option>
                   </select>
                 </div>
                 <div class="form-field">
                   <label>Region</label>
-                  <input type="text" id="region" value="" />
+                  <input type="text" id="region" autocomplete="off" />
                 </div>
               </div>
               <div class="card-footer">
