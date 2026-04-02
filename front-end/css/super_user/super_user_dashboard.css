@@ -605,6 +605,10 @@ body {
   gap: 16px;
 }
 
+.right-panel .right-card:first-child {
+  margin-top: 74px;
+}
+
 .right-card {
   background: var(--surface);
   border: 1px solid var(--border);

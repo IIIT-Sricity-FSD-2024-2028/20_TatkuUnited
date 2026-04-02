@@ -112,6 +112,8 @@
       var name = (document.getElementById("full-name").value || "").trim();
       var phone = (document.getElementById("phone").value || "").trim();
       var dob = (document.getElementById("dob").value || "").trim();
+      var codeSpan = document.getElementById("phone-code");
+      var countryCode = codeSpan ? codeSpan.textContent : "+91";
 
       if (!name) {
         showToast("Name cannot be empty.", "error");

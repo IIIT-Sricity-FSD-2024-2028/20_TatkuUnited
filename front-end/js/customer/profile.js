@@ -81,6 +81,13 @@ function saveSection(section) {
       const emailVal = document.getElementById("email").value;
       const phoneVal = (document.getElementById("phone").value || "").trim();
       const dobVal = document.getElementById("dob").value;
+      const codeSpan = document.getElementById("phone-code");
+      const countryCode = codeSpan ? codeSpan.textContent : "+91";
+
+      if (phoneVal && !/^\d{10}$/.test(phoneVal)) {
+        showProfileToast("Phone must be exactly 10 digits.");
+        return;
+      }
 
       if (phoneVal && !/^\d{10}$/.test(phoneVal)) {
         showProfileToast("Phone must be exactly 10 digits.");
@@ -90,7 +97,7 @@ function saveSection(section) {
       CRUD.updateRecord("customers", "customer_id", session.id, {
         full_name: nameVal,
         email: emailVal,
-        phone: phoneVal,
+        phone: phoneVal ? countryCode + phoneVal : "",
         dob: dobVal,
       });
       // Updating session state in sessionStorage using the correct key

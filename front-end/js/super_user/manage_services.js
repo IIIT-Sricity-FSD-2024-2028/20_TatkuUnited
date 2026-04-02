@@ -66,16 +66,25 @@ AppStore.ready.then(() => {
 
   function populateCategoryDropdown() {
     const categorySelect = document.getElementById("serviceCategory");
+    const categoryFilter = document.getElementById("categoryFilter");
     if (!categorySelect) return;
 
     // Clear existing options except the first one
     categorySelect.innerHTML = '<option value="">Select a category</option>';
+    if (categoryFilter) {
+      categoryFilter.innerHTML = '<option value="">All Categories</option>';
+    }
 
     allCategories.forEach((cat) => {
       const option = document.createElement("option");
       option.value = cat.category_id;
       option.textContent = cat.category_name;
       categorySelect.appendChild(option);
+
+      if (categoryFilter) {
+        const filterOption = option.cloneNode(true);
+        categoryFilter.appendChild(filterOption);
+      }
     });
   }
 
@@ -261,12 +270,17 @@ AppStore.ready.then(() => {
   function applyFilters(resetPage = true) {
     const search =
       document.getElementById("serviceSearch")?.value.toLowerCase() || "";
+    const categoryFilter = document.getElementById("categoryFilter")?.value || "";
+
     filteredServices = services.filter((svc) => {
       const matchSearch =
         svc.name.toLowerCase().includes(search) ||
         svc.desc.toLowerCase().includes(search) ||
         svc.categoryName.toLowerCase().includes(search);
-      return matchSearch;
+      
+      const matchCategory = !categoryFilter || svc.categoryId === categoryFilter;
+
+      return matchSearch && matchCategory;
     });
     if (resetPage) currentPage = 1;
     renderTable(filteredServices);
@@ -276,6 +290,9 @@ AppStore.ready.then(() => {
   function setupEventListeners() {
     const serviceSearch = document.getElementById("serviceSearch");
     if (serviceSearch) serviceSearch.addEventListener("input", applyFilters);
+
+    const categoryFilter = document.getElementById("categoryFilter");
+    if (categoryFilter) categoryFilter.addEventListener("change", applyFilters);
   }
 
   /* ── Add/Edit Modal ── */

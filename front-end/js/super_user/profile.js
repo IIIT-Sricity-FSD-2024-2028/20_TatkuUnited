@@ -235,6 +235,7 @@ AppStore.ready.then(() => {
       const nameEl = document.getElementById("full-name");
       const emailEl = document.getElementById("email");
       const phoneEl = document.getElementById("phone");
+      const codeSpan = document.getElementById("phone-code");
       const idEl = document.getElementById("super-user-id");
 
       if (nameEl) nameEl.value = currentUser.name || "";
