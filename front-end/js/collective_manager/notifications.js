@@ -186,6 +186,7 @@ AppStore.ready.then(() => {
   });
 
   const PAGE_SIZE = 5;
+  const TOAST_DURATION_MS = 2200;
   let visibleCount = PAGE_SIZE;
 
   // --- TABS & RENDERING LOGIC ---
@@ -288,8 +289,9 @@ AppStore.ready.then(() => {
     list.querySelectorAll(".nbtn").forEach((btn) => {
       btn.addEventListener("click", (e) => {
         const id = parseInt(e.currentTarget.getAttribute("data-action-id"));
+        const label = e.currentTarget.getAttribute("data-action-label") || "";
         const href = e.currentTarget.getAttribute("data-action-href");
-        handleAction(id);
+        handleAction(id, label, href);
         if (href) window.location.href = href;
       });
     });
@@ -318,7 +320,40 @@ AppStore.ready.then(() => {
     btn.disabled = false;
   }
 
-  function handleAction(id) {
+  function showToast(message, type = "info") {
+    const existing = document.getElementById("cm-notif-toast");
+    if (existing) existing.remove();
+
+    const colors = {
+      success: "#16a34a",
+      info: "#2563eb",
+      warning: "#d97706",
+      error: "#dc2626",
+    };
+
+    const toast = document.createElement("div");
+    toast.id = "cm-notif-toast";
+    toast.textContent = message;
+    toast.style.cssText =
+      "position:fixed;right:20px;bottom:20px;z-index:1300;padding:10px 14px;border-radius:10px;" +
+      "color:#fff;font-size:.85rem;font-weight:600;box-shadow:0 12px 28px rgba(0,0,0,.35);" +
+      "font-family:Inter,sans-serif;opacity:0;transform:translateY(8px);transition:all .2s ease;";
+    toast.style.background = colors[type] || colors.info;
+    document.body.appendChild(toast);
+
+    requestAnimationFrame(() => {
+      toast.style.opacity = "1";
+      toast.style.transform = "translateY(0)";
+    });
+
+    setTimeout(() => {
+      toast.style.opacity = "0";
+      toast.style.transform = "translateY(8px)";
+      setTimeout(() => toast.remove(), 220);
+    }, TOAST_DURATION_MS);
+  }
+
+  function handleAction(id, label, href) {
     const n = notifications.find((x) => x.id === id);
     if (n) {
       n.read = true;
@@ -327,6 +362,9 @@ AppStore.ready.then(() => {
         notifState.read.push(key);
         saveNotifState();
       }
+    }
+    if (!href) {
+      showToast(`${label || "Notification"} marked as read`, "info");
     }
     renderTabs();
     renderNotifications();
@@ -342,6 +380,7 @@ AppStore.ready.then(() => {
       }
     }
     notifications = notifications.filter((x) => x.id !== id);
+    showToast("Notification dismissed", "success");
     renderTabs();
     renderNotifications();
   }
@@ -356,6 +395,7 @@ AppStore.ready.then(() => {
       }
     });
     saveNotifState();
+    showToast("All notifications marked as read", "success");
     renderTabs();
     renderNotifications();
   };

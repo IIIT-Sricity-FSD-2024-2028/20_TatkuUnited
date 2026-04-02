@@ -10,7 +10,41 @@ const iconMap = {
 };
 
 const PAGE_SIZE = 3;
+const TOAST_DURATION_MS = 2200;
 let visibleCount = PAGE_SIZE;
+
+function showToast(message, type = "info") {
+  const previous = document.getElementById("provider-notif-toast");
+  if (previous) previous.remove();
+
+  const colors = {
+    success: "#16a34a",
+    warning: "#d97706",
+    error: "#dc2626",
+    info: "#2563eb",
+  };
+
+  const toast = document.createElement("div");
+  toast.id = "provider-notif-toast";
+  toast.textContent = message;
+  toast.style.cssText =
+    "position:fixed;right:20px;bottom:20px;z-index:1200;padding:10px 14px;border-radius:10px;" +
+    "color:#fff;font-size:.85rem;font-weight:600;box-shadow:0 12px 28px rgba(0,0,0,.35);" +
+    "font-family:Sora,sans-serif;opacity:0;transform:translateY(8px);transition:all .2s ease;";
+  toast.style.background = colors[type] || colors.info;
+  document.body.appendChild(toast);
+
+  requestAnimationFrame(() => {
+    toast.style.opacity = "1";
+    toast.style.transform = "translateY(0)";
+  });
+
+  setTimeout(() => {
+    toast.style.opacity = "0";
+    toast.style.transform = "translateY(8px)";
+    setTimeout(() => toast.remove(), 220);
+  }, TOAST_DURATION_MS);
+}
 
 function renderTabs() {
   document.getElementById("notif-tabs").innerHTML = tabs
@@ -63,7 +97,7 @@ function renderNotifs() {
               ? n.actions
                   .map(
                     (a) => `
-            <button class="notif-action-btn ${a.cls}" onclick="${a.action === "dismiss" ? `dismissNotif(${n.id})` : `window.location='${a.href}'`}">${a.label}</button>
+            <button class="notif-action-btn ${a.cls}" data-action-notif-id="${n.id}" data-action-type="${a.action || ""}" data-action-href="${a.href || ""}">${a.label}</button>
           `,
                   )
                   .join("")
@@ -75,6 +109,16 @@ function renderNotifs() {
   `,
     )
     .join("");
+
+  document.querySelectorAll(".notif-action-btn").forEach((btn) => {
+    btn.addEventListener("click", (e) => {
+      const actionBtn = e.currentTarget;
+      const id = Number(actionBtn.getAttribute("data-action-notif-id"));
+      const actionType = actionBtn.getAttribute("data-action-type") || "";
+      const href = actionBtn.getAttribute("data-action-href") || "";
+      handleNotifAction(id, { action: actionType, href: href });
+    });
+  });
 
   updateLoadMoreButton(visible.length, filtered.length);
 }
@@ -98,6 +142,8 @@ function dismissNotif(id) {
     notifications.splice(idx, 1);
     saveNotifications();
     renderNotifs();
+    updateNotifDot();
+    showToast("Notification dismissed", "success");
   }
 }
 
@@ -105,6 +151,35 @@ function markAllRead() {
   notifications.forEach((n) => (n.unread = false));
   saveNotifications();
   renderNotifs();
+  updateNotifDot();
+  showToast("All notifications marked as read", "success");
+}
+
+function handleNotifAction(id, actionObj) {
+  if (actionObj && actionObj.action === "dismiss") {
+    dismissNotif(id);
+    return;
+  }
+
+  const notif = notifications.find((n) => n.id === id);
+  if (notif) notif.unread = false;
+  saveNotifications();
+
+  if (actionObj && actionObj.href) {
+    window.location.href = actionObj.href;
+    return;
+  }
+
+  renderNotifs();
+  updateNotifDot();
+  showToast("Notification marked as read", "info");
+}
+
+function updateNotifDot() {
+  const dot = document.querySelector(".notif-dot");
+  if (!dot) return;
+  const unread = notifications.filter((n) => n.unread).length;
+  dot.style.display = unread > 0 ? "inline-block" : "none";
 }
 
 function saveNotifications() {
@@ -147,11 +222,15 @@ function init() {
       visibleCount = PAGE_SIZE;
       renderTabs();
       renderNotifs();
+      updateNotifDot();
     });
   } else {
     renderTabs();
     renderNotifs();
+    updateNotifDot();
   }
 }
+
+window.handleNotifAction = handleNotifAction;
 
 init();

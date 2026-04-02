@@ -91,8 +91,27 @@
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val.trim());
   }
 
+  function isValidFullName(val) {
+    return /^[A-Za-z]+(?:\s+[A-Za-z]+)*$/.test(val.trim());
+  }
+
   function isValidPhone(val) {
-    return /^[\d\s\-().+]{7,}$/.test(val.trim());
+    return /^(?!([0-9])\1{9})\d{10}$/.test(val.trim());
+  }
+
+  function validatePasswordPolicy(password) {
+    var pwd = password || "";
+    var error =
+      "Password must be at least 8 characters and include uppercase, lowercase, number, and special character with no spaces.";
+
+    if (pwd.length < 8) return { valid: false, error: error };
+    if (/\s/.test(pwd)) return { valid: false, error: error };
+    if (!/[A-Z]/.test(pwd)) return { valid: false, error: error };
+    if (!/[a-z]/.test(pwd)) return { valid: false, error: error };
+    if (!/[0-9]/.test(pwd)) return { valid: false, error: error };
+    if (!/[^A-Za-z0-9]/.test(pwd)) return { valid: false, error: error };
+
+    return { valid: true };
   }
 
   /* ── Step navigation ── */
@@ -176,28 +195,36 @@
   wireToggle("toggle-pwd", passwordInput);
   wireToggle("toggle-cpwd", confirmInput);
 
+  /* ── Phone input guard: digits only, max 10 ── */
+  phoneInput.addEventListener("input", function () {
+    var digitsOnly = this.value.replace(/\D/g, "").slice(0, 10);
+    if (this.value !== digitsOnly) this.value = digitsOnly;
+  });
+
   /* ── Password strength ── */
   passwordInput.addEventListener("input", function () {
     var val = passwordInput.value;
     var score = 0;
     if (val.length >= 8) score++;
+    if (/[a-z]/.test(val)) score++;
     if (/[A-Z]/.test(val)) score++;
     if (/[0-9]/.test(val)) score++;
     if (/[^A-Za-z0-9]/.test(val)) score++;
+    if (/\s/.test(val)) score = Math.max(0, score - 1);
 
     var fill = document.getElementById("strength-fill");
     var label = document.getElementById("strength-label");
-    var pct = (score / 4) * 100;
+    var pct = (score / 5) * 100;
     fill.style.width = pct + "%";
 
-    var colors = ["#EF4444", "#F59E0B", "#10B981", "#059669"];
-    var labels = ["Weak", "Fair", "Good", "Strong"];
+    var colors = ["#EF4444", "#F59E0B", "#FACC15", "#10B981", "#059669"];
+    var labels = ["Weak", "Fair", "Okay", "Good", "Strong"];
 
     if (val.length === 0) {
       fill.style.width = "0%";
       label.textContent = "";
     } else {
-      var idx = Math.max(0, score - 1);
+      var idx = Math.min(labels.length - 1, Math.max(0, score - 1));
       fill.style.background = colors[idx];
       label.textContent = labels[idx];
       label.style.color = colors[idx];
@@ -229,6 +256,10 @@
       );
       fullnameInput.classList.add("invalid");
       valid = false;
+    } else if (!isValidFullName(fullname)) {
+      setError("fullname-error", "Name can contain letters and spaces only.");
+      fullnameInput.classList.add("invalid");
+      valid = false;
     }
 
     if (!email) {
@@ -246,7 +277,10 @@
       phoneInput.classList.add("invalid");
       valid = false;
     } else if (!isValidPhone(phone)) {
-      setError("phone-error", "Please enter a valid phone number.");
+      setError(
+        "phone-error",
+        "Enter a valid 10-digit phone number (digits only, not all same digit).",
+      );
       phoneInput.classList.add("invalid");
       valid = false;
     }
@@ -274,8 +308,9 @@
     var password = passwordInput.value;
     var confirm = confirmInput.value;
 
-    if (!password || password.length < 8) {
-      setError("password-error", "Password must be at least 8 characters.");
+    var passwordCheck = validatePasswordPolicy(password);
+    if (!passwordCheck.valid) {
+      setError("password-error", passwordCheck.error);
       passwordInput.classList.add("invalid");
       valid = false;
     }
@@ -325,8 +360,7 @@
       .then(function () {
         var fullname = fullnameInput.value.trim();
         var email = emailInput.value.trim().toLowerCase();
-        var countryCode = document.getElementById("country-code").value;
-        var phone = countryCode + phoneInput.value.trim();
+        var phone = phoneInput.value.trim();
         var now = new Date().toISOString();
 
         /* ── Duplicate e-mail check across every user table ── */

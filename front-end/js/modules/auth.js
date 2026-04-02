@@ -16,6 +16,9 @@ window.Auth = (() => {
     customer: "/front-end/html/customer/home.html",
   };
 
+  const PASSWORD_POLICY_MESSAGE =
+    "Password must be at least 8 characters and include uppercase, lowercase, number, and special character with no spaces.";
+
   function _getPlatformSettings() {
     try {
       if (
@@ -48,6 +51,29 @@ window.Auth = (() => {
     if (!role) return false;
     if (!_isMaintenanceModeEnabled()) return false;
     return role !== "super_user";
+  }
+
+  function validatePasswordPolicy(password) {
+    const pwd = password || "";
+    if (pwd.length < 8) {
+      return { valid: false, error: PASSWORD_POLICY_MESSAGE };
+    }
+    if (/\s/.test(pwd)) {
+      return { valid: false, error: PASSWORD_POLICY_MESSAGE };
+    }
+    if (!/[A-Z]/.test(pwd)) {
+      return { valid: false, error: PASSWORD_POLICY_MESSAGE };
+    }
+    if (!/[a-z]/.test(pwd)) {
+      return { valid: false, error: PASSWORD_POLICY_MESSAGE };
+    }
+    if (!/[0-9]/.test(pwd)) {
+      return { valid: false, error: PASSWORD_POLICY_MESSAGE };
+    }
+    if (!/[^A-Za-z0-9]/.test(pwd)) {
+      return { valid: false, error: PASSWORD_POLICY_MESSAGE };
+    }
+    return { valid: true };
   }
   /* =========================================================================
      BUILD AUTH REGISTRY
@@ -318,6 +344,19 @@ window.Auth = (() => {
       return { success: false, error: "invalid_current_password" };
     }
 
+    if (currentPassword === newPassword) {
+      return { success: false, error: "new_password_same_as_current" };
+    }
+
+    const passwordCheck = validatePasswordPolicy(newPassword);
+    if (!passwordCheck.valid) {
+      return {
+        success: false,
+        error: "invalid_new_password",
+        message: passwordCheck.error,
+      };
+    }
+
     const tableMap = {
       super_user: "super_users",
       collective_manager: "collective_managers",
@@ -355,6 +394,57 @@ window.Auth = (() => {
     return { success: true };
   }
 
+  /* =========================================================================
+     Auth.updateProfilePicture(imageDataUrl)
+     ========================================================================= */
+  function updateProfilePicture(imageDataUrl) {
+    const user = getCurrentUser();
+    if (!user) return { success: false, error: "not_logged_in" };
+
+    const cleanValue = (imageDataUrl || "").trim();
+    if (!cleanValue) return { success: false, error: "invalid_image" };
+
+    const tableMap = {
+      super_user: "super_users",
+      collective_manager: "collective_managers",
+      unit_manager: "unit_managers",
+      provider: "service_providers",
+      customer: "customers",
+    };
+
+    const idKeyMap = {
+      super_user: "super_user_id",
+      collective_manager: "cm_id",
+      unit_manager: "um_id",
+      provider: "service_provider_id",
+      customer: "customer_id",
+    };
+
+    const tableName = tableMap[user.role];
+    const idKey = idKeyMap[user.role];
+    const table = AppStore.getTable(tableName);
+
+    if (!table) return { success: false, error: "table_not_found" };
+
+    const row = table.find((r) => r[idKey] === user.id);
+    if (!row) return { success: false, error: "user_not_found_in_store" };
+
+    row.pfp_url = cleanValue;
+    row.updated_at = new Date().toISOString();
+
+    AppStore.save();
+
+    const activeSession = getSession();
+    if (activeSession) {
+      activeSession.pfp_url = cleanValue;
+      sessionStorage.setItem("fsd_session", JSON.stringify(activeSession));
+    }
+
+    _buildRegistry();
+
+    return { success: true, pfp_url: cleanValue };
+  }
+
   /* ─── Initialise registry once AppStore is ready ─── */
   AppStore.ready.then(() => {
     _buildRegistry();
@@ -377,7 +467,9 @@ window.Auth = (() => {
     hasRole,
     getRedirectUrl,
     getCurrentUser,
+    validatePasswordPolicy,
     changePassword,
+    updateProfilePicture,
     isMaintenanceModeEnabled: _isMaintenanceModeEnabled,
   };
 })();

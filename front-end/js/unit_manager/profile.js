@@ -63,20 +63,8 @@
     setInput("full-name", um ? um.name : "Unit Manager");
     setInput("email", um ? um.email : "");
 
-    // Parse phone: detect country code and strip it for the digit input
     var rawPhone = um && um.phone ? String(um.phone) : "";
-    var codeSpan = document.getElementById("phone-code");
-    var CODES = ["+971", "+44", "+65", "+91", "+61", "+1"];
-    var matchedCode = "+91"; // Fallback
-    for (var ci = 0; ci < CODES.length; ci++) {
-      if (rawPhone && rawPhone.startsWith(CODES[ci])) {
-        matchedCode = CODES[ci];
-        rawPhone = rawPhone.slice(CODES[ci].length).trim();
-        break;
-      }
-    }
-    if (codeSpan) codeSpan.textContent = matchedCode;
-    setInput("phone", rawPhone);
+    setInput("phone", rawPhone.replace(/\D/g, "").slice(-10));
 
     setInput("dob", um && um.dob ? um.dob : "");
 
@@ -124,8 +112,6 @@
       var name = (document.getElementById("full-name").value || "").trim();
       var phone = (document.getElementById("phone").value || "").trim();
       var dob = (document.getElementById("dob").value || "").trim();
-      var codeSpan = document.getElementById("phone-code");
-      var countryCode = codeSpan ? codeSpan.textContent : "+91";
 
       if (!name) {
         showToast("Name cannot be empty.", "error");
@@ -137,7 +123,7 @@
       }
 
       um.name = name;
-      um.phone = phone ? countryCode + phone : "";
+      um.phone = phone;
       um.dob = dob || null; // custom UI field, persisted in shared store
       um.updated_at = new Date().toISOString();
 
@@ -191,9 +177,14 @@
 
     var reader = new FileReader();
     reader.onload = function (e) {
-      um.pfp_url = e.target.result;
-      um.updated_at = new Date().toISOString();
-      AppStore.save();
+      var imageData = e.target.result;
+      var res = Auth.updateProfilePicture(imageData);
+      if (!res.success) {
+        showToast("Unable to update profile photo.", "error");
+        return;
+      }
+
+      um.pfp_url = imageData;
       renderAvatar(um.pfp_url, um.name);
       showToast("Profile photo updated ✓", "success");
     };
@@ -204,11 +195,16 @@
     var modal = document.getElementById("pwd-modal");
     if (!modal) return;
 
-    modal.querySelectorAll('input[type="password"]').forEach(function (i) {
+    ["pwd-current", "pwd-new", "pwd-confirm"].forEach(function (id) {
+      var i = document.getElementById(id);
+      if (!i) return;
       i.value = "";
+      i.type = "password";
       i.style.borderColor = "";
     });
 
+    wirePasswordVisibilityToggles();
+    resetPasswordVisibilityToggles();
     removePwdError();
     modal.classList.add("open");
   };
@@ -227,10 +223,46 @@
       var fields = ["pwd-current", "pwd-new", "pwd-confirm"];
       fields.forEach(function (id) {
         var el = document.getElementById(id);
-        if (el) el.value = "";
+        if (el) {
+          el.value = "";
+          el.type = "password";
+        }
       });
+      resetPasswordVisibilityToggles();
     }
   };
+
+  function wirePasswordVisibilityToggles() {
+    document.querySelectorAll(".pwd-toggle").forEach(function (btn) {
+      if (btn.dataset.wired === "1") return;
+      btn.dataset.wired = "1";
+
+      btn.addEventListener("click", function () {
+        var targetId = btn.getAttribute("data-target");
+        var input = document.getElementById(targetId);
+        if (!input) return;
+
+        var shouldShow = input.type === "password";
+        input.type = shouldShow ? "text" : "password";
+
+        var eyeOpen = btn.querySelector(".eye-open");
+        var eyeClosed = btn.querySelector(".eye-closed");
+        if (eyeOpen) eyeOpen.style.display = shouldShow ? "none" : "inline";
+        if (eyeClosed) eyeClosed.style.display = shouldShow ? "inline" : "none";
+      });
+    });
+  }
+
+  function resetPasswordVisibilityToggles() {
+    document.querySelectorAll(".pwd-toggle").forEach(function (btn) {
+      var eyeOpen = btn.querySelector(".eye-open");
+      var eyeClosed = btn.querySelector(".eye-closed");
+      if (eyeOpen) eyeOpen.style.display = "inline";
+      if (eyeClosed) eyeClosed.style.display = "none";
+    });
+  }
+
+  wirePasswordVisibilityToggles();
 
   function removePwdError() {
     var e = document.getElementById("pwdErrMsg");
@@ -252,9 +284,15 @@
   }
 
   window.handlePasswordChange = function () {
-    var currentPwd = document.getElementById("pwd-current") ? document.getElementById("pwd-current").value : "";
-    var newPwd = document.getElementById("pwd-new") ? document.getElementById("pwd-new").value : "";
-    var confirmPwd = document.getElementById("pwd-confirm") ? document.getElementById("pwd-confirm").value : "";
+    var currentPwd = document.getElementById("pwd-current")
+      ? document.getElementById("pwd-current").value
+      : "";
+    var newPwd = document.getElementById("pwd-new")
+      ? document.getElementById("pwd-new").value
+      : "";
+    var confirmPwd = document.getElementById("pwd-confirm")
+      ? document.getElementById("pwd-confirm").value
+      : "";
 
     if (!currentPwd || !newPwd || !confirmPwd) {
       showPwdError("Please fill in all password fields.");
@@ -266,8 +304,16 @@
       return;
     }
 
-    if (newPwd.length < 8) {
-      showPwdError("New password must be at least 8 characters.");
+    var passwordCheck =
+      window.Auth && typeof Auth.validatePasswordPolicy === "function"
+        ? Auth.validatePasswordPolicy(newPwd)
+        : { valid: newPwd.length >= 8 };
+
+    if (!passwordCheck.valid) {
+      showPwdError(
+        passwordCheck.error ||
+          "Password must be at least 8 characters and include uppercase, lowercase, number, and special character with no spaces.",
+      );
       return;
     }
 
@@ -278,6 +324,11 @@
     } else {
       var errorMap = {
         invalid_current_password: "Current password is incorrect.",
+        invalid_new_password:
+          res.message ||
+          "Password must be at least 8 characters and include uppercase, lowercase, number, and special character with no spaces.",
+        new_password_same_as_current:
+          "New password must be different from current password.",
         not_logged_in: "Session expired. Please log in again.",
       };
       showPwdError(errorMap[res.error] || "Failed to update password.");
