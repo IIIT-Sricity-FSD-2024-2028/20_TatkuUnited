@@ -121,17 +121,17 @@ AppStore.ready.then(() => {
       if (nameEl) nameEl.textContent = sessionUser.name;
     }
 
-    const notifBadge = document.querySelector(".notif-badge");
-    if (notifBadge) {
-      const allNotifs = AppStore.getTable("super_user_notifications") || [];
-      const unread = allNotifs.filter(n => !n.is_read).length;
+    const allNotifs = AppStore.getTable("super_user_notifications") || [];
+    const unread = allNotifs.filter((n) => !n.is_read).length;
+    document.querySelectorAll(".notif-badge").forEach((notifBadge) => {
       if (unread > 0) {
-        notifBadge.textContent = unread;
+        notifBadge.textContent = String(unread);
         notifBadge.style.display = "flex";
       } else {
+        notifBadge.textContent = "";
         notifBadge.style.display = "none";
       }
-    }
+    });
   }
 
   function getFiltered() {

@@ -64,7 +64,7 @@
     </nav>
     <div class="sidebar-footer">
       <a href="../auth_pages/logout.html" class="logout-link" id="logout-btn"
-        onclick="return confirm('Are you sure you want to logout?');">
+        >
         <svg viewBox="0 0 24 24">
           <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
           <polyline points="16 17 21 12 16 7" />
@@ -153,23 +153,36 @@
       <!-- BOTTOM: ONBOARDING & VERIFICATION (TABBED) -->
       <div class="admission-requests-layout">
         <div class="requests-col card">
-          <div class="grid-header">
+          <div class="onboarding-head">
             <div>
               <h2 class="sub-section-title">Onboarding & Verification</h2>
-              <p class="section-desc">Manage new provider admissions and verify specialized skills.</p>
+              <p class="section-desc">Track incoming providers and approve pending skill validations.</p>
             </div>
-            <div class="tab-selector">
-              <button class="tab-btn active" data-tab="admissions" onclick="switchOnboardingTab('admissions')">New Admissions</button>
-              <button class="tab-btn" data-tab="verifications" onclick="switchOnboardingTab('verifications')">Skill Verification</button>
+            <div class="onboarding-metrics">
+              <div class="metric-pill">
+                <span class="metric-label">Admissions</span>
+                <span class="metric-value" id="metric-admissions-count">0</span>
+              </div>
+              <div class="metric-pill metric-pill-amber">
+                <span class="metric-label">Verifications</span>
+                <span class="metric-value" id="metric-verifications-count">0</span>
+              </div>
             </div>
+          </div>
+
+          <div class="tab-selector" role="tablist" aria-label="Onboarding tabs">
+            <button class="tab-btn active" data-tab="admissions" onclick="switchOnboardingTab('admissions')">New Admissions</button>
+            <button class="tab-btn" data-tab="verifications" onclick="switchOnboardingTab('verifications')">Skill Verification</button>
           </div>
 
           <div class="onboarding-tab-content">
             <!-- Tab 1: New Admissions -->
             <div id="tab-admissions" class="tab-pane">
               <div class="requests-section">
-                <h3 class="minor-title">New Admission Requests</h3>
-                <p class="helper-text" style="margin-bottom: 12px;">Providers waiting for unit assignment.</p>
+                <div class="requests-heading-row">
+                  <h3 class="minor-title">New Admission Requests</h3>
+                  <span class="requests-hint">Providers waiting for unit assignment</span>
+                </div>
                 <div id="admissionRequestsList" class="admissions-list">
                   <!-- Unit Assignment Requests will be here -->
                 </div>
@@ -179,8 +192,10 @@
             <!-- Tab 2: Skill Verification -->
             <div id="tab-verifications" class="tab-pane hidden">
               <div class="requests-section">
-                <h3 class="minor-title">Skill Verification</h3>
-                <p class="helper-text" style="margin-bottom: 12px;">Existing providers with new pending skills.</p>
+                <div class="requests-heading-row">
+                  <h3 class="minor-title">Skill Verification Queue</h3>
+                  <span class="requests-hint">Existing providers with newly submitted skills</span>
+                </div>
                 <div id="skillVerificationList" class="admissions-list">
                   <!-- Skill Verification Requests will be here -->
                 </div>

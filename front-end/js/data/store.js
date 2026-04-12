@@ -867,7 +867,218 @@
     _resolve = resolve;
   });
 
+  function _normalizePreExistingProgressStates() {
+    if (!AppStore.data) return false;
+
+    var bookings = AppStore.getTable("bookings") || [];
+    var assignments = AppStore.getTable("job_assignments") || [];
+    var bookingById = new Map(
+      bookings.map(function (b) {
+        return [b.booking_id, b];
+      }),
+    );
+
+    var changed = false;
+
+    assignments.forEach(function (ja) {
+      var status = String(ja.status || "").toUpperCase();
+      if (status !== "IN_PROGRESS") return;
+
+      var relatedBooking = bookingById.get(ja.booking_id);
+      var bookingStatus = String(
+        (relatedBooking && relatedBooking.status) || "",
+      ).toUpperCase();
+
+      var nextAssignmentStatus =
+        bookingStatus === "COMPLETED" ? "COMPLETED" : "ASSIGNED";
+      if (ja.status !== nextAssignmentStatus) {
+        ja.status = nextAssignmentStatus;
+        changed = true;
+      }
+    });
+
+    bookings.forEach(function (b) {
+      var status = String(b.status || "").toUpperCase();
+      if (status !== "IN_PROGRESS") return;
+
+      var relatedAssignment = assignments.find(function (ja) {
+        return ja.booking_id === b.booking_id;
+      });
+      var assignmentStatus = String(
+        (relatedAssignment && relatedAssignment.status) || "",
+      ).toUpperCase();
+
+      var nextBookingStatus =
+        assignmentStatus === "COMPLETED" ? "COMPLETED" : "CONFIRMED";
+      if (b.status !== nextBookingStatus) {
+        b.status = nextBookingStatus;
+        changed = true;
+      }
+    });
+
+    return changed;
+  }
+
+  function _upsertLedgerForExistingProviderAssignments() {
+    if (!AppStore.data) return false;
+
+    var ledger = AppStore.getTable("revenue_ledger") || [];
+    var assignments = AppStore.getTable("job_assignments") || [];
+    var bookings = AppStore.getTable("bookings") || [];
+    var transactions = AppStore.getTable("transactions") || [];
+    var providers = AppStore.getTable("service_providers") || [];
+    var units = AppStore.getTable("units") || [];
+    var collectives = AppStore.getTable("collectives") || [];
+    var superUsers = AppStore.getTable("super_users") || [];
+
+    var superUser = superUsers[0];
+    if (!superUser) return false;
+
+    var bookingById = new Map(
+      bookings.map(function (b) {
+        return [b.booking_id, b];
+      }),
+    );
+    var txnByBookingId = new Map();
+    transactions.forEach(function (t) {
+      if (String(t.payment_status || "").toUpperCase() === "SUCCESS") {
+        txnByBookingId.set(t.booking_id, t);
+      }
+    });
+
+    var changed = false;
+
+    function upsertEntry(entry) {
+      var idx = ledger.findIndex(function (l) {
+        return l.transaction_id === entry.transaction_id && l.role === entry.role;
+      });
+
+      if (idx >= 0) {
+        var existing = ledger[idx];
+        var existingStatus = String(existing.payout_status || "").toUpperCase();
+        var nextStatus = String(entry.payout_status || "").toUpperCase();
+        if (existingStatus !== "PAID" && nextStatus === "PAID") {
+          existing.payout_status = "PAID";
+          existing.payout_at = entry.payout_at;
+          changed = true;
+        }
+        return;
+      }
+
+      ledger.push(entry);
+      changed = true;
+    }
+
+    assignments.forEach(function (ja) {
+      var assignmentStatus = String(ja.status || "").toUpperCase();
+      if (assignmentStatus !== "ASSIGNED" && assignmentStatus !== "COMPLETED") {
+        return;
+      }
+
+      if (!ja.service_provider_id || !ja.booking_id) return;
+
+      var booking = bookingById.get(ja.booking_id);
+      if (!booking) return;
+
+      var txn = txnByBookingId.get(ja.booking_id);
+      if (!txn) return;
+
+      var provider = providers.find(function (sp) {
+        return sp.service_provider_id === ja.service_provider_id;
+      });
+      if (!provider) return;
+
+      var unit = units.find(function (u) {
+        return u.unit_id === provider.unit_id;
+      });
+      if (!unit) return;
+
+      var collective = collectives.find(function (c) {
+        return c.collective_id === unit.collective_id;
+      });
+      if (!collective) return;
+
+      var bookingSuffix = String(ja.booking_id).replace("BKG", "");
+      var totalAmount = Number(txn.amount || 0);
+      if (!Number.isFinite(totalAmount) || totalAmount <= 0) return;
+
+      var payoutStatus = assignmentStatus === "COMPLETED" ? "PAID" : "PENDING";
+      var createdAt =
+        txn.verified_at ||
+        ja.updated_at ||
+        ja.assigned_at ||
+        booking.updated_at ||
+        booking.created_at ||
+        new Date().toISOString();
+      var payoutAt =
+        payoutStatus === "PAID"
+          ? ja.updated_at || txn.verified_at || new Date().toISOString()
+          : null;
+
+      upsertEntry({
+        ledger_id: "LDG" + bookingSuffix + "_PROVIDER",
+        transaction_id: txn.transaction_id,
+        booking_id: ja.booking_id,
+        role: "provider",
+        service_provider_id: provider.service_provider_id,
+        amount: Math.round(totalAmount * 0.78 * 100) / 100,
+        percentage: 78,
+        payout_status: payoutStatus,
+        created_at: createdAt,
+        payout_at: payoutAt,
+      });
+
+      upsertEntry({
+        ledger_id: "LDG" + bookingSuffix + "_UNIT_MANAGER",
+        transaction_id: txn.transaction_id,
+        booking_id: ja.booking_id,
+        role: "unit_manager",
+        unit_id: unit.unit_id,
+        amount: Math.round(totalAmount * 0.07 * 100) / 100,
+        percentage: 7,
+        payout_status: payoutStatus,
+        created_at: createdAt,
+        payout_at: payoutAt,
+      });
+
+      upsertEntry({
+        ledger_id: "LDG" + bookingSuffix + "_COLLECTIVE_MANAGER",
+        transaction_id: txn.transaction_id,
+        booking_id: ja.booking_id,
+        role: "collective_manager",
+        collective_id: collective.collective_id,
+        amount: Math.round(totalAmount * 0.04 * 100) / 100,
+        percentage: 4,
+        payout_status: payoutStatus,
+        created_at: createdAt,
+        payout_at: payoutAt,
+      });
+
+      upsertEntry({
+        ledger_id: "LDG" + bookingSuffix + "_SUPER_USER",
+        transaction_id: txn.transaction_id,
+        booking_id: ja.booking_id,
+        role: "super_user",
+        super_user_id: superUser.super_user_id,
+        amount: Math.round(totalAmount * 0.11 * 100) / 100,
+        percentage: 11,
+        payout_status: payoutStatus,
+        created_at: createdAt,
+        payout_at: payoutAt,
+      });
+    });
+
+    AppStore.data.revenue_ledger = ledger;
+    return changed;
+  }
+
   function _postReadyAudit() {
+    var normalized = _normalizePreExistingProgressStates();
+    var ledgerUpdated = _upsertLedgerForExistingProviderAssignments();
+    if (normalized || ledgerUpdated) {
+      AppStore.save();
+    }
+
     // Run service availability audit after data is loaded
     if (
       window.AssignmentEngine &&

@@ -687,18 +687,7 @@ function showBookingsModal() {
 }
 
 /* ─────────────────────────────────────────────
-   17. LOGOUT
-   ───────────────────────────────────────────── */
-
-const logoutBtn = document.getElementById("logout-btn");
-if (logoutBtn) {
-  logoutBtn.addEventListener("click", (e) => {
-    if (!confirm("Are you sure you want to logout?")) e.preventDefault();
-  });
-}
-
-/* ─────────────────────────────────────────────
-   18. INITIALISE
+  17. INITIALISE
    ───────────────────────────────────────────── */
 
 AppStore.ready.then(() => {

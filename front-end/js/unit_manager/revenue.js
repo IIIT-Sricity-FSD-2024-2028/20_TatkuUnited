@@ -5,7 +5,7 @@
  * No DOMContentLoaded wrapper needed.
  *
  * Features:
- *  - Stat cards driven from real transaction mock data
+ *  - Stat cards driven from live transaction data
  *  - Revenue Trend chart (pure canvas, deferred one tick for layout)
  *  - Transaction table with pagination
  *  - ⋮ (details) button shows a slide-in detail panel per transaction
@@ -22,8 +22,8 @@ let ALL_TRANSACTIONS = [];
 /**
  * Use the LATEST transaction date as the "current date" reference.
  * This ensures "Last 30 Days" always produces meaningful results
- * regardless of when the app is opened relative to the mock data.
- * (The mock data spans 2024–2026; using real `new Date()` would
+ * regardless of when the app is opened relative to stored history.
+ * (The seeded history spans 2024–2026; using real `new Date()` would
  *  return 0 results since most entries are far in the past or future.)
  */
 let LATEST_TXN_DATE = new Date();

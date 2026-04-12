@@ -12,6 +12,21 @@ AppStore.ready.then(() => {
   const allSuperUsers = AppStore.getTable("super_users") || [];
   const currentUser = Auth.getCurrentUser();
 
+  function updateNotificationBadges() {
+    const unread = (AppStore.getTable("super_user_notifications") || []).filter(
+      (n) => !n.is_read,
+    ).length;
+    document.querySelectorAll(".notif-badge").forEach((badge) => {
+      if (unread > 0) {
+        badge.textContent = String(unread);
+        badge.style.display = "flex";
+      } else {
+        badge.textContent = "";
+        badge.style.display = "none";
+      }
+    });
+  }
+
   const permissions = [
     {
       name: "Full User Management",
@@ -231,6 +246,7 @@ AppStore.ready.then(() => {
 
   /* ── Initialize on DOM ready ── */
   function init() {
+    updateNotificationBadges();
     if (currentUser) {
       const nameEl = document.getElementById("full-name");
       const emailEl = document.getElementById("email");

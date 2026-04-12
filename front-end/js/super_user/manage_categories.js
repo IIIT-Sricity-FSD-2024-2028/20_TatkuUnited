@@ -9,6 +9,21 @@ AppStore.ready.then(() => {
   /* ── 2. Pull tables ── */
   const allCategories = AppStore.getTable("categories") || [];
 
+  function updateNotificationBadges() {
+    const unread = (AppStore.getTable("super_user_notifications") || []).filter(
+      (n) => !n.is_read,
+    ).length;
+    document.querySelectorAll(".notif-badge").forEach((badge) => {
+      if (unread > 0) {
+        badge.textContent = String(unread);
+        badge.style.display = "flex";
+      } else {
+        badge.textContent = "";
+        badge.style.display = "none";
+      }
+    });
+  }
+
   /* ── 3. Transform and enrich categories ── */
   function transformCategories(categoriesList) {
     return categoriesList.map((cat, idx) => {
@@ -443,12 +458,14 @@ AppStore.ready.then(() => {
   /* ── Initialize on DOM ready ── */
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", () => {
+      updateNotificationBadges();
       setupEventListeners();
       bindTableActions();
       renderTable(categories);
       updateKPIs(categories);
     });
   } else {
+    updateNotificationBadges();
     setupEventListeners();
     bindTableActions();
     renderTable(categories);

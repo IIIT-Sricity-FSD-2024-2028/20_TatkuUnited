@@ -5,6 +5,23 @@ AppStore.ready.then(function () {
   var session = Auth.requireSession(["super_user"]);
   if (!session) return;
 
+  function updateNotificationBadges() {
+    var unread = (AppStore.getTable("super_user_notifications") || []).filter(
+      function (n) {
+        return !n.is_read;
+      },
+    ).length;
+    document.querySelectorAll(".notif-badge").forEach(function (badge) {
+      if (unread > 0) {
+        badge.textContent = String(unread);
+        badge.style.display = "flex";
+      } else {
+        badge.textContent = "";
+        badge.style.display = "none";
+      }
+    });
+  }
+
   var PAGE_SIZE = 5;
   var state = {
     selectedCollectiveId: null,
@@ -2101,6 +2118,7 @@ AppStore.ready.then(function () {
   }
 
   function init() {
+    updateNotificationBadges();
     initSelection();
     populateFilters();
     bindEvents();

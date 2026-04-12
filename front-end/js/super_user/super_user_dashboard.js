@@ -9,24 +9,34 @@ AppStore.ready.then(() => {
   /* ── 2. Pull base tables ── */
   const allEvents = AppStore.getTable("super_user_platform_events") || [];
   const allActions = AppStore.getTable("super_user_actions") || [];
+  const allCustomers = AppStore.getTable("customers") || [];
+  const allProviders = AppStore.getTable("service_providers") || [];
+  const allCMs = AppStore.getTable("collective_managers") || [];
+  const allUMs = AppStore.getTable("unit_managers") || [];
+  const allSUs = AppStore.getTable("super_users") || [];
+  const allAssignments = AppStore.getTable("job_assignments") || [];
+  const allTransactions = AppStore.getTable("transactions") || [];
+  const allBookings = AppStore.getTable("bookings") || [];
+  const allUnits = AppStore.getTable("units") || [];
+  const allCollectives = AppStore.getTable("collectives") || [];
+  const allServices = AppStore.getTable("services") || [];
+  const allCategories = AppStore.getTable("categories") || [];
+  const allLedger = AppStore.getTable("revenue_ledger") || [];
 
-  function getRefData() {
-    return {
-      allCustomers: AppStore.getTable("customers") || [],
-      allProviders: AppStore.getTable("service_providers") || [],
-      allCMs: AppStore.getTable("collective_managers") || [],
-      allUMs: AppStore.getTable("unit_managers") || [],
-      allSUs: AppStore.getTable("super_users") || [],
-      allAssignments: AppStore.getTable("job_assignments") || [],
-      allTransactions: AppStore.getTable("transactions") || [],
-      allBookings: AppStore.getTable("bookings") || [],
-      allUnits: AppStore.getTable("units") || [],
-      allCollectives: AppStore.getTable("collectives") || [],
-      allServices: AppStore.getTable("services") || [],
-      allCategories: AppStore.getTable("categories") || [],
-    };
+  function updateNotificationBadges() {
+    const unread = (AppStore.getTable("super_user_notifications") || []).filter(
+      (n) => !n.is_read,
+    ).length;
+    document.querySelectorAll(".notif-badge").forEach((badge) => {
+      if (unread > 0) {
+        badge.textContent = String(unread);
+        badge.style.display = "flex";
+      } else {
+        badge.textContent = "";
+        badge.style.display = "none";
+      }
+    });
   }
-
 
   /* ── 3. Transform platform events ── */
   function transformEvents(events) {
@@ -107,30 +117,26 @@ AppStore.ready.then(() => {
   }
 
   function renderRevenue() {
-    const derived = AppStore.getDerivedMetrics();
-    const {
-      allAssignments,
-      allTransactions,
-      allBookings,
-      allProviders,
-      allUnits,
-      allCollectives,
-    } = getRefData();
+    const roleOrder = [
+      { role: "provider", label: "Providers (78%)" },
+      { role: "unit_manager", label: "Unit Managers (7%)" },
+      { role: "collective_manager", label: "Collective Managers (4%)" },
+      { role: "super_user", label: "Platform / Super User (11%)" },
+    ];
 
-    let totalRevenue = derived.revenue || 0;
-    const collectiveRevMap = {};
+    const revenueByRole = {
+      provider: { amount: 0 },
+      unit_manager: { amount: 0 },
+      collective_manager: { amount: 0 },
+      super_user: { amount: 0 },
+    };
 
-    allCollectives.forEach((c) => {
-      collectiveRevMap[c.collective_id] = { name: c.collective_name, amount: 0 };
+    allLedger.forEach((entry) => {
+      if (revenueByRole[entry.role]) {
+        revenueByRole[entry.role].amount += Number(entry.amount || 0);
+      }
     });
 
-    const totalPlatformGMV =
-      Object.keys(revenueBYRole).reduce(
-        (sum, role) => sum + revenueBYRole[role].amount,
-        0,
-      ) / 0.000000001; // Divide by near-zero to approximate GMV
-
-    // Actually, calculate total GMV from transactions with SUCCESS status
     let totalGMV = 0;
     allTransactions.forEach((tx) => {
       if (
@@ -141,45 +147,77 @@ AppStore.ready.then(() => {
       }
     });
 
-    // Calculate total distributed amount from ledger
-    const totalDistributed = Object.keys(revenueBYRole).reduce(
-      (sum, role) => sum + revenueBYRole[role].amount,
+    const totalDistributed = roleOrder.reduce(
+      (sum, roleMeta) => sum + revenueByRole[roleMeta.role].amount,
       0,
     );
 
+    const distributionRate =
+      totalGMV > 0 ? Math.min((totalDistributed / totalGMV) * 100, 100) : 0;
+
+    const formatInr = (value) =>
+      `₹${Math.round(value).toLocaleString("en-IN")}`;
+
     const revEl = document.getElementById("totalRevenueValue");
-    if (revEl) {
-      revEl.textContent = `₹${totalGMV.toLocaleString("en-IN")}`;
+    if (revEl) revEl.textContent = formatInr(totalGMV);
+
+    const gmvEl = document.getElementById("revenueGmvValue");
+    if (gmvEl) gmvEl.textContent = formatInr(totalGMV);
+
+    const distEl = document.getElementById("revenueDistributedValue");
+    if (distEl) distEl.textContent = formatInr(totalDistributed);
+
+    const rateEl = document.getElementById("revenueDistributionRate");
+    if (rateEl) rateEl.textContent = `${distributionRate.toFixed(1)}%`;
+
+    const barsEl = document.getElementById("revenue-breakdown-bars");
+    if (barsEl) {
+      const peakAmount = Math.max(
+        ...roleOrder.map((roleMeta) => revenueByRole[roleMeta.role].amount),
+        0,
+      );
+
+      barsEl.innerHTML = roleOrder
+        .map((roleMeta) => {
+          const amount = revenueByRole[roleMeta.role].amount;
+          const widthPct = peakAmount > 0 ? (amount / peakAmount) * 100 : 0;
+          return `
+            <div class="revenue-role-item">
+              <div class="revenue-role-head">
+                <span class="revenue-role-name">${roleMeta.label}</span>
+                <span class="revenue-role-value">${formatInr(amount)}</span>
+              </div>
+              <div class="revenue-role-track">
+                <div class="revenue-role-fill revenue-role-fill--${roleMeta.role}" style="width: ${widthPct.toFixed(1)}%;"></div>
+              </div>
+            </div>
+          `;
+        })
+        .join("");
     }
 
     const tbody = document.getElementById("revenue-tbody");
     if (tbody) {
-      const roles = [
-        { role: "provider", label: "Providers (78%)" },
-        { role: "unit_manager", label: "Unit Managers (7%)" },
-        { role: "collective_manager", label: "Collective Managers (4%)" },
-        { role: "super_user", label: "Platform / Super User (11%)" },
-      ];
-
-      const rows = roles
-        .map(
-          (r) => `
-          <tr>
-            <td><strong>${r.label}</strong></td>
-            <td style="text-align: right; font-family: var(--font-mono); font-weight: 500;">₹${revenueBYRole[r.role].amount.toLocaleString("en-IN")}</td>
-          </tr>
-        `,
-        )
+      const rows = roleOrder
+        .map((roleMeta) => {
+          const amount = revenueByRole[roleMeta.role].amount;
+          return `
+            <tr>
+              <td><strong>${roleMeta.label}</strong></td>
+              <td class="revenue-table-amount revenue-amount">${formatInr(amount)}</td>
+            </tr>
+          `;
+        })
         .join("");
 
       tbody.innerHTML =
         rows +
         `
-        <tr style="border-top: 2px solid var(--border); font-weight: 600;">
-          <td><strong>Total GMV</strong></td>
-          <td style="text-align: right; font-family: var(--font-mono); font-weight: 500;">₹${totalGMV.toLocaleString("en-IN")}</td>
-        </tr>
-      `;
+          <tr class="revenue-total-row">
+            <td><strong>Total GMV</strong></td>
+            <td class="revenue-table-amount revenue-amount">${formatInr(totalGMV)}</td>
+          </tr>
+        `;
     }
   }
 
@@ -289,6 +327,7 @@ AppStore.ready.then(() => {
 
   /* ── 7. Initialize on DOM ready ── */
   function initDashboard() {
+    updateNotificationBadges();
     renderKPIs();
     renderRevenue();
     renderEvents();

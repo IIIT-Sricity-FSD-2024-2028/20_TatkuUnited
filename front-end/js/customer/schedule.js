@@ -20,6 +20,52 @@ function updateCartBadge() {
   });
 }
 
+function normalizeText(value) {
+  return String(value || "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+}
+
+function getServiceLocationFromMockData(serviceName) {
+  if (!window.AppStore || typeof AppStore.getTable !== "function") return "";
+
+  const services = AppStore.getTable("services") || [];
+  const bookingServices = AppStore.getTable("booking_services") || [];
+  const bookings = AppStore.getTable("bookings") || [];
+  const queryName = normalizeText(serviceName);
+  const queryWords = queryName ? queryName.split(/\s+/).filter(Boolean) : [];
+
+  const service =
+    services.find((item) => normalizeText(item.service_name) === queryName) ||
+    services
+      .map((item) => {
+        const serviceWords = normalizeText(item.service_name)
+          .split(/\s+/)
+          .filter(Boolean);
+        const score = queryWords.reduce(
+          (total, word) => total + (serviceWords.includes(word) ? 1 : 0),
+          0,
+        );
+        return { item, score };
+      })
+      .sort((a, b) => b.score - a.score)[0]?.item ||
+    null;
+
+  if (!service) return "";
+
+  const serviceBookingIds = new Set(
+    bookingServices
+      .filter((entry) => entry.service_id === service.service_id)
+      .map((entry) => entry.booking_id),
+  );
+
+  const booking = bookings.find((entry) =>
+    serviceBookingIds.has(entry.booking_id),
+  );
+  return booking && booking.service_address ? booking.service_address : "";
+}
+
 let currentMode = "instant";
 
 function getBookingRules() {
@@ -155,7 +201,10 @@ AppStore.ready.then(() => {
   const params = new URLSearchParams(window.location.search);
   serviceName = params.get("service") || "Home Deep Cleaning";
   servicePrice = params.get("price") || "₹ 1200";
-  serviceLocation = params.get("location") || "21/229, Indira Nagar, Lucknow";
+  serviceLocation =
+    getServiceLocationFromMockData(serviceName) ||
+    params.get("location") ||
+    "Location unavailable";
 
   document.getElementById("svc-name").textContent = serviceName;
   document.getElementById("svc-price").textContent = servicePrice;
