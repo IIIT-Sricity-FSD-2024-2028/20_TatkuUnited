@@ -292,9 +292,36 @@
           </div>
 
           <!-- Collective Revenue Breakdown -->
-          <div class="section-card" style="margin-bottom: 24px;">
-            <div class="section-card-header">
-              <h2 class="section-title">Collective Revenue Breakdown</h2>
+          <div
+            class="section-card revenue-breakdown-card"
+            style="margin-bottom: 24px"
+          >
+            <div class="section-card-header revenue-breakdown-header">
+              <div>
+                <h2 class="section-title">Collective Revenue Breakdown</h2>
+                <p class="section-subtitle">
+                  Distribution by role based on settled ledger entries.
+                </p>
+              </div>
+            </div>
+
+            <div class="revenue-kpi-strip">
+              <div class="revenue-kpi-tile">
+                <span class="revenue-kpi-label">Total GMV</span>
+                <span class="revenue-kpi-value" id="revenueGmvValue">₹0</span>
+              </div>
+              <div class="revenue-kpi-tile">
+                <span class="revenue-kpi-label">Distributed</span>
+                <span class="revenue-kpi-value" id="revenueDistributedValue"
+                  >₹0</span
+                >
+              </div>
+              <div class="revenue-kpi-tile">
+                <span class="revenue-kpi-label">Distribution Rate</span>
+                <span class="revenue-kpi-value" id="revenueDistributionRate"
+                  >0%</span
+                >
+              </div>
             </div>
 
             <div
@@ -305,8 +332,8 @@
             <table class="events-table revenue-table">
               <thead>
                 <tr>
-                  <th>COLLECTIVE NAME</th>
-                  <th style="text-align: right;">REVENUE (INR)</th>
+                  <th>ROLE</th>
+                  <th class="revenue-table-amount">REVENUE (INR)</th>
                 </tr>
               </thead>
               <tbody id="revenue-tbody"></tbody>
