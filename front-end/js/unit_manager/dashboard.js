@@ -21,6 +21,7 @@ let TRANSACTIONS = [];
 let BOOKINGS = [];
 let CHART_DATA_ALL = [];
 let CHART_DATA_30 = [];
+let currentSession = null;
 
 /* ─────────────────────────────────────────────
    2. STATE
@@ -316,7 +317,7 @@ function getStats30() {
    ───────────────────────────────────────────── */
 
 function renderStatCards(mode30 = false) {
-  const { net, fees, count } = mode30 ? getStats30() : getStatsFull();
+  const derived = AppStore.getDerivedMetrics({ unitId: currentSession ? currentSession.unitId : null });
 
   const activeBookings = BOOKINGS.filter((b) => b.status !== "CANCELLED");
   const bookingCount = mode30
@@ -324,19 +325,19 @@ function renderStatCards(mode30 = false) {
     : activeBookings.length;
 
   const avgRating = (
-    PROVIDERS.reduce((s, p) => s + p.rating, 0) / PROVIDERS.length
+    PROVIDERS.reduce((s, p) => s + p.rating, 0) / (PROVIDERS.length || 1)
   ).toFixed(1);
 
-  setHTML("statBookings", bookingCount.toLocaleString("en-IN"));
-  setText("statBookingsBadge", `\u2191 ${count} paid`);
+  setHTML("statBookings", derived.totalBookings.toLocaleString("en-IN"));
+  setText("statBookingsBadge", `\u2191 ${derived.completedBookings} paid`);
 
   setHTML("statRating", `${avgRating} <small>/ 5.0</small>`);
   setText("statRatingBadge", `${PROVIDERS.length} providers`);
 
-  setHTML("statRevenue", rupee(net));
+  setHTML("statRevenue", rupee(derived.revenue));
   const badge = document.getElementById("statRevenueBadge");
   if (badge) {
-    badge.textContent = `${rupee(fees)} in fees`;
+    badge.textContent = `${rupee(derived.revenue * FEE_RATE)} in fees`;
     badge.className = "stat-badge";
   }
 }
@@ -693,10 +694,17 @@ AppStore.ready.then(() => {
   const session = Auth.requireSession(["unit_manager"]);
   if (!session) return;
 
-  loadDashboardDataFromStore(session);
-  renderStatCards(false);
-  renderCapacity();
-  renderBarChart(CHART_DATA_ALL);
+  currentSession = session;
+
+  function refreshDashboard() {
+    loadDashboardDataFromStore(session);
+    renderStatCards(is30DayMode);
+    renderCapacity();
+    renderBarChart(is30DayMode ? CHART_DATA_30 : CHART_DATA_ALL);
+  }
+
+  refreshDashboard();
+  AppStore.subscribe(refreshDashboard);
 
   // Bind Total Bookings Card
   const totalBookingsCard = document.getElementById("totalBookingsCard");

@@ -6,7 +6,7 @@ AppStore.ready.then(() => {
   const session = Auth.requireSession(["super_user"]);
   if (!session) return;
 
-  /* ── 2. Pull tables ── */
+  /* ── 2. Pull base tables ── */
   const allEvents = AppStore.getTable("super_user_platform_events") || [];
   const allActions = AppStore.getTable("super_user_actions") || [];
   const allCustomers = AppStore.getTable("customers") || [];
@@ -83,6 +83,7 @@ AppStore.ready.then(() => {
 
   /* ── 5. Transform services and categories to get top-rated ── */
   function getTopRatedServices(limit = 5) {
+    const { allServices } = getRefData();
     return allServices
       .filter((s) => s.is_available)
       .sort((a, b) => (b.average_rating || 0) - (a.average_rating || 0))
@@ -90,6 +91,7 @@ AppStore.ready.then(() => {
   }
 
   function getTopRatedCategories(limit = 5) {
+    const { allCategories } = getRefData();
     return allCategories
       .filter((c) => c.is_available)
       .sort((a, b) => (b.average_rating || 0) - (a.average_rating || 0))
@@ -103,22 +105,9 @@ AppStore.ready.then(() => {
 
   /* ── 6. Render ── */
   function renderKPIs() {
-    const activeCustomers = allCustomers.filter(
-      (c) => c.is_active !== false,
-    ).length;
-    const activeProviders = allProviders.filter(
-      (p) => p.is_active || p.account_status === "active",
-    ).length;
-    const activeCMs = allCMs.filter((m) => m.is_active).length;
-    const activeUMs = allUMs.filter((m) => m.is_active).length;
-    const activeSUs = allSUs.filter((u) => u.is_active).length;
-
-    const activeUsers =
-      activeCustomers + activeProviders + activeCMs + activeUMs + activeSUs;
-
-    const failedAssignments = allAssignments.filter(
-      (a) => a.status === "CANCELLED" || a.status === "FAILED",
-    ).length;
+    const derived = AppStore.getDerivedMetrics();
+    const activeUsers = derived.userCount;
+    const failedAssignments = derived.failedAssignments;
 
     const activeEl = document.getElementById("activeUsersValue");
     const failedEl = document.getElementById("failedAssignmentsValue");
@@ -369,9 +358,14 @@ AppStore.ready.then(() => {
     }
   }
 
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", initDashboard);
-  } else {
+  function start() {
     initDashboard();
+    AppStore.subscribe(initDashboard);
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", start);
+  } else {
+    start();
   }
 });
