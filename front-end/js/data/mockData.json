@@ -1,4 +1,4 @@
-﻿{
+{
   "rating_computation_note": {
     "source": "job_assignments.assignment_score",
     "inclusion_rule": "Only non-null assignment_score values are counted",
@@ -15,35 +15,46 @@
       "collective_name": "North Chennai Collective",
       "is_active": true,
       "created_at": "2023-01-10T08:00:00Z",
-      "sector_ids": ["SEC002"]
+      "sector_ids": [
+        "SEC002"
+      ]
     },
     {
       "collective_id": "COL002",
       "collective_name": "Central Chennai Collective",
       "is_active": true,
       "created_at": "2024-12-12T09:30:00Z",
-      "sector_ids": ["SEC001", "SEC006"]
+      "sector_ids": [
+        "SEC001",
+        "SEC006"
+      ]
     },
     {
       "collective_id": "COL003",
       "collective_name": "South Chennai Collective",
       "is_active": false,
       "created_at": "2024-08-19T07:45:00Z",
-      "sector_ids": ["SEC003"]
+      "sector_ids": [
+        "SEC003"
+      ]
     },
     {
       "collective_id": "COL004",
       "collective_name": "West Chennai Collective",
       "is_active": true,
       "created_at": "2023-07-01T10:00:00Z",
-      "sector_ids": ["SEC004"]
+      "sector_ids": [
+        "SEC004"
+      ]
     },
     {
       "collective_id": "COL005",
       "collective_name": "East Chennai Collective",
       "is_active": true,
       "created_at": "2024-01-05T08:30:00Z",
-      "sector_ids": ["SEC005"]
+      "sector_ids": [
+        "SEC005"
+      ]
     }
   ],
   "units": [
@@ -237,7 +248,7 @@
       "password": "Password@123",
       "phone": "9988776655",
       "email": "suresh@collective.com",
-      "pfp_url": "https://i.pravatar.cc/150?img=11",
+      "pfp_url": null,
       "is_active": true,
       "created_at": "2024-10-10T00:00:00Z",
       "updated_at": "2025-09-30T00:00:00Z",
@@ -249,7 +260,7 @@
       "password": "Password@123",
       "phone": "9977665544",
       "email": "meena@collective.com",
-      "pfp_url": "https://i.pravatar.cc/150?img=23",
+      "pfp_url": null,
       "is_active": true,
       "created_at": "2024-12-13T00:00:00Z",
       "updated_at": "2025-09-30T00:00:00Z",
@@ -261,7 +272,7 @@
       "password": "Password@123",
       "phone": "9966554433",
       "email": "aryan@collective.com",
-      "pfp_url": "https://i.pravatar.cc/150?img=33",
+      "pfp_url": null,
       "is_active": false,
       "created_at": "2025-02-16T00:00:00Z",
       "updated_at": "2025-09-30T00:00:00Z",
@@ -273,7 +284,7 @@
       "password": "Password@123",
       "phone": "9955443322",
       "email": "lakshmi@collective.com",
-      "pfp_url": "https://i.pravatar.cc/150?img=44",
+      "pfp_url": null,
       "is_active": true,
       "created_at": "2025-03-31T00:00:00Z",
       "updated_at": "2025-10-31T00:00:00Z",
@@ -285,7 +296,7 @@
       "password": "Password@123",
       "phone": "9944332211",
       "email": "vijay@collective.com",
-      "pfp_url": "https://i.pravatar.cc/150?img=55",
+      "pfp_url": null,
       "is_active": true,
       "created_at": "2025-10-05T00:00:00Z",
       "updated_at": "2025-11-29T00:00:00Z",
@@ -297,7 +308,7 @@
       "password": "Password@123",
       "phone": "9933445566",
       "email": "deepa.s@collective.com",
-      "pfp_url": "https://i.pravatar.cc/150?img=41",
+      "pfp_url": null,
       "is_active": true,
       "created_at": "2024-06-10T00:00:00Z",
       "updated_at": "2024-06-10T00:00:00Z",
@@ -309,7 +320,7 @@
       "password": "Password@123",
       "phone": "9922334455",
       "email": "harish.r@collective.com",
-      "pfp_url": "https://i.pravatar.cc/150?img=59",
+      "pfp_url": null,
       "is_active": true,
       "created_at": "2024-08-01T00:00:00Z",
       "updated_at": "2024-08-01T00:00:00Z",
@@ -323,7 +334,7 @@
       "password": "Password@123",
       "phone": "9955443322",
       "email": "karan.m@unit.com",
-      "pfp_url": "https://i.pravatar.cc/150?img=12",
+      "pfp_url": null,
       "is_active": true,
       "created_at": "2024-11-09T00:00:00Z",
       "updated_at": "2025-09-30T00:00:00Z",
@@ -335,7 +346,7 @@
       "password": "Password@123",
       "phone": "9944332211",
       "email": "deepa.n@unit.com",
-      "pfp_url": "https://i.pravatar.cc/150?img=25",
+      "pfp_url": null,
       "is_active": true,
       "created_at": "2025-01-08T00:00:00Z",
       "updated_at": "2025-09-30T00:00:00Z",
@@ -347,7 +358,7 @@
       "password": "Password@123",
       "phone": "9933221100",
       "email": "rahul.s@unit.com",
-      "pfp_url": "https://i.pravatar.cc/150?img=36",
+      "pfp_url": null,
       "is_active": true,
       "created_at": "2025-05-15T00:00:00Z",
       "updated_at": "2025-09-30T00:00:00Z",
@@ -359,7 +370,7 @@
       "password": "Password@123",
       "phone": "9922110099",
       "email": "anita.d@unit.com",
-      "pfp_url": "https://i.pravatar.cc/150?img=47",
+      "pfp_url": null,
       "is_active": true,
       "created_at": "2025-08-05T00:00:00Z",
       "updated_at": "2025-10-31T00:00:00Z",
@@ -371,7 +382,7 @@
       "password": "Password@123",
       "phone": "9911009988",
       "email": "sanjay.p@unit.com",
-      "pfp_url": "https://i.pravatar.cc/150?img=57",
+      "pfp_url": null,
       "is_active": true,
       "created_at": "2025-10-10T00:00:00Z",
       "updated_at": "2025-11-29T00:00:00Z",
@@ -383,7 +394,7 @@
       "password": "Password@123",
       "phone": "9900998877",
       "email": "preethi.s@unit.com",
-      "pfp_url": "https://i.pravatar.cc/150?img=60",
+      "pfp_url": null,
       "is_active": false,
       "created_at": "2025-11-01T00:00:00Z",
       "updated_at": "2025-12-30T00:00:00Z",
@@ -395,7 +406,7 @@
       "password": "Password@123",
       "phone": "9899887766",
       "email": "rajesh.k@unit.com",
-      "pfp_url": "https://i.pravatar.cc/150?img=68",
+      "pfp_url": null,
       "is_active": true,
       "created_at": "2024-03-10T00:00:00Z",
       "updated_at": "2024-03-10T00:00:00Z",
@@ -407,7 +418,7 @@
       "password": "Password@123",
       "phone": "9888776655",
       "email": "priya.v@unit.com",
-      "pfp_url": "https://i.pravatar.cc/150?img=72",
+      "pfp_url": null,
       "is_active": true,
       "created_at": "2024-03-15T00:00:00Z",
       "updated_at": "2024-03-15T00:00:00Z",
@@ -423,7 +434,7 @@
       "email": "ravi.kumar@mail.com",
       "dob": "1990-04-12",
       "address": "12 Anna Nagar, Chennai",
-      "pfp_url": "https://i.pravatar.cc/150?img=13",
+      "pfp_url": null,
       "gender": "Male",
       "rating": 5,
       "rating_count": 1,
@@ -443,7 +454,7 @@
       "email": "priya.sharma@mail.com",
       "dob": "1995-09-23",
       "address": "45 T. Nagar, Chennai",
-      "pfp_url": "https://i.pravatar.cc/150?img=26",
+      "pfp_url": null,
       "gender": "Female",
       "rating": null,
       "rating_count": 0,
@@ -463,7 +474,7 @@
       "email": "arjun.das@mail.com",
       "dob": "1988-01-07",
       "address": "78 Velachery, Chennai",
-      "pfp_url": "https://i.pravatar.cc/150?img=37",
+      "pfp_url": null,
       "gender": "Male",
       "rating": null,
       "rating_count": 0,
@@ -483,7 +494,7 @@
       "email": "meera.k@mail.com",
       "dob": "1993-06-18",
       "address": "22 Adyar, Chennai",
-      "pfp_url": "https://i.pravatar.cc/150?img=48",
+      "pfp_url": null,
       "gender": "Female",
       "rating": null,
       "rating_count": 0,
@@ -503,7 +514,7 @@
       "email": "sunil.b@mail.com",
       "dob": "1985-12-30",
       "address": "5 Porur, Chennai",
-      "pfp_url": "https://i.pravatar.cc/150?img=53",
+      "pfp_url": null,
       "gender": "Male",
       "rating": 4.2,
       "rating_count": 1,
@@ -523,7 +534,7 @@
       "email": "divya.r@mail.com",
       "dob": "1997-03-14",
       "address": "90 Sholinganallur, Chennai",
-      "pfp_url": "https://i.pravatar.cc/150?img=62",
+      "pfp_url": null,
       "gender": "Female",
       "rating": 5,
       "rating_count": 1,
@@ -543,7 +554,7 @@
       "email": "tamil.s@mail.com",
       "dob": "1991-07-22",
       "address": "34 Perambur, Chennai",
-      "pfp_url": "https://i.pravatar.cc/150?img=65",
+      "pfp_url": null,
       "gender": "Male",
       "rating": null,
       "rating_count": 0,
@@ -563,7 +574,7 @@
       "email": "nithya.l@mail.com",
       "dob": "1994-11-09",
       "address": "67 Chromepet, Chennai",
-      "pfp_url": "https://i.pravatar.cc/150?img=68",
+      "pfp_url": null,
       "gender": "Female",
       "rating": null,
       "rating_count": 0,
@@ -583,7 +594,7 @@
       "email": "vikram.singh@mail.com",
       "dob": "1989-05-15",
       "address": "11 Mylapore, Chennai",
-      "pfp_url": "https://i.pravatar.cc/150?img=14",
+      "pfp_url": null,
       "gender": "Male",
       "rating": null,
       "rating_count": 0,
@@ -603,7 +614,7 @@
       "email": "anjali.d@mail.com",
       "dob": "1996-08-20",
       "address": "15 Guindy, Chennai",
-      "pfp_url": "https://i.pravatar.cc/150?img=32",
+      "pfp_url": null,
       "gender": "Female",
       "rating": null,
       "rating_count": 0,
@@ -623,7 +634,7 @@
       "email": "rajesh.p@mail.com",
       "dob": "1986-02-28",
       "address": "28 Abidor, Chennai",
-      "pfp_url": "https://i.pravatar.cc/150?img=44",
+      "pfp_url": null,
       "gender": "Male",
       "rating": null,
       "rating_count": 0,
@@ -643,7 +654,7 @@
       "email": "swati.m@mail.com",
       "dob": "1992-10-11",
       "address": "52 Teynampet, Chennai",
-      "pfp_url": "https://i.pravatar.cc/150?img=55",
+      "pfp_url": null,
       "gender": "Female",
       "rating": null,
       "rating_count": 0,
@@ -663,7 +674,7 @@
       "email": "karthik.n@mail.com",
       "dob": "1991-12-05",
       "address": "38 Besant Nagar, Chennai",
-      "pfp_url": "https://i.pravatar.cc/150?img=58",
+      "pfp_url": null,
       "gender": "Male",
       "rating": null,
       "rating_count": 0,
@@ -683,7 +694,7 @@
       "email": "pooja.v@mail.com",
       "dob": "1998-07-19",
       "address": "73 Uthandi, Chennai",
-      "pfp_url": "https://i.pravatar.cc/150?img=70",
+      "pfp_url": null,
       "gender": "Female",
       "rating": null,
       "rating_count": 0,
@@ -703,7 +714,7 @@
       "email": "arun.i@mail.com",
       "dob": "1987-09-03",
       "address": "19 Medavakkam, Chennai",
-      "pfp_url": "https://i.pravatar.cc/150?img=71",
+      "pfp_url": null,
       "gender": "Male",
       "rating": null,
       "rating_count": 0,
@@ -723,7 +734,7 @@
       "email": "sneha.j@mail.com",
       "dob": "1995-01-27",
       "address": "41 Palavakkam, Chennai",
-      "pfp_url": "https://i.pravatar.cc/150?img=72",
+      "pfp_url": null,
       "gender": "Female",
       "rating": null,
       "rating_count": 0,
@@ -743,7 +754,7 @@
       "email": "manoj.k@mail.com",
       "dob": "1990-06-08",
       "address": "56 Mambalam, Chennai",
-      "pfp_url": "https://i.pravatar.cc/150?img=73",
+      "pfp_url": null,
       "gender": "Male",
       "rating": null,
       "rating_count": 0,
@@ -763,7 +774,7 @@
       "email": "tanya.k@mail.com",
       "dob": "1993-03-30",
       "address": "84 Kodambakkam, Chennai",
-      "pfp_url": "https://i.pravatar.cc/150?img=74",
+      "pfp_url": null,
       "gender": "Female",
       "rating": null,
       "rating_count": 0,
@@ -1063,7 +1074,7 @@
       "email": "aditya.v@gmail.com",
       "dob": "1992-03-15",
       "address": "14 Boat Club Road, Chennai",
-      "pfp_url": "https://i.pravatar.cc/150?img=14",
+      "pfp_url": null,
       "rating": 5,
       "is_active": true,
       "home_sector_id": "SEC001"
@@ -1076,7 +1087,7 @@
       "email": "sneha.raj@gmail.com",
       "dob": "1996-07-22",
       "address": "88 Kilpauk, Chennai",
-      "pfp_url": "https://i.pravatar.cc/150?img=15",
+      "pfp_url": null,
       "rating": 4,
       "is_active": true,
       "home_sector_id": "SEC002"
@@ -1089,7 +1100,7 @@
       "email": "rohit.sen@gmail.com",
       "dob": "1988-11-30",
       "address": "5 Velachery Main Road, Chennai",
-      "pfp_url": "https://i.pravatar.cc/150?img=16",
+      "pfp_url": null,
       "rating": 4,
       "is_active": false,
       "home_sector_id": "SEC003"
@@ -1102,7 +1113,7 @@
       "email": "kavitha.s@gmail.com",
       "dob": "1994-05-10",
       "address": "32 Nungambakkam, Chennai",
-      "pfp_url": "https://i.pravatar.cc/150?img=17",
+      "pfp_url": null,
       "rating": 5,
       "is_active": true,
       "home_sector_id": "SEC001"
@@ -1115,7 +1126,7 @@
       "email": "faizal.m@gmail.com",
       "dob": "1990-08-25",
       "address": "77 Perambur, Chennai",
-      "pfp_url": "https://i.pravatar.cc/150?img=18",
+      "pfp_url": null,
       "rating": 4,
       "is_active": true,
       "home_sector_id": "SEC002"
@@ -1128,7 +1139,7 @@
       "email": "pooja.i@gmail.com",
       "dob": "1999-01-14",
       "address": "45 Sholinganallur, Chennai",
-      "pfp_url": "https://i.pravatar.cc/150?img=19",
+      "pfp_url": null,
       "rating": 5,
       "is_active": true,
       "home_sector_id": "SEC006"
@@ -1141,7 +1152,7 @@
       "email": "dinesh.b@gmail.com",
       "dob": "1985-04-03",
       "address": "120 Chromepet, Chennai",
-      "pfp_url": "https://i.pravatar.cc/150?img=20",
+      "pfp_url": null,
       "rating": 4,
       "is_active": true,
       "home_sector_id": "SEC004"
@@ -1154,7 +1165,7 @@
       "email": "ananya.k@gmail.com",
       "dob": "2002-06-18",
       "address": "9 Adyar, Chennai",
-      "pfp_url": "https://i.pravatar.cc/150?img=21",
+      "pfp_url": null,
       "rating": 5,
       "is_active": true,
       "home_sector_id": "SEC005"
@@ -1165,7 +1176,7 @@
       "category_id": "CAT001",
       "category_name": "Home Cleaning",
       "description": "All home cleaning services",
-      "icon": "ðŸ§¹",
+      "icon": "\u00f0\u0178\u00a7\u00b9",
       "image_url": "https://placehold.co/400x200/4A90D9/white?text=Home+Cleaning",
       "is_available": true,
       "average_rating": 5.0,
@@ -1175,7 +1186,7 @@
       "category_id": "CAT002",
       "category_name": "Plumbing",
       "description": "Pipe and fixture repair services",
-      "icon": "ðŸ”§",
+      "icon": "\u00f0\u0178\u201d\u00a7",
       "image_url": "https://placehold.co/400x200/E67E22/white?text=Plumbing",
       "is_available": true,
       "average_rating": 4.73,
@@ -1185,7 +1196,7 @@
       "category_id": "CAT003",
       "category_name": "Electrical",
       "description": "Wiring, appliances, and electrical repairs",
-      "icon": "âš¡",
+      "icon": "\u00e2\u0161\u00a1",
       "image_url": "https://placehold.co/400x200/F1C40F/black?text=Electrical",
       "is_available": true,
       "average_rating": 5.0,
@@ -1195,7 +1206,7 @@
       "category_id": "CAT004",
       "category_name": "Carpentry",
       "description": "Furniture, woodwork, and custom fittings",
-      "icon": "ðŸªš",
+      "icon": "\u00f0\u0178\u00aa\u0161",
       "image_url": "https://placehold.co/400x200/8B4513/white?text=Carpentry",
       "is_available": true,
       "average_rating": 4.73,
@@ -1205,7 +1216,7 @@
       "category_id": "CAT005",
       "category_name": "AC & Appliances",
       "description": "Air conditioner and home appliance services",
-      "icon": "â„ï¸",
+      "icon": "\u00e2\u009d\u201e\u00ef\u00b8\u008f",
       "image_url": "https://placehold.co/400x200/1ABC9C/white?text=AC+%26+Appliances",
       "is_available": true,
       "average_rating": 4.2,
@@ -1215,7 +1226,7 @@
       "category_id": "CAT006",
       "category_name": "Pest Control",
       "description": "Residential pest treatment and prevention",
-      "icon": "ðŸ›",
+      "icon": "\u00f0\u0178\u0090\u203a",
       "image_url": "https://placehold.co/400x200/2ECC71/white?text=Pest+Control",
       "is_available": false,
       "average_rating": 4.73,
@@ -1743,21 +1754,66 @@
     }
   ],
   "service_skills": [
-    { "service_id": "SVC001", "skill_id": "SKL003" },
-    { "service_id": "SVC002", "skill_id": "SKL003" },
-    { "service_id": "SVC003", "skill_id": "SKL001" },
-    { "service_id": "SVC004", "skill_id": "SKL001" },
-    { "service_id": "SVC005", "skill_id": "SKL002" },
-    { "service_id": "SVC006", "skill_id": "SKL002" },
-    { "service_id": "SVC007", "skill_id": "SKL004" },
-    { "service_id": "SVC008", "skill_id": "SKL004" },
-    { "service_id": "SVC009", "skill_id": "SKL005" },
-    { "service_id": "SVC009", "skill_id": "SKL002" },
-    { "service_id": "SVC010", "skill_id": "SKL005" },
-    { "service_id": "SVC010", "skill_id": "SKL002" },
-    { "service_id": "SVC010", "skill_id": "SKL001" },
-    { "service_id": "SVC011", "skill_id": "SKL006" },
-    { "service_id": "SVC012", "skill_id": "SKL006" }
+    {
+      "service_id": "SVC001",
+      "skill_id": "SKL003"
+    },
+    {
+      "service_id": "SVC002",
+      "skill_id": "SKL003"
+    },
+    {
+      "service_id": "SVC003",
+      "skill_id": "SKL001"
+    },
+    {
+      "service_id": "SVC004",
+      "skill_id": "SKL001"
+    },
+    {
+      "service_id": "SVC005",
+      "skill_id": "SKL002"
+    },
+    {
+      "service_id": "SVC006",
+      "skill_id": "SKL002"
+    },
+    {
+      "service_id": "SVC007",
+      "skill_id": "SKL004"
+    },
+    {
+      "service_id": "SVC008",
+      "skill_id": "SKL004"
+    },
+    {
+      "service_id": "SVC009",
+      "skill_id": "SKL005"
+    },
+    {
+      "service_id": "SVC009",
+      "skill_id": "SKL002"
+    },
+    {
+      "service_id": "SVC010",
+      "skill_id": "SKL005"
+    },
+    {
+      "service_id": "SVC010",
+      "skill_id": "SKL002"
+    },
+    {
+      "service_id": "SVC010",
+      "skill_id": "SKL001"
+    },
+    {
+      "service_id": "SVC011",
+      "skill_id": "SKL006"
+    },
+    {
+      "service_id": "SVC012",
+      "skill_id": "SKL006"
+    }
   ],
   "service_faqs": [
     {
@@ -2325,7 +2381,7 @@
       "email": "super_user.mark@tatku.com",
       "password": "SuperUser@123",
       "phone": "9876543210",
-      "pfp_url": "https://i.pravatar.cc/150?img=1",
+      "pfp_url": null,
       "is_active": true,
       "created_at": "2023-01-01T00:00:00Z",
       "last_login": "2026-03-31T10:00:00Z"
@@ -2336,7 +2392,7 @@
       "email": "super_user.sarah@tatku.com",
       "password": "SuperUser@123",
       "phone": "9876543211",
-      "pfp_url": "https://i.pravatar.cc/150?img=2",
+      "pfp_url": null,
       "is_active": true,
       "created_at": "2023-02-01T00:00:00Z",
       "last_login": "2026-03-31T09:30:00Z"
