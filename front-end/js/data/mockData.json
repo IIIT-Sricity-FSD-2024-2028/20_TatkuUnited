@@ -142,120 +142,90 @@
     {
       "sector_id": "SEC001",
       "sector_name": "Downtown Core",
-      "h3_index": "8a2a100d2dfffff",
       "resolution": 10,
       "state": "Tamil Nadu",
       "region": "Central",
-      "centroid_lat": 13.0827,
-      "centroid_lng": 80.2707,
       "density_tier": "HIGH",
       "is_active": true
     },
     {
       "sector_id": "SEC002",
       "sector_name": "Suburban North",
-      "h3_index": "8a2a100d3dfffff",
       "resolution": 10,
       "state": "Tamil Nadu",
       "region": "North",
-      "centroid_lat": 13.15,
-      "centroid_lng": 80.24,
       "density_tier": "MEDIUM",
       "is_active": true
     },
     {
       "sector_id": "SEC003",
       "sector_name": "Industrial South",
-      "h3_index": "8a2a100d4dfffff",
       "resolution": 10,
       "state": "Tamil Nadu",
       "region": "South",
-      "centroid_lat": 12.9716,
-      "centroid_lng": 80.16,
       "density_tier": "LOW",
       "is_active": false
     },
     {
       "sector_id": "SEC004",
       "sector_name": "West Suburbs",
-      "h3_index": "8a2a100d5dfffff",
       "resolution": 10,
       "state": "Tamil Nadu",
       "region": "West",
-      "centroid_lat": 13.05,
-      "centroid_lng": 80.19,
       "density_tier": "MEDIUM",
       "is_active": true
     },
     {
       "sector_id": "SEC005",
       "sector_name": "Coastal East",
-      "h3_index": "8a2a100d6dfffff",
       "resolution": 10,
       "state": "Tamil Nadu",
       "region": "East",
-      "centroid_lat": 13.11,
-      "centroid_lng": 80.3,
       "density_tier": "HIGH",
       "is_active": true
     },
     {
       "sector_id": "SEC006",
       "sector_name": "Tech Corridor",
-      "h3_index": "8a2a100d7dfffff",
       "resolution": 10,
       "state": "Tamil Nadu",
       "region": "South West",
-      "centroid_lat": 12.99,
-      "centroid_lng": 80.21,
       "density_tier": "HIGH",
       "is_active": true
     },
     {
       "sector_id": "SEC007",
       "sector_name": "Harbor Zone",
-      "h3_index": "8a2a100d8dfffff",
       "resolution": 10,
       "state": "Tamil Nadu",
       "region": "North East",
-      "centroid_lat": 13.12,
-      "centroid_lng": 80.29,
       "density_tier": "MEDIUM",
       "is_active": true
     },
     {
       "sector_id": "SEC008",
       "sector_name": "Airport Corridor",
-      "h3_index": "8a2a100d9dfffff",
       "resolution": 10,
       "state": "Tamil Nadu",
       "region": "South",
-      "centroid_lat": 12.98,
-      "centroid_lng": 80.17,
       "density_tier": "HIGH",
       "is_active": true
     },
     {
       "sector_id": "SEC009",
       "sector_name": "University Belt",
-      "h3_index": "8a2a100dadfffff",
       "resolution": 10,
       "state": "Tamil Nadu",
       "region": "Central",
-      "centroid_lat": 13.01,
-      "centroid_lng": 80.24,
       "density_tier": "MEDIUM",
       "is_active": true
     },
     {
       "sector_id": "SEC010",
       "sector_name": "Old City Quarter",
-      "h3_index": "8a2a100dbdfffff",
       "resolution": 10,
       "state": "Tamil Nadu",
       "region": "North",
-      "centroid_lat": 13.09,
-      "centroid_lng": 80.28,
       "density_tier": "LOW",
       "is_active": true
     }
@@ -806,64 +776,6 @@
       "home_sector_id": "SEC004"
     }
   ],
-  "provider_documents": [
-    {
-      "doc_id": "DOC001",
-      "service_provider_id": "SP001",
-      "doc_type": "RESUME",
-      "file_url": "mock://uploads/Ravi_Kumar_Resume.pdf",
-      "file_name": "Ravi_Kumar_Resume.pdf",
-      "uploaded_at": "2024-11-04T10:00:00Z"
-    },
-    {
-      "doc_id": "DOC002",
-      "service_provider_id": "SP001",
-      "doc_type": "CERTIFICATE",
-      "file_url": "mock://uploads/Electrical_Safety_Cert.pdf",
-      "file_name": "Electrical_Safety_Cert.pdf",
-      "uploaded_at": "2024-11-04T10:15:00Z"
-    },
-    {
-      "doc_id": "DOC003",
-      "service_provider_id": "SP002",
-      "doc_type": "RESUME",
-      "file_url": "mock://uploads/Priya_Sharma_Resume.pdf",
-      "file_name": "Priya_Sharma_Resume.pdf",
-      "uploaded_at": "2025-01-09T11:00:00Z"
-    },
-    {
-      "doc_id": "DOC004",
-      "service_provider_id": "SP005",
-      "doc_type": "CERTIFICATE",
-      "file_url": "mock://uploads/AC_Technician_Cert.pdf",
-      "file_name": "AC_Technician_Cert.pdf",
-      "uploaded_at": "2025-08-14T09:00:00Z"
-    },
-    {
-      "doc_id": "DOC005",
-      "service_provider_id": "SP005",
-      "doc_type": "CERTIFICATE",
-      "file_url": "mock://uploads/Refrigerant_Handling_Cert.pdf",
-      "file_name": "Refrigerant_Handling_Cert.pdf",
-      "uploaded_at": "2025-08-14T09:30:00Z"
-    },
-    {
-      "doc_id": "DOC006",
-      "service_provider_id": "SP007",
-      "doc_type": "RESUME",
-      "file_url": "mock://uploads/Tamil_Selvan_Resume.pdf",
-      "file_name": "Tamil_Selvan_Resume.pdf",
-      "uploaded_at": "2025-11-11T08:00:00Z"
-    },
-    {
-      "doc_id": "DOC007",
-      "service_provider_id": "SP008",
-      "doc_type": "CERTIFICATE",
-      "file_url": "mock://uploads/Deep_Clean_Specialisation.pdf",
-      "file_name": "Deep_Clean_Specialisation.pdf",
-      "uploaded_at": "2025-12-20T10:00:00Z"
-    }
-  ],
   "provider_working_hours": [
     {
       "working_hours_id": "WH001",
@@ -1152,10 +1064,7 @@
       "dob": "1992-03-15",
       "address": "14 Boat Club Road, Chennai",
       "pfp_url": "https://i.pravatar.cc/150?img=14",
-      "latitude": 13.05,
-      "longitude": 80.25,
       "rating": 5,
-      "notes": "Prefers morning slots",
       "is_active": true,
       "home_sector_id": "SEC001"
     },
@@ -1168,10 +1077,7 @@
       "dob": "1996-07-22",
       "address": "88 Kilpauk, Chennai",
       "pfp_url": "https://i.pravatar.cc/150?img=15",
-      "latitude": 13.09,
-      "longitude": 80.23,
       "rating": 4,
-      "notes": "",
       "is_active": true,
       "home_sector_id": "SEC002"
     },
@@ -1184,10 +1090,7 @@
       "dob": "1988-11-30",
       "address": "5 Velachery Main Road, Chennai",
       "pfp_url": "https://i.pravatar.cc/150?img=16",
-      "latitude": 12.98,
-      "longitude": 80.21,
       "rating": 4,
-      "notes": "Has a dog",
       "is_active": false,
       "home_sector_id": "SEC003"
     },
@@ -1200,10 +1103,7 @@
       "dob": "1994-05-10",
       "address": "32 Nungambakkam, Chennai",
       "pfp_url": "https://i.pravatar.cc/150?img=17",
-      "latitude": 13.06,
-      "longitude": 80.245,
       "rating": 5,
-      "notes": "VIP customer",
       "is_active": true,
       "home_sector_id": "SEC001"
     },
@@ -1216,10 +1116,7 @@
       "dob": "1990-08-25",
       "address": "77 Perambur, Chennai",
       "pfp_url": "https://i.pravatar.cc/150?img=18",
-      "latitude": 13.12,
-      "longitude": 80.26,
       "rating": 4,
-      "notes": "",
       "is_active": true,
       "home_sector_id": "SEC002"
     },
@@ -1232,10 +1129,7 @@
       "dob": "1999-01-14",
       "address": "45 Sholinganallur, Chennai",
       "pfp_url": "https://i.pravatar.cc/150?img=19",
-      "latitude": 12.9,
-      "longitude": 80.23,
       "rating": 5,
-      "notes": "Prefers female providers",
       "is_active": true,
       "home_sector_id": "SEC006"
     },
@@ -1248,10 +1142,7 @@
       "dob": "1985-04-03",
       "address": "120 Chromepet, Chennai",
       "pfp_url": "https://i.pravatar.cc/150?img=20",
-      "latitude": 12.95,
-      "longitude": 80.14,
       "rating": 4,
-      "notes": "Late payments flag",
       "is_active": true,
       "home_sector_id": "SEC004"
     },
@@ -1264,10 +1155,7 @@
       "dob": "2002-06-18",
       "address": "9 Adyar, Chennai",
       "pfp_url": "https://i.pravatar.cc/150?img=21",
-      "latitude": 13.005,
-      "longitude": 80.2574,
       "rating": 5,
-      "notes": "Regular subscriber",
       "is_active": true,
       "home_sector_id": "SEC005"
     }
@@ -1281,8 +1169,7 @@
       "image_url": "https://placehold.co/400x200/4A90D9/white?text=Home+Cleaning",
       "is_available": true,
       "average_rating": 5.0,
-      "rating_count": 1,
-      "parent_id": null
+      "rating_count": 1
     },
     {
       "category_id": "CAT002",
@@ -1292,8 +1179,7 @@
       "image_url": "https://placehold.co/400x200/E67E22/white?text=Plumbing",
       "is_available": true,
       "average_rating": 4.73,
-      "rating_count": 0,
-      "parent_id": null
+      "rating_count": 0
     },
     {
       "category_id": "CAT003",
@@ -1303,8 +1189,7 @@
       "image_url": "https://placehold.co/400x200/F1C40F/black?text=Electrical",
       "is_available": true,
       "average_rating": 5.0,
-      "rating_count": 2,
-      "parent_id": null
+      "rating_count": 2
     },
     {
       "category_id": "CAT004",
@@ -1314,8 +1199,7 @@
       "image_url": "https://placehold.co/400x200/8B4513/white?text=Carpentry",
       "is_available": true,
       "average_rating": 4.73,
-      "rating_count": 0,
-      "parent_id": null
+      "rating_count": 0
     },
     {
       "category_id": "CAT005",
@@ -1325,8 +1209,7 @@
       "image_url": "https://placehold.co/400x200/1ABC9C/white?text=AC+%26+Appliances",
       "is_available": true,
       "average_rating": 4.2,
-      "rating_count": 1,
-      "parent_id": null
+      "rating_count": 1
     },
     {
       "category_id": "CAT006",
@@ -1336,8 +1219,7 @@
       "image_url": "https://placehold.co/400x200/2ECC71/white?text=Pest+Control",
       "is_available": false,
       "average_rating": 4.73,
-      "rating_count": 0,
-      "parent_id": null
+      "rating_count": 0
     }
   ],
   "services": [
@@ -1882,183 +1764,49 @@
       "faq_id": "FAQ001",
       "question": "How long does a standard clean take?",
       "answer": "Typically 2 hours for a 2BHK flat.",
-      "display_order": 1,
       "service_id": "SVC001"
     },
     {
       "faq_id": "FAQ002",
       "question": "Do you provide cleaning supplies?",
       "answer": "Yes, all supplies are included in the price.",
-      "display_order": 2,
       "service_id": "SVC001"
     },
     {
       "faq_id": "FAQ003",
       "question": "What if a pipe leak recurs?",
       "answer": "We offer a 30-day repair warranty on all pipe work.",
-      "display_order": 1,
       "service_id": "SVC003"
     },
     {
       "faq_id": "FAQ004",
       "question": "Do you handle concealed pipes?",
       "answer": "Yes, for concealed pipes an extra site visit fee applies.",
-      "display_order": 2,
       "service_id": "SVC003"
     },
     {
       "faq_id": "FAQ005",
       "question": "Is there a safety check after wiring?",
       "answer": "Yes, a full safety check is performed post-installation.",
-      "display_order": 1,
       "service_id": "SVC005"
     },
     {
       "faq_id": "FAQ006",
       "question": "Can you install ceiling fans in concrete ceilings?",
       "answer": "Yes, we carry all required anchor hardware.",
-      "display_order": 2,
       "service_id": "SVC005"
     },
     {
       "faq_id": "FAQ007",
       "question": "Does AC servicing include gas refill?",
       "answer": "The base price includes a gas top-up. Full replacement is extra.",
-      "display_order": 1,
       "service_id": "SVC009"
     },
     {
       "faq_id": "FAQ008",
       "question": "How often should I service my AC?",
       "answer": "At least once per year for optimal performance.",
-      "display_order": 2,
       "service_id": "SVC009"
-    }
-  ],
-  "service_packages": [
-    {
-      "package_id": "PKG001",
-      "package_name": "Home Essentials Bundle",
-      "description": "Standard cleaning + fan installation",
-      "price": 1999,
-      "package_type": "STANDARD",
-      "created_by_customer": false,
-      "is_available": true,
-      "customer_id": null
-    },
-    {
-      "package_id": "PKG002",
-      "package_name": "Deep Clean + Plumbing",
-      "description": "Deep home clean combined with pipe leak repair",
-      "price": 2499,
-      "package_type": "CUSTOM",
-      "created_by_customer": false,
-      "is_available": true,
-      "customer_id": null
-    },
-    {
-      "package_id": "PKG003",
-      "package_name": "Full Home Maintenance",
-      "description": "Complete home maintenance mega bundle",
-      "price": 3999,
-      "package_type": "PREMIUM",
-      "created_by_customer": false,
-      "is_available": false,
-      "customer_id": null
-    },
-    {
-      "package_id": "PKG004",
-      "package_name": "New Home Setup",
-      "description": "Wiring audit + furniture assembly + AC service",
-      "price": 3299,
-      "package_type": "PREMIUM",
-      "created_by_customer": false,
-      "is_available": true,
-      "customer_id": null
-    },
-    {
-      "package_id": "PKG005",
-      "package_name": "Kavitha's Custom Bundle",
-      "description": "Custom package created by customer Kavitha Sundaram",
-      "price": 1798,
-      "package_type": "CUSTOM",
-      "created_by_customer": true,
-      "is_available": true,
-      "customer_id": "CUS004"
-    }
-  ],
-  "package_services": [
-    {
-      "package_id": "PKG001",
-      "service_id": "SVC001",
-      "quantity": 1,
-      "price_at_creation": 499
-    },
-    {
-      "package_id": "PKG001",
-      "service_id": "SVC005",
-      "quantity": 1,
-      "price_at_creation": 299
-    },
-    {
-      "package_id": "PKG002",
-      "service_id": "SVC002",
-      "quantity": 1,
-      "price_at_creation": 899
-    },
-    {
-      "package_id": "PKG002",
-      "service_id": "SVC003",
-      "quantity": 1,
-      "price_at_creation": 799
-    },
-    {
-      "package_id": "PKG003",
-      "service_id": "SVC001",
-      "quantity": 2,
-      "price_at_creation": 499
-    },
-    {
-      "package_id": "PKG003",
-      "service_id": "SVC003",
-      "quantity": 1,
-      "price_at_creation": 799
-    },
-    {
-      "package_id": "PKG003",
-      "service_id": "SVC005",
-      "quantity": 2,
-      "price_at_creation": 299
-    },
-    {
-      "package_id": "PKG004",
-      "service_id": "SVC006",
-      "quantity": 1,
-      "price_at_creation": 1499
-    },
-    {
-      "package_id": "PKG004",
-      "service_id": "SVC007",
-      "quantity": 1,
-      "price_at_creation": 599
-    },
-    {
-      "package_id": "PKG004",
-      "service_id": "SVC009",
-      "quantity": 1,
-      "price_at_creation": 999
-    },
-    {
-      "package_id": "PKG005",
-      "service_id": "SVC001",
-      "quantity": 1,
-      "price_at_creation": 499
-    },
-    {
-      "package_id": "PKG005",
-      "service_id": "SVC010",
-      "quantity": 1,
-      "price_at_creation": 699
     }
   ],
   "bookings": [
@@ -2066,8 +1814,6 @@
       "booking_id": "BKG001",
       "booking_type": "INSTANT",
       "service_address": "14 Boat Club Road, Chennai",
-      "service_lat": 13.05,
-      "service_lng": 80.25,
       "scheduled_at": "2026-03-29T03:48:22Z",
       "status": "COMPLETED",
       "failure_reason": null,
@@ -2075,15 +1821,12 @@
       "created_at": "2026-03-29T03:18:22Z",
       "updated_at": "2026-03-29T06:18:22Z",
       "customer_id": "CUS001",
-      "package_id": "PKG001",
       "sector_id": "SEC001"
     },
     {
       "booking_id": "BKG002",
       "booking_type": "SCHEDULED",
       "service_address": "88 Kilpauk, Chennai",
-      "service_lat": 13.09,
-      "service_lng": 80.23,
       "scheduled_at": "2026-03-21T12:08:14Z",
       "status": "CONFIRMED",
       "failure_reason": null,
@@ -2091,15 +1834,12 @@
       "created_at": "2026-03-17T14:08:14Z",
       "updated_at": "2026-03-18T11:08:14Z",
       "customer_id": "CUS002",
-      "package_id": "PKG002",
       "sector_id": "SEC002"
     },
     {
       "booking_id": "BKG003",
       "booking_type": "INSTANT",
       "service_address": "5 Velachery Main Road, Chennai",
-      "service_lat": 12.98,
-      "service_lng": 80.21,
       "scheduled_at": "2026-02-24T08:42:15Z",
       "status": "CANCELLED",
       "failure_reason": "Customer cancelled before provider dispatch",
@@ -2107,15 +1847,12 @@
       "created_at": "2026-02-24T08:12:15Z",
       "updated_at": "2026-02-24T08:37:15Z",
       "customer_id": "CUS003",
-      "package_id": null,
       "sector_id": "SEC003"
     },
     {
       "booking_id": "BKG004",
       "booking_type": "SCHEDULED",
       "service_address": "32 Nungambakkam, Chennai",
-      "service_lat": 13.06,
-      "service_lng": 80.245,
       "scheduled_at": "2026-03-03T00:04:33Z",
       "status": "COMPLETED",
       "failure_reason": null,
@@ -2123,15 +1860,12 @@
       "created_at": "2026-02-25T22:04:33Z",
       "updated_at": "2026-02-25T22:04:33Z",
       "customer_id": "CUS004",
-      "package_id": "PKG004",
       "sector_id": "SEC001"
     },
     {
       "booking_id": "BKG005",
       "booking_type": "INSTANT",
       "service_address": "77 Perambur, Chennai",
-      "service_lat": 13.12,
-      "service_lng": 80.26,
       "scheduled_at": "2026-02-07T19:07:44Z",
       "status": "CONFIRMED",
       "failure_reason": null,
@@ -2139,15 +1873,12 @@
       "created_at": "2026-02-07T18:52:44Z",
       "updated_at": "2026-02-07T19:12:44Z",
       "customer_id": "CUS005",
-      "package_id": "PKG001",
       "sector_id": "SEC002"
     },
     {
       "booking_id": "BKG006",
       "booking_type": "INSTANT",
       "service_address": "45 Sholinganallur, Chennai",
-      "service_lat": 12.9,
-      "service_lng": 80.23,
       "scheduled_at": "2026-03-29T22:17:25Z",
       "status": "COMPLETED",
       "failure_reason": null,
@@ -2155,15 +1886,12 @@
       "created_at": "2026-03-29T21:47:25Z",
       "updated_at": "2026-03-29T23:32:25Z",
       "customer_id": "CUS006",
-      "package_id": null,
       "sector_id": "SEC006"
     },
     {
       "booking_id": "BKG007",
       "booking_type": "SCHEDULED",
       "service_address": "120 Chromepet, Chennai",
-      "service_lat": 12.95,
-      "service_lng": 80.14,
       "scheduled_at": "2026-02-13T16:47:40Z",
       "status": "CONFIRMED",
       "failure_reason": null,
@@ -2171,15 +1899,12 @@
       "created_at": "2026-02-07T16:47:40Z",
       "updated_at": "2026-02-07T17:47:40Z",
       "customer_id": "CUS007",
-      "package_id": "PKG002",
       "sector_id": "SEC004"
     },
     {
       "booking_id": "BKG008",
       "booking_type": "SCHEDULED",
       "service_address": "9 Adyar, Chennai",
-      "service_lat": 13.005,
-      "service_lng": 80.2574,
       "scheduled_at": "2026-03-18T23:56:12Z",
       "status": "COMPLETED",
       "failure_reason": null,
@@ -2187,15 +1912,12 @@
       "created_at": "2026-03-13T00:56:12Z",
       "updated_at": "2026-03-13T00:56:12Z",
       "customer_id": "CUS008",
-      "package_id": "PKG005",
       "sector_id": "SEC005"
     },
     {
       "booking_id": "BKG009",
       "booking_type": "INSTANT",
       "service_address": "14 Boat Club Road, Chennai",
-      "service_lat": 13.05,
-      "service_lng": 80.25,
       "scheduled_at": "2026-02-04T20:12:12Z",
       "status": "COMPLETED",
       "failure_reason": null,
@@ -2203,15 +1925,12 @@
       "created_at": "2026-02-04T19:42:12Z",
       "updated_at": "2026-02-04T22:12:12Z",
       "customer_id": "CUS001",
-      "package_id": null,
       "sector_id": "SEC001"
     },
     {
       "booking_id": "BKG010",
       "booking_type": "SCHEDULED",
       "service_address": "32 Nungambakkam, Chennai",
-      "service_lat": 13.06,
-      "service_lng": 80.245,
       "scheduled_at": "2026-03-03T08:10:29Z",
       "status": "CANCELLED",
       "failure_reason": "Customer requested cancellation",
@@ -2219,7 +1938,6 @@
       "created_at": "2026-02-28T04:10:29Z",
       "updated_at": "2026-03-02T02:10:29Z",
       "customer_id": "CUS004",
-      "package_id": "PKG003",
       "sector_id": "SEC001"
     }
   ],
@@ -2346,7 +2064,6 @@
       "hour_start": "10:00",
       "hour_end": "12:00",
       "status": "COMPLETED",
-      "version": 1,
       "assignment_score": 5,
       "notes": null,
       "assigned_at": "2026-03-29T03:23:22Z",
@@ -2361,7 +2078,6 @@
       "hour_start": "09:00",
       "hour_end": "11:00",
       "status": "ASSIGNED",
-      "version": 1,
       "assignment_score": null,
       "notes": null,
       "assigned_at": "2026-03-18T11:08:14Z",
@@ -2376,7 +2092,6 @@
       "hour_start": "14:00",
       "hour_end": "16:00",
       "status": "CANCELLED",
-      "version": 1,
       "assignment_score": null,
       "notes": "Booking cancelled by customer",
       "assigned_at": "2026-02-24T08:12:15Z",
@@ -2391,7 +2106,6 @@
       "hour_start": "11:00",
       "hour_end": "14:00",
       "status": "ASSIGNED",
-      "version": 1,
       "assignment_score": null,
       "notes": null,
       "assigned_at": "2026-02-25T22:09:33Z",
@@ -2406,7 +2120,6 @@
       "hour_start": "09:00",
       "hour_end": "11:00",
       "status": "ASSIGNED",
-      "version": 1,
       "assignment_score": null,
       "notes": null,
       "assigned_at": "2026-02-07T18:57:44Z",
@@ -2421,7 +2134,6 @@
       "hour_start": "15:00",
       "hour_end": "16:00",
       "status": "COMPLETED",
-      "version": 1,
       "assignment_score": 5,
       "notes": null,
       "assigned_at": "2026-03-29T21:52:25Z",
@@ -2436,7 +2148,6 @@
       "hour_start": "10:00",
       "hour_end": "12:00",
       "status": "ASSIGNED",
-      "version": 1,
       "assignment_score": null,
       "notes": null,
       "assigned_at": "2026-02-07T17:52:40Z",
@@ -2451,7 +2162,6 @@
       "hour_start": "08:00",
       "hour_end": "10:00",
       "status": "ASSIGNED",
-      "version": 1,
       "assignment_score": null,
       "notes": null,
       "assigned_at": "2026-03-13T01:01:12Z",
@@ -2466,7 +2176,6 @@
       "hour_start": "10:00",
       "hour_end": "12:00",
       "status": "COMPLETED",
-      "version": 1,
       "assignment_score": 4.2,
       "notes": null,
       "assigned_at": "2026-02-04T19:44:12Z",
@@ -2481,7 +2190,6 @@
       "hour_start": "14:00",
       "hour_end": "17:00",
       "status": "CANCELLED",
-      "version": 1,
       "assignment_score": null,
       "notes": "Customer cancelled before provider dispatch",
       "assigned_at": "2026-02-28T04:15:29Z",
