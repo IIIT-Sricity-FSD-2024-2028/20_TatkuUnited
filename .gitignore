@@ -1,0 +1,12 @@
+*/node_modules/
+*/*.env
+
+*/dist/
+*/build/
+*.log
+*.env
+.DS_Store
+.idea/
+.vscode/
+*.iml
+*.suo
