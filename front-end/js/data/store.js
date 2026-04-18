@@ -172,10 +172,10 @@
   // ── AppStore.save ─────────────────────────────────────────────────────────────
   AppStore.save = function () {
     try {
-      localStorage.setItem("fsd_store", JSON.stringify(AppStore.data));
+      localStorage.setItem("fsd_store_v2", JSON.stringify(AppStore.data));
       localStorage.setItem("fsd_store_saved_at", new Date().toISOString());
       // Remove legacy session copy to avoid cross-tab confusion.
-      sessionStorage.removeItem("fsd_store");
+      sessionStorage.removeItem("fsd_store_v2");
       sessionStorage.removeItem("fsd_store_saved_at");
     } catch (err) {
       console.error("[AppStore] save() failed:", err);
@@ -187,14 +187,14 @@
     // Primary source: localStorage (shared across tabs).
     // Fallback source: legacy sessionStorage copy from older builds.
     try {
-      var raw = localStorage.getItem("fsd_store");
+      var raw = localStorage.getItem("fsd_store_v2");
       if (!raw) {
-        raw = sessionStorage.getItem("fsd_store");
+        raw = sessionStorage.getItem("fsd_store_v2");
       }
       if (raw) {
         AppStore.data = JSON.parse(raw);
         // Ensure future reads come from localStorage.
-        localStorage.setItem("fsd_store", JSON.stringify(AppStore.data));
+        localStorage.setItem("fsd_store_v2", JSON.stringify(AppStore.data));
         return true;
       }
     } catch (err) {
