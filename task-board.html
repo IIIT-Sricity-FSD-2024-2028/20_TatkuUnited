@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Project Task Board</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --color-bg: #ffffff;
+    --color-bg-secondary: #f6f5f1;
+    --color-bg-tertiary: #f0efe9;
+    --color-text-primary: #1a1a18;
+    --color-text-secondary: #5f5e5a;
+    --color-text-tertiary: #888780;
+    --color-border: rgba(0,0,0,0.1);
+    --color-border-strong: rgba(0,0,0,0.18);
+    --color-success-bg: #eaf3de;
+    --color-success-text: #27500a;
+    --color-success-border: #639922;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --color-bg: #1c1c1a;
+      --color-bg-secondary: #242422;
+      --color-bg-tertiary: #2c2c2a;
+      --color-text-primary: #e8e7e1;
+      --color-text-secondary: #9c9a92;
+      --color-text-tertiary: #6b6a64;
+      --color-border: rgba(255,255,255,0.08);
+      --color-border-strong: rgba(255,255,255,0.14);
+      --color-success-bg: #173404;
+      --color-success-text: #c0dd97;
+      --color-success-border: #3b6d11;
+    }
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--color-bg-tertiary);
+    color: var(--color-text-primary);
+    min-height: 100vh;
+    padding: 2rem 1rem;
+  }
+
+  .page { max-width: 780px; margin: 0 auto; }
+
+  .page-header { margin-bottom: 2rem; }
+  .page-header h1 { font-size: 22px; font-weight: 500; margin-bottom: 6px; }
+  .page-header p { font-size: 14px; color: var(--color-text-secondary); line-height: 1.65; max-width: 600px; }
+
+  .global-progress {
+    background: var(--color-bg);
+    border: 0.5px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: 14px 20px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .gp-label { font-size: 13px; color: var(--color-text-secondary); white-space: nowrap; }
+  .gp-label span { font-weight: 500; color: var(--color-text-primary); }
+  .gp-bar-wrap { flex: 1; height: 5px; background: var(--color-bg-secondary); border-radius: 99px; overflow: hidden; }
+  .gp-bar-fill { height: 100%; background: var(--color-success-border); border-radius: 99px; width: 0%; transition: width 0.35s ease; }
+  .gp-pct { font-size: 13px; font-weight: 500; color: var(--color-text-secondary); min-width: 34px; text-align: right; }
+
+  .board { display: flex; flex-direction: column; gap: 14px; }
+
+  .part {
+    background: var(--color-bg);
+    border: 0.5px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+  }
+
+  .part-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 13px 18px;
+    cursor: pointer;
+    user-select: none;
+    border-bottom: 0.5px solid var(--color-border);
+  }
+  .part-header:hover { background: var(--color-bg-secondary); }
+
+  .part-dot { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
+  .part-label { font-size: 11px; font-weight: 500; min-width: 48px; }
+  .part-title { font-size: 14px; font-weight: 500; flex: 1; }
+
+  .count-badge {
+    font-size: 11px; padding: 2px 8px; border-radius: 20px; font-weight: 500;
+    background: var(--color-bg-secondary); color: var(--color-text-secondary);
+    border: 0.5px solid var(--color-border); white-space: nowrap;
+  }
+
+  .chevron { font-size: 11px; color: var(--color-text-tertiary); transition: transform 0.2s; }
+  .chevron.open { transform: rotate(180deg); }
+
+  .part-desc {
+    font-size: 13px;
+    color: var(--color-text-secondary);
+    line-height: 1.6;
+    padding: 11px 18px 12px;
+    border-bottom: 0.5px solid var(--color-border);
+    background: var(--color-bg-secondary);
+  }
+
+  .progress-bar { height: 3px; background: var(--color-bg-secondary); }
+  .progress-fill { height: 100%; background: var(--color-success-border); transition: width 0.35s ease; }
+
+  .tasks { padding: 4px 0; }
+
+  .task {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 18px;
+    border-bottom: 0.5px solid var(--color-border);
+  }
+  .task:last-child { border-bottom: none; }
+
+  .task-check {
+    width: 16px; height: 16px;
+    border: 0.5px solid var(--color-border-strong);
+    border-radius: 4px; flex-shrink: 0; margin-top: 2px;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    transition: background 0.15s, border-color 0.15s;
+  }
+  .task-check:hover { background: var(--color-bg-secondary); }
+  .task-check.done { background: var(--color-success-bg); border-color: var(--color-success-border); }
+  .task-check.done::after {
+    content: ''; width: 8px; height: 5px;
+    border-left: 1.5px solid var(--color-success-text);
+    border-bottom: 1.5px solid var(--color-success-text);
+    transform: rotate(-45deg) translate(1px, -1px); display: block;
+  }
+
+  .task-body { flex: 1; display: flex; flex-direction: column; gap: 4px; }
+  .task-text { font-size: 13px; color: var(--color-text-primary); line-height: 1.5; }
+  .task-text.done { color: var(--color-text-tertiary); text-decoration: line-through; }
+
+  .task-tags { display: flex; gap: 5px; flex-wrap: wrap; }
+  .tag { font-size: 10px; padding: 1px 7px; border-radius: 10px; font-weight: 500; }
+
+  .tag-be    { background: #E1F5EE; color: #085041; }
+  .tag-fe    { background: #E6F1FB; color: #0C447C; }
+  .tag-both  { background: #EEEDFE; color: #3C3489; }
+  .tag-infra { background: #F1EFE8; color: #444441; }
+
+  @media (prefers-color-scheme: dark) {
+    .tag-be    { background: #04342C; color: #9FE1CB; }
+    .tag-fe    { background: #042C53; color: #B5D4F4; }
+    .tag-both  { background: #26215C; color: #CECBF6; }
+    .tag-infra { background: #2C2C2A; color: #B4B2A9; }
+  }
+
+  .part-footer {
+    display: flex; align-items: center; gap: 10px;
+    padding: 9px 18px;
+    background: var(--color-bg-secondary);
+    border-top: 0.5px solid var(--color-border);
+    font-size: 12px; color: var(--color-text-secondary);
+  }
+
+  .legend {
+    display: flex; gap: 14px; flex-wrap: wrap;
+    padding: 12px 0 0;
+    font-size: 12px; color: var(--color-text-secondary);
+    align-items: center;
+  }
+  .legend-item { display: flex; align-items: center; gap: 5px; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="page-header">
+    <h1>Project task board</h1>
+    <p>Full task breakdown for the on-demand service platform — NestJS backend, in-memory data management, RBAC, REST APIs, frontend integration, and Swagger documentation. Five equal parts, ordered by dependency. Complete Part 1 before starting anything else.</p>
+  </div>
+
+  <div class="global-progress">
+    <div class="gp-label">Total <span id="g-total">0</span> tasks</div>
+    <div class="gp-bar-wrap"><div class="gp-bar-fill" id="g-bar"></div></div>
+    <div class="gp-pct" id="g-pct">0%</div>
+    <div class="gp-label">Done <span id="g-done" style="color:var(--color-success-border)">0</span></div>
+  </div>
+
+  <div class="legend">
+    <span style="font-size:12px;color:var(--color-text-tertiary)">Tags:</span>
+    <div class="legend-item"><span class="tag tag-be">backend</span></div>
+    <div class="legend-item"><span class="tag tag-fe">frontend</span></div>
+    <div class="legend-item"><span class="tag tag-both">both</span></div>
+    <div class="legend-item"><span class="tag tag-infra">infra</span></div>
+  </div>
+
+  <br>
+  <div class="board" id="board"></div>
+
+</div>
+<script>
+const parts = [
+  {
+    id: 'p1',
+    label: 'Part 1',
+    title: 'Project setup & infrastructure',
+    color: '#534AB7',
+    desc: 'The foundation everything else depends on. Scaffold the NestJS project, wire the global DatabaseService with corrected seed data, set up RBAC via the x-role header guard, configure Swagger, and establish the consistent error-handling and validation baseline all modules will inherit.',
+    tasks: [
+      { text: 'Scaffold NestJS project — modular folder structure (modules/, common/)', tags: ['infra'] },
+      { text: 'Create DatabaseModule as a @Global() provider so all repositories can inject it without re-importing', tags: ['be'] },
+      { text: 'Define all entity interfaces in DatabaseService matching the final ER diagram', tags: ['be'] },
+      { text: 'Fix and populate seed data — align all ids, FK references, and field names with ER diagram', tags: ['be'] },
+      { text: 'Add genId() (uuid v4) and now() (ISO string) helpers to DatabaseService', tags: ['be'] },
+      { text: 'Create Role enum with all 5 roles (super_user, collective_manager, unit_manager, service_provider, customer)', tags: ['be'] },
+      { text: 'Create @Roles() decorator using SetMetadata', tags: ['be'] },
+      { text: 'Implement RolesGuard — reads x-role request header, throws 403 if role not in required list', tags: ['be'] },
+      { text: 'Register RolesGuard as a global guard in AppModule using APP_GUARD', tags: ['be'] },
+      { text: 'Register ValidationPipe globally with whitelist: true and transform: true', tags: ['be'] },
+      { text: 'Configure Swagger DocumentBuilder with x-role ApiKey security scheme', tags: ['infra'] },
+      { text: 'Auto-export swagger.json to docs/ on server boot using fs.writeFileSync', tags: ['infra'] },
+      { text: 'Enable CORS in main.ts for frontend origin', tags: ['infra'] },
+    ]
+  },
+  {
+    id: 'p2',
+    label: 'Part 2',
+    title: 'Org hierarchy & provider management',
+    color: '#0F6E56',
+    desc: 'Build the full organisational layer — collectives, sectors, units, and all four actor accounts (super user, collective manager, unit manager, service provider). Each module follows the repository → service → controller pattern. Parallelisable across team members once Part 1 is done.',
+    tasks: [
+      { text: 'Collectives — repository (findAll, findById, create, update, delete), service, controller, DTOs, role guards', tags: ['be'] },
+      { text: 'Sectors — repository with findByCollective, service, controller, DTOs, role guards', tags: ['be'] },
+      { text: 'Units — repository with findByCollective, service, controller, DTOs, role guards', tags: ['be'] },
+      { text: 'SuperUsers — repository with findByEmail, service, controller, DTOs (super_user only)', tags: ['be'] },
+      { text: 'CollectiveManagers — repository with findByCollective, service, controller, DTOs, role guards', tags: ['be'] },
+      { text: 'UnitManagers — repository with findByUnit, service, controller, DTOs, role guards', tags: ['be'] },
+      { text: 'ServiceProviders — repository (findByUnit, findBySector, findByEmail), service, controller, DTOs', tags: ['be'] },
+      { text: 'ServiceProvider profile update — modify working hours, address, pfp, deactivation request endpoint', tags: ['be'] },
+      { text: 'ProviderUnavailability — repository (findByProvider), service, controller, DTOs', tags: ['be'] },
+      { text: 'Skills — repository, service, controller, DTOs (CRUD by super_user; read by all)', tags: ['be'] },
+      { text: 'ProviderSkills — repository (findByProvider, findBySkill), create/verify endpoints, role guards for verification', tags: ['be'] },
+      { text: 'Customers — repository (findByEmail, findBySector), service, controller, DTOs, account delete endpoint', tags: ['be'] },
+      { text: 'Add @ApiOperation, @ApiResponse, @ApiHeader to every endpoint in Part 2', tags: ['infra'] },
+    ]
+  },
+  {
+    id: 'p3',
+    label: 'Part 3',
+    title: 'Service catalogue, cart & bookings',
+    color: '#993C1D',
+    desc: 'The customer-facing product layer — categories, services with content and FAQs, the persistent cart (one per customer, survives logout), and the full booking checkout flow including BookingServices junction rows. Provider job assignment and completion flow also lives here.',
+    tasks: [
+      { text: 'Categories — repository, service, controller, DTOs (CRUD by super_user; read by all)', tags: ['be'] },
+      { text: 'Services — repository (findByCategory, findAvailable), service, controller, DTOs', tags: ['be'] },
+      { text: 'ServiceSkills — junction repository, endpoints to link/unlink skills from a service', tags: ['be'] },
+      { text: 'ServiceContent — repository (findByService), upsert endpoint, DTOs', tags: ['be'] },
+      { text: 'ServiceFAQs — repository (findByService), CRUD endpoints, DTOs', tags: ['be'] },
+      { text: 'Cart — repository with getOrCreateCart(customer_id) logic, service, controller', tags: ['be'] },
+      { text: 'CartItems — add item (with price_snapshot), update quantity, remove item, clear cart endpoints', tags: ['be'] },
+      { text: 'Cart — update booking_type and scheduled_at on the cart level', tags: ['be'] },
+      { text: 'Bookings — create from cart checkout (validate cart non-empty, create Booking + BookingServices rows, clear cart)', tags: ['be'] },
+      { text: 'Bookings — list by customer, list by sector, get by id, cancel endpoint (status → CANCELLED)', tags: ['be'] },
+      { text: 'JobAssignments — auto-assign provider on booking creation (match sector, skills, availability, rating)', tags: ['be'] },
+      { text: 'JobAssignments — provider marks job complete (update status → COMPLETED, trigger revenue split)', tags: ['be'] },
+      { text: 'JobAssignments — list by provider, list by booking, get by id endpoints', tags: ['be'] },
+      { text: 'Add @ApiOperation, @ApiResponse, @ApiHeader to every endpoint in Part 3', tags: ['infra'] },
+    ]
+  },
+  {
+    id: 'p4',
+    label: 'Part 4',
+    title: 'Payments, finance, reviews & platform settings',
+    color: '#185FA5',
+    desc: 'Complete the financial and feedback loops. Transactions are created on checkout. Revenue ledger rows are written when a job completes, storing the four-way split. Reviews can only be created after a booking is COMPLETED. PlatformSettings gives the super user runtime control over platform behaviour.',
+    tasks: [
+      { text: 'Transactions — repository (findByBooking), create on checkout, refund endpoint, DTOs', tags: ['be'] },
+      { text: 'RevenueLedger — repository (findByBooking, findByProvider, findByUm, findByCm)', tags: ['be'] },
+      { text: 'RevenueLedger — auto-create row on job completion with 78/8/4/10 split calculation', tags: ['be'] },
+      { text: 'RevenueLedger — payout dispatch endpoint (super_user marks pending → paid)', tags: ['be'] },
+      { text: 'Revenue summary endpoints — provider earnings, unit manager earnings, collective manager earnings', tags: ['be'] },
+      { text: 'Reviews — repository (findByBooking, findByProvider, findByCustomer)', tags: ['be'] },
+      { text: 'Reviews — create endpoint (validate booking is COMPLETED and not yet reviewed)', tags: ['be'] },
+      { text: 'Reviews — recalculate and update average_rating on Service and ServiceProvider after each new review', tags: ['be'] },
+      { text: 'PlatformSettings — repository (findByKey), CRUD endpoints (super_user only), DTOs', tags: ['be'] },
+      { text: 'PlatformSettings — expose GET for maintenance_mode and max_booking_window_days to all roles', tags: ['be'] },
+      { text: 'Add @ApiOperation, @ApiResponse, @ApiHeader to every endpoint in Part 4', tags: ['infra'] },
+    ]
+  },
+  {
+    id: 'p5',
+    label: 'Part 5',
+    title: 'Frontend integration & end-to-end polish',
+    color: '#854F0B',
+    desc: 'Replace every piece of hardcoded mock data in the frontend with live API calls. Work actor by actor. Add a shared API client so all pages use one base URL and role header. Handle errors gracefully and do a full end-to-end workflow pass before wrapping up.',
+    tasks: [
+      { text: 'Create shared API client — axios/fetch instance with baseURL, x-role header injection, and error interceptor', tags: ['fe'] },
+      { text: 'Customer — home page, category listing, service listing, service detail page wired to API', tags: ['fe'] },
+      { text: 'Customer — cart page (add, update, remove, clear) wired to cart endpoints', tags: ['fe'] },
+      { text: 'Customer — checkout page (place booking, trigger payment) wired to API', tags: ['fe'] },
+      { text: 'Customer — booking history, booking detail, cancel booking wired to API', tags: ['fe'] },
+      { text: 'Customer — leave review form wired to reviews endpoint', tags: ['fe'] },
+      { text: 'Customer — profile settings (update info, change password, delete account) wired to API', tags: ['fe'] },
+      { text: 'Service Provider — jobs list and job detail wired to job-assignments endpoints', tags: ['fe'] },
+      { text: 'Service Provider — calendar/unavailability management wired to provider-unavailability endpoints', tags: ['fe'] },
+      { text: 'Service Provider — profile, working hours update, skill verification request wired to API', tags: ['fe'] },
+      { text: 'Service Provider — earnings and revenue chart wired to revenue-ledger endpoints', tags: ['fe'] },
+      { text: 'Unit Manager — provider list, add/remove provider, unit settings wired to API', tags: ['fe'] },
+      { text: 'Unit Manager — skill verification approval wired to provider-skills verify endpoint', tags: ['fe'] },
+      { text: 'Unit Manager — earnings chart wired to revenue-ledger endpoints', tags: ['fe'] },
+      { text: 'Collective Manager — units management, sectors management wired to API', tags: ['fe'] },
+      { text: 'Collective Manager — earnings chart wired to revenue-ledger endpoints', tags: ['fe'] },
+      { text: 'Super User — full CRUD dashboard for collectives, sectors, units, providers, customers wired to API', tags: ['fe'] },
+      { text: 'Super User — platform settings page wired to platform-settings endpoints', tags: ['fe'] },
+      { text: 'Super User — revenue overview and payout dispatch wired to revenue-ledger endpoints', tags: ['fe'] },
+      { text: 'Global — display meaningful error messages on 400, 403, 404, and 500 API responses', tags: ['fe'] },
+      { text: 'End-to-end verification — run through all 8–10 demo workflows across all 5 actors', tags: ['both'] },
+      { text: 'Confirm Swagger reflects all implemented APIs with request body, response, and role header per endpoint', tags: ['both'] },
+    ]
+  }
+];
+
+const tagLabels = { be: 'backend', fe: 'frontend', both: 'both', infra: 'infra' };
+const state = {};
+const board = document.getElementById('board');
+
+parts.forEach(part => {
+  state[part.id] = new Array(part.tasks.length).fill(false);
+
+  const el = document.createElement('div');
+  el.className = 'part';
+  el.innerHTML = `
+    <div class="part-header" onclick="togglePart('${part.id}')">
+      <div class="part-dot" style="background:${part.color}"></div>
+      <span class="part-label" style="color:${part.color}">${part.label}</span>
+      <span class="part-title">${part.title}</span>
+      <span class="count-badge" id="badge-${part.id}">0 / ${part.tasks.length}</span>
+      <span class="chevron open" id="chev-${part.id}">▼</span>
+    </div>
+    <div class="part-desc" id="desc-${part.id}">${part.desc}</div>
+    <div class="progress-bar"><div class="progress-fill" id="prog-${part.id}" style="width:0%"></div></div>
+    <div class="tasks" id="tasks-${part.id}">
+      ${part.tasks.map((t, i) => `
+        <div class="task">
+          <div class="task-check" id="check-${part.id}-${i}" onclick="toggleTask('${part.id}',${i})"></div>
+          <div class="task-body">
+            <span class="task-text" id="txt-${part.id}-${i}">${t.text}</span>
+            <div class="task-tags">${t.tags.map(tag => `<span class="tag tag-${tag}">${tagLabels[tag]}</span>`).join('')}</div>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+    <div class="part-footer">
+      <span id="sum-${part.id}">0 of ${part.tasks.length} done</span>
+    </div>
+  `;
+  board.appendChild(el);
+});
+
+function togglePart(id) {
+  const tasks = document.getElementById('tasks-' + id);
+  const desc = document.getElementById('desc-' + id);
+  const chev = document.getElementById('chev-' + id);
+  const isOpen = tasks.style.display !== 'none';
+  tasks.style.display = isOpen ? 'none' : '';
+  desc.style.display = isOpen ? 'none' : '';
+  chev.classList.toggle('open', !isOpen);
+}
+
+function toggleTask(partId, idx) {
+  state[partId][idx] = !state[partId][idx];
+  const done = state[partId][idx];
+  document.getElementById(`check-${partId}-${idx}`).classList.toggle('done', done);
+  document.getElementById(`txt-${partId}-${idx}`).classList.toggle('done', done);
+  updatePart(partId);
+  updateGlobal();
+}
+
+function updatePart(partId) {
+  const total = parts.find(p => p.id === partId).tasks.length;
+  const doneCount = state[partId].filter(Boolean).length;
+  const pct = Math.round(doneCount / total * 100);
+  document.getElementById(`badge-${partId}`).textContent = `${doneCount} / ${total}`;
+  document.getElementById(`prog-${partId}`).style.width = pct + '%';
+  document.getElementById(`sum-${partId}`).textContent = `${doneCount} of ${total} done`;
+}
+
+function updateGlobal() {
+  const totalAll = parts.reduce((a, p) => a + p.tasks.length, 0);
+  const doneAll = parts.reduce((a, p) => a + state[p.id].filter(Boolean).length, 0);
+  const pct = Math.round(doneAll / totalAll * 100);
+  document.getElementById('g-total').textContent = totalAll;
+  document.getElementById('g-done').textContent = doneAll;
+  document.getElementById('g-bar').style.width = pct + '%';
+  document.getElementById('g-pct').textContent = pct + '%';
+}
+
+updateGlobal();
+</script>
+</body>
+</html>
