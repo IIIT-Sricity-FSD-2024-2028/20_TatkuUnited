@@ -1,0 +1,2539 @@
+{
+  "openapi": "3.0.0",
+  "paths": {
+    "/": {
+      "get": {
+        "operationId": "AppController_getHello",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "App"
+        ]
+      }
+    },
+    "/super-users": {
+      "post": {
+        "operationId": "SuperUsersController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSuperUserDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "SuperUsers"
+        ]
+      },
+      "get": {
+        "operationId": "SuperUsersController_findAll",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "SuperUsers"
+        ]
+      }
+    },
+    "/super-users/{id}": {
+      "get": {
+        "operationId": "SuperUsersController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "SuperUsers"
+        ]
+      },
+      "patch": {
+        "operationId": "SuperUsersController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateSuperUserDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "SuperUsers"
+        ]
+      },
+      "delete": {
+        "operationId": "SuperUsersController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "SuperUsers"
+        ]
+      }
+    },
+    "/collective-managers": {
+      "post": {
+        "operationId": "CollectiveManagersController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCollectiveManagerDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "CollectiveManagers"
+        ]
+      },
+      "get": {
+        "operationId": "CollectiveManagersController_findAll",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "CollectiveManagers"
+        ]
+      }
+    },
+    "/collective-managers/{id}": {
+      "get": {
+        "operationId": "CollectiveManagersController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "CollectiveManagers"
+        ]
+      },
+      "patch": {
+        "operationId": "CollectiveManagersController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateCollectiveManagerDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "CollectiveManagers"
+        ]
+      },
+      "delete": {
+        "operationId": "CollectiveManagersController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "CollectiveManagers"
+        ]
+      }
+    },
+    "/unit-managers": {
+      "post": {
+        "operationId": "UnitManagersController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateUnitManagerDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "UnitManagers"
+        ]
+      },
+      "get": {
+        "operationId": "UnitManagersController_findAll",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "UnitManagers"
+        ]
+      }
+    },
+    "/unit-managers/{id}": {
+      "get": {
+        "operationId": "UnitManagersController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "UnitManagers"
+        ]
+      },
+      "patch": {
+        "operationId": "UnitManagersController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateUnitManagerDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "UnitManagers"
+        ]
+      },
+      "delete": {
+        "operationId": "UnitManagersController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "UnitManagers"
+        ]
+      }
+    },
+    "/service-providers": {
+      "post": {
+        "operationId": "ServiceProvidersController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateServiceProviderDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "ServiceProviders"
+        ]
+      },
+      "get": {
+        "operationId": "ServiceProvidersController_findAll",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "ServiceProviders"
+        ]
+      }
+    },
+    "/service-providers/{id}": {
+      "get": {
+        "operationId": "ServiceProvidersController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "ServiceProviders"
+        ]
+      },
+      "patch": {
+        "operationId": "ServiceProvidersController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateServiceProviderDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "ServiceProviders"
+        ]
+      },
+      "delete": {
+        "operationId": "ServiceProvidersController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "ServiceProviders"
+        ]
+      }
+    },
+    "/customers": {
+      "post": {
+        "operationId": "CustomersController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCustomerDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Customers"
+        ]
+      },
+      "get": {
+        "operationId": "CustomersController_findAll",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Customers"
+        ]
+      }
+    },
+    "/customers/{id}": {
+      "get": {
+        "operationId": "CustomersController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Customers"
+        ]
+      },
+      "patch": {
+        "operationId": "CustomersController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateCustomerDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Customers"
+        ]
+      },
+      "delete": {
+        "operationId": "CustomersController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Customers"
+        ]
+      }
+    },
+    "/collectives": {
+      "get": {
+        "operationId": "CollectivesController_findAll",
+        "parameters": [
+          {
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "super_user",
+                "collective_manager",
+                "unit_manager",
+                "service_provider",
+                "customer"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "x-role": []
+          }
+        ],
+        "summary": "List all collectives",
+        "tags": [
+          "collectives"
+        ]
+      },
+      "post": {
+        "operationId": "CollectivesController_create",
+        "parameters": [
+          {
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "super_user",
+                "collective_manager",
+                "unit_manager",
+                "service_provider",
+                "customer"
+              ]
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCollectiveDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "x-role": []
+          }
+        ],
+        "summary": "Create a collective",
+        "tags": [
+          "collectives"
+        ]
+      }
+    },
+    "/sectors": {
+      "post": {
+        "operationId": "SectorsController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSectorDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Sectors"
+        ]
+      },
+      "get": {
+        "operationId": "SectorsController_findAll",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Sectors"
+        ]
+      }
+    },
+    "/sectors/{id}": {
+      "get": {
+        "operationId": "SectorsController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Sectors"
+        ]
+      },
+      "patch": {
+        "operationId": "SectorsController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateSectorDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Sectors"
+        ]
+      },
+      "delete": {
+        "operationId": "SectorsController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Sectors"
+        ]
+      }
+    },
+    "/units": {
+      "post": {
+        "operationId": "UnitsController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateUnitDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Units"
+        ]
+      },
+      "get": {
+        "operationId": "UnitsController_findAll",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Units"
+        ]
+      }
+    },
+    "/units/{id}": {
+      "get": {
+        "operationId": "UnitsController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Units"
+        ]
+      },
+      "patch": {
+        "operationId": "UnitsController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateUnitDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Units"
+        ]
+      },
+      "delete": {
+        "operationId": "UnitsController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Units"
+        ]
+      }
+    },
+    "/categories": {
+      "post": {
+        "operationId": "CategoriesController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCategoryDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Categories"
+        ]
+      },
+      "get": {
+        "operationId": "CategoriesController_findAll",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Categories"
+        ]
+      }
+    },
+    "/categories/{id}": {
+      "get": {
+        "operationId": "CategoriesController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Categories"
+        ]
+      },
+      "patch": {
+        "operationId": "CategoriesController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateCategoryDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Categories"
+        ]
+      },
+      "delete": {
+        "operationId": "CategoriesController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Categories"
+        ]
+      }
+    },
+    "/services": {
+      "post": {
+        "operationId": "ServicesController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateServiceDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Services"
+        ]
+      },
+      "get": {
+        "operationId": "ServicesController_findAll",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Services"
+        ]
+      }
+    },
+    "/services/{id}": {
+      "get": {
+        "operationId": "ServicesController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Services"
+        ]
+      },
+      "patch": {
+        "operationId": "ServicesController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateServiceDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Services"
+        ]
+      },
+      "delete": {
+        "operationId": "ServicesController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Services"
+        ]
+      }
+    },
+    "/skills": {
+      "post": {
+        "operationId": "SkillsController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSkillDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Skills"
+        ]
+      },
+      "get": {
+        "operationId": "SkillsController_findAll",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Skills"
+        ]
+      }
+    },
+    "/skills/{id}": {
+      "get": {
+        "operationId": "SkillsController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Skills"
+        ]
+      },
+      "patch": {
+        "operationId": "SkillsController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateSkillDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Skills"
+        ]
+      },
+      "delete": {
+        "operationId": "SkillsController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Skills"
+        ]
+      }
+    },
+    "/provider-skills": {
+      "post": {
+        "operationId": "ProviderSkillsController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateProviderSkillDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "ProviderSkills"
+        ]
+      },
+      "get": {
+        "operationId": "ProviderSkillsController_findAll",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "ProviderSkills"
+        ]
+      }
+    },
+    "/provider-skills/{id}": {
+      "get": {
+        "operationId": "ProviderSkillsController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "ProviderSkills"
+        ]
+      },
+      "patch": {
+        "operationId": "ProviderSkillsController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateProviderSkillDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "ProviderSkills"
+        ]
+      },
+      "delete": {
+        "operationId": "ProviderSkillsController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "ProviderSkills"
+        ]
+      }
+    },
+    "/provider-unavailability": {
+      "post": {
+        "operationId": "ProviderUnavailabilityController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateProviderUnavailabilityDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "ProviderUnavailability"
+        ]
+      },
+      "get": {
+        "operationId": "ProviderUnavailabilityController_findAll",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "ProviderUnavailability"
+        ]
+      }
+    },
+    "/provider-unavailability/{id}": {
+      "get": {
+        "operationId": "ProviderUnavailabilityController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "ProviderUnavailability"
+        ]
+      },
+      "patch": {
+        "operationId": "ProviderUnavailabilityController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateProviderUnavailabilityDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "ProviderUnavailability"
+        ]
+      },
+      "delete": {
+        "operationId": "ProviderUnavailabilityController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "ProviderUnavailability"
+        ]
+      }
+    },
+    "/bookings": {
+      "post": {
+        "operationId": "BookingsController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateBookingDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Bookings"
+        ]
+      },
+      "get": {
+        "operationId": "BookingsController_findAll",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Bookings"
+        ]
+      }
+    },
+    "/bookings/{id}": {
+      "get": {
+        "operationId": "BookingsController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Bookings"
+        ]
+      },
+      "patch": {
+        "operationId": "BookingsController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateBookingDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Bookings"
+        ]
+      },
+      "delete": {
+        "operationId": "BookingsController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Bookings"
+        ]
+      }
+    },
+    "/job-assignments": {
+      "post": {
+        "operationId": "JobAssignmentsController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateJobAssignmentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "JobAssignments"
+        ]
+      },
+      "get": {
+        "operationId": "JobAssignmentsController_findAll",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "JobAssignments"
+        ]
+      }
+    },
+    "/job-assignments/{id}": {
+      "get": {
+        "operationId": "JobAssignmentsController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "JobAssignments"
+        ]
+      },
+      "patch": {
+        "operationId": "JobAssignmentsController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateJobAssignmentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "JobAssignments"
+        ]
+      },
+      "delete": {
+        "operationId": "JobAssignmentsController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "JobAssignments"
+        ]
+      }
+    },
+    "/transactions": {
+      "post": {
+        "operationId": "TransactionsController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateTransactionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Transactions"
+        ]
+      },
+      "get": {
+        "operationId": "TransactionsController_findAll",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Transactions"
+        ]
+      }
+    },
+    "/transactions/{id}": {
+      "get": {
+        "operationId": "TransactionsController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Transactions"
+        ]
+      },
+      "patch": {
+        "operationId": "TransactionsController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateTransactionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Transactions"
+        ]
+      },
+      "delete": {
+        "operationId": "TransactionsController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Transactions"
+        ]
+      }
+    },
+    "/revenue-ledger": {
+      "post": {
+        "operationId": "RevenueLedgerController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateRevenueLedgerDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "RevenueLedger"
+        ]
+      },
+      "get": {
+        "operationId": "RevenueLedgerController_findAll",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "RevenueLedger"
+        ]
+      }
+    },
+    "/revenue-ledger/{id}": {
+      "get": {
+        "operationId": "RevenueLedgerController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "RevenueLedger"
+        ]
+      },
+      "patch": {
+        "operationId": "RevenueLedgerController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateRevenueLedgerDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "RevenueLedger"
+        ]
+      },
+      "delete": {
+        "operationId": "RevenueLedgerController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "RevenueLedger"
+        ]
+      }
+    },
+    "/reviews": {
+      "post": {
+        "operationId": "ReviewsController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateReviewDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Reviews"
+        ]
+      },
+      "get": {
+        "operationId": "ReviewsController_findAll",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Reviews"
+        ]
+      }
+    },
+    "/reviews/{id}": {
+      "get": {
+        "operationId": "ReviewsController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Reviews"
+        ]
+      },
+      "patch": {
+        "operationId": "ReviewsController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateReviewDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Reviews"
+        ]
+      },
+      "delete": {
+        "operationId": "ReviewsController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Reviews"
+        ]
+      }
+    },
+    "/platform-settings": {
+      "post": {
+        "operationId": "PlatformSettingsController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePlatformSettingDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "PlatformSettings"
+        ]
+      },
+      "get": {
+        "operationId": "PlatformSettingsController_findAll",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "PlatformSettings"
+        ]
+      }
+    },
+    "/platform-settings/{id}": {
+      "get": {
+        "operationId": "PlatformSettingsController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "PlatformSettings"
+        ]
+      },
+      "patch": {
+        "operationId": "PlatformSettingsController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePlatformSettingDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "PlatformSettings"
+        ]
+      },
+      "delete": {
+        "operationId": "PlatformSettingsController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "PlatformSettings"
+        ]
+      }
+    },
+    "/cart": {
+      "post": {
+        "operationId": "CartController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCartDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Cart"
+        ]
+      },
+      "get": {
+        "operationId": "CartController_findAll",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Cart"
+        ]
+      }
+    },
+    "/cart/{id}": {
+      "get": {
+        "operationId": "CartController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Cart"
+        ]
+      },
+      "patch": {
+        "operationId": "CartController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateCartDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Cart"
+        ]
+      },
+      "delete": {
+        "operationId": "CartController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Cart"
+        ]
+      }
+    },
+    "/auth/login": {
+      "post": {
+        "operationId": "AuthController_login",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Authenticated successfully"
+          },
+          "401": {
+            "description": "Invalid credentials"
+          }
+        },
+        "summary": "Login with role-aware credentials and get JWT token",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/auth/me": {
+      "get": {
+        "operationId": "AuthController_me",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Current authenticated user"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get current user profile from JWT",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/auth/change-password": {
+      "post": {
+        "operationId": "AuthController_changePassword",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangePasswordDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Password updated"
+          },
+          "401": {
+            "description": "Unauthorized or wrong current password"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Change password for currently authenticated user",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/auth/logout": {
+      "post": {
+        "operationId": "AuthController_logout",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "Logged out successfully"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Logout (stateless token invalidation handled client-side)",
+        "tags": [
+          "auth"
+        ]
+      }
+    }
+  },
+  "info": {
+    "title": "Service Platform API",
+    "description": "UrbanCo-style on-demand service platform",
+    "version": "1.0",
+    "contact": {}
+  },
+  "tags": [],
+  "servers": [],
+  "components": {
+    "securitySchemes": {
+      "bearer": {
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "type": "http",
+        "description": "Paste JWT access token from /auth/login"
+      },
+      "x-role": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "x-role",
+        "description": "Role header required by RolesGuard. Allowed values: super_user, collective_manager, unit_manager, service_provider, customer"
+      }
+    },
+    "schemas": {
+      "CreateSuperUserDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "UpdateSuperUserDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "CreateCollectiveManagerDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "UpdateCollectiveManagerDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "CreateUnitManagerDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "UpdateUnitManagerDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "CreateServiceProviderDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "UpdateServiceProviderDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "CreateCustomerDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "UpdateCustomerDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "CreateCollectiveDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "CreateSectorDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "UpdateSectorDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "CreateUnitDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "UpdateUnitDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "CreateCategoryDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "UpdateCategoryDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "CreateServiceDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "UpdateServiceDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "CreateSkillDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "UpdateSkillDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "CreateProviderSkillDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "UpdateProviderSkillDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "CreateProviderUnavailabilityDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "UpdateProviderUnavailabilityDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "CreateBookingDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "UpdateBookingDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "CreateJobAssignmentDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "UpdateJobAssignmentDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "CreateTransactionDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "UpdateTransactionDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "CreateRevenueLedgerDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "UpdateRevenueLedgerDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "CreateReviewDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "UpdateReviewDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "CreatePlatformSettingDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "UpdatePlatformSettingDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "CreateCartDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "UpdateCartDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "LoginDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "example": "aditya.v@gmail.com"
+          },
+          "password": {
+            "type": "string",
+            "example": "Password@123"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "super_user",
+              "collective_manager",
+              "unit_manager",
+              "service_provider",
+              "customer"
+            ],
+            "description": "Optional when email is globally unique"
+          }
+        },
+        "required": [
+          "email",
+          "password"
+        ]
+      },
+      "ChangePasswordDto": {
+        "type": "object",
+        "properties": {
+          "currentPassword": {
+            "type": "string",
+            "example": "Password@123"
+          },
+          "newPassword": {
+            "type": "string",
+            "example": "NewPassword@123"
+          }
+        },
+        "required": [
+          "currentPassword",
+          "newPassword"
+        ]
+      }
+    }
+  }
+}

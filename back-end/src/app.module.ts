@@ -22,9 +22,33 @@ import { ReviewsModule } from './modules/reviews/reviews.module';
 import { PlatformSettingsModule } from './modules/platform-settings/platform-settings.module';
 import { DatabaseModule } from './common/database/database.module';
 import { CartModule } from './modules/cart/cart.module';
+import { AuthModule } from './modules/auth/auth.module';
 
 @Module({
-  imports: [SuperUsersModule, CollectiveManagersModule, UnitManagersModule, ServiceProvidersModule, CustomersModule, CollectivesModule, SectorsModule, UnitsModule, CategoriesModule, ServicesModule, SkillsModule, ProviderSkillsModule, ProviderUnavailabilityModule, BookingsModule, JobAssignmentsModule, TransactionsModule, RevenueLedgerModule, ReviewsModule, PlatformSettingsModule, DatabaseModule, CartModule],
+  imports: [
+    SuperUsersModule,
+    CollectiveManagersModule,
+    UnitManagersModule,
+    ServiceProvidersModule,
+    CustomersModule,
+    CollectivesModule,
+    SectorsModule,
+    UnitsModule,
+    CategoriesModule,
+    ServicesModule,
+    SkillsModule,
+    ProviderSkillsModule,
+    ProviderUnavailabilityModule,
+    BookingsModule,
+    JobAssignmentsModule,
+    TransactionsModule,
+    RevenueLedgerModule,
+    ReviewsModule,
+    PlatformSettingsModule,
+    DatabaseModule,
+    CartModule,
+    AuthModule,
+  ],
   controllers: [AppController],
   providers: [AppService],
 })
