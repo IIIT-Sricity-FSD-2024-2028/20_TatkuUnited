@@ -84,7 +84,7 @@ window.AssignmentEngine = (() => {
    * auditServiceAvailability()
    * Cross-references service_skills against provider_skills to mark services
    * as unavailable when no active provider possesses the required skills.
-   * Updates AppStore.data only — never modifies mockData.json.
+   * Updates AppStore.data only.
    */
   function auditServiceAvailability() {
     if (!AppStore || !AppStore.data) return;

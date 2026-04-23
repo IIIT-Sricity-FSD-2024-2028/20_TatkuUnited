@@ -15,6 +15,7 @@ import {
 import { Role } from '../../common/enums/role.enum';
 import { LoginDto } from './dto/login.dto';
 import { JwtPayload } from './interfaces/jwt-payload.interface';
+import { RegisterDto } from './dto/register.dto';
 
 type AuthPrincipal = {
   id: string;
@@ -40,6 +41,11 @@ export class AuthService {
     }
 
     if (!principal.is_active) {
+      if (principal.role === Role.SERVICE_PROVIDER) {
+        throw new UnauthorizedException(
+          'Provider approval pending. Wait for collective manager approval',
+        );
+      }
       throw new UnauthorizedException('Account is inactive');
     }
 
@@ -67,6 +73,102 @@ export class AuthService {
         role: principal.role,
         name: principal.name,
         email: principal.email,
+        collective_id:
+          principal.role === Role.COLLECTIVE_MANAGER
+            ? (principal.ref as CollectiveManager).collective_id
+            : null,
+        unit_id:
+          principal.role === Role.UNIT_MANAGER
+            ? (principal.ref as UnitManager).unit_id
+            : principal.role === Role.SERVICE_PROVIDER
+              ? (principal.ref as ServiceProvider).unit_id
+              : null,
+        customer_id:
+          principal.role === Role.CUSTOMER
+            ? (principal.ref as Customer).customer_id
+            : null,
+      },
+    };
+  }
+
+  register(dto: RegisterDto) {
+    const normalizedEmail = dto.email.trim().toLowerCase();
+    const role = dto.role;
+
+    if (![Role.CUSTOMER, Role.SERVICE_PROVIDER].includes(role)) {
+      throw new BadRequestException(
+        'Registration is allowed only for customer and service_provider roles',
+      );
+    }
+
+    const duplicate = this.resolvePrincipal(normalizedEmail);
+    if (duplicate) {
+      throw new BadRequestException('An account with this email already exists');
+    }
+
+    const now = this.databaseService.now();
+    const password_hash = this.databaseService.storePassword(dto.password);
+
+    if (role === Role.CUSTOMER) {
+      const record: Customer = {
+        customer_id: this.databaseService.genId(),
+        full_name: dto.fullName.trim(),
+        email: normalizedEmail,
+        password_hash,
+        phone: dto.phone.trim(),
+        dob: '',
+        address: '',
+        rating: 0,
+        is_active: true,
+        home_sector_id: this.databaseService.sectors[0]?.sector_id || '',
+      };
+      this.databaseService.customers.push(record);
+
+      return {
+        message: 'Registration successful',
+        user: {
+          id: record.customer_id,
+          role: Role.CUSTOMER,
+          name: record.full_name,
+          email: record.email,
+          is_active: record.is_active,
+          created_at: now,
+        },
+      };
+    }
+
+    const record: ServiceProvider = {
+      sp_id: this.databaseService.genId(),
+      name: dto.fullName.trim(),
+      email: normalizedEmail,
+      password_hash,
+      phone: dto.phone.trim(),
+      dob: '',
+      address: '',
+      gender: '',
+      rating: 0,
+      rating_count: 0,
+      is_active: false,
+      account_status: 'pending_assignment',
+      deactivation_requested: false,
+      hour_start: '08:00',
+      hour_end: '18:00',
+      created_at: now,
+      updated_at: now,
+      unit_id: '',
+      home_sector_id: this.databaseService.sectors[0]?.sector_id || '',
+    };
+    this.databaseService.serviceProviders.push(record);
+
+    return {
+      message: 'Registration successful',
+      user: {
+        id: record.sp_id,
+        role: Role.SERVICE_PROVIDER,
+        name: record.name,
+        email: record.email,
+        is_active: record.is_active,
+        created_at: record.created_at,
       },
     };
   }
@@ -83,6 +185,20 @@ export class AuthService {
       name: principal.name,
       email: principal.email,
       is_active: principal.is_active,
+      collective_id:
+        principal.role === Role.COLLECTIVE_MANAGER
+          ? (principal.ref as CollectiveManager).collective_id
+          : null,
+      unit_id:
+        principal.role === Role.UNIT_MANAGER
+          ? (principal.ref as UnitManager).unit_id
+          : principal.role === Role.SERVICE_PROVIDER
+            ? (principal.ref as ServiceProvider).unit_id
+            : null,
+      customer_id:
+        principal.role === Role.CUSTOMER
+          ? (principal.ref as Customer).customer_id
+          : null,
     };
   }
 

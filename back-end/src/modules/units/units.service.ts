@@ -1,26 +1,45 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateUnitDto } from './dto/create-unit.dto';
 import { UpdateUnitDto } from './dto/update-unit.dto';
+import { DatabaseService } from '../../common/database/database.service';
 
 @Injectable()
 export class UnitsService {
+  constructor(private readonly databaseService: DatabaseService) {}
+
   create(createUnitDto: CreateUnitDto) {
-    return 'This action adds a new unit';
+    return createUnitDto;
   }
 
   findAll() {
-    return `This action returns all units`;
+    return this.databaseService.units;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} unit`;
+  findOne(id: string) {
+    const unit = this.databaseService.units.find((row) => row.unit_id === id);
+    if (!unit) {
+      throw new NotFoundException('Unit not found');
+    }
+    return unit;
   }
 
-  update(id: number, updateUnitDto: UpdateUnitDto) {
-    return `This action updates a #${id} unit`;
+  update(id: string, updateUnitDto: UpdateUnitDto) {
+    const unit = this.databaseService.units.find((row) => row.unit_id === id);
+    if (!unit) {
+      throw new NotFoundException('Unit not found');
+    }
+
+    Object.assign(unit, updateUnitDto);
+    return unit;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} unit`;
+  remove(id: string) {
+    const index = this.databaseService.units.findIndex((row) => row.unit_id === id);
+    if (index < 0) {
+      throw new NotFoundException('Unit not found');
+    }
+
+    const [removed] = this.databaseService.units.splice(index, 1);
+    return removed;
   }
 }

@@ -1,535 +1,315 @@
 /* =============================================================================
-   TATKU UNITED — AUTH MODULE
+   TATKU UNITED — AUTH MODULE (API-backed)
    front-end/js/modules/auth.js
-   Depends on: js/data/store.js (AppStore must be loaded first)
    ============================================================================= */
 
 window.Auth = (() => {
-  const PLATFORM_SETTINGS_KEY = "fsd_platform_settings";
+  const API_BASE_URL =
+    window.AUTH_API_BASE_URL ||
+    localStorage.getItem("tu_api_base_url") ||
+    "http://localhost:10000";
 
-  /* ─── Role → Dashboard URL map ─── */
+  const STORAGE_KEYS = {
+    token: "tu_auth_token",
+    session: "tu_auth_session",
+    roleHint: "tu_login_role_hint",
+    registeredRole: "tu_registered_role",
+  };
+
   const ROLE_DASHBOARDS = {
     super_user: "/front-end/html/super_user/super_user_dashboard.html",
     collective_manager: "/front-end/html/collective_manager/dashboard.html",
     unit_manager: "/front-end/html/unit_manager/dashboard.html",
     provider: "/front-end/html/provider/dashboard.html",
+    service_provider: "/front-end/html/provider/dashboard.html",
     customer: "/front-end/html/customer/home.html",
   };
 
-  let logoutConfirmEls = null;
-  let logoutConfirmBound = false;
+  function toApiRole(role) {
+    if (!role) return role;
+    if (role === "provider") return "service_provider";
+    return role;
+  }
 
-  function _getPlatformSettings() {
+  function toUiRole(role) {
+    if (!role) return role;
+    if (role === "service_provider") return "provider";
+    return role;
+  }
+
+  function sessionWithAliases(session) {
+    if (!session) return null;
+    const role = toUiRole(session.role);
+    return {
+      ...session,
+      role,
+      collectiveId: session.collectiveId || session.collective_id || null,
+      unitId: session.unitId || session.unit_id || null,
+      customerId: session.customerId || session.customer_id || null,
+      service_provider_id:
+        session.service_provider_id || (role === "service_provider" ? session.id : null),
+      provider_id:
+        session.provider_id || (role === "service_provider" ? session.id : null),
+    };
+  }
+
+  function saveAuthState(token, session) {
+    localStorage.setItem(STORAGE_KEYS.token, token);
+    sessionStorage.setItem(STORAGE_KEYS.token, token);
+    localStorage.setItem(STORAGE_KEYS.session, JSON.stringify(session));
+    sessionStorage.setItem(STORAGE_KEYS.session, JSON.stringify(session));
+  }
+
+  function clearAuthState() {
+    localStorage.removeItem(STORAGE_KEYS.token);
+    sessionStorage.removeItem(STORAGE_KEYS.token);
+    localStorage.removeItem(STORAGE_KEYS.session);
+    sessionStorage.removeItem(STORAGE_KEYS.session);
+  }
+
+  function getToken() {
+    return (
+      sessionStorage.getItem(STORAGE_KEYS.token) ||
+      localStorage.getItem(STORAGE_KEYS.token)
+    );
+  }
+
+  function getSession() {
     try {
-      if (
-        window.AppStore &&
-        typeof AppStore.getPlatformSettings === "function"
-      ) {
-        return AppStore.getPlatformSettings();
-      }
-
-      const raw = localStorage.getItem(PLATFORM_SETTINGS_KEY);
+      const raw =
+        sessionStorage.getItem(STORAGE_KEYS.session) ||
+        localStorage.getItem(STORAGE_KEYS.session);
       if (!raw) return null;
-      return JSON.parse(raw);
+      return sessionWithAliases(JSON.parse(raw));
     } catch (_) {
       return null;
     }
   }
 
-  function _isProviderSuspended(role) {
-    if (role !== "provider") return false;
-    const settings = _getPlatformSettings();
-    return !!(settings && settings.accountSuspension);
+  function getRedirectUrl() {
+    const session = getSession();
+    if (!session) return "/front-end/html/auth_pages/login.html";
+    return ROLE_DASHBOARDS[session.role] || "/front-end/html/auth_pages/login.html";
   }
 
-  function _isMaintenanceModeEnabled() {
-    const settings = _getPlatformSettings();
-    return !!(settings && settings.maintenanceMode);
-  }
-
-  function _isRoleBlockedByMaintenance(role) {
-    if (!role) return false;
-    if (!_isMaintenanceModeEnabled()) return false;
-    return role !== "super_user";
-  }
-  /* =========================================================================
-     BUILD AUTH REGISTRY
-     Called once inside AppStore.ready.then() — populates window.AuthRegistry
-     ========================================================================= */
-  function _buildRegistry() {
-    const registry = [];
-
-    /* 1. collective_managers */
-    const collectiveManagers = AppStore.getTable("collective_managers") || [];
-    collectiveManagers.forEach((cm) => {
-      registry.push({
-        id: cm.cm_id,
-        name: cm.name,
-        email: cm.email,
-        password: cm.password,
-        role: "collective_manager",
-        scopeId: cm.collective_id,
-        unitId: null,
-        collectiveId: cm.collective_id,
-        is_active: cm.is_active,
-        pfp_url: cm.pfp_url || null,
-      });
-    });
-
-    /* 2. unit_managers */
-    const unitManagers = AppStore.getTable("unit_managers") || [];
-    unitManagers.forEach((um) => {
-      registry.push({
-        id: um.um_id,
-        name: um.name,
-        email: um.email,
-        password: um.password,
-        role: "unit_manager",
-        scopeId: um.unit_id,
-        unitId: um.unit_id,
-        collectiveId: null,
-        is_active: um.is_active,
-        pfp_url: um.pfp_url || null,
-      });
-    });
-
-    /* 3. service_providers */
-    const providers = AppStore.getTable("service_providers") || [];
-    providers.forEach((sp) => {
-      registry.push({
-        id: sp.service_provider_id,
-        name: sp.name,
-        email: sp.email,
-        password: sp.password,
-        role: "provider",
-        scopeId: sp.unit_id,
-        unitId: sp.unit_id,
-        collectiveId: null,
-        is_active: sp.is_active,
-        pfp_url: sp.pfp_url || null,
-      });
-    });
-
-    /* 4. customers */
-    const customers = AppStore.getTable("customers") || [];
-    customers.forEach((c) => {
-      registry.push({
-        id: c.customer_id,
-        name: c.full_name || c.name,
-        email: c.email,
-        password: c.password,
-        role: "customer",
-        scopeId: c.customer_id,
-        unitId: null,
-        collectiveId: null,
-        is_active: c.is_active,
-        pfp_url: c.pfp_url || null,
-      });
-    });
-
-    /* 5. super_users (from mockData) */
-    const superUsers = AppStore.getTable("super_users") || [];
-    superUsers.forEach((su) => {
-      registry.push({
-        id: su.super_user_id,
-        name: su.name,
-        email: su.email,
-        password: su.password || "SuperUser@123",
-        role: "super_user",
-        scopeId: null,
-        unitId: null,
-        collectiveId: null,
-        is_active: su.is_active,
-        phone: su.phone || null,
-        pfp_url: su.pfp_url || null,
-      });
-    });
-
-    window.AuthRegistry = registry;
-  }
-
-  /* =========================================================================
-     Auth.login(email, password)
-     ========================================================================= */
-  function login(email, password) {
-    const normEmail = (email || "").trim().toLowerCase();
-    const entry = (window.AuthRegistry || []).find(
-      (u) => (u.email || "").trim().toLowerCase() === normEmail,
+  async function apiRequest(path, options) {
+    const reqOptions = options || {};
+    const headers = Object.assign(
+      { "Content-Type": "application/json" },
+      reqOptions.headers || {},
     );
 
-    if (!entry) {
-      return { success: false, error: "invalid_credentials" };
-    }
-    if (!entry.is_active) {
-      return { success: false, error: "account_inactive" };
-    }
-    if (_isRoleBlockedByMaintenance(entry.role)) {
-      return { success: false, error: "maintenance_mode_active" };
-    }
-    if (_isProviderSuspended(entry.role)) {
-      return { success: false, error: "provider_suspended_by_platform" };
-    }
-    if (entry.password !== password) {
-      return { success: false, error: "invalid_credentials" };
+    const res = await fetch(`${API_BASE_URL}${path}`, {
+      ...reqOptions,
+      headers,
+    });
+
+    let data = null;
+    try {
+      data = await res.json();
+    } catch (_) {
+      data = null;
     }
 
-    /* Build session */
-    const session = {
-      id: entry.id,
-      name: entry.name,
-      email: entry.email,
-      role: entry.role,
-      scopeId: entry.scopeId,
-      unitId: entry.unitId,
-      collectiveId: entry.collectiveId,
-      pfp_url: entry.pfp_url,
+    if (!res.ok) {
+      const message =
+        (data && (data.message || data.error)) ||
+        `Request failed with status ${res.status}`;
+      throw new Error(Array.isArray(message) ? message.join(" ") : String(message));
+    }
+
+    return data;
+  }
+
+  async function login(email, password, roleHint) {
+    const role = toApiRole(roleHint || localStorage.getItem(STORAGE_KEYS.roleHint) || "");
+    const payload = { email: (email || "").trim().toLowerCase(), password };
+    if (role) payload.role = role;
+
+    const data = await apiRequest("/auth/login", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+
+    const user = data && data.user ? data.user : null;
+    if (!user || !data.access_token) {
+      throw new Error("Invalid login response from server");
+    }
+
+    const session = sessionWithAliases({
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      collective_id: user.collective_id || null,
+      unit_id: user.unit_id || null,
+      customer_id: user.customer_id || null,
       loginAt: Date.now(),
-    };
+    });
 
-    sessionStorage.setItem("fsd_session", JSON.stringify(session));
+    saveAuthState(data.access_token, session);
+    localStorage.setItem(STORAGE_KEYS.roleHint, session.role);
 
     return { success: true, session };
   }
 
-  /* =========================================================================
-     Auth.logout()
-     ========================================================================= */
-  function logout() {
-    sessionStorage.removeItem("fsd_session");
-    window.location.replace("/front-end/html/auth_pages/logout.html");
-  }
-
-  function _buildLogoutConfirmModal() {
-    if (logoutConfirmEls) return logoutConfirmEls;
-
-    const backdrop = document.createElement("div");
-    backdrop.id = "logout-confirm-backdrop";
-    backdrop.style.cssText = [
-      "position:fixed",
-      "inset:0",
-      "background:rgba(15,23,42,.55)",
-      "backdrop-filter:blur(2px)",
-      "display:none",
-      "align-items:center",
-      "justify-content:center",
-      "padding:20px",
-      "z-index:9999",
-    ].join(";");
-
-    const modal = document.createElement("div");
-    modal.style.cssText = [
-      "width:min(460px,100%)",
-      "background:#ffffff",
-      "border-radius:16px",
-      "box-shadow:0 24px 48px rgba(15,23,42,.28)",
-      "overflow:hidden",
-      "transform:translateY(10px) scale(.98)",
-      "opacity:0",
-      "transition:all .18s ease",
-      "font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif",
-    ].join(";");
-
-    modal.innerHTML = `
-      <div style="padding:18px 20px 14px;border-bottom:1px solid #e2e8f0">
-        <h3 style="margin:0;font-size:18px;font-weight:700;color:#0f172a">Confirm Logout</h3>
-      </div>
-      <div style="padding:16px 20px 4px;color:#334155;line-height:1.5;font-size:14px">
-        Are you sure you want to log out from your account?
-      </div>
-      <div style="display:flex;gap:10px;justify-content:flex-end;padding:16px 20px 20px">
-        <button type="button" id="logout-confirm-cancel" style="padding:9px 14px;border:1px solid #cbd5e1;background:#ffffff;color:#334155;border-radius:10px;font-weight:600;cursor:pointer">Stay Logged In</button>
-        <button type="button" id="logout-confirm-yes" style="padding:9px 14px;border:none;background:#dc2626;color:#ffffff;border-radius:10px;font-weight:700;cursor:pointer">Logout</button>
-      </div>
-    `;
-
-    backdrop.appendChild(modal);
-    document.body.appendChild(backdrop);
-
-    const close = () => {
-      modal.style.opacity = "0";
-      modal.style.transform = "translateY(10px) scale(.98)";
-      setTimeout(() => {
-        backdrop.style.display = "none";
-      }, 150);
+  async function register(payload) {
+    const body = {
+      fullName: payload.fullName,
+      email: (payload.email || "").trim().toLowerCase(),
+      phone: payload.phone,
+      password: payload.password,
+      role: toApiRole(payload.role),
+      providerType: payload.providerType,
     };
 
-    const open = () => {
-      backdrop.style.display = "flex";
-      requestAnimationFrame(() => {
-        modal.style.opacity = "1";
-        modal.style.transform = "translateY(0) scale(1)";
-      });
-    };
-
-    const confirmBtn = modal.querySelector("#logout-confirm-yes");
-    const cancelBtn = modal.querySelector("#logout-confirm-cancel");
-
-    confirmBtn.addEventListener("click", () => {
-      close();
-      logout();
+    const data = await apiRequest("/auth/register", {
+      method: "POST",
+      body: JSON.stringify(body),
     });
 
-    cancelBtn.addEventListener("click", close);
-    backdrop.addEventListener("click", (e) => {
-      if (e.target === backdrop) close();
-    });
+    localStorage.setItem(STORAGE_KEYS.registeredRole, body.role);
+    sessionStorage.setItem(STORAGE_KEYS.registeredRole, body.role);
 
-    document.addEventListener("keydown", (e) => {
-      if (e.key === "Escape" && backdrop.style.display === "flex") close();
-    });
-
-    logoutConfirmEls = { open, close };
-    return logoutConfirmEls;
+    return data;
   }
 
-  function requestLogout() {
-    const modalApi = _buildLogoutConfirmModal();
-    modalApi.open();
-  }
+  async function changePassword(currentPassword, newPassword) {
+    const token = getToken();
+    if (!token) return { success: false, error: "not_logged_in" };
 
-  function _bindLogoutConfirmation() {
-    if (logoutConfirmBound) return;
-    logoutConfirmBound = true;
-
-    document.addEventListener("click", (e) => {
-      const trigger = e.target.closest("a[href]");
-      if (!trigger) return;
-
-      const href = (trigger.getAttribute("href") || "").trim();
-      if (!/auth_pages\/logout\.html(?:[?#].*)?$/i.test(href)) return;
-
-      e.preventDefault();
-      requestLogout();
-    });
-  }
-
-  /* =========================================================================
-     Auth.requireSession(allowedRoles)
-     ========================================================================= */
-  function requireSession(allowedRoles) {
-    /* 1. Parse session from sessionStorage */
-    let session = null;
     try {
-      const raw = sessionStorage.getItem("fsd_session");
-      if (!raw) throw new Error("no session");
-      session = JSON.parse(raw);
-      if (!session || !session.role) throw new Error("invalid session");
+      await apiRequest("/auth/change-password", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ currentPassword, newPassword }),
+      });
+      return { success: true };
+    } catch (err) {
+      const msg = String((err && err.message) || "").toLowerCase();
+      if (msg.includes("current password")) {
+        return { success: false, error: "invalid_current_password" };
+      }
+      if (msg.includes("unauthorized") || msg.includes("jwt")) {
+        clearAuthState();
+        return { success: false, error: "not_logged_in" };
+      }
+      return { success: false, error: "change_password_failed", message: err.message };
+    }
+  }
+
+  function updateProfilePicture(imageDataUrl) {
+    const session = getSession();
+    if (!session) return { success: false, error: "not_logged_in" };
+    if (!imageDataUrl) return { success: false, error: "invalid_image" };
+
+    const updated = { ...session, pfp_url: imageDataUrl };
+    saveAuthState(getToken() || "", updated);
+    return { success: true, pfp_url: imageDataUrl };
+  }
+
+  async function syncSessionFromServer() {
+    const token = getToken();
+    if (!token) return null;
+
+    try {
+      const me = await apiRequest("/auth/me", {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const existing = getSession() || {};
+      const merged = sessionWithAliases({
+        ...existing,
+        id: me.id,
+        name: me.name,
+        email: me.email,
+        role: me.role,
+        collective_id: me.collective_id || null,
+        unit_id: me.unit_id || null,
+        customer_id: me.customer_id || null,
+      });
+      saveAuthState(token, merged);
+      return merged;
     } catch (_) {
+      clearAuthState();
+      return null;
+    }
+  }
+
+  function requireSession(allowedRoles) {
+    const session = getSession();
+    if (!session) {
       window.location.replace("/front-end/html/auth_pages/login.html");
       return null;
     }
 
-    /* 3. Role authorisation */
-    if (!allowedRoles.includes(session.role)) {
-      const dest =
-        ROLE_DASHBOARDS[session.role] ||
-        "/front-end/html/auth_pages/login.html";
-      window.location.replace(dest);
+    const normalizedAllowed = (allowedRoles || []).map(toUiRole);
+    if (!normalizedAllowed.includes(session.role)) {
+      window.location.replace(getRedirectUrl());
       return null;
     }
-
-    if (_isRoleBlockedByMaintenance(session.role)) {
-      sessionStorage.removeItem("fsd_session");
-      localStorage.removeItem("fsd_session");
-      window.location.replace(
-        "/front-end/html/landing_page.html?maintenance=1",
-      );
-      return null;
-    }
-
-    if (_isProviderSuspended(session.role)) {
-      sessionStorage.removeItem("fsd_session");
-      localStorage.removeItem("fsd_session");
-      window.location.replace(
-        "/front-end/html/auth_pages/login.html?error=provider_suspended",
-      );
-      return null;
-    }
-
-    /* 4. Block back-button re-entry after logout */
-    history.replaceState(null, "", location.href);
 
     return session;
   }
 
-  /* =========================================================================
-     Auth.getSession()
-     ========================================================================= */
-  function getSession() {
-    try {
-      const raw = sessionStorage.getItem("fsd_session");
-      if (!raw) return null;
-      return JSON.parse(raw) || null;
-    } catch (_) {
-      return null;
-    }
-  }
-
-  /* =========================================================================
-     Auth.isLoggedIn()
-     ========================================================================= */
   function isLoggedIn() {
-    return !!getSession();
+    return !!getSession() && !!getToken();
   }
 
-  /* =========================================================================
-     Auth.hasRole(role)
-     ========================================================================= */
   function hasRole(role) {
     const session = getSession();
-    return session ? session.role === role : false;
+    if (!session) return false;
+    return session.role === toUiRole(role);
   }
 
-  /* =========================================================================
-     Auth.getRedirectUrl()
-     ========================================================================= */
-  function getRedirectUrl() {
-    const session = getSession();
-    if (!session) return "/front-end/html/auth_pages/login.html";
-    return (
-      ROLE_DASHBOARDS[session.role] || "/front-end/html/auth_pages/login.html"
-    );
-  }
-
-  /* =========================================================================
-     Auth.getCurrentUser()
-     Returns full AuthRegistry entry; for providers, attaches .documents
-     ========================================================================= */
   function getCurrentUser() {
-    const session = getSession();
-    if (!session) return null;
+    return getSession();
+  }
 
-    const entry = (window.AuthRegistry || []).find(
-      (u) => u.id === session.id && u.role === session.role,
+  async function logout() {
+    const token = getToken();
+    try {
+      if (token) {
+        await apiRequest("/auth/logout", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+      }
+    } catch (_) {
+      // ignore network failures during logout
+    }
+    clearAuthState();
+    window.location.replace("/front-end/html/auth_pages/logout.html");
+  }
+
+  function requestLogout() {
+    logout();
+  }
+
+  function getRegisteredRole() {
+    return (
+      sessionStorage.getItem(STORAGE_KEYS.registeredRole) ||
+      localStorage.getItem(STORAGE_KEYS.registeredRole) ||
+      ""
     );
-    if (!entry) return null;
-
-    if (session.role === "provider") {
-      const allDocs = AppStore.getTable("provider_documents") || [];
-      entry.documents = allDocs.filter(
-        (d) => d.service_provider_id === session.id,
-      );
-    }
-
-    return entry;
   }
 
-  /* =========================================================================
-     Auth.changePassword(currentPassword, newPassword)
-     ========================================================================= */
-  function changePassword(currentPassword, newPassword) {
-    const user = getCurrentUser();
-    if (!user) return { success: false, error: "not_logged_in" };
-
-    if (user.password !== currentPassword) {
-      return { success: false, error: "invalid_current_password" };
-    }
-
-    const tableMap = {
-      super_user: "super_users",
-      collective_manager: "collective_managers",
-      unit_manager: "unit_managers",
-      provider: "service_providers",
-      customer: "customers",
-    };
-
-    const idKeyMap = {
-      super_user: "super_user_id",
-      collective_manager: "cm_id",
-      unit_manager: "um_id",
-      provider: "service_provider_id",
-      customer: "customer_id",
-    };
-
-    const tableName = tableMap[user.role];
-    const idKey = idKeyMap[user.role];
-    const table = AppStore.getTable(tableName);
-
-    if (!table) return { success: false, error: "table_not_found" };
-
-    const row = table.find((r) => r[idKey] === user.id);
-    if (!row) return { success: false, error: "user_not_found_in_store" };
-
-    /* Update password */
-    row.password = newPassword;
-
-    /* Persist to localStorage */
-    AppStore.save();
-
-    /* Rebuild registry for future operations */
-    _buildRegistry();
-
-    return { success: true };
+  function clearRegisteredRole() {
+    sessionStorage.removeItem(STORAGE_KEYS.registeredRole);
+    localStorage.removeItem(STORAGE_KEYS.registeredRole);
   }
 
-  /* =========================================================================
-     Auth.updateProfilePicture(imageDataUrl)
-     ========================================================================= */
-  function updateProfilePicture(imageDataUrl) {
-    const user = getCurrentUser();
-    if (!user) return { success: false, error: "not_logged_in" };
-
-    const cleanValue = (imageDataUrl || "").trim();
-    if (!cleanValue) return { success: false, error: "invalid_image" };
-
-    const tableMap = {
-      super_user: "super_users",
-      collective_manager: "collective_managers",
-      unit_manager: "unit_managers",
-      provider: "service_providers",
-      customer: "customers",
-    };
-
-    const idKeyMap = {
-      super_user: "super_user_id",
-      collective_manager: "cm_id",
-      unit_manager: "um_id",
-      provider: "service_provider_id",
-      customer: "customer_id",
-    };
-
-    const tableName = tableMap[user.role];
-    const idKey = idKeyMap[user.role];
-    const table = AppStore.getTable(tableName);
-
-    if (!table) return { success: false, error: "table_not_found" };
-
-    const row = table.find((r) => r[idKey] === user.id);
-    if (!row) return { success: false, error: "user_not_found_in_store" };
-
-    row.pfp_url = cleanValue;
-    row.updated_at = new Date().toISOString();
-
-    AppStore.save();
-
-    const activeSession = getSession();
-    if (activeSession) {
-      activeSession.pfp_url = cleanValue;
-      sessionStorage.setItem("fsd_session", JSON.stringify(activeSession));
-    }
-
-    _buildRegistry();
-
-    return { success: true, pfp_url: cleanValue };
-  }
-
-  /* ─── Initialise registry once AppStore is ready ─── */
-  AppStore.ready.then(() => {
-    _buildRegistry();
-  });
-
-  _bindLogoutConfirmation();
-
-  /* ─── Bfcache Back-Button Reload ─── */
-  window.addEventListener("pageshow", (e) => {
-    if (e.persisted && !getSession()) {
-      window.location.reload();
-    }
-  });
-
-  /* ─── Public API ─── */
   return {
+    API_BASE_URL,
     login,
+    register,
     logout,
     requestLogout,
     requireSession,
@@ -540,6 +320,9 @@ window.Auth = (() => {
     getCurrentUser,
     changePassword,
     updateProfilePicture,
-    isMaintenanceModeEnabled: _isMaintenanceModeEnabled,
+    syncSessionFromServer,
+    getToken,
+    getRegisteredRole,
+    clearRegisteredRole,
   };
 })();

@@ -390,11 +390,7 @@
       typeof AppStore !== "undefined" && AppStore.data ? AppStore.data : null;
 
     if (!data) {
-      var response = await fetch("../../js/data/mockData.json");
-      if (!response.ok) {
-        throw new Error("Unable to load mock data");
-      }
-      data = await response.json();
+      throw new Error("Service discovery data is unavailable. AppStore is not initialized.");
     }
 
     var categories = (data.categories || []).filter(function (category) {
@@ -441,7 +437,7 @@
 
     if (sectionSub) {
       sectionSub.textContent =
-        "Showing " + services.length + " services from live mock data";
+        "Showing " + services.length + " available services";
     }
 
     initServiceControls(servicesGrid, services, categoriesById, statsByService);

@@ -281,17 +281,38 @@ function buildAdmissionCard(req, idx, type, onVerify) {
   return card;
 }
 
-window.assignUnit = (providerId, btn) => {
+window.assignUnit = async (providerId, btn) => {
    const select = btn.previousElementSibling;
    const unitId = select.value;
    if (!unitId) return showToast('Please select a unit');
-   
-   const p = AppStore.getTable('service_providers').find(x => x.service_provider_id === providerId);
-   if (p) {
-      p.unit_id = unitId;
-      p.is_active = true;
-      AppStore.save();
-      showToast('✓ Provider assigned successfully');
+
+   btn.disabled = true;
+   try {
+      const token = Auth.getToken && Auth.getToken();
+      if (!token) {
+        showToast('Session expired. Please login again.');
+        btn.disabled = false;
+        return;
+      }
+
+      const res = await fetch(`${Auth.API_BASE_URL}/service-providers/${providerId}/approve`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ unit_id: unitId }),
+      });
+
+      if (!res.ok) {
+        const payload = await res.json().catch(() => null);
+        const msg = payload && payload.message
+          ? (Array.isArray(payload.message) ? payload.message.join(' ') : payload.message)
+          : 'Failed to approve provider';
+        throw new Error(String(msg));
+      }
+
+      showToast('✓ Provider approved and assigned successfully');
       btn.closest('.applicant-card').remove();
 
       const admissionList = document.getElementById('admissionRequestsList');
@@ -301,6 +322,13 @@ window.assignUnit = (providerId, btn) => {
       if (remainingAdmissions === 0) {
         admissionList.innerHTML = `<div class="admissions-empty">No new admission requests.</div>`;
       }
+
+      if (window.initData) {
+        window.initData();
+      }
+   } catch (err) {
+      showToast(err.message || 'Failed to approve provider');
+      btn.disabled = false;
    }
 };
 

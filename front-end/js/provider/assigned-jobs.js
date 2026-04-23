@@ -263,7 +263,7 @@ window.initData().then(() => {
   const data = window.getData();
   jobs = data.jobs;
 
-  // Use dynamic provider data from mockData.json
+  // Use dynamic provider data from current AppStore state
   if (data.provider) {
     document
       .querySelectorAll(".user-chip span")

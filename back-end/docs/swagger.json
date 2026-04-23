@@ -459,6 +459,39 @@
         ]
       }
     },
+    "/service-providers/{id}/approve": {
+      "patch": {
+        "operationId": "ServiceProvidersController_approve",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ApproveServiceProviderDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "ServiceProviders"
+        ]
+      }
+    },
     "/customers": {
       "post": {
         "operationId": "CustomersController_create",
@@ -2232,6 +2265,34 @@
         ]
       }
     },
+    "/auth/register": {
+      "post": {
+        "operationId": "AuthController_register",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Registered successfully"
+          },
+          "400": {
+            "description": "Invalid payload or email exists"
+          }
+        },
+        "summary": "Register a new customer or service provider",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
     "/auth/me": {
       "get": {
         "operationId": "AuthController_me",
@@ -2364,6 +2425,18 @@
       "UpdateServiceProviderDto": {
         "type": "object",
         "properties": {}
+      },
+      "ApproveServiceProviderDto": {
+        "type": "object",
+        "properties": {
+          "unit_id": {
+            "type": "string",
+            "description": "Unit ID to assign the provider to"
+          }
+        },
+        "required": [
+          "unit_id"
+        ]
       },
       "CreateCustomerDto": {
         "type": "object",
@@ -2516,6 +2589,50 @@
         "required": [
           "email",
           "password"
+        ]
+      },
+      "RegisterDto": {
+        "type": "object",
+        "properties": {
+          "fullName": {
+            "type": "string",
+            "example": "Aditya Verma"
+          },
+          "email": {
+            "type": "string",
+            "example": "aditya.v@gmail.com"
+          },
+          "phone": {
+            "type": "string",
+            "example": "9812345678",
+            "description": "10 digit phone number"
+          },
+          "password": {
+            "type": "string",
+            "example": "Password@123"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "customer",
+              "service_provider"
+            ]
+          },
+          "providerType": {
+            "type": "string",
+            "enum": [
+              "individual",
+              "company"
+            ],
+            "description": "Only used for service_provider registration"
+          }
+        },
+        "required": [
+          "fullName",
+          "email",
+          "phone",
+          "password",
+          "role"
         ]
       },
       "ChangePasswordDto": {

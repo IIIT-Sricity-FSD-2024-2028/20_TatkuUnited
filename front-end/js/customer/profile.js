@@ -100,12 +100,13 @@ function saveSection(section) {
         phone: phoneVal ? countryCode + phoneVal : "",
         dob: dobVal,
       });
-      // Updating session state in sessionStorage using the correct key
+      // Keep auth session aliases in sync for immediate UI updates.
       const activeSession = Auth.getSession();
       if (activeSession) {
         activeSession.name = nameVal;
         activeSession.email = emailVal;
-        sessionStorage.setItem("fsd_session", JSON.stringify(activeSession));
+        sessionStorage.setItem("tu_auth_session", JSON.stringify(activeSession));
+        localStorage.setItem("tu_auth_session", JSON.stringify(activeSession));
       }
     }
   }

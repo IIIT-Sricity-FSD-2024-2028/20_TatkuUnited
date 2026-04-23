@@ -4,20 +4,11 @@
    Depends on: store.js, auth.js, helpers.js (all loaded before this file)
    ============================================================================= */
 
-/* Always wipe any leftover session when the login page loads.
-   The login page is a clean-slate boundary — no session should persist here. */
-sessionStorage.removeItem("fsd_session");
+if (Auth.isLoggedIn()) {
+  window.location.replace(Auth.getRedirectUrl());
+}
 
-AppStore.ready.then(() => {
-  /* Belt-and-suspenders: ensure session is gone even if AppStore resolved
-     from a cached localStorage fetch before the sync removal above ran. */
-  sessionStorage.removeItem("fsd_session");
-
-  /* Auth.isLoggedIn() will now always be false on fresh login page load */
-  if (Auth.isLoggedIn()) {
-    window.location.replace(Auth.getRedirectUrl());
-    return;
-  }
+(function () {
 
   /* ── DOM refs ── */
   const form = document.getElementById("login-form");
@@ -27,17 +18,6 @@ AppStore.ready.then(() => {
   const toggleIcon = document.getElementById("toggle-icon");
   const errorEl = document.getElementById("login-error");
   const submitBtn = document.getElementById("btn-login");
-
-  const platformSettings =
-    window.AppStore && typeof AppStore.getPlatformSettings === "function"
-      ? AppStore.getPlatformSettings()
-      : null;
-  const isMaintenanceMode = !!(
-    platformSettings && platformSettings.maintenanceMode
-  );
-  const isProviderSuspended = !!(
-    platformSettings && platformSettings.accountSuspension
-  );
 
   function getSafeNextUrl() {
     const rawNext = new URLSearchParams(window.location.search).get("next");
@@ -73,7 +53,9 @@ AppStore.ready.then(() => {
 
   function applyRegisterRestrictionState() {
     const registerHintLink = document.querySelector(".register-link");
-    if (isMaintenanceMode && registerHintLink) {
+    if (!registerHintLink) return;
+
+    if (window.location.search.includes("maintenance=1")) {
       registerHintLink.classList.add("register-link--disabled");
       registerHintLink.href = "javascript:void(0)";
       registerHintLink.textContent = "Registration temporarily unavailable";
@@ -93,7 +75,7 @@ AppStore.ready.then(() => {
     );
   }
 
-  function attemptLogin(email, password) {
+  async function attemptLogin(email, password) {
     clearError();
 
     /* Client-side validation first */
@@ -105,10 +87,8 @@ AppStore.ready.then(() => {
 
     setLoading(true);
 
-    /* Auth.login is synchronous (in-memory) but we defer one tick
-       so the loading state renders visibly */
-    setTimeout(() => {
-      const result = Auth.login(email, password);
+    try {
+      const result = await Auth.login(email, password);
       setLoading(false);
 
       if (result.success) {
@@ -117,20 +97,23 @@ AppStore.ready.then(() => {
         return;
       }
 
-      if (result.error === "account_inactive") {
-        showError("Your account has been deactivated. Contact support.");
-      } else if (result.error === "maintenance_mode_active") {
+      showError("Invalid email or password.");
+    } catch (err) {
+      setLoading(false);
+      const msg = String((err && err.message) || "").toLowerCase();
+      if (msg.includes("approval") || msg.includes("pending")) {
         showError(
-          "Maintenance mode is active. Only Super User admin access is available right now.",
+          "Your provider account is pending collective manager approval. You can log in after approval.",
         );
-      } else if (result.error === "provider_suspended_by_platform") {
-        showError(
-          "Provider access is currently suspended by platform settings. Contact Super User.",
-        );
+      } else
+      if (msg.includes("inactive")) {
+        showError("Your account is inactive. Contact support.");
+      } else if (msg.includes("multiple roles")) {
+        showError("This email has multiple roles. Please contact support.");
       } else {
         showError("Invalid email or password.");
       }
-    }, 50);
+    }
   }
 
   /* ── Form submit ── */
@@ -152,4 +135,4 @@ AppStore.ready.then(() => {
     passwordInput.type = passwordVisible ? "text" : "password";
     toggleIcon.textContent = passwordVisible ? "🙈" : "👁";
   });
-});
+})();

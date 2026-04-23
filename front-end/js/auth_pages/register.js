@@ -1,12 +1,10 @@
 "use strict";
 
 (function () {
-  /* ── State ── */
   var currentStep = 1;
   var selectedRole = "customer";
   var selectedProviderType = "individual";
 
-  /* ── DOM refs ── */
   var step1Panel = document.getElementById("step-1");
   var step2Panel = document.getElementById("step-2");
   var step3Panel = document.getElementById("step-3");
@@ -18,7 +16,6 @@
 
   var roleCards = document.querySelectorAll(".role-card");
   var roleValue = document.getElementById("role-value");
-  var typeGroup = document.getElementById("type-group");
   var toggleBtns = document.querySelectorAll(".toggle-btn");
   var providerTypeInput = document.getElementById("provider-type");
 
@@ -39,7 +36,6 @@
 
   var alert = document.getElementById("alert");
 
-  /* ── Helpers ── */
   function showAlert(msg, type) {
     alert.textContent = msg;
     alert.className = "alert " + type;
@@ -76,17 +72,6 @@
     clearAlert();
   }
 
-  function isMaintenanceModeOn() {
-    if (
-      !window.AppStore ||
-      typeof AppStore.getPlatformSettings !== "function"
-    ) {
-      return false;
-    }
-    var settings = AppStore.getPlatformSettings();
-    return !!(settings && settings.maintenanceMode);
-  }
-
   function isValidEmail(val) {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val.trim());
   }
@@ -114,7 +99,6 @@
     return { valid: true };
   }
 
-  /* ── Step navigation ── */
   function goToStep(n) {
     [step1Panel, step2Panel, step3Panel].forEach(function (p) {
       p.classList.remove("active");
@@ -147,7 +131,6 @@
     clearAlert();
   }
 
-  /* ── Role cards ── */
   roleCards.forEach(function (card) {
     card.addEventListener("click", function () {
       roleCards.forEach(function (c) {
@@ -156,15 +139,9 @@
       card.classList.add("selected");
       selectedRole = card.getAttribute("data-role");
       roleValue.value = selectedRole;
-
-      // Show provider type only for service providers (element is optional)
-      if (typeGroup)
-        typeGroup.style.display =
-          selectedRole === "service_provider" ? "block" : "none";
     });
   });
 
-  /* ── Provider type toggle ── */
   toggleBtns.forEach(function (btn) {
     btn.addEventListener("click", function () {
       toggleBtns.forEach(function (b) {
@@ -176,7 +153,6 @@
     });
   });
 
-  /* ── Password visibility ── */
   function wireToggle(btnId, inputEl) {
     var btn = document.getElementById(btnId);
     if (!btn) return;
@@ -195,13 +171,11 @@
   wireToggle("toggle-pwd", passwordInput);
   wireToggle("toggle-cpwd", confirmInput);
 
-  /* ── Phone input guard: digits only, max 10 ── */
   phoneInput.addEventListener("input", function () {
     var digitsOnly = this.value.replace(/\D/g, "").slice(0, 10);
     if (this.value !== digitsOnly) this.value = digitsOnly;
   });
 
-  /* ── Password strength ── */
   passwordInput.addEventListener("input", function () {
     var val = passwordInput.value;
     var score = 0;
@@ -231,7 +205,6 @@
     }
   });
 
-  /* ── Step 1 → 2 ── */
   next1Btn.addEventListener("click", function () {
     goToStep(2);
   });
@@ -240,7 +213,6 @@
     goToStep(1);
   });
 
-  /* ── Step 2 validation → 3 ── */
   next2Btn.addEventListener("click", function () {
     clearErrors();
     var valid = true;
@@ -250,10 +222,7 @@
     var phone = phoneInput.value.trim();
 
     if (!fullname || fullname.length < 2) {
-      setError(
-        "fullname-error",
-        "Please enter your full name (min. 2 characters).",
-      );
+      setError("fullname-error", "Please enter your full name (min. 2 characters).");
       fullnameInput.classList.add("invalid");
       valid = false;
     } else if (!isValidFullName(fullname)) {
@@ -292,16 +261,7 @@
     goToStep(2);
   });
 
-  /* ── Final submit ── */
-  submitBtn.addEventListener("click", function () {
-    if (isMaintenanceModeOn()) {
-      showAlert(
-        "Registration is temporarily unavailable because maintenance mode is active. Please try again later.",
-        "error",
-      );
-      return;
-    }
-
+  submitBtn.addEventListener("click", async function () {
     clearErrors();
     var valid = true;
 
@@ -326,137 +286,52 @@
     }
 
     if (!termsCheck.checked) {
-      setError(
-        "terms-error",
-        "You must agree to the Terms of Service to continue.",
-      );
+      setError("terms-error", "You must agree to the Terms of Service to continue.");
       valid = false;
     }
 
     if (!valid) return;
 
-    /* ── Show loading state ── */
     submitBtn.disabled = true;
     submitText.style.display = "none";
     spinner.style.display = "inline-block";
 
-    /* ── Wait for AppStore, then create the user ── */
-    if (
-      !window.AppStore ||
-      !AppStore.ready ||
-      typeof AppStore.ready.then !== "function"
-    ) {
-      showAlert(
-        "Unable to access the data store. Please refresh and try again.",
-        "error",
-      );
+    try {
+      await Auth.register({
+        fullName: fullnameInput.value.trim(),
+        email: emailInput.value.trim(),
+        phone: phoneInput.value.trim(),
+        password: password,
+        role: selectedRole,
+        providerType: selectedProviderType,
+      });
+
+      if (selectedRole === "service_provider") {
+        sessionStorage.setItem(
+          "tu_register_notice",
+          "Your provider registration request was submitted. You can sign in after collective manager approval.",
+        );
+      }
+
+      window.location.href = "register-success.html";
+    } catch (err) {
       submitBtn.disabled = false;
       submitText.style.display = "inline";
       spinner.style.display = "none";
-      return;
-    }
 
-    AppStore.ready
-      .then(function () {
-        var fullname = fullnameInput.value.trim();
-        var email = emailInput.value.trim().toLowerCase();
-        var phone = phoneInput.value.trim();
-        var now = new Date().toISOString();
-
-        /* ── Duplicate e-mail check across every user table ── */
-        var userTables = [
-          "collective_managers",
-          "unit_managers",
-          "service_providers",
-          "customers",
-        ];
-        var emailTaken =
-          email === "super_user@fsd.com" ||
-          userTables.some(function (tbl) {
-            return (AppStore.getTable(tbl) || []).some(function (row) {
-              return (row.email || "").toLowerCase() === email;
-            });
-          });
-
-        if (emailTaken) {
-          submitBtn.disabled = false;
-          submitText.style.display = "inline";
-          spinner.style.display = "none";
-          showAlert(
-            "An account with this email already exists. Please log in or use a different email.",
-            "error",
-          );
-          goToStep(2);
-          return;
-        }
-
-        /* ── Build and insert the new record ── */
-        if (selectedRole === "customer") {
-          var newId = AppStore.nextId("CUS");
-          var record = {
-            customer_id: newId,
-            full_name: fullname,
-            name: fullname /* kept for auth-registry compat */,
-            password: password,
-            phone: phone,
-            email: email,
-            dob: null,
-            address: "",
-            pfp_url: null,
-            latitude: null,
-            longitude: null,
-            rating: 0,
-            notes: "",
-            is_active: true,
-            home_sector_id: null,
-            created_at: now,
-            updated_at: now,
-          };
-          AppStore.getTable("customers").push(record);
-        } else {
-          /* service_provider — created inactive until assigned to a unit by super user */
-          var newId = AppStore.nextId("SP");
-          var record = {
-            service_provider_id: newId,
-            name: fullname,
-            password: password,
-            phone: phone,
-            email: email,
-            dob: null,
-            address: "",
-            pfp_url: null,
-            gender: null,
-            is_active: false,
-            created_at: now,
-            updated_at: now,
-            unit_id: null,
-            home_sector_id: null,
-          };
-          AppStore.getTable("service_providers").push(record);
-        }
-
-        /* ── Persist to localStorage ── */
-        AppStore.save();
-
-        /* ── Tag role so the success page can personalise the message ── */
-        sessionStorage.setItem("registeredRole", selectedRole);
-
-        /* ── Redirect ── */
-        window.location.href = "register-success.html";
-      })
-      .catch(function (err) {
-        console.error("[Register] AppStore ready failed:", err);
-        submitBtn.disabled = false;
-        submitText.style.display = "inline";
-        spinner.style.display = "none";
+      var msg = String((err && err.message) || "").toLowerCase();
+      if (msg.includes("already exists")) {
         showAlert(
-          "Could not complete registration. Please try again later.",
+          "An account with this email already exists. Please log in or use a different email.",
           "error",
         );
-      });
+        goToStep(2);
+      } else {
+        showAlert("Could not complete registration. Please try again later.", "error");
+      }
+    }
   });
 
-  /* ── Real-time email validation ── */
   emailInput.addEventListener("blur", function () {
     if (this.value && !isValidEmail(this.value)) {
       setError("email-error", "Please enter a valid email address.");
@@ -468,7 +343,6 @@
     }
   });
 
-  /* ── Confirm password match ── */
   confirmInput.addEventListener("input", function () {
     if (passwordInput.value && this.value) {
       if (this.value !== passwordInput.value) {

@@ -97,6 +97,8 @@
   };
 
   const PLATFORM_SETTINGS_KEY = "fsd_platform_settings";
+  const AUTH_SESSION_KEY = "tu_auth_session";
+  const AUTH_TOKEN_KEY = "tu_auth_token";
   const DEFAULT_PLATFORM_SETTINGS = {
     maintenanceMode: false,
     accountSuspension: false,
@@ -160,6 +162,25 @@
     } catch (e) {
       return null;
     }
+  }
+
+  function readAuthSession() {
+    try {
+      var raw =
+        sessionStorage.getItem(AUTH_SESSION_KEY) ||
+        localStorage.getItem(AUTH_SESSION_KEY);
+      if (!raw) return null;
+      return JSON.parse(raw);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function clearAuthStorage() {
+    sessionStorage.removeItem(AUTH_SESSION_KEY);
+    localStorage.removeItem(AUTH_SESSION_KEY);
+    sessionStorage.removeItem(AUTH_TOKEN_KEY);
+    localStorage.removeItem(AUTH_TOKEN_KEY);
   }
 
   // ── Bootstrap AppStore on window ─────────────────────────────────────────────
@@ -811,39 +832,18 @@
     _postReadyAudit();
     _resolve();
   } else {
-    // First startup or missing local data — fetch from mockData.json
-    fetch("../../js/data/mockData.json")
-      .then(function (r) {
-        if (!r.ok) {
-          throw new Error("HTTP " + r.status + " " + r.statusText);
-        }
-        return r.json();
-      })
-      .then(function (raw) {
-        AppStore.data = JSON.parse(JSON.stringify(raw));
-        // Session logic is handled entirely by Auth.login() and requires no action here.
-        // Persist the fresh state immediately
-        AppStore.save();
-        _postReadyAudit();
-        _resolve();
-      })
-      .catch(function (err) {
-        console.error("[AppStore] Failed to load mockData.json:", err);
-        AppStore.data = JSON.parse(JSON.stringify(EMPTY_DATA));
-        _resolve();
-      });
+    // Mock bootstrap is intentionally disabled.
+    // Data should come from API-driven flows and persisted AppStore state.
+    AppStore.data = JSON.parse(JSON.stringify(EMPTY_DATA));
+    AppStore.save();
+    _postReadyAudit();
+    _resolve();
   }
 
   // ── Unified Session State (added for provider UI persistence) ──────────────
   function getProviderSessionId() {
-    try {
-      var sess =
-        sessionStorage.getItem("fsd_session") ||
-        localStorage.getItem("fsd_session");
-      if (!sess) return null;
-      var parsed = JSON.parse(sess);
-      if (parsed && parsed.role === "provider" && parsed.id) return parsed.id;
-    } catch (e) {}
+    var parsed = readAuthSession();
+    if (parsed && parsed.role === "provider" && parsed.id) return parsed.id;
     return null;
   }
 
@@ -1061,11 +1061,8 @@
           platformSettings && platformSettings.maintenanceMode
         );
 
-        var sess =
-          sessionStorage.getItem("fsd_session") ||
-          localStorage.getItem("fsd_session");
-        if (sess) {
-          var p = JSON.parse(sess);
+        var p = readAuthSession();
+        if (p) {
           if (p.role === "provider" && p.id) {
             hasProviderSession = true;
             expectedId = p.id;
@@ -1083,8 +1080,7 @@
       }
 
       if (shouldBlockForMaintenance) {
-        sessionStorage.removeItem("fsd_session");
-        localStorage.removeItem("fsd_session");
+        clearAuthStorage();
         window.location.replace(
           "/front-end/html/landing_page.html?maintenance=1",
         );
@@ -1093,8 +1089,7 @@
       }
 
       if (shouldBlockProvider) {
-        sessionStorage.removeItem("fsd_session");
-        localStorage.removeItem("fsd_session");
+        clearAuthStorage();
         window.location.replace(
           "/front-end/html/auth_pages/login.html?error=provider_suspended",
         );
@@ -1401,15 +1396,9 @@
 
   function resolveCustomerId(customerId) {
     if (customerId) return customerId;
-    try {
-      var raw = sessionStorage.getItem("fsd_session");
-      if (!raw) return null;
-      var session = JSON.parse(raw);
-      if (!session || session.role !== "customer") return null;
-      return session.id || null;
-    } catch (e) {
-      return null;
-    }
+    var session = readAuthSession();
+    if (!session || session.role !== "customer") return null;
+    return session.id || null;
   }
 
   function ensureCustomerState() {

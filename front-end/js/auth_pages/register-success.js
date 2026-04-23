@@ -21,6 +21,15 @@
     }
   }
 
+  var notice = sessionStorage.getItem('tu_register_notice') || '';
+  if (notice) {
+    var descEl = document.querySelector('.success-desc');
+    if (descEl) {
+      descEl.textContent = notice;
+    }
+    sessionStorage.removeItem('tu_register_notice');
+  }
+
   /* "Explore Services" smooth scroll or link handling */
   document.querySelectorAll('a[href="#"]').forEach(function (link) {
     link.addEventListener('click', function (e) {

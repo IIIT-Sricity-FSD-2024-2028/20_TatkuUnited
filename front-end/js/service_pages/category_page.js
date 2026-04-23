@@ -5,8 +5,6 @@
 (function () {
   "use strict";
 
-  var MOCK_DATA_PATH = "../../js/data/mockData.json";
-
   function formatPrice(value) {
     return new Intl.NumberFormat("en-IN", {
       style: "currency",
@@ -123,12 +121,7 @@
       return AppStore.data;
     }
 
-    var response = await fetch(MOCK_DATA_PATH);
-    if (!response.ok) {
-      throw new Error("Unable to load mock data");
-    }
-
-    return response.json();
+    throw new Error("Category data is unavailable. AppStore is not initialized.");
   }
 
   function createBulletPoints(service, faqsByService) {

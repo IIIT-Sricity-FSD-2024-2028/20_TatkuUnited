@@ -5,8 +5,6 @@
 (function () {
   "use strict";
 
-  var MOCK_DATA_PATH = "../../js/data/mockData.json";
-
   function getQueryParam(name) {
     var params = new URLSearchParams(window.location.search);
     return params.get(name);
@@ -756,12 +754,7 @@
       return AppStore.data;
     }
 
-    var response = await fetch(MOCK_DATA_PATH);
-    if (!response.ok) {
-      throw new Error("Unable to load mock data");
-    }
-
-    return response.json();
+    throw new Error("Service data is unavailable. AppStore is not initialized.");
   }
 
   async function initDynamicContent() {

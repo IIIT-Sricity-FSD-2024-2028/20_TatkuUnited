@@ -6,14 +6,12 @@
 
 /* ── Step 1: Clear session immediately when logout page loads ── */
 /* Session is already cleared by the time this page loads (Auth.logout()
-   removes fsd_session + fsd_session_alive before redirecting here).
+   removes tu_auth_session + tu_auth_token before redirecting here).
    "Login Again" just navigates to the login page cleanly. */
 document.getElementById("login-again").addEventListener("click", () => {
   window.location.href = "/front-end/html/auth_pages/login.html";
 });
-
-sessionStorage.removeItem("fsd_session");
-// Removed: localStorage.removeItem("fsd_store"); // to prevent data wipe on logout
+// Keep AppStore cache intact on logout.
 
 /* ── Step 2: Auto-redirect countdown (optional UI) ── */
 const redirectNote = document.getElementById("redirect-note");

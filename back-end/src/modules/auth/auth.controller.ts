@@ -17,6 +17,7 @@ import { LoginDto } from './dto/login.dto';
 import { JwtAuthGuard } from './jwt-auth.guard';
 import { JwtPayload } from './interfaces/jwt-payload.interface';
 import { ChangePasswordDto } from './dto/change-password.dto';
+import { RegisterDto } from './dto/register.dto';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -31,6 +32,14 @@ export class AuthController {
   @ApiResponse({ status: 401, description: 'Invalid credentials' })
   login(@Body() dto: LoginDto) {
     return this.authService.login(dto);
+  }
+
+  @Post('register')
+  @ApiOperation({ summary: 'Register a new customer or service provider' })
+  @ApiResponse({ status: 201, description: 'Registered successfully' })
+  @ApiResponse({ status: 400, description: 'Invalid payload or email exists' })
+  register(@Body() dto: RegisterDto) {
+    return this.authService.register(dto);
   }
 
   @Get('me')
