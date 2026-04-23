@@ -2502,6 +2502,7 @@
           },
           "role": {
             "type": "string",
+            "example": "customer",
             "enum": [
               "super_user",
               "collective_manager",

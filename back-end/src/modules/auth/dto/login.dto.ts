@@ -19,6 +19,7 @@ export class LoginDto {
   password: string;
 
   @ApiPropertyOptional({
+    example: 'customer',
     enum: Role,
     description: 'Optional when email is globally unique',
   })
