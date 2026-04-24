@@ -1,26 +1,33 @@
 import { Injectable } from '@nestjs/common';
+import { SectorsRepository } from './sectors.repository';
 import { CreateSectorDto } from './dto/create-sector.dto';
 import { UpdateSectorDto } from './dto/update-sector.dto';
 
 @Injectable()
 export class SectorsService {
-  create(createSectorDto: CreateSectorDto) {
-    return 'This action adds a new sector';
-  }
+  constructor(private readonly sectorsRepository: SectorsRepository) {}
 
   findAll() {
-    return `This action returns all sectors`;
+    return this.sectorsRepository.findAll();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} sector`;
+  findOne(id: string) {
+    return this.sectorsRepository.findById(id);
   }
 
-  update(id: number, updateSectorDto: UpdateSectorDto) {
-    return `This action updates a #${id} sector`;
+  findByCollective(collectiveId: string) {
+    return this.sectorsRepository.findByCollective(collectiveId);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} sector`;
+  create(dto: CreateSectorDto) {
+    return this.sectorsRepository.create(dto);
+  }
+
+  update(id: string, dto: UpdateSectorDto) {
+    return this.sectorsRepository.update(id, dto);
+  }
+
+  remove(id: string) {
+    return this.sectorsRepository.delete(id);
   }
 }

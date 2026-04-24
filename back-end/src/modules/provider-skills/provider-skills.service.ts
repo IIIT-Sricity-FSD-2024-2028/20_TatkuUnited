@@ -1,26 +1,24 @@
 import { Injectable } from '@nestjs/common';
+import { ProviderSkillsRepository } from './provider-skills.repository';
 import { CreateProviderSkillDto } from './dto/create-provider-skill.dto';
-import { UpdateProviderSkillDto } from './dto/update-provider-skill.dto';
 
 @Injectable()
 export class ProviderSkillsService {
-  create(createProviderSkillDto: CreateProviderSkillDto) {
-    return 'This action adds a new providerSkill';
+  constructor(private readonly providerSkillsRepository: ProviderSkillsRepository) {}
+
+  findByProvider(providerId: string) {
+    return this.providerSkillsRepository.findByProvider(providerId);
   }
 
-  findAll() {
-    return `This action returns all providerSkills`;
+  findBySkill(skillId: string) {
+    return this.providerSkillsRepository.findBySkill(skillId);
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} providerSkill`;
+  create(dto: CreateProviderSkillDto) {
+    return this.providerSkillsRepository.create(dto);
   }
 
-  update(id: number, updateProviderSkillDto: UpdateProviderSkillDto) {
-    return `This action updates a #${id} providerSkill`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} providerSkill`;
+  verifySkill(providerId: string, skillId: string) {
+    return this.providerSkillsRepository.verifySkill(providerId, skillId);
   }
 }

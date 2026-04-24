@@ -1,26 +1,33 @@
 import { Injectable } from '@nestjs/common';
+import { SuperUsersRepository } from './super-users.repository';
 import { CreateSuperUserDto } from './dto/create-super-user.dto';
 import { UpdateSuperUserDto } from './dto/update-super-user.dto';
 
 @Injectable()
 export class SuperUsersService {
-  create(createSuperUserDto: CreateSuperUserDto) {
-    return 'This action adds a new superUser';
-  }
+  constructor(private readonly superUsersRepository: SuperUsersRepository) {}
 
   findAll() {
-    return `This action returns all superUsers`;
+    return this.superUsersRepository.findAll();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} superUser`;
+  findOne(id: string) {
+    return this.superUsersRepository.findById(id);
   }
 
-  update(id: number, updateSuperUserDto: UpdateSuperUserDto) {
-    return `This action updates a #${id} superUser`;
+  findByEmail(email: string) {
+    return this.superUsersRepository.findByEmail(email);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} superUser`;
+  create(dto: CreateSuperUserDto) {
+    return this.superUsersRepository.create(dto);
+  }
+
+  update(id: string, dto: UpdateSuperUserDto) {
+    return this.superUsersRepository.update(id, dto);
+  }
+
+  remove(id: string) {
+    return this.superUsersRepository.delete(id);
   }
 }
