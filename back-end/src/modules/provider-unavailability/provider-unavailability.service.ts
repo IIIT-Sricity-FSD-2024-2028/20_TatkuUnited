@@ -1,26 +1,33 @@
 import { Injectable } from '@nestjs/common';
+import { ProviderUnavailabilityRepository } from './provider-unavailability.repository';
 import { CreateProviderUnavailabilityDto } from './dto/create-provider-unavailability.dto';
 import { UpdateProviderUnavailabilityDto } from './dto/update-provider-unavailability.dto';
 
 @Injectable()
 export class ProviderUnavailabilityService {
-  create(createProviderUnavailabilityDto: CreateProviderUnavailabilityDto) {
-    return 'This action adds a new providerUnavailability';
-  }
+  constructor(private readonly providerUnavailabilityRepository: ProviderUnavailabilityRepository) {}
 
   findAll() {
-    return `This action returns all providerUnavailability`;
+    return this.providerUnavailabilityRepository.findAll();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} providerUnavailability`;
+  findOne(id: string) {
+    return this.providerUnavailabilityRepository.findById(id);
   }
 
-  update(id: number, updateProviderUnavailabilityDto: UpdateProviderUnavailabilityDto) {
-    return `This action updates a #${id} providerUnavailability`;
+  findByProvider(providerId: string) {
+    return this.providerUnavailabilityRepository.findByProvider(providerId);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} providerUnavailability`;
+  create(dto: CreateProviderUnavailabilityDto) {
+    return this.providerUnavailabilityRepository.create(dto);
+  }
+
+  update(id: string, dto: UpdateProviderUnavailabilityDto) {
+    return this.providerUnavailabilityRepository.update(id, dto);
+  }
+
+  remove(id: string) {
+    return this.providerUnavailabilityRepository.delete(id);
   }
 }

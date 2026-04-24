@@ -1,26 +1,33 @@
 import { Injectable } from '@nestjs/common';
+import { UnitManagersRepository } from './unit-managers.repository';
 import { CreateUnitManagerDto } from './dto/create-unit-manager.dto';
 import { UpdateUnitManagerDto } from './dto/update-unit-manager.dto';
 
 @Injectable()
 export class UnitManagersService {
-  create(createUnitManagerDto: CreateUnitManagerDto) {
-    return 'This action adds a new unitManager';
-  }
+  constructor(private readonly unitManagersRepository: UnitManagersRepository) {}
 
   findAll() {
-    return `This action returns all unitManagers`;
+    return this.unitManagersRepository.findAll();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} unitManager`;
+  findOne(id: string) {
+    return this.unitManagersRepository.findById(id);
   }
 
-  update(id: number, updateUnitManagerDto: UpdateUnitManagerDto) {
-    return `This action updates a #${id} unitManager`;
+  findByUnit(unitId: string) {
+    return this.unitManagersRepository.findByUnit(unitId);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} unitManager`;
+  create(dto: CreateUnitManagerDto) {
+    return this.unitManagersRepository.create(dto);
+  }
+
+  update(id: string, dto: UpdateUnitManagerDto) {
+    return this.unitManagersRepository.update(id, dto);
+  }
+
+  remove(id: string) {
+    return this.unitManagersRepository.delete(id);
   }
 }

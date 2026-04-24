@@ -1,101 +1,55 @@
-import {
-  ForbiddenException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
+import { ServiceProvidersRepository } from './service-providers.repository';
 import { CreateServiceProviderDto } from './dto/create-service-provider.dto';
 import { UpdateServiceProviderDto } from './dto/update-service-provider.dto';
-import { DatabaseService } from '../../common/database/database.service';
-import { JwtPayload } from '../auth/interfaces/jwt-payload.interface';
-import { Role } from '../../common/enums/role.enum';
+import { UpdateWorkingHoursDto } from './dto/update-working-hours.dto';
+import { UpdateProviderProfileDto } from './dto/update-provider-profile.dto';
 
 @Injectable()
 export class ServiceProvidersService {
-  constructor(private readonly databaseService: DatabaseService) {}
-
-  create(createServiceProviderDto: CreateServiceProviderDto) {
-    return createServiceProviderDto;
-  }
+  constructor(private readonly serviceProvidersRepository: ServiceProvidersRepository) {}
 
   findAll() {
-    return this.databaseService.serviceProviders;
+    return this.serviceProvidersRepository.findAll();
   }
 
   findOne(id: string) {
-    const provider = this.databaseService.serviceProviders.find(
-      (row) => row.sp_id === id,
-    );
-    if (!provider) {
-      throw new NotFoundException('Service provider not found');
-    }
-    return provider;
+    return this.serviceProvidersRepository.findById(id);
   }
 
-  update(id: string, updateServiceProviderDto: UpdateServiceProviderDto) {
-    const provider = this.databaseService.serviceProviders.find(
-      (row) => row.sp_id === id,
-    );
-
-    if (!provider) {
-      throw new NotFoundException('Service provider not found');
-    }
-
-    Object.assign(provider, updateServiceProviderDto, {
-      updated_at: this.databaseService.now(),
-    });
-
-    return provider;
+  findByEmail(email: string) {
+    return this.serviceProvidersRepository.findByEmail(email);
   }
 
-  approve(id: string, unitId: string, approver: JwtPayload) {
-    if (approver.role !== Role.COLLECTIVE_MANAGER) {
-      throw new ForbiddenException('Only collective managers can approve providers');
-    }
+  findByUnit(unitId: string) {
+    return this.serviceProvidersRepository.findByUnit(unitId);
+  }
 
-    const collectiveManager = this.databaseService.collectiveManagers.find(
-      (row) => row.cm_id === approver.sub,
-    );
-    if (!collectiveManager) {
-      throw new ForbiddenException('Collective manager account not found');
-    }
+  findBySector(sectorId: string) {
+    return this.serviceProvidersRepository.findBySector(sectorId);
+  }
 
-    const unit = this.databaseService.units.find((row) => row.unit_id === unitId);
-    if (!unit) {
-      throw new NotFoundException('Unit not found');
-    }
-    if (unit.collective_id !== collectiveManager.collective_id) {
-      throw new ForbiddenException(
-        'You can only approve providers into units under your collective',
-      );
-    }
+  create(dto: CreateServiceProviderDto) {
+    return this.serviceProvidersRepository.create(dto);
+  }
 
-    const provider = this.databaseService.serviceProviders.find(
-      (row) => row.sp_id === id,
-    );
-    if (!provider) {
-      throw new NotFoundException('Service provider not found');
-    }
+  update(id: string, dto: UpdateServiceProviderDto) {
+    return this.serviceProvidersRepository.update(id, dto);
+  }
 
-    provider.unit_id = unitId;
-    provider.is_active = true;
-    provider.account_status = 'active';
-    provider.updated_at = this.databaseService.now();
+  updateWorkingHours(id: string, dto: UpdateWorkingHoursDto) {
+    return this.serviceProvidersRepository.updateWorkingHours(id, dto);
+  }
 
-    return {
-      message: 'Provider approved successfully',
-      provider,
-    };
+  updateProfile(id: string, dto: UpdateProviderProfileDto) {
+    return this.serviceProvidersRepository.updateProfile(id, dto);
+  }
+
+  requestDeactivation(id: string) {
+    return this.serviceProvidersRepository.requestDeactivation(id);
   }
 
   remove(id: string) {
-    const index = this.databaseService.serviceProviders.findIndex(
-      (row) => row.sp_id === id,
-    );
-    if (index < 0) {
-      throw new NotFoundException('Service provider not found');
-    }
-
-    const [removed] = this.databaseService.serviceProviders.splice(index, 1);
-    return removed;
+    return this.serviceProvidersRepository.delete(id);
   }
 }
