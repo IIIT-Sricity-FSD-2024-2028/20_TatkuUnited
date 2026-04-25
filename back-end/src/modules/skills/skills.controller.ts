@@ -25,17 +25,17 @@ import { Role } from '../../common/enums/role.enum';
 
 @ApiTags('skills')
 @ApiBearerAuth('bearer')
-// @UseGuards(JwtAuthGuard, RolesGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('skills')
 export class SkillsController {
   constructor(private readonly skillsService: SkillsService) {}
 
   @Get()
-  // @Roles(Role.SUPER_USER, Role.COLLECTIVE_MANAGER, Role.UNIT_MANAGER, Role.SERVICE_PROVIDER, Role.CUSTOMER)
+  @Roles(Role.SUPER_USER, Role.COLLECTIVE_MANAGER, Role.UNIT_MANAGER, Role.SERVICE_PROVIDER, Role.CUSTOMER)
   @ApiHeader({
     name: 'Authorization',
     description: 'Bearer token',
-    required: false
+    required: true
   })
   @ApiOperation({ summary: 'Get all skills' })
   @ApiResponse({ status: 200, description: 'Success' })
@@ -45,11 +45,11 @@ export class SkillsController {
   }
 
   @Get(':id')
-  // @Roles(Role.SUPER_USER, Role.COLLECTIVE_MANAGER, Role.UNIT_MANAGER, Role.SERVICE_PROVIDER, Role.CUSTOMER)
+  @Roles(Role.SUPER_USER, Role.COLLECTIVE_MANAGER, Role.UNIT_MANAGER, Role.SERVICE_PROVIDER, Role.CUSTOMER)
   @ApiHeader({
     name: 'Authorization',
     description: 'Bearer token',
-    required: false
+    required: true
   })
   @ApiOperation({ summary: 'Get skill by ID' })
   @ApiResponse({ status: 200, description: 'Success' })
@@ -60,11 +60,11 @@ export class SkillsController {
   }
 
   @Post()
-  // @Roles(Role.SUPER_USER)
+  @Roles(Role.SUPER_USER)
   @ApiHeader({
     name: 'Authorization',
     description: 'Bearer token',
-    required: false
+    required: true
   })
   @ApiOperation({ summary: 'Create a new skill' })
   @ApiResponse({ status: 201, description: 'Created successfully' })
@@ -74,11 +74,11 @@ export class SkillsController {
   }
 
   @Patch(':id')
-  // @Roles(Role.SUPER_USER)
+  @Roles(Role.SUPER_USER)
   @ApiHeader({
     name: 'Authorization',
     description: 'Bearer token',
-    required: false
+    required: true
   })
   @ApiOperation({ summary: 'Update a skill' })
   @ApiResponse({ status: 200, description: 'Success' })
@@ -89,11 +89,11 @@ export class SkillsController {
   }
 
   @Delete(':id')
-  // @Roles(Role.SUPER_USER)
+  @Roles(Role.SUPER_USER)
   @ApiHeader({
     name: 'Authorization',
     description: 'Bearer token',
-    required: false
+    required: true
   })
   @ApiOperation({ summary: 'Delete a skill' })
   @ApiResponse({ status: 200, description: 'Success' })

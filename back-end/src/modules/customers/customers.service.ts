@@ -19,6 +19,10 @@ export class CustomersService {
     return this.customersRepository.findByEmail(email);
   }
 
+  findBySector(sectorId: string) {
+    return this.customersRepository.findBySector(sectorId);
+  }
+
   create(dto: CreateCustomerDto) {
     return this.customersRepository.create(dto);
   }

@@ -35,7 +35,7 @@ export class UnitsController {
   @ApiHeader({
     name: 'Authorization',
     description: 'Bearer token',
-    required: false
+    required: true
   })
   @ApiOperation({ summary: 'Get all units' })
   @ApiResponse({ status: 200, description: 'Success' })
@@ -49,7 +49,7 @@ export class UnitsController {
   @ApiHeader({
     name: 'Authorization',
     description: 'Bearer token',
-    required: false
+    required: true
   })
   @ApiOperation({ summary: 'Get units by collective ID' })
   @ApiResponse({ status: 200, description: 'Success' })
@@ -63,7 +63,7 @@ export class UnitsController {
   @ApiHeader({
     name: 'Authorization',
     description: 'Bearer token',
-    required: false
+    required: true
   })
   @ApiOperation({ summary: 'Get unit by ID' })
   @ApiResponse({ status: 200, description: 'Success' })
@@ -78,7 +78,7 @@ export class UnitsController {
   @ApiHeader({
     name: 'Authorization',
     description: 'Bearer token',
-    required: false
+    required: true
   })
   @ApiOperation({ summary: 'Create a new unit' })
   @ApiResponse({ status: 201, description: 'Created successfully' })
@@ -92,7 +92,7 @@ export class UnitsController {
   @ApiHeader({
     name: 'Authorization',
     description: 'Bearer token',
-    required: false
+    required: true
   })
   @ApiOperation({ summary: 'Update a unit' })
   @ApiResponse({ status: 200, description: 'Success' })
@@ -107,7 +107,7 @@ export class UnitsController {
   @ApiHeader({
     name: 'Authorization',
     description: 'Bearer token',
-    required: false
+    required: true
   })
   @ApiOperation({ summary: 'Delete a unit' })
   @ApiResponse({ status: 200, description: 'Success' })

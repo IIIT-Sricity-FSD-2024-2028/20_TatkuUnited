@@ -25,17 +25,17 @@ import { Role } from '../../common/enums/role.enum';
 
 @ApiTags('collective-managers')
 @ApiBearerAuth('bearer')
-// @UseGuards(JwtAuthGuard, RolesGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('collective-managers')
 export class CollectiveManagersController {
   constructor(private readonly collectiveManagersService: CollectiveManagersService) {}
 
   @Get()
-  // @Roles(Role.SUPER_USER)
+  @Roles(Role.SUPER_USER)
   @ApiHeader({
     name: 'Authorization',
     description: 'Bearer token',
-    required: false
+    required: true
   })
   @ApiOperation({ summary: 'Get all collective managers' })
   @ApiResponse({ status: 200, description: 'Success' })
@@ -45,11 +45,11 @@ export class CollectiveManagersController {
   }
 
   @Get('collective/:collective_id')
-  // @Roles(Role.SUPER_USER, Role.COLLECTIVE_MANAGER)
+  @Roles(Role.SUPER_USER, Role.COLLECTIVE_MANAGER)
   @ApiHeader({
     name: 'Authorization',
     description: 'Bearer token',
-    required: false
+    required: true
   })
   @ApiOperation({ summary: 'Get collective managers by collective ID' })
   @ApiResponse({ status: 200, description: 'Success' })
@@ -59,11 +59,11 @@ export class CollectiveManagersController {
   }
 
   @Get(':id')
-  // @Roles(Role.SUPER_USER, Role.COLLECTIVE_MANAGER)
+  @Roles(Role.SUPER_USER, Role.COLLECTIVE_MANAGER)
   @ApiHeader({
     name: 'Authorization',
     description: 'Bearer token',
-    required: false
+    required: true
   })
   @ApiOperation({ summary: 'Get collective manager by ID' })
   @ApiResponse({ status: 200, description: 'Success' })
@@ -74,11 +74,11 @@ export class CollectiveManagersController {
   }
 
   @Post()
-  // @Roles(Role.SUPER_USER)
+  @Roles(Role.SUPER_USER)
   @ApiHeader({
     name: 'Authorization',
     description: 'Bearer token',
-    required: false
+    required: true
   })
   @ApiOperation({ summary: 'Create a new collective manager' })
   @ApiResponse({ status: 201, description: 'Created successfully' })
@@ -88,11 +88,11 @@ export class CollectiveManagersController {
   }
 
   @Patch(':id')
-  // @Roles(Role.SUPER_USER, Role.COLLECTIVE_MANAGER)
+  @Roles(Role.SUPER_USER, Role.COLLECTIVE_MANAGER)
   @ApiHeader({
     name: 'Authorization',
     description: 'Bearer token',
-    required: false
+    required: true
   })
   @ApiOperation({ summary: 'Update a collective manager' })
   @ApiResponse({ status: 200, description: 'Success' })
@@ -103,11 +103,11 @@ export class CollectiveManagersController {
   }
 
   @Delete(':id')
-  // @Roles(Role.SUPER_USER)
+  @Roles(Role.SUPER_USER)
   @ApiHeader({
     name: 'Authorization',
     description: 'Bearer token',
-    required: false
+    required: true
   })
   @ApiOperation({ summary: 'Delete a collective manager' })
   @ApiResponse({ status: 200, description: 'Success' })

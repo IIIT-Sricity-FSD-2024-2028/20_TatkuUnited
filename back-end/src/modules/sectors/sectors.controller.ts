@@ -25,17 +25,17 @@ import { Role } from '../../common/enums/role.enum';
 
 @ApiTags('sectors')
 @ApiBearerAuth('bearer')
-// @UseGuards(JwtAuthGuard, RolesGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('sectors')
 export class SectorsController {
   constructor(private readonly sectorsService: SectorsService) { }
 
   @Get()
-  // @Roles(Role.SUPER_USER, Role.COLLECTIVE_MANAGER, Role.UNIT_MANAGER)
+  @Roles(Role.SUPER_USER, Role.COLLECTIVE_MANAGER, Role.UNIT_MANAGER)
   @ApiHeader({
     name: 'Authorization',
     description: 'Bearer token',
-    required: false
+    required: true
   })
   @ApiOperation({ summary: 'Get all sectors' })
   @ApiResponse({ status: 200, description: 'Success' })
@@ -45,11 +45,11 @@ export class SectorsController {
   }
 
   @Get('collective/:collectiveId')
-  // @Roles(Role.SUPER_USER, Role.COLLECTIVE_MANAGER, Role.UNIT_MANAGER)
+  @Roles(Role.SUPER_USER, Role.COLLECTIVE_MANAGER, Role.UNIT_MANAGER)
   @ApiHeader({
     name: 'Authorization',
     description: 'Bearer token',
-    required: false
+    required: true
   })
   @ApiOperation({ summary: 'Get sectors by collective ID' })
   @ApiResponse({ status: 200, description: 'Success' })
@@ -59,11 +59,11 @@ export class SectorsController {
   }
 
   @Get(':id')
-  // @Roles(Role.SUPER_USER, Role.COLLECTIVE_MANAGER, Role.UNIT_MANAGER)
+  @Roles(Role.SUPER_USER, Role.COLLECTIVE_MANAGER, Role.UNIT_MANAGER)
   @ApiHeader({
     name: 'Authorization',
     description: 'Bearer token',
-    required: false
+    required: true
   })
   @ApiOperation({ summary: 'Get sector by ID' })
   @ApiResponse({ status: 200, description: 'Success' })
@@ -74,11 +74,11 @@ export class SectorsController {
   }
 
   @Post()
-  // @Roles(Role.SUPER_USER)
+  @Roles(Role.SUPER_USER)
   @ApiHeader({
     name: 'Authorization',
     description: 'Bearer token',
-    required: false
+    required: true
   })
   @ApiOperation({ summary: 'Create a new sector' })
   @ApiResponse({ status: 201, description: 'Created successfully' })
@@ -88,11 +88,11 @@ export class SectorsController {
   }
 
   @Patch(':id')
-  // @Roles(Role.SUPER_USER, Role.COLLECTIVE_MANAGER)
+  @Roles(Role.SUPER_USER, Role.COLLECTIVE_MANAGER)
   @ApiHeader({
     name: 'Authorization',
     description: 'Bearer token',
-    required: false
+    required: true
   })
   @ApiOperation({ summary: 'Update a sector' })
   @ApiResponse({ status: 200, description: 'Success' })
@@ -103,11 +103,11 @@ export class SectorsController {
   }
 
   @Delete(':id')
-  // @Roles(Role.SUPER_USER)
+  @Roles(Role.SUPER_USER)
   @ApiHeader({
     name: 'Authorization',
     description: 'Bearer token',
-    required: false
+    required: true
   })
   @ApiOperation({ summary: 'Delete a sector' })
   @ApiResponse({ status: 200, description: 'Success' })

@@ -25,17 +25,17 @@ import { Role } from '../../common/enums/role.enum';
 
 @ApiTags('super-users')
 @ApiBearerAuth('bearer')
-// @UseGuards(JwtAuthGuard, RolesGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('super-users')
 export class SuperUsersController {
   constructor(private readonly superUsersService: SuperUsersService) {}
 
   @Get()
-  // @Roles(Role.SUPER_USER)
+  @Roles(Role.SUPER_USER)
   @ApiHeader({
     name: 'Authorization',
     description: 'Bearer token',
-    required: false
+    required: true
   })
   @ApiOperation({ summary: 'Get all super users' })
   @ApiResponse({ status: 200, description: 'Success' })
@@ -45,11 +45,11 @@ export class SuperUsersController {
   }
 
   @Get(':id')
-  // @Roles(Role.SUPER_USER)
+  @Roles(Role.SUPER_USER)
   @ApiHeader({
     name: 'Authorization',
     description: 'Bearer token',
-    required: false
+    required: true
   })
   @ApiOperation({ summary: 'Get super user by ID' })
   @ApiResponse({ status: 200, description: 'Success' })
@@ -60,11 +60,11 @@ export class SuperUsersController {
   }
 
   @Post()
-  // @Roles(Role.SUPER_USER)
+  @Roles(Role.SUPER_USER)
   @ApiHeader({
     name: 'Authorization',
     description: 'Bearer token',
-    required: false
+    required: true
   })
   @ApiOperation({ summary: 'Create a new super user' })
   @ApiResponse({ status: 201, description: 'Created successfully' })
@@ -74,11 +74,11 @@ export class SuperUsersController {
   }
 
   @Patch(':id')
-  // @Roles(Role.SUPER_USER)
+  @Roles(Role.SUPER_USER)
   @ApiHeader({
     name: 'Authorization',
     description: 'Bearer token',
-    required: false
+    required: true
   })
   @ApiOperation({ summary: 'Update a super user' })
   @ApiResponse({ status: 200, description: 'Success' })
@@ -89,11 +89,11 @@ export class SuperUsersController {
   }
 
   @Delete(':id')
-  // @Roles(Role.SUPER_USER)
+  @Roles(Role.SUPER_USER)
   @ApiHeader({
     name: 'Authorization',
     description: 'Bearer token',
-    required: false
+    required: true
   })
   @ApiOperation({ summary: 'Delete a super user' })
   @ApiResponse({ status: 200, description: 'Success' })

@@ -28,6 +28,12 @@ export class CustomersRepository {
     );
   }
 
+  findBySector(sectorId: string): Customer[] {
+    return this.databaseService.customers.filter(
+      (row) => row.home_sector_id === sectorId,
+    );
+  }
+
   create(dto: CreateCustomerDto): Customer {
     const customer = {
       customer_id: uuid(),

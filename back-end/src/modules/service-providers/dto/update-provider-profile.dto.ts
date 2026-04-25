@@ -26,4 +26,5 @@ export class UpdateProviderProfileDto {
   @IsString()
   @IsOptional()
   gender?: string;
+
 }
