@@ -117,15 +117,16 @@ The platform supports three booking types:
   - Provider consistency where possible
   - Automatic reassignment when required  
 
-> Recurring services are treated as a **core design challenge**, not an add-on.
-
+> Recurring services feature is not implemented as of now, the system would require much complex modifications and logic to implement it. Currently, we are only focusing on One Time Booking Model and Instant Booking Model.
 ---
 
-## 8. Identified External Actors
+## 8. Identified Actors
 
-1. **Customer**
-2. **Service Provider**
-3. **Unit Manager**
+1. **Customer**: End-users who browse services, book jobs, and provide feedback.
+2. **Service Provider**: Skilled professionals who execute the assigned services.
+3. **Unit Manager**: Oversees a specific skill-based unit (e.g., Electrical, Plumbing) within a collective.
+4. **Collective Manager**: Manages an entire collective, coordinating across multiple units and sectors.
+5. **Super User**: Platform administrators responsible for global settings and oversight.
 
 Fulfillment logic, scheduling algorithms, delivery coordination, and administrative controls are **internal system responsibilities**.
 
@@ -134,32 +135,54 @@ Fulfillment logic, scheduling algorithms, delivery coordination, and administrat
 ## 9. Features for Actors
 
 ### Customer
-- Book instant or scheduled services  
-- Make secure payments  
-- Receive provider and schedule notifications  
-- Track service execution  
-- Submit feedback and ratings  
+- Book instant or scheduled services (Cart and Checkout flow).
+- Make secure payments.
+- Receive provider and schedule notifications.
+- Track service execution.
+- Submit feedback and ratings per completed service.
 
 ---
 
 ### Service Provider
-- Manage profile and availability  
-- View assigned jobs via work calendar  
-- Receive system-assigned jobs (no accept/reject)  
-- Update service status  
-- Complete jobs using OTP-based verification  
+- Manage profile, skills, and availability (including recurring unavailability).
+- View assigned jobs via work calendar.
+- Receive system-assigned jobs (no accept/reject).
+- Update job assignment status.
+- Complete jobs and track earnings.
 
 ---
 
-### Manager (Collective Representative)
-- Oversee collective-level scheduling  
-- Handle exceptional cases (disputes, no-shows)  
-- Monitor provider performance  
-- Support training and skill development  
+### Unit & Collective Managers
+- **Unit Manager**: Oversee unit-level provider performance, manage unit-specific schedules, and handle disputes.
+- **Collective Manager**: Oversee collective-level operations, manage units, and ensure regional fulfillment efficiency.
 
 ---
 
-## 10. Core System Responsibilities (Internal)
+### Super User
+- Manage platform-wide settings.
+- Oversee all users, transactions, and revenue ledgers.
+
+---
+
+## 10. Tech Stack & Architecture
+
+### Front-End
+- **Technology**: Vanilla HTML5, CSS3, and JavaScript.
+- **Architecture**: Modular structure with dedicated portal pages for each actor (`customer`, `provider`, `unit_manager`, `collective_manager`, `super_user`, `auth_pages`, and `service_pages`).
+- **State Management**: Centralized data stores and utilities (`js/data/`, `js/utils/`) managing session and UI state.
+
+### Back-End
+- **Framework**: NestJS (TypeScript).
+- **Data Layer (`database.service.ts`)**: Currently utilizes a comprehensive in-memory datastore simulating a relational database with seeded data. It covers complex relationships across:
+  - **Users & Orgs**: Customers, ServiceProviders, Managers (Unit/Collective), SuperUsers, Collectives, Units, Sectors.
+  - **Catalog**: Categories, Services, Skills, ServiceContent, ServiceFaq.
+  - **Fulfillment**: Carts, Bookings, JobAssignments (one per service in a booking), ProviderUnavailability.
+  - **Financials**: Transactions and RevenueLedgers (managing payout splits between SP, Unit Manager, Collective Manager, and Platform).
+  - **Feedback**: Post-job Reviews.
+
+---
+
+## 11. Core System Responsibilities (Internal)
 
 ### Scheduling & Fulfillment
 - Attach required skills to service packages  
@@ -184,7 +207,7 @@ Fulfillment logic, scheduling algorithms, delivery coordination, and administrat
 
 ---
 
-## 11. Current Focus of the Project
+## 12. Current Focus of the Project
 
 At the **current (preliminary) stage**, the project is focused on:
 
@@ -192,18 +215,21 @@ At the **current (preliminary) stage**, the project is focused on:
 - Fulfillment correctness  
 - Recurring service logic  
 - Failure and recovery handling  
+- Implementation of comprehensive actor portals (Front-end)
+- Data modeling for complete service fulfillment lifecycle (Back-end)
 
 UI polish, business expansion, and advanced ML-based optimizations are out of scope for now.
 
 ---
 
-## 12. Project Scope
+## 13. Project Scope
 
 ### In Scope
 - On-demand scheduling logic  
 - Provider discovery and assignment  
 - Collective-based fulfillment  
 - Failure detection and recovery  
+- Multi-actor portal interfaces
 
 ### Out of Scope (Currently)
 - Legal and policy compliance automation  
