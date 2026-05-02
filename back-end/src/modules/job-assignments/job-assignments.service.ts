@@ -14,7 +14,7 @@ export class JobAssignmentsService {
     private readonly jaRepo: JobAssignmentsRepository,
     private readonly bookingsRepo: BookingsRepository,
     private readonly db: DatabaseService,
-  ) {}
+  ) { }
 
   // ── Auto-assign ────────────────────────────────────────
 
@@ -253,4 +253,5 @@ export class JobAssignmentsService {
     }
     return ja;
   }
+
 }

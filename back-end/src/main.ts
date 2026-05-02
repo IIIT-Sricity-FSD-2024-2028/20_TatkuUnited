@@ -12,15 +12,15 @@ async function bootstrap() {
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
 
   const config = new DocumentBuilder()
-    .setTitle('Service Platform API')
-    .setDescription('UrbanCo-style on-demand service platform')
+    .setTitle('TatkuUnited API')
+    .setDescription('Service platform API — Part 4: Payments, Finance, Platform Settings')
     .setVersion('1.0')
     .addBearerAuth(
       {
         type: 'http',
         scheme: 'bearer',
         bearerFormat: 'JWT',
-        description: 'Paste JWT access token from /auth/login',
+        description: 'Paste your JWT token (without the Bearer prefix)',
       },
       'bearer',
     )
@@ -36,7 +36,13 @@ async function bootstrap() {
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api', app, document);
+  SwaggerModule.setup('api-docs', app, document, {
+    swaggerOptions: {
+      persistAuthorization: true,
+      tagsSorter: 'alpha',
+      operationsSorter: 'alpha',
+    },
+  });
 
   // Auto-export swagger.json for docs/
   fs.writeFileSync('./docs/swagger.json', JSON.stringify(document, null, 2));
@@ -44,6 +50,6 @@ async function bootstrap() {
   const PORT = process.env.PORT || 10000;
   await app.listen(PORT);
   console.log(`API running at http://localhost:${PORT}`);
-  console.log(`Swagger docs at http://localhost:${PORT}/api`);
+  console.log(`Swagger docs at http://localhost:${PORT}/api-docs`);
 }
 bootstrap();
