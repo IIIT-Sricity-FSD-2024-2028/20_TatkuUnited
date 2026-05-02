@@ -2,9 +2,12 @@ import {
   Injectable,
   NotFoundException,
   BadRequestException,
+  Inject,
+  forwardRef,
 } from '@nestjs/common';
 import { BookingsRepository } from './bookings.repository';
 import { CartRepository } from '../cart/cart.repository';
+import { JobAssignmentsService } from '../job-assignments/job-assignments.service';
 import {
   DatabaseService,
   Booking,
@@ -17,6 +20,8 @@ export class BookingsService {
     private readonly bookingsRepo: BookingsRepository,
     private readonly cartRepo: CartRepository,
     private readonly db: DatabaseService,
+    @Inject(forwardRef(() => JobAssignmentsService))
+    private readonly jobAssignmentsService: JobAssignmentsService,
   ) {}
 
   // ── Checkout ───────────────────────────────────────────
@@ -64,10 +69,15 @@ export class BookingsService {
       bookingServices.push(bs);
     }
 
-    // 6. Clear cart items (keep cart shell)
+    // 6. Auto-assign providers
+    const assignmentResult = this.jobAssignmentsService.autoAssign(
+      booking.booking_id,
+    );
+
+    // 7. Clear cart items (keep cart shell)
     this.cartRepo.clearCartItems(cart.cart_id);
 
-    return { ...booking, services: bookingServices };
+    return { ...booking, services: bookingServices, assignments: assignmentResult.assignments };
   }
 
   // ── Queries ────────────────────────────────────────────

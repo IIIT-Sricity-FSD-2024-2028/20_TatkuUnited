@@ -29,8 +29,8 @@ export class BookingsController {
   @Post('checkout')
   @Roles(Role.CUSTOMER)
   @ApiOperation({ summary: 'Checkout — create booking from cart' })
-  
-  @ApiHeader({ name: 'x-role', required: true, description: 'User role (customer, super_user, service_provider)' })@ApiResponse({ status: 201, description: 'Booking created from cart items' })
+  @ApiHeader({ name: 'x-role', required: true, description: 'User role (customer, super_user, service_provider)' })
+  @ApiResponse({ status: 201, description: 'Booking created from cart items' })
   @ApiResponse({ status: 400, description: 'Cart empty or not found' })
   @ApiResponse({ status: 403, description: 'Forbidden — customer only' })
   checkout(@Request() req) {
@@ -40,6 +40,7 @@ export class BookingsController {
   @Get('my')
   @Roles(Role.CUSTOMER)
   @ApiOperation({ summary: 'Get my bookings (JWT customer)' })
+  @ApiHeader({ name: 'x-role', required: true, description: 'User role (customer, super_user, service_provider)' })
   @ApiResponse({ status: 200, description: 'Customer bookings returned' })
   @ApiResponse({ status: 403, description: 'Forbidden — customer only' })
   getMyBookings(@Request() req) {
@@ -49,8 +50,8 @@ export class BookingsController {
   @Get('customer/:customerId')
   @Roles(Role.CUSTOMER, Role.SUPER_USER)
   @ApiOperation({ summary: 'Get bookings by customer ID' })
-  
-  @ApiHeader({ name: 'x-role', required: true, description: 'User role (customer, super_user, service_provider)' })@ApiResponse({ status: 200, description: 'Customer bookings returned' })
+  @ApiHeader({ name: 'x-role', required: true, description: 'User role (customer, super_user, service_provider)' })
+  @ApiResponse({ status: 200, description: 'Customer bookings returned' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
   findByCustomer(@Param('customerId') customerId: string) {
     return this.bookingsService.findByCustomer(customerId);
@@ -59,8 +60,8 @@ export class BookingsController {
   @Get('sector/:sectorId')
   @Roles(Role.SUPER_USER, Role.COLLECTIVE_MANAGER, Role.UNIT_MANAGER)
   @ApiOperation({ summary: 'Get bookings by sector ID' })
-  
-  @ApiHeader({ name: 'x-role', required: true, description: 'User role (customer, super_user, service_provider)' })@ApiResponse({ status: 200, description: 'Sector bookings returned' })
+  @ApiHeader({ name: 'x-role', required: true, description: 'User role (customer, super_user, service_provider)' })
+  @ApiResponse({ status: 200, description: 'Sector bookings returned' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
   findBySector(@Param('sectorId') sectorId: string) {
     return this.bookingsService.findBySector(sectorId);
@@ -69,8 +70,8 @@ export class BookingsController {
   @Get()
   @Roles(Role.SUPER_USER, Role.COLLECTIVE_MANAGER, Role.UNIT_MANAGER)
   @ApiOperation({ summary: 'Get all bookings' })
-  
-  @ApiHeader({ name: 'x-role', required: true, description: 'User role (customer, super_user, service_provider)' })@ApiResponse({ status: 200, description: 'All bookings returned' })
+  @ApiHeader({ name: 'x-role', required: true, description: 'User role (customer, super_user, service_provider)' })
+  @ApiResponse({ status: 200, description: 'All bookings returned' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
   findAll() {
     return this.bookingsService.findAll();
@@ -79,6 +80,7 @@ export class BookingsController {
   @Get(':id')
   @Roles(Role.SUPER_USER, Role.COLLECTIVE_MANAGER, Role.UNIT_MANAGER, Role.SERVICE_PROVIDER, Role.CUSTOMER)
   @ApiOperation({ summary: 'Get booking by ID (with services)' })
+  @ApiHeader({ name: 'x-role', required: true, description: 'User role (customer, super_user, service_provider)' })
   @ApiResponse({ status: 200, description: 'Booking with services returned' })
   @ApiResponse({ status: 404, description: 'Booking not found' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
@@ -89,8 +91,8 @@ export class BookingsController {
   @Patch(':id/cancel')
   @Roles(Role.CUSTOMER, Role.SUPER_USER)
   @ApiOperation({ summary: 'Cancel a booking' })
-  
-  @ApiHeader({ name: 'x-role', required: true, description: 'User role (customer, super_user, service_provider)' })@ApiResponse({ status: 200, description: 'Booking cancelled' })
+  @ApiHeader({ name: 'x-role', required: true, description: 'User role (customer, super_user, service_provider)' })
+  @ApiResponse({ status: 200, description: 'Booking cancelled' })
   @ApiResponse({ status: 400, description: 'Booking already cancelled' })
   @ApiResponse({ status: 404, description: 'Booking not found' })
   @ApiResponse({ status: 403, description: 'Forbidden' })

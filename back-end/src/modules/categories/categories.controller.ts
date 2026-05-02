@@ -30,8 +30,8 @@ export class CategoriesController {
   @Get()
   @Roles(Role.SUPER_USER, Role.COLLECTIVE_MANAGER, Role.UNIT_MANAGER, Role.SERVICE_PROVIDER, Role.CUSTOMER)
   @ApiOperation({ summary: 'Get all categories' })
-  
-  @ApiHeader({ name: 'x-role', required: true, description: 'User role (customer, super_user, service_provider)' })@ApiResponse({ status: 200, description: 'List of all categories' })
+  @ApiHeader({ name: 'x-role', required: true, description: 'User role (customer, super_user, service_provider)' })
+  @ApiResponse({ status: 200, description: 'List of all categories' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
   findAll() {
     return this.categoriesService.findAll();
@@ -40,8 +40,8 @@ export class CategoriesController {
   @Get(':id')
   @Roles(Role.SUPER_USER, Role.COLLECTIVE_MANAGER, Role.UNIT_MANAGER, Role.SERVICE_PROVIDER, Role.CUSTOMER)
   @ApiOperation({ summary: 'Get category by ID' })
-  
-  @ApiHeader({ name: 'x-role', required: true, description: 'User role (customer, super_user, service_provider)' })@ApiResponse({ status: 200, description: 'Category found' })
+  @ApiHeader({ name: 'x-role', required: true, description: 'User role (customer, super_user, service_provider)' })
+  @ApiResponse({ status: 200, description: 'Category found' })
   @ApiResponse({ status: 404, description: 'Category not found' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
   findOne(@Param('id') id: string) {
@@ -51,8 +51,8 @@ export class CategoriesController {
   @Post()
   @Roles(Role.SUPER_USER)
   @ApiOperation({ summary: 'Create a new category' })
-  
-  @ApiHeader({ name: 'x-role', required: true, description: 'User role (customer, super_user, service_provider)' })@ApiResponse({ status: 201, description: 'Category created successfully' })
+  @ApiHeader({ name: 'x-role', required: true, description: 'User role (customer, super_user, service_provider)' })
+  @ApiResponse({ status: 201, description: 'Category created successfully' })
   @ApiResponse({ status: 403, description: 'Forbidden — super_user only' })
   create(@Body() dto: CreateCategoryDto) {
     return this.categoriesService.create(dto);
@@ -61,8 +61,8 @@ export class CategoriesController {
   @Patch(':id')
   @Roles(Role.SUPER_USER)
   @ApiOperation({ summary: 'Update a category' })
-  
-  @ApiHeader({ name: 'x-role', required: true, description: 'User role (customer, super_user, service_provider)' })@ApiResponse({ status: 200, description: 'Category updated' })
+  @ApiHeader({ name: 'x-role', required: true, description: 'User role (customer, super_user, service_provider)' })
+  @ApiResponse({ status: 200, description: 'Category updated' })
   @ApiResponse({ status: 404, description: 'Category not found' })
   @ApiResponse({ status: 403, description: 'Forbidden — super_user only' })
   update(@Param('id') id: string, @Body() dto: UpdateCategoryDto) {
@@ -72,8 +72,8 @@ export class CategoriesController {
   @Delete(':id')
   @Roles(Role.SUPER_USER)
   @ApiOperation({ summary: 'Delete a category' })
-  
-  @ApiHeader({ name: 'x-role', required: true, description: 'User role (customer, super_user, service_provider)' })@ApiResponse({ status: 200, description: 'Category deleted' })
+  @ApiHeader({ name: 'x-role', required: true, description: 'User role (customer, super_user, service_provider)' })
+  @ApiResponse({ status: 200, description: 'Category deleted' })
   @ApiResponse({ status: 404, description: 'Category not found' })
   @ApiResponse({ status: 403, description: 'Forbidden — super_user only' })
   remove(@Param('id') id: string) {

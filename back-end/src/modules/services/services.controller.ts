@@ -39,8 +39,8 @@ export class ServicesController {
   @Get()
   @Roles(Role.SUPER_USER, Role.COLLECTIVE_MANAGER, Role.UNIT_MANAGER, Role.SERVICE_PROVIDER, Role.CUSTOMER)
   @ApiOperation({ summary: 'Get all services' })
-  
-  @ApiHeader({ name: 'x-role', required: true, description: 'User role (customer, super_user, service_provider)' })@ApiResponse({ status: 200, description: 'List of all services' })
+  @ApiHeader({ name: 'x-role', required: true, description: 'User role (customer, super_user, service_provider)' })
+  @ApiResponse({ status: 200, description: 'List of all services' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
   findAll() {
     return this.servicesService.findAll();
@@ -49,6 +49,7 @@ export class ServicesController {
   @Get('available')
   @Roles(Role.SUPER_USER, Role.COLLECTIVE_MANAGER, Role.UNIT_MANAGER, Role.SERVICE_PROVIDER, Role.CUSTOMER)
   @ApiOperation({ summary: 'Get all available services (is_available = true)' })
+  @ApiHeader({ name: 'x-role', required: true, description: 'User role (customer, super_user, service_provider)' })
   @ApiResponse({ status: 200, description: 'List of available services' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
   findAvailable() {
@@ -58,8 +59,8 @@ export class ServicesController {
   @Get('category/:categoryId')
   @Roles(Role.SUPER_USER, Role.COLLECTIVE_MANAGER, Role.UNIT_MANAGER, Role.SERVICE_PROVIDER, Role.CUSTOMER)
   @ApiOperation({ summary: 'Get services by category ID' })
-  
-  @ApiHeader({ name: 'x-role', required: true, description: 'User role (customer, super_user, service_provider)' })@ApiResponse({ status: 200, description: 'List of services in the category' })
+  @ApiHeader({ name: 'x-role', required: true, description: 'User role (customer, super_user, service_provider)' })
+  @ApiResponse({ status: 200, description: 'List of services in the category' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
   findByCategory(@Param('categoryId') categoryId: string) {
     return this.servicesService.findByCategory(categoryId);
@@ -72,8 +73,8 @@ export class ServicesController {
   @Get(':id/skills')
   @Roles(Role.SUPER_USER, Role.COLLECTIVE_MANAGER, Role.UNIT_MANAGER, Role.SERVICE_PROVIDER, Role.CUSTOMER)
   @ApiOperation({ summary: 'Get skills linked to a service' })
-  
-  @ApiHeader({ name: 'x-role', required: true, description: 'User role (customer, super_user, service_provider)' })@ApiResponse({ status: 200, description: 'List of skill links for the service' })
+  @ApiHeader({ name: 'x-role', required: true, description: 'User role (customer, super_user, service_provider)' })
+  @ApiResponse({ status: 200, description: 'List of skill links for the service' })
   @ApiResponse({ status: 404, description: 'Service not found' })
   getServiceSkills(@Param('id') id: string) {
     return this.servicesService.getServiceSkills(id);
@@ -82,8 +83,8 @@ export class ServicesController {
   @Post(':id/skills')
   @Roles(Role.SUPER_USER)
   @ApiOperation({ summary: 'Link a skill to a service' })
-  
-  @ApiHeader({ name: 'x-role', required: true, description: 'User role (customer, super_user, service_provider)' })@ApiResponse({ status: 201, description: 'Skill linked to service' })
+  @ApiHeader({ name: 'x-role', required: true, description: 'User role (customer, super_user, service_provider)' })
+  @ApiResponse({ status: 201, description: 'Skill linked to service' })
   @ApiResponse({ status: 404, description: 'Service not found' })
   @ApiResponse({ status: 409, description: 'Skill already linked' })
   @ApiResponse({ status: 403, description: 'Forbidden — super_user only' })
@@ -94,8 +95,8 @@ export class ServicesController {
   @Delete(':id/skills/:skillId')
   @Roles(Role.SUPER_USER)
   @ApiOperation({ summary: 'Unlink a skill from a service' })
-  
-  @ApiHeader({ name: 'x-role', required: true, description: 'User role (customer, super_user, service_provider)' })@ApiResponse({ status: 200, description: 'Skill unlinked from service' })
+  @ApiHeader({ name: 'x-role', required: true, description: 'User role (customer, super_user, service_provider)' })
+  @ApiResponse({ status: 200, description: 'Skill unlinked from service' })
   @ApiResponse({ status: 404, description: 'Link not found' })
   @ApiResponse({ status: 403, description: 'Forbidden — super_user only' })
   unlinkSkill(@Param('id') id: string, @Param('skillId') skillId: string) {
@@ -109,6 +110,7 @@ export class ServicesController {
   @Get(':id/content')
   @Roles(Role.SUPER_USER, Role.COLLECTIVE_MANAGER, Role.UNIT_MANAGER, Role.SERVICE_PROVIDER, Role.CUSTOMER)
   @ApiOperation({ summary: 'Get content (how it works, coverage) for a service' })
+  @ApiHeader({ name: 'x-role', required: true, description: 'User role (customer, super_user, service_provider)' })
   @ApiResponse({ status: 200, description: 'Service content returned (or null if none)' })
   @ApiResponse({ status: 404, description: 'Service not found' })
   getContent(@Param('id') id: string) {
@@ -118,6 +120,7 @@ export class ServicesController {
   @Put(':id/content')
   @Roles(Role.SUPER_USER)
   @ApiOperation({ summary: 'Create or update service content (upsert)' })
+  @ApiHeader({ name: 'x-role', required: true, description: 'User role (customer, super_user, service_provider)' })
   @ApiResponse({ status: 200, description: 'Service content upserted' })
   @ApiResponse({ status: 404, description: 'Service not found' })
   @ApiResponse({ status: 403, description: 'Forbidden — super_user only' })
@@ -132,8 +135,8 @@ export class ServicesController {
   @Get(':id/faqs')
   @Roles(Role.SUPER_USER, Role.COLLECTIVE_MANAGER, Role.UNIT_MANAGER, Role.SERVICE_PROVIDER, Role.CUSTOMER)
   @ApiOperation({ summary: 'Get FAQs for a service' })
-  
-  @ApiHeader({ name: 'x-role', required: true, description: 'User role (customer, super_user, service_provider)' })@ApiResponse({ status: 200, description: 'List of FAQs for the service' })
+  @ApiHeader({ name: 'x-role', required: true, description: 'User role (customer, super_user, service_provider)' })
+  @ApiResponse({ status: 200, description: 'List of FAQs for the service' })
   @ApiResponse({ status: 404, description: 'Service not found' })
   getFaqs(@Param('id') id: string) {
     return this.servicesService.getFaqs(id);
@@ -142,8 +145,8 @@ export class ServicesController {
   @Post(':id/faqs')
   @Roles(Role.SUPER_USER)
   @ApiOperation({ summary: 'Create a FAQ for a service' })
-  
-  @ApiHeader({ name: 'x-role', required: true, description: 'User role (customer, super_user, service_provider)' })@ApiResponse({ status: 201, description: 'FAQ created' })
+  @ApiHeader({ name: 'x-role', required: true, description: 'User role (customer, super_user, service_provider)' })
+  @ApiResponse({ status: 201, description: 'FAQ created' })
   @ApiResponse({ status: 404, description: 'Service not found' })
   @ApiResponse({ status: 403, description: 'Forbidden — super_user only' })
   createFaq(@Param('id') id: string, @Body() dto: CreateServiceFaqDto) {
@@ -153,8 +156,8 @@ export class ServicesController {
   @Patch('faqs/:faqId')
   @Roles(Role.SUPER_USER)
   @ApiOperation({ summary: 'Update a FAQ' })
-  
-  @ApiHeader({ name: 'x-role', required: true, description: 'User role (customer, super_user, service_provider)' })@ApiResponse({ status: 200, description: 'FAQ updated' })
+  @ApiHeader({ name: 'x-role', required: true, description: 'User role (customer, super_user, service_provider)' })
+  @ApiResponse({ status: 200, description: 'FAQ updated' })
   @ApiResponse({ status: 404, description: 'FAQ not found' })
   @ApiResponse({ status: 403, description: 'Forbidden — super_user only' })
   updateFaq(@Param('faqId') faqId: string, @Body() dto: UpdateServiceFaqDto) {
@@ -164,8 +167,8 @@ export class ServicesController {
   @Delete('faqs/:faqId')
   @Roles(Role.SUPER_USER)
   @ApiOperation({ summary: 'Delete a FAQ' })
-  
-  @ApiHeader({ name: 'x-role', required: true, description: 'User role (customer, super_user, service_provider)' })@ApiResponse({ status: 200, description: 'FAQ deleted' })
+  @ApiHeader({ name: 'x-role', required: true, description: 'User role (customer, super_user, service_provider)' })
+  @ApiResponse({ status: 200, description: 'FAQ deleted' })
   @ApiResponse({ status: 404, description: 'FAQ not found' })
   @ApiResponse({ status: 403, description: 'Forbidden — super_user only' })
   deleteFaq(@Param('faqId') faqId: string) {
@@ -179,8 +182,8 @@ export class ServicesController {
   @Get(':id')
   @Roles(Role.SUPER_USER, Role.COLLECTIVE_MANAGER, Role.UNIT_MANAGER, Role.SERVICE_PROVIDER, Role.CUSTOMER)
   @ApiOperation({ summary: 'Get service by ID' })
-  
-  @ApiHeader({ name: 'x-role', required: true, description: 'User role (customer, super_user, service_provider)' })@ApiResponse({ status: 200, description: 'Service found' })
+  @ApiHeader({ name: 'x-role', required: true, description: 'User role (customer, super_user, service_provider)' })
+  @ApiResponse({ status: 200, description: 'Service found' })
   @ApiResponse({ status: 404, description: 'Service not found' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
   findOne(@Param('id') id: string) {
@@ -190,8 +193,8 @@ export class ServicesController {
   @Post()
   @Roles(Role.SUPER_USER)
   @ApiOperation({ summary: 'Create a new service' })
-  
-  @ApiHeader({ name: 'x-role', required: true, description: 'User role (customer, super_user, service_provider)' })@ApiResponse({ status: 201, description: 'Service created successfully' })
+  @ApiHeader({ name: 'x-role', required: true, description: 'User role (customer, super_user, service_provider)' })
+  @ApiResponse({ status: 201, description: 'Service created successfully' })
   @ApiResponse({ status: 403, description: 'Forbidden — super_user only' })
   create(@Body() dto: CreateServiceDto) {
     return this.servicesService.create(dto);
@@ -200,8 +203,8 @@ export class ServicesController {
   @Patch(':id')
   @Roles(Role.SUPER_USER)
   @ApiOperation({ summary: 'Update a service' })
-  
-  @ApiHeader({ name: 'x-role', required: true, description: 'User role (customer, super_user, service_provider)' })@ApiResponse({ status: 200, description: 'Service updated' })
+  @ApiHeader({ name: 'x-role', required: true, description: 'User role (customer, super_user, service_provider)' })
+  @ApiResponse({ status: 200, description: 'Service updated' })
   @ApiResponse({ status: 404, description: 'Service not found' })
   @ApiResponse({ status: 403, description: 'Forbidden — super_user only' })
   update(@Param('id') id: string, @Body() dto: UpdateServiceDto) {
@@ -211,8 +214,8 @@ export class ServicesController {
   @Delete(':id')
   @Roles(Role.SUPER_USER)
   @ApiOperation({ summary: 'Delete a service' })
-  
-  @ApiHeader({ name: 'x-role', required: true, description: 'User role (customer, super_user, service_provider)' })@ApiResponse({ status: 200, description: 'Service deleted' })
+  @ApiHeader({ name: 'x-role', required: true, description: 'User role (customer, super_user, service_provider)' })
+  @ApiResponse({ status: 200, description: 'Service deleted' })
   @ApiResponse({ status: 404, description: 'Service not found' })
   @ApiResponse({ status: 403, description: 'Forbidden — super_user only' })
   remove(@Param('id') id: string) {

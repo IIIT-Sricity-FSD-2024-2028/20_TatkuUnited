@@ -26,7 +26,7 @@ export class RevenueLedgerService {
     return { provider_amount: sp, um_amount: um, cm_amount: cm, platform_amount: platform };
   }
 
-  async createFromJobCompletion(assignment: JobAssignment) {
+  createPendingFromAssignment(assignment: JobAssignment) {
     // 1. Get price for this specific service in the booking
     const bsRow = this.db.bookingServices.find(
       (r) => r.booking_id === assignment.booking_id && r.service_id === assignment.service_id,
@@ -57,6 +57,19 @@ export class RevenueLedgerService {
       um_id: um.um_id,
       cm_id: cm.cm_id,
       ...split,
+    });
+  }
+
+  dispatchForAssignment(assignment: JobAssignment) {
+    const rows = this.repo
+      .findByBooking(assignment.booking_id)
+      .filter((r) => r.sp_id === assignment.sp_id && r.payout_status === 'PENDING')
+      .sort((a, b) => a.created_at.localeCompare(b.created_at));
+    const row = rows[0];
+    if (!row) throw new NotFoundException('Pending ledger row not found');
+    return this.repo.update(row.ledger_id, {
+      payout_status: 'DISBURSED',
+      paid_at: this.db.now(),
     });
   }
 

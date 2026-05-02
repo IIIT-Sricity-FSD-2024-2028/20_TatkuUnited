@@ -34,6 +34,7 @@ export class JobAssignmentsService {
     }
 
     const assignments: any[] = [];
+    const maxConcurrent = 3;
 
     // 3. For each service line
     for (const bs of bookingServices) {
@@ -41,6 +42,15 @@ export class JobAssignmentsService {
       const requiredSkillIds = this.db.serviceSkills
         .filter((ss) => ss.service_id === bs.service_id)
         .map((ss) => ss.skill_id);
+
+      const service = this.db.services.find(
+        (s) => s.service_id === bs.service_id,
+      );
+      const durationMin = service?.estimated_duration_min || 60;
+
+      const scheduledAt = booking.scheduled_at || this.db.now();
+      const scheduledDate = scheduledAt.split('T')[0] || '';
+      const scheduledTime = scheduledAt.split('T')[1]?.slice(0, 5) || '';
 
       // b. Find providers who have ALL required skills (verified)
       const qualifiedProviderIds = this.db.serviceProviders
@@ -59,31 +69,119 @@ export class JobAssignmentsService {
           );
         });
 
-      // c. Filter by sector (same sector as booking)
-      let candidates = qualifiedProviderIds.filter(
-        (sp) => sp.home_sector_id === booking.sector_id,
+      const bookingSector = this.db.sectors.find(
+        (s) => s.sector_id === booking.sector_id,
       );
-      // Fallback: if no sector match, use all qualified
-      if (candidates.length === 0) {
-        candidates = qualifiedProviderIds;
-      }
 
-      // d. Filter by availability (check providerUnavailability for scheduled_date)
-      const scheduledDate = booking.scheduled_at?.split('T')[0] || '';
-      if (scheduledDate) {
-        candidates = candidates.filter((sp) => {
-          const unavailable = this.db.providerUnavailability.some(
-            (pu) =>
-              pu.sp_id === sp.sp_id &&
-              pu.date === scheduledDate,
-          );
-          return !unavailable;
+      // c. Filter by sector and unit's collective (same geography)
+      let candidates = qualifiedProviderIds.filter((sp) => {
+        if (sp.home_sector_id !== booking.sector_id) return false;
+        if (!bookingSector) return false;
+        const unit = this.db.units.find((u) => u.unit_id === sp.unit_id);
+        return !!unit && unit.collective_id === bookingSector.collective_id;
+      });
+
+      // d. Filter by availability, capacity, and schedule overlap
+      candidates = candidates.filter((sp) => {
+        const slotStart = this.toMinutes(scheduledTime || sp.hour_start);
+        const slotEnd = slotStart + durationMin;
+        const providerStart = this.toMinutes(sp.hour_start || '09:00');
+        const providerEnd = this.toMinutes(sp.hour_end || '18:00');
+
+        if (slotStart < providerStart || slotEnd > providerEnd) return false;
+
+        const hasUnavailability = this.db.providerUnavailability.some((pu) => {
+          if (pu.sp_id !== sp.sp_id) return false;
+          if (!pu.date || pu.date !== scheduledDate) return false;
+          const blockStart = this.toMinutes(pu.hour_start);
+          const blockEnd = this.toMinutes(pu.hour_end);
+          return this.overlaps(slotStart, slotEnd, blockStart, blockEnd);
         });
-      }
 
-      // e. Sort by rating (highest first) — pick the best
-      candidates.sort((a, b) => b.rating - a.rating);
-      const bestProvider = candidates[0];
+        if (hasUnavailability) return false;
+
+        const activeAssignments = this.db.jobAssignments.filter(
+          (ja) =>
+            ja.sp_id === sp.sp_id &&
+            ja.scheduled_date === scheduledDate &&
+            ['ASSIGNED', 'IN_PROGRESS'].includes(ja.status),
+        );
+
+        if (activeAssignments.length >= maxConcurrent) return false;
+
+        const hasOverlap = activeAssignments.some((ja) => {
+          const assignedStart = this.toMinutes(ja.hour_start);
+          const assignedEnd = this.toMinutes(ja.hour_end);
+          return this.overlaps(slotStart, slotEnd, assignedStart, assignedEnd);
+        });
+
+        return !hasOverlap;
+      });
+
+      const safetyCritical = this.isSafetyCritical(requiredSkillIds);
+
+      const scoredCandidates = candidates
+        .map((sp) => {
+          const providerSkillIds = this.db.providerSkills
+            .filter(
+              (ps) =>
+                ps.sp_id === sp.sp_id &&
+                ps.verification_status.toLowerCase() === 'verified',
+            )
+            .map((ps) => ps.skill_id);
+
+          const bonusSkillCount = providerSkillIds.filter(
+            (sid) => !requiredSkillIds.includes(sid),
+          ).length;
+
+          const skillScore = requiredSkillIds.length === 0
+            ? 1
+            : Math.min(
+                1,
+                0.7 +
+                  Math.min(
+                    1,
+                    bonusSkillCount / Math.max(1, requiredSkillIds.length),
+                  ) *
+                    0.3,
+              );
+
+          const ratingValue = sp.rating_count === 0 ? 3.5 : sp.rating;
+          const ratingNorm = Math.max(
+            0,
+            Math.min(1, (ratingValue - 1) / 4),
+          );
+
+          const proximityNorm = 1;
+
+          const isNewProvider = sp.rating_count < 5;
+
+          let w1 = 0.4;
+          let w2 = 0.35;
+          let w3 = 0.25;
+
+          if (sp.rating_count >= 50) {
+            w1 = 0.3;
+            w2 = 0.45;
+            w3 = 0.25;
+          }
+
+          if (safetyCritical) {
+            w1 = 0.45;
+            w2 = 0.35;
+            w3 = 0.2;
+          }
+
+          const score = isNewProvider
+            ? skillScore
+            : skillScore * w1 + ratingNorm * w2 + proximityNorm * w3;
+
+          return { provider: sp, score };
+        })
+        .sort((a, b) => b.score - a.score);
+
+      const best = scoredCandidates[0];
+      const bestProvider = best?.provider;
 
       if (!bestProvider) {
         throw new BadRequestException(
@@ -91,17 +189,9 @@ export class JobAssignmentsService {
         );
       }
 
-      // f. Get service info for duration
-      const service = this.db.services.find(
-        (s) => s.service_id === bs.service_id,
-      );
-      const durationMin = service?.estimated_duration_min || 60;
-
-      // Calculate hour_end from hour_start + duration
-      const hourStart = bestProvider.hour_start || '09:00';
-      const [h, m] = hourStart.split(':').map(Number);
-      const endMinutes = h * 60 + m + durationMin;
-      const hourEnd = `${String(Math.floor(endMinutes / 60)).padStart(2, '0')}:${String(endMinutes % 60).padStart(2, '0')}`;
+      const hourStart = scheduledTime || bestProvider.hour_start || '09:00';
+      const endMinutes = this.toMinutes(hourStart) + durationMin;
+      const hourEnd = this.fromMinutes(endMinutes);
 
       // g. Create assignment
       const assignment = this.jaRepo.create({
@@ -110,12 +200,14 @@ export class JobAssignmentsService {
         hour_start: hourStart,
         hour_end: hourEnd,
         status: 'ASSIGNED',
-        assignment_score: null,
+        assignment_score: best?.score ?? null,
         notes: null,
         assigned_at: this.db.now(),
         booking_id: bookingId,
         sp_id: bestProvider.sp_id,
       });
+
+      this.revenueLedger.createPendingFromAssignment(assignment);
 
       assignments.push(assignment);
     }
@@ -152,8 +244,8 @@ export class JobAssignmentsService {
     assignment.status = 'COMPLETED';
     assignment.updated_at = this.db.now();
 
-    // 3. Trigger ledger creation using the other developer's logic
-    await this.revenueLedger.createFromJobCompletion(assignment);
+    // 3. Trigger payout dispatch for this assignment
+    this.revenueLedger.dispatchForAssignment(assignment);
 
     // 4. Check if ALL assignments for this booking are COMPLETED
     const allForBooking = this.jaRepo.findByBooking(assignment.booking_id);
@@ -189,5 +281,26 @@ export class JobAssignmentsService {
       throw new NotFoundException(`Assignment "${assignmentId}" not found`);
     }
     return ja;
+  }
+
+  private toMinutes(time: string): number {
+    const [h, m] = time.split(':').map((v) => parseInt(v, 10));
+    return (h || 0) * 60 + (m || 0);
+  }
+
+  private fromMinutes(total: number): string {
+    const h = Math.floor(total / 60) % 24;
+    const m = total % 60;
+    return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+  }
+
+  private overlaps(startA: number, endA: number, startB: number, endB: number): boolean {
+    return Math.max(startA, startB) < Math.min(endA, endB);
+  }
+
+  private isSafetyCritical(requiredSkillIds: string[]): boolean {
+    return this.db.skills
+      .filter((s) => requiredSkillIds.includes(s.skill_id))
+      .some((s) => s.skill_name.toLowerCase().includes('electrical'));
   }
 }
