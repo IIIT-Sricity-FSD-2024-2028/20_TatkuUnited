@@ -1,27 +1,35 @@
+/* =============================================================================
+   CUSTOMER PROFILE — profile.js (API-backed)
+   ============================================================================= */
+
 // ===== CART BADGE =====
-function getCustomerSessionId() {
-  const session = Auth.getSession();
-  return session && session.role === "customer" ? session.id : null;
-}
-function getCart() {
-  const customerId = getCustomerSessionId();
-  if (!customerId || !window.CustomerState) return [];
-  return CustomerState.getCart(customerId);
-}
-function updateCartBadge() {
-  const count = getCart().length;
-  document.querySelectorAll(".cart-count").forEach((el) => {
-    el.textContent = count;
-    el.style.display = count > 0 ? "grid" : "none";
-  });
+async function updateCartBadge() {
+  try {
+    const cart = await Api.get("/cart", { silent: true });
+    const items = (cart && cart.items) || [];
+    const count = items.length;
+    document.querySelectorAll(".cart-count").forEach((el) => {
+      el.textContent = count;
+      el.style.display = count > 0 ? "grid" : "none";
+    });
+  } catch (_) {
+    document.querySelectorAll(".cart-count").forEach((el) => {
+      el.textContent = "0";
+      el.style.display = "none";
+    });
+  }
 }
 
 // ===== TOAST =====
 function showProfileToast(msg) {
-  const t = document.getElementById("toast");
-  t.textContent = msg;
-  t.classList.add("show");
-  setTimeout(() => t.classList.remove("show"), 3000);
+  if (window.Api && Api.showToast) {
+    Api.showToast(msg, "info");
+  } else {
+    const t = document.getElementById("toast");
+    t.textContent = msg;
+    t.classList.add("show");
+    setTimeout(() => t.classList.remove("show"), 3000);
+  }
 }
 
 // ===== AVATAR =====
@@ -73,7 +81,7 @@ function syncEmail() {
 }
 
 // ===== SAVE SECTION =====
-function saveSection(section) {
+async function saveSection(section) {
   if (section === "personal") {
     const session = Auth.getCurrentUser();
     if (session) {
@@ -89,24 +97,25 @@ function saveSection(section) {
         return;
       }
 
-      if (phoneVal && !/^\d{10}$/.test(phoneVal)) {
-        showProfileToast("Phone must be exactly 10 digits.");
-        return;
-      }
+      try {
+        await Api.patch("/customers/" + session.id, {
+          full_name: nameVal,
+          email: emailVal,
+          phone: phoneVal ? countryCode + phoneVal : "",
+          dob: dobVal,
+        });
 
-      CRUD.updateRecord("customers", "customer_id", session.id, {
-        full_name: nameVal,
-        email: emailVal,
-        phone: phoneVal ? countryCode + phoneVal : "",
-        dob: dobVal,
-      });
-      // Keep auth session aliases in sync for immediate UI updates.
-      const activeSession = Auth.getSession();
-      if (activeSession) {
-        activeSession.name = nameVal;
-        activeSession.email = emailVal;
-        sessionStorage.setItem("tu_auth_session", JSON.stringify(activeSession));
-        localStorage.setItem("tu_auth_session", JSON.stringify(activeSession));
+        // Keep auth session aliases in sync for immediate UI updates.
+        const activeSession = Auth.getSession();
+        if (activeSession) {
+          activeSession.name = nameVal;
+          activeSession.email = emailVal;
+          sessionStorage.setItem("tu_auth_session", JSON.stringify(activeSession));
+          localStorage.setItem("tu_auth_session", JSON.stringify(activeSession));
+        }
+      } catch (err) {
+        console.error("[profile] Save failed:", err);
+        return;
       }
     }
   }
@@ -131,7 +140,6 @@ function renderAddresses() {
         <div class="address-text">${a.text}</div>
       </div>
       <div class="address-actions">
-        <!-- Edit hidden for brevity -->
         <button class="addr-btn del" onclick="deleteAddress(${a.id})">Delete</button>
       </div>
     </div>
@@ -140,12 +148,14 @@ function renderAddresses() {
     .join("");
 }
 
-function saveAddressesToStore() {
+async function saveAddressesToApi() {
   const session = Auth.getSession();
   if (session) {
-    CRUD.updateRecord("customers", "customer_id", session.id, {
-      saved_addresses: addresses,
-    });
+    try {
+      await Api.patch("/customers/" + session.id, {
+        saved_addresses: addresses,
+      }, { silent: true });
+    } catch (_) {}
   }
 }
 
@@ -153,7 +163,7 @@ function deleteAddress(id) {
   const idx = addresses.findIndex((a) => a.id === id);
   if (idx > -1) {
     addresses.splice(idx, 1);
-    saveAddressesToStore();
+    saveAddressesToApi();
     renderAddresses();
     showProfileToast("Address removed.");
   }
@@ -166,7 +176,7 @@ function saveNewAddress() {
   if (text && text.trim()) {
     const newAddr = { id: Date.now(), tag: "Other", text: text.trim() };
     addresses.push(newAddr);
-    saveAddressesToStore();
+    saveAddressesToApi();
     renderAddresses();
     inputEl.value = "";
     document.getElementById("add-address-form").style.display = "none";
@@ -204,33 +214,25 @@ function renderPayments() {
     .join("");
 }
 
-function savePaymentsToStore() {
-  const session = Auth.getSession();
-  if (session) {
-    CRUD.updateRecord("customers", "customer_id", session.id, {
-      saved_payments: payments,
-    });
-  }
-}
-
 function setDefaultPayment(id) {
   payments.forEach((p) => (p.isDefault = false));
   const match = payments.find((p) => p.id == id);
   if (match) match.isDefault = true;
-  savePaymentsToStore();
   renderPayments();
   showProfileToast("Default payment method updated.");
 }
 
 // ===== PREFERENCES =====
 let preferences = { email: true, sms: true };
-function updatePreference(key, isChecked) {
+async function updatePreference(key, isChecked) {
   preferences[key] = isChecked;
   const session = Auth.getSession();
   if (session) {
-    CRUD.updateRecord("customers", "customer_id", session.id, {
-      preferences: preferences,
-    });
+    try {
+      await Api.patch("/customers/" + session.id, {
+        preferences: preferences,
+      }, { silent: true });
+    } catch (_) {}
   }
   showProfileToast(
     key === "email" ? "Email notifications updated" : "SMS reminders updated",
@@ -249,14 +251,17 @@ const badgeLbl = {
   cancelled: "Cancelled",
 };
 
-function renderActivity() {
+async function renderActivity() {
   const session = Auth.getCurrentUser();
   if (!session) return;
-  const allBookings = AppStore.getTable("bookings") || [];
-  const myBookings = allBookings
-    .filter((b) => b.customer_id === session.id)
-    .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
-    .slice(0, 4);
+
+  let myBookings = [];
+  try {
+    const allBookings = await Api.get("/bookings/my", { silent: true });
+    myBookings = (allBookings || [])
+      .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+      .slice(0, 4);
+  } catch (_) {}
 
   if (myBookings.length === 0) {
     document.getElementById("activity-list").innerHTML =
@@ -412,40 +417,23 @@ function savePassword() {
 }
 
 // ===== DANGER & LOGOUT =====
-function confirmDelete() {
+async function confirmDelete() {
   const session = Auth.getSession();
   if (!session || session.role !== "customer") {
     showProfileToast("Session expired. Please log in again.");
     return;
   }
 
-  showConfirmDialog({
-    title: "Delete Account",
-    message:
-      "Are you sure you want to permanently delete your account? This action cannot be reverted.",
-    confirmLabel: "Delete Permanently",
-    cancelLabel: "Cancel",
-    onConfirm: () => {
-      const customers = AppStore.getTable("customers") || [];
-      const index = customers.findIndex((c) => c.customer_id === session.id);
+  if (!confirm("Are you sure you want to permanently delete your account? This action cannot be reverted.")) {
+    return;
+  }
 
-      if (index === -1) {
-        showProfileToast("Account not found.");
-        return;
-      }
-
-      customers.splice(index, 1);
-
-      if (Array.isArray(window.AuthRegistry)) {
-        window.AuthRegistry = window.AuthRegistry.filter(
-          (u) => !(u.role === "customer" && u.id === session.id),
-        );
-      }
-
-      AppStore.save();
-      Auth.logout();
-    },
-  });
+  try {
+    await Api.del("/customers/" + session.id);
+    Auth.logout();
+  } catch (err) {
+    console.error("[profile] Delete failed:", err);
+  }
 }
 
 function confirmLogout() {
@@ -453,7 +441,7 @@ function confirmLogout() {
 }
 
 // ===== INIT =====
-AppStore.ready.then(() => {
+(async () => {
   const session = Auth.requireSession(["customer"]);
   if (!session) return;
 
@@ -485,9 +473,12 @@ AppStore.ready.then(() => {
     }
   }
 
-  // Load customer data to populate addresses/payments
-  const customers = AppStore.getTable("customers") || [];
-  const me = customers.find((c) => c.customer_id === session.id) || {};
+  // Load customer data from API
+  let me = {};
+  try {
+    me = await Api.get("/customers/" + session.id, { silent: true }) || {};
+  } catch (_) {}
+
   addresses = me.saved_addresses || [
     { id: 1, tag: "Home", text: me.address || "Address pending setup" },
   ];
@@ -517,7 +508,6 @@ AppStore.ready.then(() => {
   const phoneInput = document.getElementById("phone");
   const dobInput = document.getElementById("dob");
 
-  // Keep backward compatibility for old values with country code.
   const rawPhone = me.phone ? String(me.phone) : "";
   const digits = rawPhone.replace(/\D/g, "").slice(-10);
   if (phoneInput) phoneInput.value = digits;
@@ -538,4 +528,4 @@ AppStore.ready.then(() => {
   renderPayments();
   renderActivity();
   updateCartBadge();
-});
+})();

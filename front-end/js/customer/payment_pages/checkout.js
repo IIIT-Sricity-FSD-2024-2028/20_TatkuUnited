@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════
-   checkout.js — Tatku United Checkout
+   checkout.js — Tatku United Checkout (API-backed)
 ═══════════════════════════════════════ */
 
 /* ── Toast ── */
@@ -13,74 +13,9 @@ function showCheckoutToast(msg) {
   toastTimer = setTimeout(() => toastEl.classList.remove("show"), 3000);
 }
 
-function getCheckoutCart(customerId) {
-  if (!customerId || !window.CustomerState) return [];
-  return CustomerState.getCart(customerId);
-}
-
-function getBookingRules() {
-  if (!window.AppStore || typeof AppStore.getBookingRules !== "function") {
-    return { instantBooking: true };
-  }
-  return AppStore.getBookingRules();
-}
-
 function parseAmount(value) {
   const parsed = Number(String(value || "").replace(/[^\d.]/g, ""));
   return Number.isFinite(parsed) ? parsed : 0;
-}
-
-function mapPaymentMethod(value) {
-  if (value === "upi") return "UPI";
-  if (value === "card") return "CARD";
-  if (value === "netbank") return "NETBANK";
-  if (value === "wallet") return "WALLET";
-  return "CARD";
-}
-
-function resolveServiceIdByName(serviceName) {
-  if (!window.AppStore) return null;
-  const services = AppStore.getTable("services") || [];
-  const exactMatch = services.find(
-    (service) => service.service_name === serviceName,
-  );
-  if (exactMatch) return exactMatch.service_id;
-
-  const normalized = String(serviceName || "")
-    .trim()
-    .toLowerCase();
-  const softMatch = services.find(
-    (service) =>
-      String(service.service_name || "")
-        .trim()
-        .toLowerCase() === normalized,
-  );
-  return softMatch ? softMatch.service_id : null;
-}
-
-function getCurrentCustomerRecord(customerId) {
-  if (
-    !customerId ||
-    !window.AppStore ||
-    typeof AppStore.getTable !== "function"
-  ) {
-    return null;
-  }
-
-  const customers = AppStore.getTable("customers") || [];
-  return customers.find((c) => c.customer_id === customerId) || null;
-}
-
-function resolveCustomerAddress(customer) {
-  if (!customer) return "";
-  if (
-    Array.isArray(customer.saved_addresses) &&
-    customer.saved_addresses.length > 0
-  ) {
-    const primary = customer.saved_addresses[0];
-    if (primary && primary.text) return primary.text;
-  }
-  return customer.address || "";
 }
 
 function parseAddressParts(addressText) {
@@ -126,26 +61,16 @@ function setAddressFormUI(name, phone, line1, line2) {
   document.getElementById("inputLine2").value = line2 || "";
 }
 
-function persistCustomerAddress(session, name, phone, line1, line2) {
-  const customer = getCurrentCustomerRecord(session.id);
-  if (!customer) return;
-
+async function persistCustomerAddress(session, name, phone, line1, line2) {
   const fullAddress = buildAddressText(line1, line2);
-  customer.full_name = name || customer.full_name;
-  customer.phone = phone || customer.phone;
-  customer.address = fullAddress;
-
-  if (
-    Array.isArray(customer.saved_addresses) &&
-    customer.saved_addresses.length > 0
-  ) {
-    customer.saved_addresses[0].text = fullAddress;
-  } else {
-    customer.saved_addresses = [{ id: 1, tag: "Home", text: fullAddress }];
-  }
-
-  if (window.AppStore && typeof AppStore.save === "function") {
-    AppStore.save();
+  try {
+    await Api.patch("/customers/" + session.id, {
+      full_name: name,
+      phone: phone,
+      address: fullAddress,
+    }, { silent: true });
+  } catch (_) {
+    // Address save failed silently — not critical
   }
 }
 
@@ -168,7 +93,7 @@ cancelAddrBtn.addEventListener("click", () => {
   changeAddrBtn.style.display = "flex";
 });
 
-saveAddrBtn.addEventListener("click", () => {
+saveAddrBtn.addEventListener("click", async () => {
   const session = Auth.getSession();
   if (!session || session.role !== "customer") return;
 
@@ -183,13 +108,13 @@ saveAddrBtn.addEventListener("click", () => {
   }
 
   setAddressCardUI(name, phone, line1, line2);
-  persistCustomerAddress(session, name, phone, line1, line2);
+  await persistCustomerAddress(session, name, phone, line1, line2);
 
-  const cart = getCheckoutCart(session.id).map((item) => ({
-    ...item,
-    location: buildAddressText(line1, line2),
-  }));
-  CustomerState.setCart(session.id, cart);
+  // Update cart service_address
+  const fullAddress = buildAddressText(line1, line2);
+  try {
+    await Api.patch("/cart", { service_address: fullAddress }, { silent: true });
+  } catch (_) {}
 
   addressForm.classList.remove("visible");
   addressCard.style.opacity = "1";
@@ -215,7 +140,7 @@ paymentOptions.forEach((option) => {
 });
 
 /* ── Confirm Booking ── */
-confirmBtn.addEventListener("click", () => {
+confirmBtn.addEventListener("click", async () => {
   if (!selectedPayment) return;
 
   if (selectedPayment === "cash") {
@@ -228,137 +153,35 @@ confirmBtn.addEventListener("click", () => {
   confirmBtn.textContent = "Processing…";
   confirmBtn.disabled = true;
 
-  setTimeout(() => {
-    const session = Auth.requireSession(["customer"]);
-    if (!session) return;
+  const session = Auth.requireSession(["customer"]);
+  if (!session) return;
 
-    const cart = getCheckoutCart(session.id);
-    const rules = getBookingRules();
+  try {
+    // Single API call to checkout — backend handles everything:
+    // 1. Creates Booking + BookingServices from cart items
+    // 2. Creates Transaction record
+    // 3. Triggers auto-assignment
+    // 4. Creates revenue ledger entries
+    // 5. Clears the cart
+    const result = await Api.post("/bookings/checkout");
 
-    if (!rules.instantBooking && cart.some((item) => item.mode === "instant")) {
-      confirmBtn.textContent = "Confirm Booking";
-      confirmBtn.disabled = false;
-      showCheckoutToast(
-        "Instant booking is disabled. Please reschedule cart items before checkout.",
-      );
-      return;
-    }
-
-    for (let i = 0; i < cart.length; i += 1) {
-      const item = cart[i];
-      if (item.mode !== "scheduled") continue;
-
-      const validation =
-        window.AppStore && typeof AppStore.validateScheduledSlot === "function"
-          ? AppStore.validateScheduledSlot(item.date, item.time)
-          : { valid: true };
-
-      if (!validation.valid) {
-        confirmBtn.textContent = "Confirm Booking";
-        confirmBtn.disabled = false;
-        showCheckoutToast(validation.error);
-        return;
-      }
-    }
-
-    let firstId = null;
-    cart.forEach((item) => {
-      const bId = AppStore.nextId("BKG");
-      if (!firstId) firstId = bId;
-      const nowIso = new Date().toISOString();
-      const bookingAmount = parseAmount(item.price);
-      const checkoutAddress = buildAddressText(
-        document.getElementById("addrLine1").textContent,
-        document.getElementById("addrLine2").textContent,
-      );
-
-      const newBooking = {
-        booking_id: bId,
-        customer_id: session.id,
-        booking_type: item.mode === "instant" ? "INSTANT" : "SCHEDULED",
-        status: "PENDING",
-        service_address: checkoutAddress || item.location,
-        service_name: item.service,
-        price: item.price,
-        provider_id: null,
-        scheduled_at:
-          item.mode === "scheduled"
-            ? new Date(
-                item.date +
-                  "T" +
-                  (item.time ? item.time.split(" ")[0] + ":00" : "10:00:00"),
-              ).toISOString()
-            : new Date().toISOString(),
-        created_at: nowIso,
-      };
-      CRUD.createRecord("bookings", newBooking);
-
-      const serviceId = resolveServiceIdByName(item.service);
-      if (serviceId) {
-        CRUD.createRecord("booking_services", {
-          booking_id: bId,
-          service_id: serviceId,
-          quantity: 1,
-          price_at_booking: bookingAmount,
-        });
-      }
-
-      CRUD.createRecord("transactions", {
-        transaction_id: AppStore.nextId("TXN"),
-        payment_gateway_ref: `PGR${Date.now()}${Math.floor(Math.random() * 1000)}`,
-        payment_method: mapPaymentMethod(selectedPayment),
-        idempotency_key: `idem-${String(bId).toLowerCase()}-001`,
-        payment_status: "SUCCESS",
-        amount: bookingAmount,
-        currency: "INR",
-        refund_amount: 0,
-        refund_reason: null,
-        transaction_at: nowIso,
-        verified_at: nowIso,
-        booking_id: bId,
-      });
-
-      // Auto-assign a provider via skill matching
-      if (window.AssignmentEngine) {
-        const result = AssignmentEngine.assignProviderForBooking(bId);
-        if (result.success) {
-          console.log(
-            "[Checkout] Provider " +
-              result.providerId +
-              " assigned to booking " +
-              bId,
-          );
-
-          // Create pending revenue split at booking time.
-          if (window.RevenueManager) {
-            window.RevenueManager.ensureLedgerEntriesForBooking(bId, {
-              payoutStatus: "PENDING",
-              providerId: result.providerId,
-            });
-          }
-        } else {
-          console.log(
-            "[Checkout] No provider assigned for " + bId + ": " + result.reason,
-          );
-        }
-      }
-    });
-
-    CustomerState.clearCart(session.id);
-
-    CustomerState.setCheckoutMeta(session.id, {
-      last_booking_id:
-        firstId ||
-        "TU-" +
-          new Date().getFullYear() +
-          "-" +
-          Math.floor(Math.random() * 9000 + 1000),
-      last_payment_method: selectedPayment,
-      last_total: document.querySelector(".total-amount").textContent,
-    });
+    // Store checkout meta for payment success page
+    sessionStorage.setItem(
+      "tu_checkout_result",
+      JSON.stringify({
+        booking_id: result.booking_id || result.id,
+        payment_method: selectedPayment,
+        total: document.querySelector(".total-amount")?.textContent || "₹0",
+      }),
+    );
 
     window.location.href = "payment_success.html";
-  }, 1400);
+  } catch (err) {
+    confirmBtn.textContent = "Confirm Booking";
+    confirmBtn.disabled = false;
+    // Error toast already shown by Api interceptor
+    console.error("[checkout] Checkout failed:", err);
+  }
 });
 
 /* ── Close modal on overlay click ── */
@@ -369,14 +192,21 @@ document.getElementById("successModal").addEventListener("click", (e) => {
 });
 
 /* ── Auth guard & Init ── */
-AppStore.ready.then(() => {
+(async () => {
   const session = Auth.requireSession(["customer"]);
   if (!session) return;
 
-  // Calculate cart totals
-  const cart = getCheckoutCart(session.id);
+  // Load cart from API
+  let cartData;
+  try {
+    cartData = await Api.get("/cart");
+  } catch (_) {
+    cartData = { items: [] };
+  }
 
-  if (cart.length === 0) {
+  const items = (cartData && cartData.items) || [];
+
+  if (items.length === 0) {
     showCheckoutToast("Your cart is empty. Redirecting...");
     setTimeout(() => {
       window.location.href = "../home.html";
@@ -384,10 +214,15 @@ AppStore.ready.then(() => {
     return;
   }
 
+  // Calculate totals from API cart data
   function parsePrice(p) {
+    if (typeof p === "number") return p;
     return parseInt((p || "0").replace(/[^\d]/g, "")) || 0;
   }
-  const subtotal = cart.reduce((s, i) => s + parsePrice(i.price), 0);
+  const subtotal = items.reduce(
+    (s, i) => s + parsePrice(i.price_snapshot || i.price),
+    0,
+  );
   const tax = Math.round(subtotal * 0.18);
   const delivery = 49;
   const total = subtotal + tax + delivery;
@@ -403,21 +238,19 @@ AppStore.ready.then(() => {
     totalAmountEl.textContent = "₹" + total.toLocaleString("en-IN");
   }
 
-  // Populate address and form from AppStore customer record
-  const me = getCurrentCustomerRecord(session.id);
-  if (me) {
-    const name = me.full_name || session.name || "Customer";
-    const phone = me.phone || "";
-    const resolvedAddress = resolveCustomerAddress(me);
-    const addressParts = parseAddressParts(resolvedAddress);
+  // Load customer profile for address
+  try {
+    const me = await Api.get("/customers/" + session.id, { silent: true });
+    if (me) {
+      const name = me.full_name || session.name || "Customer";
+      const phone = me.phone || "";
+      const resolvedAddress = me.address || "";
+      const addressParts = parseAddressParts(resolvedAddress);
 
-    setAddressCardUI(name, phone, addressParts.line1, addressParts.line2);
-    setAddressFormUI(name, phone, addressParts.line1, addressParts.line2);
-
-    const cartWithCurrentAddress = cart.map((item) => ({
-      ...item,
-      location: resolvedAddress || item.location,
-    }));
-    CustomerState.setCart(session.id, cartWithCurrentAddress);
+      setAddressCardUI(name, phone, addressParts.line1, addressParts.line2);
+      setAddressFormUI(name, phone, addressParts.line1, addressParts.line2);
+    }
+  } catch (_) {
+    // Address load failed — not critical
   }
-});
+})();

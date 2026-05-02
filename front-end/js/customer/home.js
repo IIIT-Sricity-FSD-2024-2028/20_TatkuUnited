@@ -1,63 +1,72 @@
-function getCustomerSessionId() {
-  const session = Auth.getSession();
-  return session && session.role === "customer" ? session.id : null;
-}
-function getCart() {
-  const customerId = getCustomerSessionId();
-  if (!customerId || !window.CustomerState) return [];
-  return CustomerState.getCart(customerId);
-}
-function updateCartBadge() {
-  const count = getCart().length;
-  document.querySelectorAll(".cart-count").forEach((el) => {
-    el.textContent = count;
-    el.style.display = count > 0 ? "grid" : "none";
-  });
+/* =============================================================================
+   CUSTOMER HOME PAGE — home.js (API-backed)
+   ============================================================================= */
+
+async function updateCartBadge() {
+  try {
+    const cart = await Api.get("/cart", { silent: true });
+    const items = (cart && cart.items) || [];
+    const count = items.length;
+    document.querySelectorAll(".cart-count").forEach((el) => {
+      el.textContent = count;
+      el.style.display = count > 0 ? "grid" : "none";
+    });
+  } catch (_) {
+    document.querySelectorAll(".cart-count").forEach((el) => {
+      el.textContent = "0";
+      el.style.display = "none";
+    });
+  }
 }
 
-AppStore.ready.then(() => {
+(async () => {
   const session = Auth.requireSession(["customer"]);
   if (!session) return;
 
   /* ── Personalize hero ── */
   const heroName = document.querySelector(".hero-name");
-  if (heroName) heroName.textContent = session.name + "!";
+  if (heroName) heroName.textContent = (session.name || "Customer") + "!";
 
-  const allBookings = AppStore.getTable("bookings") || [];
-  const allAssignments = AppStore.getTable("job_assignments") || [];
-  const allProviders = AppStore.getTable("service_providers") || [];
+  /* ── Load recent bookings from API ── */
+  let myBookings = [];
+  try {
+    const allBookings = await Api.get("/bookings/my");
+    myBookings = (allBookings || [])
+      .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+      .slice(0, 3);
+  } catch (err) {
+    console.error("[home] Failed to load bookings:", err);
+  }
 
+  /* ── Load assignments for these bookings ── */
   const assignmentByBooking = new Map();
-  allAssignments.forEach((assignment) => {
-    const existing = assignmentByBooking.get(assignment.booking_id);
-    if (!existing) {
-      assignmentByBooking.set(assignment.booking_id, assignment);
-      return;
+  for (const booking of myBookings) {
+    try {
+      const assignments = await Api.get(
+        "/job-assignments/booking/" + booking.booking_id,
+        { silent: true },
+      );
+      if (assignments && assignments.length > 0) {
+        // Pick the latest assignment
+        const latest = assignments.sort((a, b) => {
+          const at = new Date(a.updated_at || a.assigned_at || a.created_at || 0).getTime();
+          const bt = new Date(b.updated_at || b.assigned_at || b.created_at || 0).getTime();
+          return bt - at;
+        })[0];
+        assignmentByBooking.set(booking.booking_id, latest);
+      }
+    } catch (_) {
+      // No assignments found — that's fine
     }
-    const existingTs = new Date(
-      existing.updated_at || existing.assigned_at || existing.created_at || 0,
-    ).getTime();
-    const currentTs = new Date(
-      assignment.updated_at ||
-        assignment.assigned_at ||
-        assignment.created_at ||
-        0,
-    ).getTime();
-    if (currentTs >= existingTs) {
-      assignmentByBooking.set(assignment.booking_id, assignment);
-    }
-  });
+  }
 
-  const myBookings = allBookings
-    .filter((b) => b.customer_id === session.id)
-    .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
-    .slice(0, 3);
-
-  const badgeMap = {
-    PENDING: "badge-pending",
-    CANCELLED: "badge-cancelled",
-    SCHEDULED: "badge-assigned",
-    COMPLETED: "badge-completed",
+  const statusMap = {
+    PENDING: { label: "Pending", badge: "badge-pending" },
+    CONFIRMED: { label: "Assigned", badge: "badge-assigned" },
+    ASSIGNED: { label: "Assigned", badge: "badge-assigned" },
+    IN_PROGRESS: { label: "In Progress", badge: "badge-inprogress" },
+    COMPLETED: { label: "Completed", badge: "badge-completed" },
+    CANCELLED: { label: "Cancelled", badge: "badge-cancelled" },
   };
 
   function renderBookings() {
@@ -79,28 +88,15 @@ AppStore.ready.then(() => {
         const dateObj = new Date(b.scheduled_at);
         const rawStatus = (b.status || "PENDING").toUpperCase();
         const assignment = assignmentByBooking.get(b.booking_id) || null;
-        const normalizedStatus =
-          rawStatus === "CONFIRMED" ? "ASSIGNED" : rawStatus;
+        const normalizedStatus = rawStatus === "CONFIRMED" ? "ASSIGNED" : rawStatus;
         const effectiveStatus = assignment
           ? String(assignment.status || normalizedStatus).toUpperCase()
           : normalizedStatus;
-        const statusMap = {
-          PENDING: { label: "Pending", badge: "badge-pending" },
-          ASSIGNED: { label: "Assigned", badge: "badge-assigned" },
-          IN_PROGRESS: { label: "In Progress", badge: "badge-inprogress" },
-          COMPLETED: { label: "Completed", badge: "badge-completed" },
-          CANCELLED: { label: "Cancelled", badge: "badge-cancelled" },
-        };
         const sObj = statusMap[effectiveStatus] || statusMap["PENDING"];
 
         let providerName = "Awaiting Assignment";
-        const resolvedProviderId =
-          (assignment && assignment.service_provider_id) || b.provider_id;
-        if (resolvedProviderId) {
-          const found = allProviders.find(
-            (p) => p.service_provider_id === resolvedProviderId,
-          );
-          providerName = found ? found.name : "Tatku Provider";
+        if (assignment && assignment.sp_id) {
+          providerName = assignment.sp_name || "Tatku Provider";
         }
 
         const dateStr = dateObj.toLocaleDateString("en-US", {
@@ -139,117 +135,4 @@ AppStore.ready.then(() => {
 
   renderBookings();
   updateCartBadge();
-
-  /* ── Assignment Notifications ── */
-  if (window.AssignmentEngine) {
-    const notifs = AssignmentEngine.getCustomerNotifications(session.id);
-    if (notifs.length > 0) {
-      const container = document.createElement("div");
-      container.id = "assign-notif-container";
-      const bookingsGrid = document.getElementById("bookings-grid");
-      if (bookingsGrid && bookingsGrid.parentNode) {
-        bookingsGrid.parentNode.insertBefore(container, bookingsGrid);
-      }
-
-      container.innerHTML = notifs
-        .map(
-          (n) => `
-        <div class="assign-notif-banner" data-notif-id="${n.id}">
-          <div class="notif-icon-wrap">
-            <svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-          </div>
-          <div class="notif-body">
-            <div class="notif-title">${n.title}</div>
-            <div class="notif-message">${n.message}</div>
-            <div class="notif-actions">
-              <button class="notif-btn notif-btn-primary" onclick="showProviderProfile('${n.providerId}')">View Provider Profile</button>
-              <button class="notif-btn notif-btn-dismiss" onclick="dismissNotif('${session.id}', ${n.id})">Dismiss</button>
-            </div>
-          </div>
-        </div>
-      `,
-        )
-        .join("");
-    }
-  }
-});
-
-/* ── Provider Profile Popup ── */
-function showProviderProfile(providerId) {
-  if (!window.AssignmentEngine) return;
-  const profile = AssignmentEngine.getAssignedProviderProfile(providerId);
-  if (!profile) return;
-
-  const stars = [];
-  const fullStars = Math.floor(profile.rating);
-  const hasHalf = profile.rating - fullStars >= 0.25;
-  for (let i = 0; i < 5; i++) {
-    if (i < fullStars) {
-      stars.push(
-        '<svg viewBox="0 0 20 20" fill="#f5a623"><path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"/></svg>',
-      );
-    } else if (i === fullStars && hasHalf) {
-      stars.push(
-        '<svg viewBox="0 0 20 20" fill="#f5a623" opacity="0.5"><path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"/></svg>',
-      );
-    } else {
-      stars.push(
-        '<svg viewBox="0 0 20 20" fill="#e2e8f0"><path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"/></svg>',
-      );
-    }
-  }
-
-  const overlay = document.createElement("div");
-  overlay.className = "provider-profile-overlay";
-  overlay.onclick = function (e) {
-    if (e.target === overlay) overlay.remove();
-  };
-  overlay.innerHTML = `
-    <div class="provider-profile-popup">
-      <button class="popup-close" onclick="this.closest('.provider-profile-overlay').remove()">
-        <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-      </button>
-      <div class="popup-avatar">
-        <img src="${profile.pfpUrl}" alt="${profile.name}" />
-      </div>
-      <div class="popup-name">${profile.name}</div>
-      <div class="popup-role">Service Provider</div>
-      <div class="popup-rating">
-        <div class="stars">${stars.join("")}</div>
-        <span class="rating-text">${profile.rating.toFixed(1)}</span>
-        <span class="rating-count">(${profile.ratingCount} reviews)</span>
-      </div>
-      <hr class="popup-divider" />
-      <div class="popup-info-row">
-        <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 01-2.18 2A19.79 19.79 0 013.1 5.18 2 2 0 015.09 3h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L9.09 10.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 17v-.08z"/></svg>
-        <div>
-          <div class="info-label">Phone</div>
-          <div class="info-value">${profile.phone}</div>
-        </div>
-      </div>
-      <div class="popup-info-row">
-        <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-        <div>
-          <div class="info-label">Provider ID</div>
-          <div class="info-value">${providerId}</div>
-        </div>
-      </div>
-    </div>
-  `;
-  document.body.appendChild(overlay);
-}
-
-function dismissNotif(customerId, notifId) {
-  if (window.AssignmentEngine) {
-    AssignmentEngine.dismissCustomerNotification(customerId, notifId);
-  }
-  const banner = document.querySelector(
-    `.assign-notif-banner[data-notif-id="${notifId}"]`,
-  );
-  if (banner) {
-    banner.style.transition = "opacity 0.3s, transform 0.3s";
-    banner.style.opacity = "0";
-    banner.style.transform = "translateY(-10px)";
-    setTimeout(() => banner.remove(), 300);
-  }
-}
+})();

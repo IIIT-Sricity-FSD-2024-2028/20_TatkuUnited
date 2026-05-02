@@ -1,3 +1,7 @@
+/* =============================================================================
+   PROVIDER EARNINGS — earnings.js (API-backed)
+   ============================================================================= */
+
 // Load Chart.js
 const script = document.createElement("script");
 script.src =
@@ -7,7 +11,6 @@ document.head.appendChild(script);
 
 let chartInstance = null;
 let activeRange = 30;
-let userJobs = [];
 let payoutRows = [];
 let payoutByRef = new Map();
 let activeReceiptRef = null;
@@ -37,78 +40,50 @@ function formatDisplayDate(value) {
   });
 }
 
-function getLatestTransaction(bookingId, txList) {
-  if (!bookingId) return null;
-  const transactions = txList.filter((tx) => tx.booking_id === bookingId);
-  if (!transactions.length) return null;
+async function buildPayoutRows() {
+  const session = Auth.getSession();
+  if (!session) return;
 
-  return transactions.sort((a, b) => {
-    const aTime = Math.max(
-      getTimestamp(a.verified_at),
-      getTimestamp(a.transaction_at),
-    );
-    const bTime = Math.max(
-      getTimestamp(b.verified_at),
-      getTimestamp(b.transaction_at),
-    );
-    return bTime - aTime;
-  })[0];
-}
+  const spId = session.id;
 
-function normalizePaymentStatus(rawStatus) {
-  const s = String(rawStatus || "").toUpperCase();
-  if (s === "SUCCESS" || s === "COMPLETED") return "paid";
-  if (s === "REFUNDED") return "refunded";
-  return "pending";
-}
+  try {
+    const ledgerEntries = await Api.get("/revenue-ledger/provider/" + spId);
 
-function buildPayoutRows() {
-  // Get current provider's ID from session/data
-  const providerId =
-    (window.providerSession && window.providerSession.providerId) || "SP001";
+    payoutRows = (ledgerEntries || []).map((entry) => {
+      const status =
+        (entry.payout_status || "").toUpperCase() === "DISBURSED" ||
+        (entry.payout_status || "").toUpperCase() === "PAID"
+          ? "paid"
+          : "pending";
+      const effectiveDate =
+        status === "paid"
+          ? entry.payout_at || entry.created_at
+          : entry.created_at;
 
-  const ledger = (window.AppStore && AppStore.getTable("revenue_ledger")) || [];
-  const transactions =
-    (window.AppStore && AppStore.getTable("transactions")) || [];
+      return {
+        ref: entry.ledger_id || entry.id,
+        date: effectiveDate,
+        displayDate: formatDisplayDate(effectiveDate),
+        amount: Number(entry.sp_amount || entry.amount || 0),
+        amountLabel: formatCurrency(entry.sp_amount || entry.amount || 0),
+        status,
+        customer: entry.booking_id || "-",
+        service: entry.booking_id || "-",
+        bookingId: entry.booking_id || null,
+        paymentMethod: entry.payment_method || "-",
+        transactionId: entry.transaction_id || "-",
+        paymentStatusRaw: status === "paid" ? "SUCCESS" : "PENDING",
+        originalAmount: Number(entry.total_amount || entry.amount || 0),
+      };
+    });
 
-  // Filter ledger entries for this provider (role = "provider")
-  const providerLedgerEntries = ledger.filter(
-    (entry) =>
-      entry.role === "provider" && entry.service_provider_id === providerId,
-  );
-
-  // Build transaction map to get transaction details
-  const txnById = new Map(transactions.map((t) => [t.transaction_id, t]));
-
-  // Convert ledger entries to payout rows
-  payoutRows = providerLedgerEntries.map((ledger_entry) => {
-    const txn = txnById.get(ledger_entry.transaction_id);
-    const status =
-      ledger_entry.payout_status.toLowerCase() === "paid" ? "paid" : "pending";
-    const effectiveDate =
-      status === "paid"
-        ? ledger_entry.payout_at || ledger_entry.created_at
-        : ledger_entry.created_at;
-
-    return {
-      ref: ledger_entry.ledger_id,
-      date: effectiveDate,
-      displayDate: formatDisplayDate(effectiveDate),
-      amount: Number(ledger_entry.amount || 0),
-      amountLabel: formatCurrency(ledger_entry.amount),
-      status,
-      customer: txn ? txn.booking_id : "-",
-      service: txn ? txn.booking_id : "-",
-      bookingId: txn ? txn.booking_id : null,
-      paymentMethod: txn ? txn.payment_method || "-" : "-",
-      transactionId: txn ? txn.transaction_id || "-" : "-",
-      paymentStatusRaw: txn ? txn.payment_status || "PENDING" : "PENDING",
-      originalAmount: txn ? Number(txn.amount || 0) : 0,
-    };
-  });
-
-  payoutRows.sort((a, b) => getTimestamp(b.date) - getTimestamp(a.date));
-  payoutByRef = new Map(payoutRows.map((row) => [row.ref, row]));
+    payoutRows.sort((a, b) => getTimestamp(b.date) - getTimestamp(a.date));
+    payoutByRef = new Map(payoutRows.map((row) => [row.ref, row]));
+  } catch (err) {
+    console.error("[earnings] Failed to load revenue ledger:", err);
+    payoutRows = [];
+    payoutByRef = new Map();
+  }
 }
 
 function renderStats() {
@@ -226,20 +201,12 @@ function showReceipt(refId) {
       <span style="color: #0f172a;">${row.displayDate}</span>
     </div>
     <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-      <span style="color: #64748b;">Customer</span>
+      <span style="color: #64748b;">Booking</span>
       <span style="color: #0f172a;">${row.customer}</span>
     </div>
     <div style="display: flex; justify-content: space-between; margin-bottom: 16px; border-bottom: 1px solid #e2e8f0; padding-bottom: 16px;">
-      <span style="color: #64748b;">Service</span>
-      <span style="color: #0f172a;">${row.service.substring(0, 20)}${row.service.length > 20 ? "..." : ""}</span>
-    </div>
-    <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
       <span style="color: #64748b;">Transaction ID</span>
       <span style="color: #0f172a;">${row.transactionId}</span>
-    </div>
-    <div style="display: flex; justify-content: space-between; margin-bottom: 16px; border-bottom: 1px solid #e2e8f0; padding-bottom: 16px;">
-      <span style="color: #64748b;">Payment Method</span>
-      <span style="color: #0f172a;">${row.paymentMethod}</span>
     </div>
     <div style="display: flex; justify-content: space-between; font-size: 16px; font-weight: 700;">
       <span style="color: #0f172a;">Total Payout</span>
@@ -252,7 +219,6 @@ function showReceipt(refId) {
   document.getElementById("receipt-details").innerHTML = content;
   const modal = document.getElementById("receipt-modal");
   modal.style.display = "flex";
-  // Fade in animation
   modal.animate([{ opacity: 0 }, { opacity: 1 }], {
     duration: 200,
     fill: "forwards",
@@ -280,10 +246,8 @@ function downloadReceipt() {
   const entries = [
     ["Ref #", row.ref],
     ["Date", row.displayDate],
-    ["Customer", row.customer],
-    ["Service", row.service],
+    ["Booking", row.customer],
     ["Transaction ID", row.transactionId],
-    ["Payment Method", row.paymentMethod],
     ["Total Payout", row.amountLabel],
     ["Status", row.paymentStatusRaw],
   ];
@@ -415,76 +379,17 @@ function setRange(r) {
   buildChart(r);
 }
 
-function backfillMissingLedgerForProvider() {
-  if (!window.RevenueManager || !window.getData) return;
+async function init() {
+  const session = Auth.requireSession(["provider", "service_provider"]);
+  if (!session) return;
 
-  const data = window.getData();
-  if (!data) return;
+  // Update provider name in UI
+  document
+    .querySelectorAll(".user-chip span")
+    .forEach((el) => (el.textContent = session.name || "Provider"));
 
-  const providerId =
-    (window.providerSession && window.providerSession.providerId) ||
-    (data.provider && data.provider.service_provider_id) ||
-    "SP001";
-
-  const assignments = (data.job_assignments || []).filter(
-    (ja) =>
-      ja.service_provider_id === providerId &&
-      String(ja.status || "").toUpperCase() === "COMPLETED",
-  );
-
-  assignments.forEach((ja) => {
-    const bookingId = ja.booking_id;
-    const txn = (data.transactions || []).find(
-      (t) =>
-        t.booking_id === bookingId &&
-        String(t.payment_status || "").toUpperCase() === "SUCCESS",
-    );
-
-    if (!txn) return;
-
-    const hasLedger = (data.revenue_ledger || []).some(
-      (l) => l.transaction_id === txn.transaction_id,
-    );
-
-    if (!hasLedger) {
-      window.RevenueManager.generateLedgerEntriesForBooking(bookingId);
-    }
-  });
-}
-
-function init() {
-  if (window.initData) {
-    window.initData().then(() => {
-      const data = window.getData();
-      if (!data) return;
-
-      if (data.provider) {
-        document
-          .querySelectorAll(".user-chip span")
-          .forEach((el) => (el.textContent = data.provider.name || "Provider"));
-        if (data.provider.pfp_url) {
-          document.querySelectorAll(".user-avatar").forEach((el) => {
-            el.innerHTML = `<img src="${data.provider.pfp_url}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
-          });
-        }
-      }
-
-      if (data.jobs) {
-        userJobs = data.jobs;
-      }
-
-      // Self-heal older records where job completion happened before ledger generation was added.
-      backfillMissingLedgerForProvider();
-
-      buildPayoutRows();
-      renderStats();
-      renderPayouts();
-      buildChart(30);
-    });
-  } else {
-    buildPayoutRows();
-    renderStats();
-    renderPayouts();
-    buildChart(30);
-  }
+  await buildPayoutRows();
+  renderStats();
+  renderPayouts();
+  buildChart(30);
 }

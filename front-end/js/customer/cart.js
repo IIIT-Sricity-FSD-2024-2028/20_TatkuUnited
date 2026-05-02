@@ -1,68 +1,38 @@
-function getCustomerSessionId() {
-  const session = Auth.getSession();
-  return session && session.role === "customer" ? session.id : null;
+/* =============================================================================
+   CUSTOMER CART PAGE — cart.js (API-backed)
+   ============================================================================= */
+
+let cartData = null; // { cart_id, customer_id, booking_type, scheduled_at, items: [] }
+
+async function loadCart() {
+  try {
+    cartData = await Api.get("/cart");
+  } catch (_) {
+    cartData = { items: [] };
+  }
+  return cartData;
 }
-function getCart() {
-  const customerId = getCustomerSessionId();
-  if (!customerId || !window.CustomerState) return [];
-  return CustomerState.getCart(customerId);
+
+function getCartItems() {
+  return (cartData && cartData.items) || [];
 }
-function saveCart(c) {
-  const customerId = getCustomerSessionId();
-  if (!customerId || !window.CustomerState) return;
-  CustomerState.setCart(customerId, c);
-}
-function updateCartBadge() {
-  const count = getCart().length;
+
+async function updateCartBadge() {
+  const items = getCartItems();
+  const count = items.length;
   document.querySelectorAll(".cart-count").forEach((el) => {
     el.textContent = count;
     el.style.display = count > 0 ? "grid" : "none";
   });
 }
+
 function parsePrice(p) {
+  if (typeof p === "number") return p;
   return parseInt((p || "0").replace(/[^\d]/g, "")) || 0;
 }
 
-function getCurrentCustomerAddress() {
-  const customerId = getCustomerSessionId();
-  if (
-    !customerId ||
-    !window.AppStore ||
-    typeof AppStore.getTable !== "function"
-  ) {
-    return "";
-  }
-
-  const customers = AppStore.getTable("customers") || [];
-  const me = customers.find((c) => c.customer_id === customerId);
-  if (!me) return "";
-
-  if (Array.isArray(me.saved_addresses) && me.saved_addresses.length > 0) {
-    const primary = me.saved_addresses[0];
-    if (primary && primary.text) return primary.text;
-  }
-
-  return me.address || "";
-}
-
-function getBookingRules() {
-  if (!window.AppStore || typeof AppStore.getBookingRules !== "function") {
-    return {
-      instantBooking: true,
-      maxAdvanceDays: 7,
-      maxAdvanceLabel: "7 days",
-    };
-  }
-  return AppStore.getBookingRules();
-}
-
-function getDateConstraints() {
-  const rules = getBookingRules();
-  const today = new Date();
-  const maxDate = new Date();
-  maxDate.setDate(today.getDate() + rules.maxAdvanceDays);
-  const fmt = (d) => d.toISOString().split("T")[0];
-  return { min: fmt(today), max: fmt(maxDate) };
+function formatPrice(value) {
+  return "₹" + Number(value || 0).toLocaleString("en-IN");
 }
 
 const svcIcon = `<svg viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/></svg>`;
@@ -72,24 +42,25 @@ let editingItemId = null;
 // ===== EDIT MODAL =====
 function openEditModal(itemId) {
   editingItemId = itemId;
-  const cart = getCart();
-  const item = cart.find((i) => i.id === itemId);
+  const items = getCartItems();
+  const item = items.find((i) => i.cart_item_id === itemId);
   if (!item) return;
-  document.getElementById("modal-service-name").textContent = item.service;
+  document.getElementById("modal-service-name").textContent =
+    item.service_name || item.service || "Service";
   const dateInput = document.getElementById("modal-date");
   const timeSelect = document.getElementById("modal-time");
-  const { min, max } = getDateConstraints();
-  dateInput.min = min;
-  dateInput.max = max;
-  if (item.date && item.date !== "ASAP") {
-    dateInput.value = item.date >= min && item.date <= max ? item.date : "";
-  } else {
-    dateInput.value = "";
-  }
-  timeSelect.value = item.time && item.time !== "Immediate" ? item.time : "";
+  const today = new Date();
+  const maxDate = new Date();
+  maxDate.setDate(today.getDate() + 30);
+  const fmt = (d) => d.toISOString().split("T")[0];
+  dateInput.min = fmt(today);
+  dateInput.max = fmt(maxDate);
+  dateInput.value = "";
+  timeSelect.value = "";
   document.getElementById("edit-modal").classList.add("open");
   document.body.style.overflow = "hidden";
 }
+
 function closeEditModalBtn() {
   document.getElementById("edit-modal").classList.remove("open");
   document.body.style.overflow = "";
@@ -99,44 +70,44 @@ function closeEditModal(e) {
   if (e.target === document.getElementById("edit-modal")) closeEditModalBtn();
 }
 
-function saveScheduleEdit() {
+async function saveScheduleEdit() {
   if (!editingItemId) return;
   const newDate = document.getElementById("modal-date").value;
   const newTime = document.getElementById("modal-time").value;
 
-  const validation =
-    window.AppStore && typeof AppStore.validateScheduledSlot === "function"
-      ? AppStore.validateScheduledSlot(newDate, newTime)
-      : { valid: !!newDate && !!newTime, error: "Please select date/time." };
-
-  if (!validation.valid) {
-    showToast(validation.error, "error");
+  if (!newDate || !newTime) {
+    showToast("Please select both date and time.", "error");
     return;
   }
 
-  const cart = getCart();
-  const item = cart.find((i) => i.id === editingItemId);
-  if (item) {
-    item.date = newDate;
-    item.time = newTime;
-    saveCart(cart);
+  const scheduledAt = new Date(newDate + "T" + newTime + ":00").toISOString();
+
+  try {
+    await Api.patch("/cart", { scheduled_at: scheduledAt });
+    await loadCart();
+    closeEditModalBtn();
+    render();
+    showToast("Schedule updated successfully!", "success");
+  } catch (err) {
+    console.error("[cart] Schedule update failed:", err);
   }
-  closeEditModalBtn();
-  render();
-  showToast("Schedule updated successfully!", "success");
 }
 
-function removeItem(id) {
-  let cart = getCart().filter((i) => i.id !== id);
-  saveCart(cart);
-  updateCartBadge();
-  render();
-  showToast("Item removed from cart.", "info");
+async function removeItem(itemId) {
+  try {
+    await Api.del("/cart/items/" + itemId);
+    await loadCart();
+    updateCartBadge();
+    render();
+    showToast("Item removed from cart.", "info");
+  } catch (err) {
+    console.error("[cart] Remove failed:", err);
+  }
 }
 
 function render() {
-  const cart = getCart();
-  const isEmpty = cart.length === 0;
+  const items = getCartItems();
+  const isEmpty = items.length === 0;
   document.getElementById("cart-items").style.display = isEmpty
     ? "none"
     : "flex";
@@ -148,44 +119,28 @@ function render() {
     : "none";
   document.getElementById("cart-sub").textContent = isEmpty
     ? ""
-    : `${cart.length} service${cart.length > 1 ? "s" : ""} in your cart`;
+    : `${items.length} service${items.length > 1 ? "s" : ""} in your cart`;
   if (isEmpty) return;
 
-  const subtotal = cart.reduce((s, i) => s + parsePrice(i.price), 0);
+  const subtotal = items.reduce(
+    (s, i) => s + parsePrice(i.price_snapshot || i.price),
+    0,
+  );
   const tax = Math.round(subtotal * 0.18);
   const total = subtotal + tax;
 
-  document.getElementById("cart-items").innerHTML = cart
+  document.getElementById("cart-items").innerHTML = items
     .map((item, idx) => {
-      const customerAddress = getCurrentCustomerAddress();
-      const displayLocation =
-        customerAddress || item.location || "Location unavailable";
-      const isScheduled = item.mode === "scheduled";
-      const displayDate =
-        item.date && item.date !== "ASAP"
-          ? new Date(item.date).toLocaleDateString("en-IN", {
-              day: "numeric",
-              month: "short",
-              year: "numeric",
-            })
-          : item.date;
-
-      let displayTime = item.time;
-      if (displayTime && displayTime !== "Immediate") {
-        const [h, m] = displayTime.split(":");
-        if (h && m) {
-          const hNum = parseInt(h, 10);
-          const ampm = hNum >= 12 ? "PM" : "AM";
-          const h12 = hNum % 12 || 12;
-          displayTime = `${h12.toString().padStart(2, "0")}:${m} ${ampm}`;
-        }
-      }
+      const displayLocation = item.location || "Location unavailable";
+      const priceDisplay = formatPrice(item.price_snapshot || item.price);
+      const serviceName = item.service_name || item.service || "Service";
+      const itemId = item.cart_item_id || item.id;
 
       return `
       <div class="cart-item" style="animation-delay:${idx * 0.07}s">
         <div class="cart-item-icon">${svcIcon}</div>
         <div class="cart-item-body">
-          <div class="cart-item-name">${item.service}</div>
+          <div class="cart-item-name">${serviceName}</div>
           <div class="cart-item-meta">
             <div class="cart-item-meta-row">
               <svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
@@ -193,29 +148,13 @@ function render() {
             </div>
             <div class="cart-item-meta-row">
               <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-              ${displayDate} · ${displayTime}
-            </div>
-            <div class="cart-item-meta-row">
-              <span class="mode-tag ${isScheduled ? "mode-scheduled" : "mode-instant"}">${item.mode}</span>
+              Qty: ${item.quantity || 1}
             </div>
           </div>
-          ${
-            isScheduled
-              ? `
-            <div class="edit-schedule-row">
-              <button class="edit-schedule-btn" onclick="openEditModal(${item.id})">
-                <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-                Edit Schedule
-              </button>
-              <span class="edit-schedule-hint">Change date or time</span>
-            </div>
-          `
-              : ""
-          }
         </div>
         <div class="cart-item-right">
-          <div class="cart-item-price">${item.price}</div>
-          <button class="btn-remove" onclick="removeItem(${item.id})">
+          <div class="cart-item-price">${priceDisplay}</div>
+          <button class="btn-remove" onclick="removeItem('${itemId}')">
             <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6M9 6V4h6v2"/></svg>
             Remove
           </button>
@@ -228,7 +167,7 @@ function render() {
   document.getElementById("cart-summary").innerHTML = `
     <div class="summary-title">Order Summary</div>
     <div class="summary-rows">
-      ${cart.map((i) => `<div class="summary-row"><span class="summary-row-label">${i.service}</span><span class="summary-row-value">${i.price}</span></div>`).join("")}
+      ${items.map((i) => `<div class="summary-row"><span class="summary-row-label">${i.service_name || i.service || "Service"}</span><span class="summary-row-value">${formatPrice(i.price_snapshot || i.price)}</span></div>`).join("")}
     </div>
     <div class="summary-divider"></div>
     <div class="summary-rows">
@@ -259,25 +198,16 @@ function applyPromo() {
   const code = document.getElementById("promo-input")?.value?.trim();
   if (code) showToast(`Promo "${code}" applied! (Demo)`, "success");
 }
+
 function confirmBooking() {
-  const rules = getBookingRules();
-  const cart = getCart();
-
-  if (!rules.instantBooking && cart.some((i) => i.mode === "instant")) {
-    showToast(
-      "Instant bookings are disabled. Edit cart items to scheduled slots before checkout.",
-      "error",
-    );
-    return;
-  }
-
   window.location.href = "payment_pages/checkout.html";
 }
 
-AppStore.ready.then(() => {
+(async () => {
   const session = Auth.requireSession(["customer"]);
   if (!session) return;
 
+  await loadCart();
   render();
   updateCartBadge();
-});
+})();

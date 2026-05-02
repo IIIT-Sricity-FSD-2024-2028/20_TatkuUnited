@@ -61,32 +61,28 @@
   }
 
   function initAuthNav() {
-    if (typeof AppStore !== "undefined" && typeof Auth !== "undefined") {
-      AppStore.ready.then(function () {
-        var session = Auth.getCurrentUser();
-        if (session && session.role === "customer") {
-          var navAuth = document.querySelector(".nav-auth");
-          if (navAuth) {
-            navAuth.innerHTML =
-              '<a href="../customer/cart.html" class="cart-btn" title="Cart"><svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" /><line x1="3" y1="6" x2="21" y2="6" /><path d="M16 10a4 4 0 01-8 0" /></svg></a>' +
-              '<a href="../customer/home.html" class="user-avatar-btn" title="Dashboard"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" /><circle cx="12" cy="7" r="4" /></svg></a>';
-          }
-          var navLinks = document.querySelector(".nav-links");
-          if (navLinks) {
-            navLinks.innerHTML =
-              '<li><a href="../customer/home.html">Home</a></li>' +
-              '<li><a href="service_discovery.html">Services</a></li>' +
-              '<li><a href="../customer/bookings.html">Bookings</a></li>';
-          }
-          var mobileMenu = document.querySelector("#mobileMenu ul");
-          if (mobileMenu) {
-            mobileMenu.innerHTML =
-              '<li><a href="../customer/home.html" style="color:var(--primary); font-weight:600;">Dashboard</a></li>' +
-              '<li><a href="service_discovery.html">Services</a></li>' +
-              '<li><a href="../customer/cart.html">Cart</a></li>';
-          }
-        }
-      });
+    var session = typeof Auth !== "undefined" ? Auth.getCurrentUser() : null;
+    if (session && session.role === "customer") {
+      var navAuth = document.querySelector(".nav-auth");
+      if (navAuth) {
+        navAuth.innerHTML =
+          '<a href="../customer/cart.html" class="cart-btn" title="Cart"><svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" /><line x1="3" y1="6" x2="21" y2="6" /><path d="M16 10a4 4 0 01-8 0" /></svg></a>' +
+          '<a href="../customer/home.html" class="user-avatar-btn" title="Dashboard"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" /><circle cx="12" cy="7" r="4" /></svg></a>';
+      }
+      var navLinks = document.querySelector(".nav-links");
+      if (navLinks) {
+        navLinks.innerHTML =
+          '<li><a href="../customer/home.html">Home</a></li>' +
+          '<li><a href="service_discovery.html">Services</a></li>' +
+          '<li><a href="../customer/bookings.html">Bookings</a></li>';
+      }
+      var mobileMenu = document.querySelector("#mobileMenu ul");
+      if (mobileMenu) {
+        mobileMenu.innerHTML =
+          '<li><a href="../customer/home.html" style="color:var(--primary); font-weight:600;">Dashboard</a></li>' +
+          '<li><a href="service_discovery.html">Services</a></li>' +
+          '<li><a href="../customer/cart.html">Cart</a></li>';
+      }
     }
   }
 
@@ -193,124 +189,31 @@
   }
 
   function buildReviewData(data, serviceId) {
-    var bookingServices = (data.booking_services || []).filter(function (item) {
-      return item.service_id === serviceId;
-    });
-    var bookingIds = new Set(
-      bookingServices.map(function (item) {
-        return item.booking_id;
-      }),
-    );
-    var bookingById = new Map(
-      (data.bookings || []).map(function (booking) {
-        return [booking.booking_id, booking];
-      }),
-    );
-    var assignmentByBooking = new Map(
-      (data.job_assignments || []).map(function (assignment) {
-        return [assignment.booking_id, assignment];
-      }),
-    );
-    var customerById = new Map(
-      (data.customers || []).map(function (customer) {
-        return [customer.customer_id, customer];
-      }),
-    );
-
     var reviews = [];
-    var reviewedBookingIds = new Set();
+    var apiReviews = data._reviews || [];
 
-    // Prefer explicit customer-submitted reviews.
-    if (typeof AppStore !== "undefined" && AppStore.data) {
-      var allReviews = AppStore.getTable("reviews") || [];
-      var customerMap = new Map(
-        (AppStore.getTable("customers") || []).map(function (c) {
-          return [c.customer_id, c];
-        }),
-      );
+    apiReviews.forEach(function (review) {
+      var rating = Number(review.rating);
+      if (!Number.isFinite(rating)) return;
 
-      var serviceReviews = allReviews.filter(function (r) {
-        return (
-          r.service_id === serviceId ||
-          (r.booking_id && bookingIds.has(r.booking_id))
-        );
+      var safeRating = Math.max(1, Math.min(5, rating));
+      var reviewerName = review.customer_name || "Tatku Customer";
+      var reviewDate = review.updated_at || review.created_at || new Date().toISOString();
+      var dateLabel = new Date(reviewDate).toLocaleDateString("en-IN", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
       });
-
-      serviceReviews.forEach(function (review) {
-        var rating = Number(review.rating);
-        if (!Number.isFinite(rating)) {
-          return;
-        }
-
-        var safeRating = Math.max(1, Math.min(5, rating));
-        var customer = customerMap.get(review.customer_id);
-        var reviewerName = customer ? customer.full_name : "Tatku Customer";
-        var reviewDate =
-          review.updated_at || review.created_at || new Date().toISOString();
-        var dateLabel = new Date(reviewDate).toLocaleDateString("en-IN", {
-          year: "numeric",
-          month: "short",
-          day: "numeric",
-        });
-
-        if (review.booking_id) {
-          reviewedBookingIds.add(review.booking_id);
-        }
-
-        reviews.push({
-          id: review.review_id || review.booking_id || String(Math.random()),
-          stars: Math.round(safeRating),
-          score: safeRating,
-          date: reviewDate,
-          name: reviewerName,
-          meta: dateLabel + " • Verified review",
-          initials: reviewerName.charAt(0).toUpperCase(),
-          text: review.review_text || "",
-        });
-      });
-    }
-
-    // Fallback rating entries from completed jobs without explicit review text.
-    bookingIds.forEach(function (bookingId) {
-      if (reviewedBookingIds.has(bookingId)) {
-        return;
-      }
-
-      var booking = bookingById.get(bookingId);
-      if (!booking || booking.status !== "COMPLETED") {
-        return;
-      }
-
-      var assignment = assignmentByBooking.get(bookingId);
-      var customer = customerById.get(booking.customer_id);
-      var score =
-        assignment && typeof assignment.assignment_score === "number"
-          ? assignment.assignment_score
-          : null;
-      if (typeof score !== "number") {
-        return;
-      }
-
-      var rounded = Math.max(1, Math.min(5, Math.round(score)));
-      var reviewerName = customer ? customer.full_name : "Tatku Customer";
-      var dateLabel = new Date(booking.scheduled_at).toLocaleDateString(
-        "en-IN",
-        {
-          year: "numeric",
-          month: "short",
-          day: "numeric",
-        },
-      );
 
       reviews.push({
-        id: bookingId,
-        stars: rounded,
-        score: score,
-        date: booking.scheduled_at,
+        id: review.review_id || String(Math.random()),
+        stars: Math.round(safeRating),
+        score: safeRating,
+        date: reviewDate,
         name: reviewerName,
-        meta: dateLabel + " • Completed booking",
+        meta: dateLabel + " • Verified review",
         initials: reviewerName.charAt(0).toUpperCase(),
-        text: "Smooth experience overall. The provider arrived on time and completed the service with good quality standards.",
+        text: review.comment || review.review_text || "",
       });
     });
 
@@ -661,9 +564,7 @@
   }
 
   function getServiceContent(data, serviceId) {
-    return (data.service_content || []).find(function (item) {
-      return item.service_id === serviceId;
-    });
+    return data._serviceContent || null;
   }
 
   function buildFallbackCoverage(service) {
@@ -746,15 +647,23 @@
   }
 
   async function loadData() {
-    if (
-      typeof AppStore !== "undefined" &&
-      AppStore.data &&
-      Array.isArray(AppStore.data.services)
-    ) {
-      return AppStore.data;
+    var services = [];
+    try { services = await Api.get("/services/available") || []; } catch (_) {}
+    var serviceId = getQueryParam("serviceId") || (services[0] && services[0].service_id);
+    var faqs = [];
+    var content = null;
+    var reviews = [];
+    if (serviceId) {
+      try { faqs = await Api.get("/service-faqs/service/" + serviceId, { silent: true }) || []; } catch (_) {}
+      try { content = await Api.get("/service-content/service/" + serviceId, { silent: true }); } catch (_) {}
+      try { reviews = await Api.get("/reviews/service/" + serviceId, { silent: true }) || []; } catch (_) {}
     }
-
-    throw new Error("Service data is unavailable. AppStore is not initialized.");
+    return {
+      services: services,
+      service_faqs: faqs,
+      _serviceContent: content,
+      _reviews: reviews,
+    };
   }
 
   async function initDynamicContent() {
@@ -947,15 +856,7 @@
   initHamburger();
   initAuthNav();
 
-  if (typeof AppStore !== "undefined" && AppStore.ready) {
-    AppStore.ready.then(function () {
-      initDynamicContent().catch(function (error) {
-        console.error(error);
-      });
-    });
-  } else {
-    initDynamicContent().catch(function (error) {
-      console.error(error);
-    });
-  }
+  initDynamicContent().catch(function (error) {
+    console.error(error);
+  });
 })();

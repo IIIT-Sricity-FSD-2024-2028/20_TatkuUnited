@@ -1,40 +1,43 @@
-/* manage_categories.js */
-// Depends on: store.js → auth.js (loaded before this script)
+/* =============================================================================
+   MANAGE CATEGORIES — manage_categories.js (API-backed)
+   ============================================================================= */
 
-AppStore.ready.then(() => {
+(async () => {
   /* ── 1. Auth gate ── */
   const session = Auth.requireSession(["super_user"]);
   if (!session) return;
 
-  /* ── 2. Pull tables ── */
-  const allCategories = AppStore.getTable("categories") || [];
+  /* ── 2. State ── */
+  let categories = [];
+  const PAGE_SIZE = 8;
+  let currentPage = 1;
+  let filteredCategories = [];
+  let tableActionsBound = false;
+  let editingId = null;
+  let deletingId = null;
 
-  function updateNotificationBadges() {
-    const unread = (AppStore.getTable("super_user_notifications") || []).filter(
-      (n) => !n.is_read,
-    ).length;
-    document.querySelectorAll(".notif-badge").forEach((badge) => {
-      if (unread > 0) {
-        badge.textContent = String(unread);
-        badge.style.display = "flex";
-      } else {
-        badge.textContent = "";
-        badge.style.display = "none";
-      }
-    });
+  /* ── Load categories from API ── */
+  async function refreshCategories() {
+    try {
+      const raw = await Api.get("/categories");
+      categories = transformCategories(raw || []);
+      filteredCategories = categories.slice();
+    } catch (err) {
+      console.error("[categories] Failed to load:", err);
+      categories = [];
+      filteredCategories = [];
+    }
   }
 
   /* ── 3. Transform and enrich categories ── */
   function transformCategories(categoriesList) {
     return categoriesList.map((cat, idx) => {
-      // Determine status based on is_available
       const status = cat.is_available ? "Active" : "Inactive";
-
       return {
         categoryId: cat.category_id,
         id: parseInt(cat.category_id.replace("CAT", "")) || idx + 1,
         name: cat.category_name,
-        desc: cat.description,
+        desc: cat.description || "",
         rating:
           typeof cat.average_rating === "number" && (cat.rating_count || 0) > 0
             ? cat.average_rating
@@ -46,28 +49,9 @@ AppStore.ready.then(() => {
     });
   }
 
-  let categories = transformCategories(allCategories);
-  const PAGE_SIZE = 8;
-  let currentPage = 1;
-  let filteredCategories = categories.slice();
-  let tableActionsBound = false;
-  function refreshCategoriesFromStore() {
-    categories = transformCategories(AppStore.getTable("categories") || []);
-    filteredCategories = categories.slice();
-  }
-
-  let editingId = null;
-  let deletingId = null;
-
   /* ── helpers ── */
   function truncate(str, n = 55) {
-    return str.length > n ? str.slice(0, n) + "…" : str;
-  }
-
-  function getParentCategoryName(parentId) {
-    if (!parentId) return null;
-    const parent = categories.find((c) => c.categoryId === parentId);
-    return parent ? parent.name : null;
+    return (str || "").length > n ? str.slice(0, n) + "…" : str || "";
   }
 
   function updateKPIs(data) {
@@ -117,11 +101,6 @@ AppStore.ready.then(() => {
           cat.status === "Active"
             ? "status-badge--active"
             : "status-badge--inactive";
-        const ratingStars =
-          typeof cat.rating === "number"
-            ? "★".repeat(Math.floor(cat.rating)) +
-              (cat.rating % 1 >= 0.5 ? "½" : "")
-            : "";
 
         tr.innerHTML = `
           <td class="category-name-col">${cat.name}</td>
@@ -237,7 +216,7 @@ AppStore.ready.then(() => {
     filteredCategories = categories.filter((cat) => {
       const matchSearch =
         cat.name.toLowerCase().includes(search) ||
-        cat.desc.toLowerCase().includes(search);
+        (cat.desc || "").toLowerCase().includes(search);
       return matchSearch;
     });
     if (resetPage) currentPage = 1;
@@ -245,28 +224,18 @@ AppStore.ready.then(() => {
     updateKPIs(filteredCategories);
   }
 
-  function setupEventListeners() {
-    const categorySearch = document.getElementById("categorySearch");
-
-    if (categorySearch) categorySearch.addEventListener("input", applyFilters);
-  }
-
   /* ── populate parent category dropdown ── */
   function populateParentDropdown() {
     const select = document.getElementById("categoryParent");
     if (!select) return;
 
-    // Keep the first option
     const currentValue = select.value;
     let options = select.querySelectorAll("option");
-
-    // Clear all options except the first one
     while (options.length > 1) {
       options[1].remove();
       options = select.querySelectorAll("option");
     }
 
-    // Add all categories except the one being edited
     categories.forEach((cat) => {
       if (editingId === null || cat.categoryId !== editingId) {
         const option = document.createElement("option");
@@ -285,7 +254,7 @@ AppStore.ready.then(() => {
     const categoryDesc = document.getElementById("categoryDesc");
     const categoryStatus = document.getElementById("categoryStatus");
     const categoryParent = document.getElementById("categoryParent");
-    const btnSave = document.getElementById("btnSave");
+    const btnSaveEl = document.getElementById("btnSave");
     const modalOverlay = document.getElementById("modalOverlay");
     const statusText = document.getElementById("statusText");
 
@@ -302,10 +271,9 @@ AppStore.ready.then(() => {
         : "Inactive";
     if (categoryParent)
       categoryParent.value = cat && cat.parentId ? cat.parentId : "";
-    if (btnSave) btnSave.textContent = cat ? "Save Changes" : "Add Category";
+    if (btnSaveEl) btnSaveEl.textContent = cat ? "Save Changes" : "Add Category";
     if (modalOverlay) modalOverlay.classList.add("open");
 
-    // Update status text when checkbox changes
     if (categoryStatus) {
       categoryStatus.addEventListener("change", function () {
         if (statusText)
@@ -333,14 +301,19 @@ AppStore.ready.then(() => {
   }
 
   function showToast(msg) {
-    const toast = document.getElementById("toast");
-    if (toast) {
-      toast.textContent = msg;
-      toast.classList.add("show");
-      setTimeout(() => toast.classList.remove("show"), 3000);
+    if (window.Api && Api.showToast) {
+      Api.showToast(msg, "success");
+    } else {
+      const toast = document.getElementById("toast");
+      if (toast) {
+        toast.textContent = msg;
+        toast.classList.add("show");
+        setTimeout(() => toast.classList.remove("show"), 3000);
+      }
     }
   }
 
+  /* ── Event listeners ── */
   const btnAddCategory = document.getElementById("btnAddCategory");
   const modalClose = document.getElementById("modalClose");
   const btnCancel = document.getElementById("btnCancel");
@@ -368,22 +341,17 @@ AppStore.ready.then(() => {
       if (e.target === e.currentTarget) closeDeleteModal();
     });
   }
+
   if (deleteConfirmBtn) {
-    deleteConfirmBtn.addEventListener("click", () => {
-      const categoriesTable = AppStore.getTable("categories") || [];
-      const storeCat = categoriesTable.find(
-        (c) => c.category_id === deletingId,
-      );
+    deleteConfirmBtn.addEventListener("click", async () => {
+      if (!deletingId) return;
 
-      if (storeCat) {
-        const catIndex = categoriesTable.findIndex(
-          (c) => c.category_id === deletingId,
-        );
-        if (catIndex !== -1) categoriesTable.splice(catIndex, 1);
-
-        AppStore.save();
-        refreshCategoriesFromStore();
-        showToast(`✓ "${storeCat.category_name}" permanently deleted`);
+      try {
+        await Api.del("/categories/" + deletingId);
+        await refreshCategories();
+        showToast("Category deleted successfully");
+      } catch (err) {
+        console.error("[categories] Delete failed:", err);
       }
 
       closeDeleteModal();
@@ -392,7 +360,7 @@ AppStore.ready.then(() => {
   }
 
   if (btnSave) {
-    btnSave.addEventListener("click", () => {
+    btnSave.addEventListener("click", async () => {
       const name = document.getElementById("categoryName")?.value.trim();
       const desc = document.getElementById("categoryDesc")?.value.trim();
       const isAvailable =
@@ -400,75 +368,46 @@ AppStore.ready.then(() => {
       const parentId = document.getElementById("categoryParent")?.value || null;
 
       if (!name) {
-        showToast("⚠ Category name is required");
+        Api.showToast("Category name is required", "warn");
         return;
       }
       if (!desc) {
-        showToast("⚠ Description is required");
+        Api.showToast("Description is required", "warn");
         return;
       }
 
-      const categoriesTable = AppStore.getTable("categories") || [];
-      const duplicateCategory = categoriesTable.find(
-        (c) =>
-          c.category_name.toLowerCase() === name.toLowerCase() &&
-          c.category_id !== editingId,
-      );
-      if (duplicateCategory) {
-        showToast("⚠ Category name already exists");
-        return;
-      }
+      const payload = {
+        category_name: name,
+        description: desc,
+        is_available: isAvailable,
+        parent_id: parentId && parentId !== "" ? parentId : null,
+      };
 
-      if (editingId) {
-        const storeCat = categoriesTable.find(
-          (c) => c.category_id === editingId,
-        );
-        if (storeCat) {
-          storeCat.category_name = name;
-          storeCat.description = desc;
-          storeCat.is_available = isAvailable;
-          storeCat.parent_id = parentId && parentId !== "" ? parentId : null;
-          AppStore.save();
-          refreshCategoriesFromStore();
-          showToast(`✓ "${name}" updated successfully`);
+      try {
+        if (editingId) {
+          await Api.patch("/categories/" + editingId, payload);
+          showToast(`"${name}" updated successfully`);
+        } else {
+          await Api.post("/categories", payload);
+          showToast(`"${name}" added to category catalog`);
         }
-      } else {
-        categoriesTable.push({
-          category_id: AppStore.nextId("CAT"),
-          category_name: name,
-          description: desc,
-          icon: "📦",
-          image_url:
-            "https://placehold.co/400x200/6b7280/white?text=" +
-            encodeURIComponent(name),
-          is_available: isAvailable,
-          average_rating: null,
-          rating_count: 0,
-          parent_id: parentId && parentId !== "" ? parentId : null,
-        });
-        AppStore.save();
-        refreshCategoriesFromStore();
-        showToast(`✓ "${name}" added to category catalog`);
+
+        await refreshCategories();
+      } catch (err) {
+        console.error("[categories] Save failed:", err);
       }
+
       closeModal();
       applyFilters();
     });
   }
 
-  /* ── Initialize on DOM ready ── */
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", () => {
-      updateNotificationBadges();
-      setupEventListeners();
-      bindTableActions();
-      renderTable(categories);
-      updateKPIs(categories);
-    });
-  } else {
-    updateNotificationBadges();
-    setupEventListeners();
-    bindTableActions();
-    renderTable(categories);
-    updateKPIs(categories);
-  }
-});
+  const categorySearch = document.getElementById("categorySearch");
+  if (categorySearch) categorySearch.addEventListener("input", () => applyFilters());
+
+  /* ── Initialize ── */
+  await refreshCategories();
+  bindTableActions();
+  renderTable(categories);
+  updateKPIs(categories);
+})();

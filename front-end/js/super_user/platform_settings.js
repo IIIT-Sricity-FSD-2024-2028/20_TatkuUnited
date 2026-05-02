@@ -1,22 +1,10 @@
-﻿/* platform_settings.js */
-document.addEventListener("DOMContentLoaded", () => {
-  const updateNotificationBadges = () => {
-    if (!window.AppStore || typeof AppStore.getTable !== "function") return;
-    const unread = (AppStore.getTable("super_user_notifications") || []).filter(
-      (n) => !n.is_read,
-    ).length;
-    document.querySelectorAll(".notif-badge").forEach((badge) => {
-      if (unread > 0) {
-        badge.textContent = String(unread);
-        badge.style.display = "flex";
-      } else {
-        badge.textContent = "";
-        badge.style.display = "none";
-      }
-    });
-  };
+/* =============================================================================
+   PLATFORM SETTINGS — platform_settings.js (API-backed)
+   ============================================================================= */
 
-  updateNotificationBadges();
+document.addEventListener("DOMContentLoaded", async () => {
+  const session = Auth.requireSession(["super_user"]);
+  if (!session) return;
 
   const settingFieldMap = {
     maintenanceMode: "maintenance-mode",
@@ -38,13 +26,6 @@ document.addEventListener("DOMContentLoaded", () => {
     return out;
   };
 
-  const readSettings = () => {
-    if (window.AppStore && typeof AppStore.getPlatformSettings === "function") {
-      return AppStore.getPlatformSettings();
-    }
-    return defaultsFromUI();
-  };
-
   const applySettingsToUI = (settings) => {
     Object.entries(settingFieldMap).forEach(([key, id]) => {
       const el = document.getElementById(id);
@@ -57,19 +38,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   };
 
-  const saveSettings = (settings) => {
-    if (
-      window.AppStore &&
-      typeof AppStore.savePlatformSettings === "function"
-    ) {
-      return AppStore.savePlatformSettings(settings);
-    }
-    try {
-      localStorage.setItem("fsd_platform_settings", JSON.stringify(settings));
-    } catch (_) {}
-    return settings;
-  };
-
   const saveBtn = document.getElementById("save-btn");
   const lastUpdatedEl = document.getElementById("settings-last-updated");
   if (!saveBtn) return;
@@ -77,14 +45,14 @@ document.addEventListener("DOMContentLoaded", () => {
   const renderLastUpdated = (settings) => {
     if (!lastUpdatedEl) return;
 
-    if (!settings?.updatedAt) {
+    if (!settings?.updatedAt && !settings?.updated_at) {
       lastUpdatedEl.textContent = "Last updated: Never";
       return;
     }
 
-    const dt = new Date(settings.updatedAt);
+    const dt = new Date(settings.updatedAt || settings.updated_at);
     const when = Number.isNaN(dt.getTime())
-      ? settings.updatedAt
+      ? settings.updatedAt || settings.updated_at
       : dt.toLocaleString("en-IN", {
           day: "2-digit",
           month: "short",
@@ -92,22 +60,24 @@ document.addEventListener("DOMContentLoaded", () => {
           hour: "2-digit",
           minute: "2-digit",
         });
-    const by = settings.updatedBy || "Super User";
+    const by = settings.updatedBy || settings.updated_by || "Super User";
     lastUpdatedEl.textContent = `Last updated: ${when} by ${by}`;
   };
 
-  const initialSettings = readSettings();
+  // Load settings from API
+  let initialSettings = defaultsFromUI();
+  try {
+    const apiSettings = await Api.get("/platform-settings");
+    if (apiSettings) {
+      initialSettings = { ...initialSettings, ...apiSettings };
+    }
+  } catch (_) {
+    // Use defaults from UI
+  }
   applySettingsToUI(initialSettings);
   renderLastUpdated(initialSettings);
 
-  // Ensure first open seeds the settings key and AppStore copy.
-  saveSettings(initialSettings);
-
-  saveBtn.addEventListener("click", () => {
-    const session =
-      window.Auth && typeof Auth.getSession === "function"
-        ? Auth.getSession()
-        : null;
+  saveBtn.addEventListener("click", async () => {
     const updatedBy = session?.name || "Super User";
 
     const settings = {
@@ -116,14 +86,20 @@ document.addEventListener("DOMContentLoaded", () => {
       updatedBy,
     };
 
-    const savedSettings = saveSettings(settings);
-    renderLastUpdated(savedSettings);
+    try {
+      const savedSettings = await Api.put("/platform-settings", settings);
+      renderLastUpdated(savedSettings || settings);
 
-    console.log("Settings saved:", savedSettings);
+      // Visual feedback
+      saveBtn.textContent = "✓ Saved!";
+      saveBtn.style.background = "#16a34a";
+      Api.showToast("Platform settings updated successfully.", "success");
+    } catch (err) {
+      console.error("[settings] Save failed:", err);
+      saveBtn.textContent = "✕ Failed";
+      saveBtn.style.background = "#ef4444";
+    }
 
-    // Visual feedback
-    saveBtn.textContent = "✓ Saved!";
-    saveBtn.style.background = "#16a34a";
     setTimeout(() => {
       saveBtn.innerHTML = `
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15">

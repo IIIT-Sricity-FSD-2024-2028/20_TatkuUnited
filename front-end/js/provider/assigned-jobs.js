@@ -1,3 +1,7 @@
+/* =============================================================================
+   PROVIDER ASSIGNED JOBS — assigned-jobs.js (API-backed)
+   ============================================================================= */
+
 let jobs = [];
 
 const statusMap = {
@@ -161,120 +165,109 @@ function closeDetailModal() {
 function closeModal(e) {
   if (e.target === document.getElementById("modal-overlay")) closeDetailModal();
 }
-function updateStatus(id, newStatus) {
-  const data = window.getData();
-  const job = data.jobs.find((j) => j.id === id);
 
-  if (job) {
-    // Validation: Do not allow future jobs to be marked as completed or in progress early
-    if (newStatus === "completed" || newStatus === "inprogress") {
-      try {
-        // Build an exact strict native Javascript Date object using ISO matching format String
-        // format: "YYYY-MM-DDTHH:MM:00" mapping against correct job.startTime
-        const isoString = `${job.date}T${job.startTime || job.time.split(" ")[0]}:00`;
-        const jobDateTime = new Date(isoString);
-        const currentRealTime = new Date();
+async function updateStatus(id, newStatus) {
+  const job = jobs.find((j) => j.id === id);
+  if (!job) return;
 
-        // If parsed date valid, and it's strictly in the future timestamp
-        if (!isNaN(jobDateTime.getTime()) && jobDateTime > currentRealTime) {
-          alert(
-            `Security Check: You cannot change the status to '${newStatus === "completed" ? "Completed" : "In Progress"}' for a job scheduled in the future.\n\nCurrent Real Time: ${currentRealTime.toLocaleString()}\nAssigned Time: ${jobDateTime.toLocaleString()}`,
-          );
-          return;
-        }
-      } catch (e) {
-        console.warn("Time parsing error, skipping strict block", e);
+  // Validation: Do not allow future jobs to be marked as completed or in progress early
+  if (newStatus === "completed" || newStatus === "inprogress") {
+    try {
+      const jobDateTime = new Date(job.rawDate);
+      const currentRealTime = new Date();
+
+      if (!isNaN(jobDateTime.getTime()) && jobDateTime > currentRealTime) {
+        alert(
+          `Security Check: You cannot change the status to '${newStatus === "completed" ? "Completed" : "In Progress"}' for a job scheduled in the future.\n\nCurrent Real Time: ${currentRealTime.toLocaleString()}\nAssigned Time: ${jobDateTime.toLocaleString()}`,
+        );
+        return;
       }
-    }
-
-    job.status = newStatus;
-    job.statusLabel = {
-      inprogress: "In Progress",
-      completed: "Completed",
-      assigned: "Assigned",
-      pending: "Pending Confirmation",
-    }[newStatus];
-
-    // Persist status to source tables so state survives reload.
-    const assignment = (data.job_assignments || []).find(
-      (ja) => ja.assignment_id === id,
-    );
-    if (assignment) {
-      const statusDbMap = {
-        assigned: "ASSIGNED",
-        inprogress: "IN_PROGRESS",
-        completed: "COMPLETED",
-        pending: "PENDING",
-      };
-      assignment.status = statusDbMap[newStatus] || assignment.status;
-      assignment.updated_at = new Date().toISOString();
-    }
-
-    if (newStatus === "completed" && job.booking_id) {
-      const booking = (data.bookings || []).find(
-        (b) => b.booking_id === job.booking_id,
-      );
-      if (booking) {
-        booking.status = "COMPLETED";
-        booking.updated_at = new Date().toISOString();
-      }
-    }
-
-    // ✅ AUTO-GENERATE LEDGER ENTRIES when provider marks work complete
-    if (newStatus === "completed" && window.RevenueManager) {
-      const bookingId = job.booking_id;
-      if (bookingId) {
-        const success = window.RevenueManager.markBookingPayoutPaid(bookingId);
-        if (success) {
-          console.log(`✅ Ledger payout marked PAID for ${bookingId}`);
-        }
-      }
-    }
-
-    // Check for pending deactivation
-    if (
-      newStatus === "completed" &&
-      data.provider &&
-      data.provider.account_status === "pending_deactivation"
-    ) {
-      const remainingUnfinished = data.jobs.filter(
-        (j) =>
-          j.id !== id &&
-          ["assigned", "inprogress", "pending"].includes(j.status),
-      );
-      if (remainingUnfinished.length === 0) {
-        data.provider.account_status = "inactive";
-        data.provider.is_active = false;
-        alert("Last job completed. Your account is now deactivated.");
-        setTimeout(() => {
-          window.location.href = "../auth_pages/logout.html";
-        }, 1500);
-      }
+    } catch (e) {
+      console.warn("Time parsing error, skipping strict block", e);
     }
   }
 
-  window.setData(data); // Sync globally
-  jobs = data.jobs; // Sync locally
+  if (newStatus === "completed") {
+    try {
+      await Api.patch("/job-assignments/" + id + "/complete", {
+        completion_notes: "Completed by provider",
+      });
+      Api.showToast("Job marked as completed!", "success");
+    } catch (err) {
+      console.error("[jobs] Complete failed:", err);
+      return;
+    }
+  }
+
+  // Reload jobs from API
+  await loadJobs();
   openDetail(id);
   renderJobs();
 }
 
-window.initData().then(() => {
-  const data = window.getData();
-  jobs = data.jobs;
+async function loadJobs() {
+  const session = Auth.getSession();
+  if (!session) return;
 
-  // Use dynamic provider data from current AppStore state
-  if (data.provider) {
-    document
-      .querySelectorAll(".user-chip span")
-      .forEach((el) => (el.textContent = data.provider.name || "Provider"));
-    if (data.provider.pfp_url) {
-      document.querySelectorAll(".user-avatar").forEach((el) => {
-        el.innerHTML = `<img src="${data.provider.pfp_url}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
-      });
-    }
+  const spId = session.id;
+
+  try {
+    const assignments = await Api.get("/job-assignments/provider/" + spId);
+
+    jobs = (assignments || []).map((ja) => {
+      const rawStatus = (ja.status || "ASSIGNED").toUpperCase();
+      const statusCssMap = {
+        ASSIGNED: "assigned",
+        IN_PROGRESS: "inprogress",
+        COMPLETED: "completed",
+        PENDING: "pending",
+        CANCELLED: "cancelled",
+      };
+      const statusLabelMap = {
+        ASSIGNED: "Assigned",
+        IN_PROGRESS: "In Progress",
+        COMPLETED: "Completed",
+        PENDING: "Pending Confirmation",
+        CANCELLED: "Cancelled",
+      };
+
+      const dateObj = new Date(ja.scheduled_at || ja.assigned_at || ja.created_at);
+
+      return {
+        id: ja.assignment_id || ja.id,
+        booking_id: ja.booking_id,
+        service: ja.service_name || "Home Service",
+        category: ja.category_name || "Service",
+        customer: ja.customer_name || "Customer",
+        phone: ja.customer_phone || "N/A",
+        address: ja.service_address || "Address not provided",
+        status: statusCssMap[rawStatus] || "assigned",
+        statusLabel: statusLabelMap[rawStatus] || "Assigned",
+        rawDate: ja.scheduled_at || ja.assigned_at || ja.created_at,
+        date: dateObj.toISOString().split("T")[0],
+        time: dateObj.toLocaleTimeString("en-US", {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
+        description: ja.notes || "Service assignment for provider",
+      };
+    });
+  } catch (err) {
+    console.error("[jobs] Failed to load assignments:", err);
+    jobs = [];
   }
+}
 
+(async () => {
+  const session = Auth.requireSession(["provider", "service_provider"]);
+  if (!session) return;
+
+  // Update provider name in UI
+  document
+    .querySelectorAll(".user-chip span")
+    .forEach((el) => (el.textContent = session.name || "Provider"));
+
+  await loadJobs();
   renderFilters();
   renderJobs();
-});
+})();

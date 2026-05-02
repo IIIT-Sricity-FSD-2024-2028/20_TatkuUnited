@@ -1,5 +1,5 @@
 /* =============================================
-   SERVICE DISCOVERY PAGE — service_discovery.js
+   SERVICE DISCOVERY PAGE — service_discovery.js (API-backed)
    ============================================= */
 
 (function () {
@@ -24,37 +24,6 @@
 
   function buildCategoryUrl(categoryId) {
     return "category_page.html?categoryId=" + encodeURIComponent(categoryId);
-  }
-
-  function formatDuration(minutes) {
-    var mins = Number(minutes) || 0;
-    if (mins >= 60) {
-      var hrs = Math.floor(mins / 60);
-      var rem = mins % 60;
-      return rem ? hrs + " hr " + rem + " mins" : hrs + " hrs";
-    }
-    return mins + " mins";
-  }
-
-  function getServiceStats(data) {
-    var assignmentByBooking = new Map(
-      (data.job_assignments || []).map(function (a) {
-        return [a.booking_id, a];
-      }),
-    );
-
-    var stats = new Map();
-    (data.booking_services || []).forEach(function (bs) {
-      var bucket = stats.get(bs.service_id) || { bookingCount: 0, ratings: [] };
-      bucket.bookingCount += Number(bs.quantity) || 1;
-      var assignment = assignmentByBooking.get(bs.booking_id);
-      if (assignment && typeof assignment.assignment_score === "number") {
-        bucket.ratings.push(assignment.assignment_score);
-      }
-      stats.set(bs.service_id, bucket);
-    });
-
-    return stats;
   }
 
   function renderCategoryPills(categoriesRow, categories) {
@@ -83,33 +52,12 @@
     categoriesRow.innerHTML = html.join("");
   }
 
-  function getServiceMetrics(service, statsByService) {
-    var stats = statsByService.get(service.service_id) || {
-      bookingCount: 0,
-      ratings: [],
-    };
-    var hasRating = stats.ratings.length > 0;
-    var rating = hasRating
-      ? stats.ratings.reduce(function (a, b) {
-          return a + b;
-        }, 0) / stats.ratings.length
-      : null;
-
-    return {
-      rating: rating,
-      hasRating: hasRating,
-      bookingCount: stats.bookingCount || 0,
-    };
-  }
-
-  function sortServices(services, sortBy, statsByService) {
+  function sortServices(services, sortBy) {
     var sorted = services.slice();
 
     sorted.sort(function (a, b) {
-      var aMetrics = getServiceMetrics(a, statsByService);
-      var bMetrics = getServiceMetrics(b, statsByService);
-      var aRatingForSort = aMetrics.hasRating ? aMetrics.rating : -1;
-      var bRatingForSort = bMetrics.hasRating ? bMetrics.rating : -1;
+      var aRating = Number(a.average_rating || a.rating) || 0;
+      var bRating = Number(b.average_rating || b.rating) || 0;
 
       if (sortBy === "price-low") {
         return (a.base_price || 0) - (b.base_price || 0);
@@ -118,39 +66,28 @@
         return (b.base_price || 0) - (a.base_price || 0);
       }
       if (sortBy === "most-booked") {
-        if (bMetrics.bookingCount !== aMetrics.bookingCount) {
-          return bMetrics.bookingCount - aMetrics.bookingCount;
-        }
-        if (bRatingForSort !== aRatingForSort) {
-          return bRatingForSort - aRatingForSort;
-        }
-        return a.service_name.localeCompare(b.service_name);
+        var aCount = Number(a.rating_count || a.booking_count) || 0;
+        var bCount = Number(b.rating_count || b.booking_count) || 0;
+        if (bCount !== aCount) return bCount - aCount;
+        if (bRating !== aRating) return bRating - aRating;
+        return (a.service_name || "").localeCompare(b.service_name || "");
       }
 
-      if (bRatingForSort !== aRatingForSort) {
-        return bRatingForSort - aRatingForSort;
-      }
-      if (bMetrics.bookingCount !== aMetrics.bookingCount) {
-        return bMetrics.bookingCount - aMetrics.bookingCount;
-      }
-      return a.service_name.localeCompare(b.service_name);
+      // Default: top-rated
+      if (bRating !== aRating) return bRating - aRating;
+      return (a.service_name || "").localeCompare(b.service_name || "");
     });
 
     return sorted;
   }
 
-  function renderServiceCards(
-    servicesGrid,
-    services,
-    categoriesById,
-    statsByService,
-  ) {
+  function renderServiceCards(servicesGrid, services, categoriesById) {
     var html = services.map(function (service) {
       var category = categoriesById.get(service.category_id);
       var categoryName = category ? category.category_name : "General";
       var categoryClass = slugify(categoryName).split("-")[0] || "general";
-      var metrics = getServiceMetrics(service, statsByService);
-      var ratingText = metrics.hasRating ? metrics.rating.toFixed(1) : "N/A";
+      var rating = Number(service.average_rating || service.rating) || 0;
+      var ratingText = rating > 0 ? rating.toFixed(1) : "N/A";
 
       var isUnavailable = service.is_available === false;
       var unavailableClass = isUnavailable ? " unavailable" : "";
@@ -177,7 +114,7 @@
         categoryName.toUpperCase() +
         "</div>" +
         '<img src="' +
-        service.image_url +
+        (service.image_url || "") +
         '" alt="' +
         service.service_name +
         '" />' +
@@ -193,7 +130,7 @@
         "</span>" +
         "</div>" +
         '<p class="card-desc">' +
-        service.description +
+        (service.description || "") +
         "</p>" +
         '<div class="card-footer">' +
         "<div>" +
@@ -229,12 +166,7 @@
     }
   }
 
-  function initServiceControls(
-    servicesGrid,
-    services,
-    categoriesById,
-    statsByService,
-  ) {
+  function initServiceControls(servicesGrid, services, categoriesById) {
     var noResults = document.getElementById("noResults");
     var searchInput = document.getElementById("searchInput");
     var serviceSort = document.getElementById("serviceSort");
@@ -244,26 +176,19 @@
       var sortBy = serviceSort ? serviceSort.value : "top-rated";
 
       var filtered = services.filter(function (service) {
-        if (!query) {
-          return true;
-        }
+        if (!query) return true;
 
         var category = categoriesById.get(service.category_id);
         var categoryName = category ? category.category_name : "";
         return (
           service.service_name.toLowerCase().indexOf(query) >= 0 ||
-          service.description.toLowerCase().indexOf(query) >= 0 ||
+          (service.description || "").toLowerCase().indexOf(query) >= 0 ||
           categoryName.toLowerCase().indexOf(query) >= 0
         );
       });
 
-      filtered = sortServices(filtered, sortBy, statsByService);
-      renderServiceCards(
-        servicesGrid,
-        filtered,
-        categoriesById,
-        statsByService,
-      );
+      filtered = sortServices(filtered, sortBy);
+      renderServiceCards(servicesGrid, filtered, categoriesById);
       initBookButtons();
 
       if (noResults) {
@@ -312,32 +237,29 @@
   }
 
   function initAuthNav() {
-    if (typeof AppStore !== "undefined" && typeof Auth !== "undefined") {
-      AppStore.ready.then(function () {
-        var session = Auth.getCurrentUser();
-        if (session && session.role === "customer") {
-          var navAuth = document.querySelector(".nav-auth");
-          if (navAuth) {
-            navAuth.innerHTML =
-              '<a href="../customer/cart.html" class="cart-btn" title="Cart"><svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" /><line x1="3" y1="6" x2="21" y2="6" /><path d="M16 10a4 4 0 01-8 0" /></svg></a>' +
-              '<a href="../customer/home.html" class="user-avatar-btn" title="Dashboard"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" /><circle cx="12" cy="7" r="4" /></svg></a>';
-          }
-          var navLinks = document.querySelector(".nav-links");
-          if (navLinks) {
-            navLinks.innerHTML =
-              '<li><a href="../customer/home.html">Home</a></li>' +
-              '<li><a href="service_discovery.html" class="active">Services</a></li>' +
-              '<li><a href="../customer/bookings.html">Bookings</a></li>';
-          }
-          var mobileMenu = document.querySelector("#mobileMenu ul");
-          if (mobileMenu) {
-            mobileMenu.innerHTML =
-              '<li><a href="../customer/home.html" style="color:var(--primary); font-weight:600;">Dashboard</a></li>' +
-              '<li><a href="service_discovery.html">Services</a></li>' +
-              '<li><a href="../customer/cart.html">Cart</a></li>';
-          }
-        }
-      });
+    var session =
+      typeof Auth !== "undefined" ? Auth.getCurrentUser() : null;
+    if (session && session.role === "customer") {
+      var navAuth = document.querySelector(".nav-auth");
+      if (navAuth) {
+        navAuth.innerHTML =
+          '<a href="../customer/cart.html" class="cart-btn" title="Cart"><svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" /><line x1="3" y1="6" x2="21" y2="6" /><path d="M16 10a4 4 0 01-8 0" /></svg></a>' +
+          '<a href="../customer/home.html" class="user-avatar-btn" title="Dashboard"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" /><circle cx="12" cy="7" r="4" /></svg></a>';
+      }
+      var navLinks = document.querySelector(".nav-links");
+      if (navLinks) {
+        navLinks.innerHTML =
+          '<li><a href="../customer/home.html">Home</a></li>' +
+          '<li><a href="service_discovery.html" class="active">Services</a></li>' +
+          '<li><a href="../customer/bookings.html">Bookings</a></li>';
+      }
+      var mobileMenu = document.querySelector("#mobileMenu ul");
+      if (mobileMenu) {
+        mobileMenu.innerHTML =
+          '<li><a href="../customer/home.html" style="color:var(--primary); font-weight:600;">Dashboard</a></li>' +
+          '<li><a href="service_discovery.html">Services</a></li>' +
+          '<li><a href="../customer/cart.html">Cart</a></li>';
+      }
     }
   }
 
@@ -382,55 +304,34 @@
       return;
     }
 
-    if (typeof AppStore !== "undefined" && AppStore.ready) {
-      await AppStore.ready;
+    // Fetch categories and services from API
+    var categories = [];
+    var services = [];
+
+    try {
+      var allCategories = await Api.get("/categories");
+      categories = (allCategories || []).filter(function (c) {
+        return c.is_available !== false;
+      });
+    } catch (err) {
+      console.error("[discovery] Failed to load categories:", err);
     }
 
-    var data =
-      typeof AppStore !== "undefined" && AppStore.data ? AppStore.data : null;
-
-    if (!data) {
-      throw new Error("Service discovery data is unavailable. AppStore is not initialized.");
+    try {
+      services = await Api.get("/services/available") || [];
+    } catch (err) {
+      console.error("[discovery] Failed to load services:", err);
     }
 
-    var categories = (data.categories || []).filter(function (category) {
-      return category.is_available;
-    });
     var categoriesById = new Map(
       categories.map(function (category) {
         return [category.category_id, category];
       }),
     );
 
-    var services = (data.services || []).filter(function (service) {
-      return service.is_available && categoriesById.has(service.category_id);
-    });
-
-    var statsByService = getServiceStats(data);
-    services.sort(function (a, b) {
-      var aStats = statsByService.get(a.service_id) || {
-        ratings: [],
-        bookingCount: 0,
-      };
-      var bStats = statsByService.get(b.service_id) || {
-        ratings: [],
-        bookingCount: 0,
-      };
-      var aRating = aStats.ratings.length
-        ? aStats.ratings.reduce(function (x, y) {
-            return x + y;
-          }, 0) / aStats.ratings.length
-        : 0;
-      var bRating = bStats.ratings.length
-        ? bStats.ratings.reduce(function (x, y) {
-            return x + y;
-          }, 0) / bStats.ratings.length
-        : 0;
-
-      if (bRating !== aRating) {
-        return bRating - aRating;
-      }
-      return (bStats.bookingCount || 0) - (aStats.bookingCount || 0);
+    // Filter services to only show those in available categories
+    services = services.filter(function (service) {
+      return categoriesById.has(service.category_id);
     });
 
     renderCategoryPills(categoriesRow, categories);
@@ -440,7 +341,7 @@
         "Showing " + services.length + " available services";
     }
 
-    initServiceControls(servicesGrid, services, categoriesById, statsByService);
+    initServiceControls(servicesGrid, services, categoriesById);
   }
 
   initHamburger();

@@ -42,42 +42,18 @@
   }
 
   function calcCategoryStats(data, servicesInCategory) {
-    var serviceIds = new Set(
-      servicesInCategory.map(function (service) {
-        return service.service_id;
-      }),
-    );
-    var bookingIds = new Set();
-
-    (data.booking_services || []).forEach(function (item) {
-      if (serviceIds.has(item.service_id)) {
-        bookingIds.add(item.booking_id);
-      }
-    });
-
-    var scoreByBooking = new Map(
-      (data.job_assignments || []).map(function (assignment) {
-        return [assignment.booking_id, assignment.assignment_score];
-      }),
-    );
-
     var ratings = [];
-    bookingIds.forEach(function (bookingId) {
-      var score = scoreByBooking.get(bookingId);
-      if (typeof score === "number") {
-        ratings.push(score);
+    servicesInCategory.forEach(function (s) {
+      if (typeof s.average_rating === "number" && s.average_rating > 0) {
+        ratings.push(s.average_rating);
       }
     });
-
     var avgRating = ratings.length
-      ? ratings.reduce(function (a, b) {
-          return a + b;
-        }, 0) / ratings.length
+      ? ratings.reduce(function (a, b) { return a + b; }, 0) / ratings.length
       : null;
-
     return {
       avgRating: avgRating,
-      bookingsCount: bookingIds.size,
+      bookingsCount: servicesInCategory.length,
     };
   }
 
@@ -113,15 +89,17 @@
   }
 
   async function loadData() {
-    if (
-      typeof AppStore !== "undefined" &&
-      AppStore.data &&
-      Array.isArray(AppStore.data.services)
-    ) {
-      return AppStore.data;
-    }
-
-    throw new Error("Category data is unavailable. AppStore is not initialized.");
+    var categories = [];
+    var services = [];
+    var faqs = [];
+    try { categories = await Api.get("/categories") || []; } catch (_) {}
+    try { services = await Api.get("/services/available") || []; } catch (_) {}
+    try { faqs = await Api.get("/service-faqs", { silent: true }) || []; } catch (_) {}
+    return {
+      categories: categories,
+      services: services,
+      service_faqs: faqs,
+    };
   }
 
   function createBulletPoints(service, faqsByService) {
@@ -166,37 +144,23 @@
   }
 
   function renderExploreList(exploreMain, services, faqsByService, data) {
-    var assignmentByBooking = new Map(
-      (data.job_assignments || []).map(function (a) {
-        return [a.booking_id, a];
-      }),
-    );
-
     var statsPerService = new Map();
-    (data.booking_services || []).forEach(function (bs) {
-      var bucket = statsPerService.get(bs.service_id) || { ratings: [] };
-      var assignment = assignmentByBooking.get(bs.booking_id);
-      if (assignment && typeof assignment.assignment_score === "number") {
-        bucket.ratings.push(assignment.assignment_score);
-      }
-      statsPerService.set(bs.service_id, bucket);
+    services.forEach(function (s) {
+      statsPerService.set(s.service_id, {
+        rating: typeof s.average_rating === "number" ? s.average_rating : null,
+        count: s.rating_count || 0,
+      });
     });
 
     var heading = '<h2 class="section-heading">Explore services</h2>';
     var items = services
       .map(function (service) {
-        var stats = statsPerService.get(service.service_id) || { ratings: [] };
-        var hasRating = stats.ratings.length > 0;
-        var serviceRating = hasRating
-          ? stats.ratings.reduce(function (a, b) {
-              return a + b;
-            }, 0) / stats.ratings.length
-          : null;
+        var stats = statsPerService.get(service.service_id) || { rating: null, count: 0 };
+        var hasRating = stats.rating !== null;
+        var serviceRating = hasRating ? stats.rating : null;
         var serviceRatingFloor = hasRating ? Math.floor(serviceRating) : 0;
         var serviceRatingText = hasRating ? serviceRating.toFixed(1) : "N/A";
-        var reviewCountText = hasRating
-          ? stats.ratings.length + " reviews"
-          : "N/A";
+        var reviewCountText = hasRating ? stats.count + " reviews" : "N/A";
 
         var bullets = createBulletPoints(service, faqsByService);
         var isUnavailable = service.is_available === false;
@@ -317,32 +281,28 @@
   }
 
   function initAuthNav() {
-    if (typeof AppStore !== "undefined" && typeof Auth !== "undefined") {
-      AppStore.ready.then(function () {
-        var session = Auth.getCurrentUser();
-        if (session && session.role === "customer") {
-          var navAuth = document.querySelector(".nav-auth");
-          if (navAuth) {
-            navAuth.innerHTML =
-              '<a href="../customer/cart.html" class="cart-btn" title="Cart"><svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" /><line x1="3" y1="6" x2="21" y2="6" /><path d="M16 10a4 4 0 01-8 0" /></svg></a>' +
-              '<a href="../customer/home.html" class="user-avatar-btn" title="Dashboard"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" /><circle cx="12" cy="7" r="4" /></svg></a>';
-          }
-          var navLinks = document.querySelector(".nav-links");
-          if (navLinks) {
-            navLinks.innerHTML =
-              '<li><a href="../customer/home.html">Home</a></li>' +
-              '<li><a href="service_discovery.html">Services</a></li>' +
-              '<li><a href="../customer/bookings.html">Bookings</a></li>';
-          }
-          var mobileMenu = document.querySelector("#mobileMenu ul");
-          if (mobileMenu) {
-            mobileMenu.innerHTML =
-              '<li><a href="../customer/home.html" style="color:var(--primary); font-weight:600;">Dashboard</a></li>' +
-              '<li><a href="service_discovery.html">Services</a></li>' +
-              '<li><a href="../customer/cart.html">Cart</a></li>';
-          }
-        }
-      });
+    var session = typeof Auth !== "undefined" ? Auth.getCurrentUser() : null;
+    if (session && session.role === "customer") {
+      var navAuth = document.querySelector(".nav-auth");
+      if (navAuth) {
+        navAuth.innerHTML =
+          '<a href="../customer/cart.html" class="cart-btn" title="Cart"><svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" /><line x1="3" y1="6" x2="21" y2="6" /><path d="M16 10a4 4 0 01-8 0" /></svg></a>' +
+          '<a href="../customer/home.html" class="user-avatar-btn" title="Dashboard"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" /><circle cx="12" cy="7" r="4" /></svg></a>';
+      }
+      var navLinks = document.querySelector(".nav-links");
+      if (navLinks) {
+        navLinks.innerHTML =
+          '<li><a href="../customer/home.html">Home</a></li>' +
+          '<li><a href="service_discovery.html">Services</a></li>' +
+          '<li><a href="../customer/bookings.html">Bookings</a></li>';
+      }
+      var mobileMenu = document.querySelector("#mobileMenu ul");
+      if (mobileMenu) {
+        mobileMenu.innerHTML =
+          '<li><a href="../customer/home.html" style="color:var(--primary); font-weight:600;">Dashboard</a></li>' +
+          '<li><a href="service_discovery.html">Services</a></li>' +
+          '<li><a href="../customer/cart.html">Cart</a></li>';
+      }
     }
   }
 
@@ -533,15 +493,7 @@
   initHamburger();
   initAuthNav();
 
-  if (typeof AppStore !== "undefined" && AppStore.ready) {
-    AppStore.ready.then(function () {
-      initDynamicContent().catch(function (error) {
-        console.error(error);
-      });
-    });
-  } else {
-    initDynamicContent().catch(function (error) {
-      console.error(error);
-    });
-  }
+  initDynamicContent().catch(function (error) {
+    console.error(error);
+  });
 })();

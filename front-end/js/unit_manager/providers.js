@@ -1,6 +1,5 @@
 /*
- * providers.js — Unit Manager: Manage Providers
- * Uses shared AppStore persistence (same strategy as collective manager).
+ * providers.js — Unit Manager: Manage Providers (API-backed)
  */
 
 (function () {
@@ -73,40 +72,23 @@
     return palette[String(name || "A").charCodeAt(0) % palette.length];
   }
 
-  function getFirstSkillForProvider(spId, skillMap, relations) {
-    var rel = relations.find(function (r) {
-      return r.service_provider_id === spId;
-    });
-    if (!rel) return "General";
-    return skillMap[rel.skill_id] || "General";
-  }
+  async function loadProvidersFromApi() {
+    try {
+      var allProviders = await Api.get("/service-providers");
 
-  function loadProvidersFromStore() {
-    var allSkills = AppStore.getTable("skills") || [];
-    var allProviderSkills = AppStore.getTable("provider_skills") || [];
-    var allProviders = AppStore.getTable("service_providers") || [];
+      // Filter by unit
+      var unitProviders = (allProviders || []).filter(function (sp) {
+        return sp.unit_id === session.unitId || sp.unit_id === session.id;
+      });
 
-    var skillMap = {};
-    allSkills.forEach(function (s) {
-      skillMap[s.skill_id] = s.skill_name;
-    });
-
-    providers = allProviders
-      .filter(function (sp) {
-        return sp.unit_id === session.unitId;
-      })
-      .map(function (sp) {
+      providers = unitProviders.map(function (sp) {
         var ratingVal = typeof sp.rating === "number" ? sp.rating : 4.0;
         var perf = Math.max(55, Math.min(99, Math.round(ratingVal * 20)));
         var p = perfMeta(perf);
         return {
           id: sp.service_provider_id,
           name: sp.name,
-          specialty: getFirstSkillForProvider(
-            sp.service_provider_id,
-            skillMap,
-            allProviderSkills,
-          ),
+          specialty: sp.primary_skill || "General",
           status: deriveStatus(sp),
           rating: ratingVal,
           perf: perf,
@@ -114,6 +96,10 @@
           perfClass: p.cls,
         };
       });
+    } catch (err) {
+      console.error("[providers] Failed to load:", err);
+      providers = [];
+    }
   }
 
   function updateBadges() {
@@ -195,13 +181,13 @@
       '  <div class="actions-cell">' +
       '    <button class="btn-action btn-view" onclick="viewProfile(\'' +
       p.id +
-      '\')">' +
+      "')\">" +
       '      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>' +
       "      View Profile" +
       "    </button>" +
       '    <button class="btn-action btn-remove" onclick="deleteProvider(\'' +
       p.id +
-      '\')">' +
+      "')\">" +
       '      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>' +
       "      Remove" +
       "    </button>" +
@@ -279,26 +265,7 @@
     document.getElementById("modalOverlay").classList.remove("open");
   };
 
-  function ensureSkillByName(skillName) {
-    var allSkills = AppStore.getTable("skills") || [];
-    var existing = allSkills.find(function (s) {
-      return (
-        String(s.skill_name || "").toLowerCase() ===
-        String(skillName || "").toLowerCase()
-      );
-    });
-    if (existing) return existing.skill_id;
-
-    var newSkillId = AppStore.nextId("SKL");
-    allSkills.push({
-      skill_id: newSkillId,
-      skill_name: skillName,
-      description: "Created from Unit Manager provider form",
-    });
-    return newSkillId;
-  }
-
-  window.addProvider = function () {
+  window.addProvider = async function () {
     var nameInput = document.getElementById("newName");
     var name = (nameInput.value || "").trim();
     if (!name) {
@@ -312,47 +279,29 @@
 
     var specialty = document.getElementById("newSpecialty").value || "General";
     var status = document.getElementById("newStatus").value || "Active";
-
-    var newProviderId = AppStore.nextId("SP");
-    var allProviders = AppStore.getTable("service_providers") || [];
     var isActive = status !== "Unavailable";
 
-    allProviders.unshift({
-      service_provider_id: newProviderId,
-      name: name,
-      password: "Password@123",
-      phone: "",
-      email: name.toLowerCase().replace(/\s+/g, ".") + "@mail.com",
-      dob: null,
-      address: "",
-      pfp_url: "",
-      gender: null,
-      rating: 4,
-      rating_count: 1,
-      is_active: isActive,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-      unit_id: session.unitId,
-      home_sector_id: null,
-    });
+    try {
+      await Api.post("/service-providers", {
+        name: name,
+        email: name.toLowerCase().replace(/\s+/g, ".") + "@mail.com",
+        password: "Password@123",
+        is_active: isActive,
+        unit_id: session.unitId || session.id,
+        primary_skill: specialty,
+      });
 
-    var skillId = ensureSkillByName(specialty);
-    var providerSkills = AppStore.getTable("provider_skills") || [];
-    providerSkills.push({
-      service_provider_id: newProviderId,
-      skill_id: skillId,
-      verification_status: "Verified",
-      verified_at: new Date().toISOString(),
-    });
-
-    AppStore.save();
-    loadProvidersFromStore();
-    closeModal();
-    currentPage = 1;
-    renderTable();
+      await loadProvidersFromApi();
+      closeModal();
+      currentPage = 1;
+      renderTable();
+      Api.showToast('"' + name + '" added successfully', "success");
+    } catch (err) {
+      console.error("[providers] Add failed:", err);
+    }
   };
 
-  window.deleteProvider = function (id) {
+  window.deleteProvider = async function (id) {
     var p = providers.find(function (x) {
       return x.id === id;
     });
@@ -360,26 +309,26 @@
 
     if (!confirm('Remove "' + p.name + '" from this unit?')) return;
 
-    var allProviders = AppStore.getTable("service_providers") || [];
-    var row = allProviders.find(function (sp) {
-      return sp.service_provider_id === id;
-    });
-    if (!row) return;
+    try {
+      // Remove from unit by setting unit_id to null
+      await Api.patch("/service-providers/" + id, {
+        unit_id: null,
+        is_active: false,
+      });
 
-    row.unit_id = null;
-    row.is_active = false;
-    row.updated_at = new Date().toISOString();
+      await loadProvidersFromApi();
 
-    AppStore.save();
-    loadProvidersFromStore();
+      var totalAfter = providers.filter(function (x) {
+        return currentFilter === "all" || x.status === currentFilter;
+      }).length;
+      var maxPage = Math.max(1, Math.ceil(totalAfter / ROWS_PER_PAGE));
+      if (currentPage > maxPage) currentPage = maxPage;
 
-    var totalAfter = providers.filter(function (x) {
-      return currentFilter === "all" || x.status === currentFilter;
-    }).length;
-    var maxPage = Math.max(1, Math.ceil(totalAfter / ROWS_PER_PAGE));
-    if (currentPage > maxPage) currentPage = maxPage;
-
-    renderTable();
+      renderTable();
+      Api.showToast('"' + p.name + '" removed from unit', "success");
+    } catch (err) {
+      console.error("[providers] Remove failed:", err);
+    }
   };
 
   window.viewProfile = function (id) {
@@ -390,10 +339,11 @@
     if (e.key === "Escape") closeModal();
   });
 
-  AppStore.ready.then(function () {
+  // Init
+  (async function () {
     session = Auth.requireSession(["unit_manager"]);
     if (!session) return;
-    loadProvidersFromStore();
+    await loadProvidersFromApi();
     renderTable();
-  });
+  })();
 })();
