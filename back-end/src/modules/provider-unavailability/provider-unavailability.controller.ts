@@ -10,13 +10,10 @@ import {
   Request,
   UseGuards,
 } from '@nestjs/common';
-import {
-  ApiBearerAuth,
-  ApiHeader,
+import { ApiBearerAuth,
   ApiOperation,
   ApiResponse,
-  ApiTags,
-} from '@nestjs/swagger';
+  ApiTags, ApiHeader } from '@nestjs/swagger';
 import { ProviderUnavailabilityService } from './provider-unavailability.service';
 import { CreateProviderUnavailabilityDto } from './dto/create-provider-unavailability.dto';
 import { UpdateProviderUnavailabilityDto } from './dto/update-provider-unavailability.dto';
@@ -35,13 +32,9 @@ export class ProviderUnavailabilityController {
 
   @Get()
   @Roles(Role.SUPER_USER, Role.UNIT_MANAGER, Role.COLLECTIVE_MANAGER)
-  @ApiHeader({
-    name: 'Authorization',
-    description: 'Bearer token',
-    required: true
-  })
   @ApiOperation({ summary: 'Get all provider unavailabilities' })
-  @ApiResponse({ status: 200, description: 'Success' })
+  
+  @ApiHeader({ name: 'x-role', required: true, description: 'User role (customer, super_user, service_provider)' })@ApiResponse({ status: 200, description: 'Success' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
   findAll() {
     return this.providerUnavailabilityService.findAll();
@@ -49,13 +42,9 @@ export class ProviderUnavailabilityController {
 
   @Get('provider/:provider_id')
   @Roles(Role.SUPER_USER, Role.SERVICE_PROVIDER, Role.UNIT_MANAGER, Role.COLLECTIVE_MANAGER)
-  @ApiHeader({
-    name: 'Authorization',
-    description: 'Bearer token',
-    required: true
-  })
   @ApiOperation({ summary: 'Get provider unavailabilities by provider ID' })
-  @ApiResponse({ status: 200, description: 'Success' })
+  
+  @ApiHeader({ name: 'x-role', required: true, description: 'User role (customer, super_user, service_provider)' })@ApiResponse({ status: 200, description: 'Success' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
   findByProvider(
     @Param('provider_id') providerId: string,
@@ -69,13 +58,9 @@ export class ProviderUnavailabilityController {
 
   @Get(':id')
   @Roles(Role.SUPER_USER, Role.SERVICE_PROVIDER, Role.UNIT_MANAGER, Role.COLLECTIVE_MANAGER)
-  @ApiHeader({
-    name: 'Authorization',
-    description: 'Bearer token',
-    required: true
-  })
   @ApiOperation({ summary: 'Get provider unavailability by ID' })
-  @ApiResponse({ status: 200, description: 'Success' })
+  
+  @ApiHeader({ name: 'x-role', required: true, description: 'User role (customer, super_user, service_provider)' })@ApiResponse({ status: 200, description: 'Success' })
   @ApiResponse({ status: 404, description: 'Not found' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
   findOne(@Param('id') id: string, @Request() req: { user: JwtPayload }) {
@@ -88,13 +73,9 @@ export class ProviderUnavailabilityController {
 
   @Post()
   @Roles(Role.SUPER_USER, Role.SERVICE_PROVIDER)
-  @ApiHeader({
-    name: 'Authorization',
-    description: 'Bearer token',
-    required: true
-  })
   @ApiOperation({ summary: 'Create a new provider unavailability' })
-  @ApiResponse({ status: 201, description: 'Created successfully' })
+  
+  @ApiHeader({ name: 'x-role', required: true, description: 'User role (customer, super_user, service_provider)' })@ApiResponse({ status: 201, description: 'Created successfully' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
   create(
     @Body() dto: CreateProviderUnavailabilityDto,
@@ -108,13 +89,9 @@ export class ProviderUnavailabilityController {
 
   @Patch(':id')
   @Roles(Role.SUPER_USER, Role.SERVICE_PROVIDER)
-  @ApiHeader({
-    name: 'Authorization',
-    description: 'Bearer token',
-    required: true
-  })
   @ApiOperation({ summary: 'Update a provider unavailability' })
-  @ApiResponse({ status: 200, description: 'Success' })
+  
+  @ApiHeader({ name: 'x-role', required: true, description: 'User role (customer, super_user, service_provider)' })@ApiResponse({ status: 200, description: 'Success' })
   @ApiResponse({ status: 404, description: 'Not found' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
   update(
@@ -131,13 +108,9 @@ export class ProviderUnavailabilityController {
 
   @Delete(':id')
   @Roles(Role.SUPER_USER, Role.SERVICE_PROVIDER)
-  @ApiHeader({
-    name: 'Authorization',
-    description: 'Bearer token',
-    required: true
-  })
   @ApiOperation({ summary: 'Delete a provider unavailability' })
-  @ApiResponse({ status: 200, description: 'Success' })
+  
+  @ApiHeader({ name: 'x-role', required: true, description: 'User role (customer, super_user, service_provider)' })@ApiResponse({ status: 200, description: 'Success' })
   @ApiResponse({ status: 404, description: 'Not found' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
   remove(@Param('id') id: string, @Request() req: { user: JwtPayload }) {

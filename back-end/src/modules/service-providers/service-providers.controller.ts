@@ -12,7 +12,6 @@ import {
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
-  ApiHeader,
   ApiOperation,
   ApiResponse,
   ApiTags,
@@ -37,11 +36,6 @@ export class ServiceProvidersController {
 
   @Get()
   @Roles(Role.SUPER_USER)
-  @ApiHeader({
-    name: 'Authorization',
-    description: 'Bearer token',
-    required: true
-  })
   @ApiOperation({ summary: 'Get all service providers' })
   @ApiResponse({ status: 200, description: 'Success' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
@@ -51,11 +45,6 @@ export class ServiceProvidersController {
 
   @Get('unit/:unit_id')
   @Roles(Role.SUPER_USER, Role.COLLECTIVE_MANAGER, Role.UNIT_MANAGER)
-  @ApiHeader({
-    name: 'Authorization',
-    description: 'Bearer token',
-    required: true
-  })
   @ApiOperation({ summary: 'Get service providers by unit ID' })
   @ApiResponse({ status: 200, description: 'Success' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
@@ -65,11 +54,6 @@ export class ServiceProvidersController {
 
   @Get('sector/:sector_id')
   @Roles(Role.SUPER_USER, Role.COLLECTIVE_MANAGER, Role.UNIT_MANAGER)
-  @ApiHeader({
-    name: 'Authorization',
-    description: 'Bearer token',
-    required: true
-  })
   @ApiOperation({ summary: 'Get service providers by sector ID' })
   @ApiResponse({ status: 200, description: 'Success' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
@@ -79,11 +63,6 @@ export class ServiceProvidersController {
 
   @Get(':id')
   @Roles(Role.SUPER_USER, Role.SERVICE_PROVIDER, Role.UNIT_MANAGER)
-  @ApiHeader({
-    name: 'Authorization',
-    description: 'Bearer token',
-    required: true
-  })
   @ApiOperation({ summary: 'Get service provider by ID' })
   @ApiResponse({ status: 200, description: 'Success' })
   @ApiResponse({ status: 404, description: 'Not found' })
@@ -97,11 +76,6 @@ export class ServiceProvidersController {
 
   @Post()
   @Roles(Role.SUPER_USER, Role.COLLECTIVE_MANAGER)
-  @ApiHeader({
-    name: 'Authorization',
-    description: 'Bearer token',
-    required: true
-  })
   @ApiOperation({ summary: 'Create a new service provider' })
   @ApiResponse({ status: 201, description: 'Created successfully' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
@@ -111,11 +85,6 @@ export class ServiceProvidersController {
 
   @Patch(':id')
   @Roles(Role.SUPER_USER, Role.SERVICE_PROVIDER, Role.UNIT_MANAGER)
-  @ApiHeader({
-    name: 'Authorization',
-    description: 'Bearer token',
-    required: true
-  })
   @ApiOperation({ summary: 'Update a service provider' })
   @ApiResponse({ status: 200, description: 'Success' })
   @ApiResponse({ status: 404, description: 'Not found' })
@@ -133,11 +102,6 @@ export class ServiceProvidersController {
 
   @Patch('working-hours/:id')
   @Roles(Role.SUPER_USER, Role.SERVICE_PROVIDER)
-  @ApiHeader({
-    name: 'Authorization',
-    description: 'Bearer token',
-    required: true
-  })
   @ApiOperation({ summary: 'Update working hours of service provider' })
   @ApiResponse({ status: 200, description: 'Success' })
   @ApiResponse({ status: 404, description: 'Not found' })
@@ -155,11 +119,6 @@ export class ServiceProvidersController {
 
   @Patch('profile/:id')
   @Roles(Role.SUPER_USER, Role.SERVICE_PROVIDER)
-  @ApiHeader({
-    name: 'Authorization',
-    description: 'Bearer token',
-    required: true
-  })
   @ApiOperation({ summary: 'Update profile of service provider' })
   @ApiResponse({ status: 200, description: 'Success' })
   @ApiResponse({ status: 404, description: 'Not found' })
@@ -177,11 +136,6 @@ export class ServiceProvidersController {
 
   @Patch('deactivate/:id')
   @Roles(Role.SUPER_USER, Role.SERVICE_PROVIDER)
-  @ApiHeader({
-    name: 'Authorization',
-    description: 'Bearer token',
-    required: true
-  })
   @ApiOperation({ summary: 'Request deactivation of service provider' })
   @ApiResponse({ status: 200, description: 'Success' })
   @ApiResponse({ status: 404, description: 'Not found' })
@@ -195,11 +149,6 @@ export class ServiceProvidersController {
 
   @Delete(':id')
   @Roles(Role.SUPER_USER, Role.COLLECTIVE_MANAGER, Role.UNIT_MANAGER)
-  @ApiHeader({
-    name: 'Authorization',
-    description: 'Bearer token',
-    required: true
-  })
   @ApiOperation({ summary: 'Delete a service provider' })
   @ApiResponse({ status: 200, description: 'Success' })
   @ApiResponse({ status: 404, description: 'Not found' })

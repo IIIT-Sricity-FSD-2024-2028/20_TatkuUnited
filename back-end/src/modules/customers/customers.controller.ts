@@ -12,7 +12,6 @@ import {
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
-  ApiHeader,
   ApiOperation,
   ApiResponse,
   ApiTags,
@@ -35,11 +34,6 @@ export class CustomersController {
 
   @Get()
   @Roles(Role.SUPER_USER)
-  @ApiHeader({
-    name: 'Authorization',
-    description: 'Bearer token',
-    required: true
-  })
   @ApiOperation({ summary: 'Get all customers' })
   @ApiResponse({ status: 200, description: 'Success' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
@@ -49,7 +43,6 @@ export class CustomersController {
 
   @Get('sector/:sector_id')
   @Roles(Role.SUPER_USER, Role.COLLECTIVE_MANAGER, Role.UNIT_MANAGER)
-  @ApiHeader({ name: 'Authorization', description: 'Bearer token', required: true })
   @ApiOperation({ summary: 'Get customers by sector ID' })
   @ApiResponse({ status: 200, description: 'Success' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
@@ -59,11 +52,6 @@ export class CustomersController {
 
   @Get(':id')
   @Roles(Role.SUPER_USER, Role.CUSTOMER)
-  @ApiHeader({
-    name: 'Authorization',
-    description: 'Bearer token',
-    required: true
-  })
   @ApiOperation({ summary: 'Get customer by ID' })
   @ApiResponse({ status: 200, description: 'Success' })
   @ApiResponse({ status: 404, description: 'Not found' })
@@ -77,11 +65,6 @@ export class CustomersController {
 
   @Post()
   @Roles(Role.SUPER_USER)
-  @ApiHeader({
-    name: 'Authorization',
-    description: 'Bearer token',
-    required: true
-  })
   @ApiOperation({ summary: 'Create a new customer' })
   @ApiResponse({ status: 201, description: 'Created successfully' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
@@ -91,11 +74,6 @@ export class CustomersController {
 
   @Patch(':id')
   @Roles(Role.SUPER_USER, Role.CUSTOMER)
-  @ApiHeader({
-    name: 'Authorization',
-    description: 'Bearer token',
-    required: true
-  })
   @ApiOperation({ summary: 'Update a customer' })
   @ApiResponse({ status: 200, description: 'Success' })
   @ApiResponse({ status: 404, description: 'Not found' })
@@ -113,11 +91,6 @@ export class CustomersController {
 
   @Delete(':id')
   @Roles(Role.SUPER_USER)
-  @ApiHeader({
-    name: 'Authorization',
-    description: 'Bearer token',
-    required: true
-  })
   @ApiOperation({ summary: 'Delete a customer' })
   @ApiResponse({ status: 200, description: 'Success' })
   @ApiResponse({ status: 404, description: 'Not found' })
@@ -128,7 +101,6 @@ export class CustomersController {
 
   @Delete('account/:id')
   @Roles(Role.SUPER_USER, Role.CUSTOMER)
-  @ApiHeader({ name: 'Authorization', description: 'Bearer token', required: true })
   @ApiOperation({ summary: 'Delete customer account' })
   @ApiResponse({ status: 200, description: 'Account deleted successfully' })
   @ApiResponse({ status: 404, description: 'Not found' })

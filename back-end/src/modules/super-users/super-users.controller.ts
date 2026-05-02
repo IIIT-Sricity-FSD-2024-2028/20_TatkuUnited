@@ -10,7 +10,6 @@ import {
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
-  ApiHeader,
   ApiOperation,
   ApiResponse,
   ApiTags,
@@ -32,11 +31,6 @@ export class SuperUsersController {
 
   @Get()
   @Roles(Role.SUPER_USER)
-  @ApiHeader({
-    name: 'Authorization',
-    description: 'Bearer token',
-    required: true
-  })
   @ApiOperation({ summary: 'Get all super users' })
   @ApiResponse({ status: 200, description: 'Success' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
@@ -46,11 +40,6 @@ export class SuperUsersController {
 
   @Get(':id')
   @Roles(Role.SUPER_USER)
-  @ApiHeader({
-    name: 'Authorization',
-    description: 'Bearer token',
-    required: true
-  })
   @ApiOperation({ summary: 'Get super user by ID' })
   @ApiResponse({ status: 200, description: 'Success' })
   @ApiResponse({ status: 404, description: 'Not found' })
@@ -61,11 +50,6 @@ export class SuperUsersController {
 
   @Post()
   @Roles(Role.SUPER_USER)
-  @ApiHeader({
-    name: 'Authorization',
-    description: 'Bearer token',
-    required: true
-  })
   @ApiOperation({ summary: 'Create a new super user' })
   @ApiResponse({ status: 201, description: 'Created successfully' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
@@ -75,11 +59,6 @@ export class SuperUsersController {
 
   @Patch(':id')
   @Roles(Role.SUPER_USER)
-  @ApiHeader({
-    name: 'Authorization',
-    description: 'Bearer token',
-    required: true
-  })
   @ApiOperation({ summary: 'Update a super user' })
   @ApiResponse({ status: 200, description: 'Success' })
   @ApiResponse({ status: 404, description: 'Not found' })
@@ -90,11 +69,6 @@ export class SuperUsersController {
 
   @Delete(':id')
   @Roles(Role.SUPER_USER)
-  @ApiHeader({
-    name: 'Authorization',
-    description: 'Bearer token',
-    required: true
-  })
   @ApiOperation({ summary: 'Delete a super user' })
   @ApiResponse({ status: 200, description: 'Success' })
   @ApiResponse({ status: 404, description: 'Not found' })

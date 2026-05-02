@@ -9,13 +9,10 @@ import {
   Request,
   UseGuards,
 } from '@nestjs/common';
-import {
-  ApiBearerAuth,
-  ApiHeader,
+import { ApiBearerAuth,
   ApiOperation,
   ApiResponse,
-  ApiTags,
-} from '@nestjs/swagger';
+  ApiTags, ApiHeader } from '@nestjs/swagger';
 import { ProviderSkillsService } from './provider-skills.service';
 import { CreateProviderSkillDto } from './dto/create-provider-skill.dto';
 import { VerifyProviderSkillDto } from './dto/verify-provider-skill.dto';
@@ -34,13 +31,9 @@ export class ProviderSkillsController {
 
   @Get('provider/:provider_id')
   @Roles(Role.SUPER_USER, Role.COLLECTIVE_MANAGER, Role.UNIT_MANAGER, Role.SERVICE_PROVIDER, Role.CUSTOMER)
-  @ApiHeader({
-    name: 'Authorization',
-    description: 'Bearer token',
-    required: true
-  })
   @ApiOperation({ summary: 'Get provider skills by provider ID' })
-  @ApiResponse({ status: 200, description: 'Success' })
+  
+  @ApiHeader({ name: 'x-role', required: true, description: 'User role (customer, super_user, service_provider)' })@ApiResponse({ status: 200, description: 'Success' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
   findByProvider(
     @Param('provider_id') providerId: string,
@@ -54,13 +47,9 @@ export class ProviderSkillsController {
 
   @Get('skill/:skill_id')
   @Roles(Role.SUPER_USER, Role.COLLECTIVE_MANAGER, Role.UNIT_MANAGER, Role.SERVICE_PROVIDER, Role.CUSTOMER)
-  @ApiHeader({
-    name: 'Authorization',
-    description: 'Bearer token',
-    required: true
-  })
   @ApiOperation({ summary: 'Get providers by skill ID' })
-  @ApiResponse({ status: 200, description: 'Success' })
+  
+  @ApiHeader({ name: 'x-role', required: true, description: 'User role (customer, super_user, service_provider)' })@ApiResponse({ status: 200, description: 'Success' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
   findBySkill(@Param('skill_id') skillId: string) {
     return this.providerSkillsService.findBySkill(skillId);
@@ -68,13 +57,9 @@ export class ProviderSkillsController {
 
   @Post()
   @Roles(Role.SUPER_USER, Role.SERVICE_PROVIDER)
-  @ApiHeader({
-    name: 'Authorization',
-    description: 'Bearer token',
-    required: true
-  })
   @ApiOperation({ summary: 'Assign skill to provider' })
-  @ApiResponse({ status: 201, description: 'Created successfully' })
+  
+  @ApiHeader({ name: 'x-role', required: true, description: 'User role (customer, super_user, service_provider)' })@ApiResponse({ status: 201, description: 'Created successfully' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
   create(@Body() dto: CreateProviderSkillDto, @Request() req: { user: JwtPayload }) {
     if (
@@ -88,13 +73,9 @@ export class ProviderSkillsController {
 
   @Patch('verify/:id')
   @Roles(Role.SUPER_USER, Role.COLLECTIVE_MANAGER)
-  @ApiHeader({
-    name: 'Authorization',
-    description: 'Bearer token',
-    required: true
-  })
   @ApiOperation({ summary: 'Verify provider skill' })
-  @ApiResponse({ status: 200, description: 'Success' })
+  
+  @ApiHeader({ name: 'x-role', required: true, description: 'User role (customer, super_user, service_provider)' })@ApiResponse({ status: 200, description: 'Success' })
   @ApiResponse({ status: 404, description: 'Not found' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
   verifySkill(@Param('id') providerId: string, @Body() dto: VerifyProviderSkillDto) {

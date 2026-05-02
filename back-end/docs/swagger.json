@@ -18,17 +18,7 @@
     "/super-users": {
       "get": {
         "operationId": "SuperUsersController_findAll",
-        "parameters": [
-          {
-            "name": "Authorization",
-            "in": "header",
-            "description": "Bearer token",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
+        "parameters": [],
         "responses": {
           "200": {
             "description": "Success"
@@ -49,17 +39,7 @@
       },
       "post": {
         "operationId": "SuperUsersController_create",
-        "parameters": [
-          {
-            "name": "Authorization",
-            "in": "header",
-            "description": "Bearer token",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
+        "parameters": [],
         "requestBody": {
           "required": true,
           "content": {
@@ -100,15 +80,6 @@
             "schema": {
               "type": "string"
             }
-          },
-          {
-            "name": "Authorization",
-            "in": "header",
-            "description": "Bearer token",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
           }
         ],
         "responses": {
@@ -139,15 +110,6 @@
             "name": "id",
             "required": true,
             "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "Authorization",
-            "in": "header",
-            "description": "Bearer token",
-            "required": true,
             "schema": {
               "type": "string"
             }
@@ -194,15 +156,6 @@
             "schema": {
               "type": "string"
             }
-          },
-          {
-            "name": "Authorization",
-            "in": "header",
-            "description": "Bearer token",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
           }
         ],
         "responses": {
@@ -230,17 +183,7 @@
     "/collective-managers": {
       "get": {
         "operationId": "CollectiveManagersController_findAll",
-        "parameters": [
-          {
-            "name": "Authorization",
-            "in": "header",
-            "description": "Bearer token",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
+        "parameters": [],
         "responses": {
           "200": {
             "description": "Success"
@@ -261,17 +204,7 @@
       },
       "post": {
         "operationId": "CollectiveManagersController_create",
-        "parameters": [
-          {
-            "name": "Authorization",
-            "in": "header",
-            "description": "Bearer token",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
+        "parameters": [],
         "requestBody": {
           "required": true,
           "content": {
@@ -312,15 +245,6 @@
             "schema": {
               "type": "string"
             }
-          },
-          {
-            "name": "Authorization",
-            "in": "header",
-            "description": "Bearer token",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
           }
         ],
         "responses": {
@@ -350,15 +274,6 @@
             "name": "id",
             "required": true,
             "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "Authorization",
-            "in": "header",
-            "description": "Bearer token",
-            "required": true,
             "schema": {
               "type": "string"
             }
@@ -392,15 +307,6 @@
             "name": "id",
             "required": true,
             "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "Authorization",
-            "in": "header",
-            "description": "Bearer token",
-            "required": true,
             "schema": {
               "type": "string"
             }
@@ -447,15 +353,6 @@
             "schema": {
               "type": "string"
             }
-          },
-          {
-            "name": "Authorization",
-            "in": "header",
-            "description": "Bearer token",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
           }
         ],
         "responses": {
@@ -483,17 +380,7 @@
     "/unit-managers": {
       "get": {
         "operationId": "UnitManagersController_findAll",
-        "parameters": [
-          {
-            "name": "Authorization",
-            "in": "header",
-            "description": "Bearer token",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
+        "parameters": [],
         "responses": {
           "200": {
             "description": "Success"
@@ -514,17 +401,7 @@
       },
       "post": {
         "operationId": "UnitManagersController_create",
-        "parameters": [
-          {
-            "name": "Authorization",
-            "in": "header",
-            "description": "Bearer token",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
+        "parameters": [],
         "requestBody": {
           "required": true,
           "content": {
@@ -565,15 +442,6 @@
             "schema": {
               "type": "string"
             }
-          },
-          {
-            "name": "Authorization",
-            "in": "header",
-            "description": "Bearer token",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
           }
         ],
         "responses": {
@@ -603,15 +471,6 @@
             "name": "id",
             "required": true,
             "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "Authorization",
-            "in": "header",
-            "description": "Bearer token",
-            "required": true,
             "schema": {
               "type": "string"
             }
@@ -645,15 +504,6 @@
             "name": "id",
             "required": true,
             "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "Authorization",
-            "in": "header",
-            "description": "Bearer token",
-            "required": true,
             "schema": {
               "type": "string"
             }
@@ -700,15 +550,6 @@
             "schema": {
               "type": "string"
             }
-          },
-          {
-            "name": "Authorization",
-            "in": "header",
-            "description": "Bearer token",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
           }
         ],
         "responses": {
@@ -736,17 +577,7 @@
     "/service-providers": {
       "get": {
         "operationId": "ServiceProvidersController_findAll",
-        "parameters": [
-          {
-            "name": "Authorization",
-            "in": "header",
-            "description": "Bearer token",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
+        "parameters": [],
         "responses": {
           "200": {
             "description": "Success"
@@ -767,17 +598,7 @@
       },
       "post": {
         "operationId": "ServiceProvidersController_create",
-        "parameters": [
-          {
-            "name": "Authorization",
-            "in": "header",
-            "description": "Bearer token",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
+        "parameters": [],
         "requestBody": {
           "required": true,
           "content": {
@@ -818,15 +639,6 @@
             "schema": {
               "type": "string"
             }
-          },
-          {
-            "name": "Authorization",
-            "in": "header",
-            "description": "Bearer token",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
           }
         ],
         "responses": {
@@ -856,15 +668,6 @@
             "name": "sector_id",
             "required": true,
             "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "Authorization",
-            "in": "header",
-            "description": "Bearer token",
-            "required": true,
             "schema": {
               "type": "string"
             }
@@ -900,15 +703,6 @@
             "schema": {
               "type": "string"
             }
-          },
-          {
-            "name": "Authorization",
-            "in": "header",
-            "description": "Bearer token",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
           }
         ],
         "responses": {
@@ -939,15 +733,6 @@
             "name": "id",
             "required": true,
             "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "Authorization",
-            "in": "header",
-            "description": "Bearer token",
-            "required": true,
             "schema": {
               "type": "string"
             }
@@ -994,15 +779,6 @@
             "schema": {
               "type": "string"
             }
-          },
-          {
-            "name": "Authorization",
-            "in": "header",
-            "description": "Bearer token",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
           }
         ],
         "responses": {
@@ -1035,15 +811,6 @@
             "name": "id",
             "required": true,
             "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "Authorization",
-            "in": "header",
-            "description": "Bearer token",
-            "required": true,
             "schema": {
               "type": "string"
             }
@@ -1092,15 +859,6 @@
             "schema": {
               "type": "string"
             }
-          },
-          {
-            "name": "Authorization",
-            "in": "header",
-            "description": "Bearer token",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
           }
         ],
         "requestBody": {
@@ -1146,15 +904,6 @@
             "schema": {
               "type": "string"
             }
-          },
-          {
-            "name": "Authorization",
-            "in": "header",
-            "description": "Bearer token",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
           }
         ],
         "responses": {
@@ -1182,17 +931,7 @@
     "/customers": {
       "get": {
         "operationId": "CustomersController_findAll",
-        "parameters": [
-          {
-            "name": "Authorization",
-            "in": "header",
-            "description": "Bearer token",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
+        "parameters": [],
         "responses": {
           "200": {
             "description": "Success"
@@ -1213,17 +952,7 @@
       },
       "post": {
         "operationId": "CustomersController_create",
-        "parameters": [
-          {
-            "name": "Authorization",
-            "in": "header",
-            "description": "Bearer token",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
+        "parameters": [],
         "requestBody": {
           "required": true,
           "content": {
@@ -1264,15 +993,6 @@
             "schema": {
               "type": "string"
             }
-          },
-          {
-            "name": "Authorization",
-            "in": "header",
-            "description": "Bearer token",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
           }
         ],
         "responses": {
@@ -1302,15 +1022,6 @@
             "name": "id",
             "required": true,
             "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "Authorization",
-            "in": "header",
-            "description": "Bearer token",
-            "required": true,
             "schema": {
               "type": "string"
             }
@@ -1344,15 +1055,6 @@
             "name": "id",
             "required": true,
             "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "Authorization",
-            "in": "header",
-            "description": "Bearer token",
-            "required": true,
             "schema": {
               "type": "string"
             }
@@ -1399,15 +1101,6 @@
             "schema": {
               "type": "string"
             }
-          },
-          {
-            "name": "Authorization",
-            "in": "header",
-            "description": "Bearer token",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
           }
         ],
         "responses": {
@@ -1443,15 +1136,6 @@
             "schema": {
               "type": "string"
             }
-          },
-          {
-            "name": "Authorization",
-            "in": "header",
-            "description": "Bearer token",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
           }
         ],
         "responses": {
@@ -1479,17 +1163,7 @@
     "/collectives": {
       "get": {
         "operationId": "CollectivesController_findAll",
-        "parameters": [
-          {
-            "name": "Authorization",
-            "in": "header",
-            "description": "Bearer token",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
+        "parameters": [],
         "responses": {
           "200": {
             "description": "Returns all collectives"
@@ -1510,17 +1184,7 @@
       },
       "post": {
         "operationId": "CollectivesController_create",
-        "parameters": [
-          {
-            "name": "Authorization",
-            "in": "header",
-            "description": "Bearer token",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
+        "parameters": [],
         "requestBody": {
           "required": true,
           "content": {
@@ -1561,15 +1225,6 @@
             "schema": {
               "type": "string"
             }
-          },
-          {
-            "name": "Authorization",
-            "in": "header",
-            "description": "Bearer token",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
           }
         ],
         "responses": {
@@ -1600,15 +1255,6 @@
             "name": "id",
             "required": true,
             "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "Authorization",
-            "in": "header",
-            "description": "Bearer token",
-            "required": true,
             "schema": {
               "type": "string"
             }
@@ -1655,15 +1301,6 @@
             "schema": {
               "type": "string"
             }
-          },
-          {
-            "name": "Authorization",
-            "in": "header",
-            "description": "Bearer token",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
           }
         ],
         "responses": {
@@ -1691,17 +1328,7 @@
     "/sectors": {
       "get": {
         "operationId": "SectorsController_findAll",
-        "parameters": [
-          {
-            "name": "Authorization",
-            "in": "header",
-            "description": "Bearer token",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
+        "parameters": [],
         "responses": {
           "200": {
             "description": "Success"
@@ -1722,17 +1349,7 @@
       },
       "post": {
         "operationId": "SectorsController_create",
-        "parameters": [
-          {
-            "name": "Authorization",
-            "in": "header",
-            "description": "Bearer token",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
+        "parameters": [],
         "requestBody": {
           "required": true,
           "content": {
@@ -1773,15 +1390,6 @@
             "schema": {
               "type": "string"
             }
-          },
-          {
-            "name": "Authorization",
-            "in": "header",
-            "description": "Bearer token",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
           }
         ],
         "responses": {
@@ -1811,15 +1419,6 @@
             "name": "id",
             "required": true,
             "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "Authorization",
-            "in": "header",
-            "description": "Bearer token",
-            "required": true,
             "schema": {
               "type": "string"
             }
@@ -1853,15 +1452,6 @@
             "name": "id",
             "required": true,
             "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "Authorization",
-            "in": "header",
-            "description": "Bearer token",
-            "required": true,
             "schema": {
               "type": "string"
             }
@@ -1908,15 +1498,6 @@
             "schema": {
               "type": "string"
             }
-          },
-          {
-            "name": "Authorization",
-            "in": "header",
-            "description": "Bearer token",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
           }
         ],
         "responses": {
@@ -1944,17 +1525,7 @@
     "/units": {
       "get": {
         "operationId": "UnitsController_findAll",
-        "parameters": [
-          {
-            "name": "Authorization",
-            "in": "header",
-            "description": "Bearer token",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
+        "parameters": [],
         "responses": {
           "200": {
             "description": "Success"
@@ -1975,17 +1546,7 @@
       },
       "post": {
         "operationId": "UnitsController_create",
-        "parameters": [
-          {
-            "name": "Authorization",
-            "in": "header",
-            "description": "Bearer token",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
+        "parameters": [],
         "requestBody": {
           "required": true,
           "content": {
@@ -2026,15 +1587,6 @@
             "schema": {
               "type": "string"
             }
-          },
-          {
-            "name": "Authorization",
-            "in": "header",
-            "description": "Bearer token",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
           }
         ],
         "responses": {
@@ -2064,15 +1616,6 @@
             "name": "id",
             "required": true,
             "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "Authorization",
-            "in": "header",
-            "description": "Bearer token",
-            "required": true,
             "schema": {
               "type": "string"
             }
@@ -2106,15 +1649,6 @@
             "name": "id",
             "required": true,
             "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "Authorization",
-            "in": "header",
-            "description": "Bearer token",
-            "required": true,
             "schema": {
               "type": "string"
             }
@@ -2161,15 +1695,6 @@
             "schema": {
               "type": "string"
             }
-          },
-          {
-            "name": "Authorization",
-            "in": "header",
-            "description": "Bearer token",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
           }
         ],
         "responses": {
@@ -2195,9 +1720,50 @@
       }
     },
     "/categories": {
+      "get": {
+        "operationId": "CategoriesController_findAll",
+        "parameters": [
+          {
+            "name": "x-role",
+            "in": "header",
+            "description": "User role (customer, super_user, service_provider)",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of all categories"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get all categories",
+        "tags": [
+          "categories"
+        ]
+      },
       "post": {
         "operationId": "CategoriesController_create",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "x-role",
+            "in": "header",
+            "description": "User role (customer, super_user, service_provider)",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -2210,23 +1776,20 @@
         },
         "responses": {
           "201": {
-            "description": ""
+            "description": "Category created successfully"
+          },
+          "403": {
+            "description": "Forbidden — super_user only"
           }
         },
-        "tags": [
-          "Categories"
-        ]
-      },
-      "get": {
-        "operationId": "CategoriesController_findAll",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": ""
+        "security": [
+          {
+            "bearer": []
           }
-        },
+        ],
+        "summary": "Create a new category",
         "tags": [
-          "Categories"
+          "categories"
         ]
       }
     },
@@ -2241,15 +1804,36 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "x-role",
+            "in": "header",
+            "description": "User role (customer, super_user, service_provider)",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
           "200": {
-            "description": ""
+            "description": "Category found"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Category not found"
           }
         },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get category by ID",
         "tags": [
-          "Categories"
+          "categories"
         ]
       },
       "patch": {
@@ -2259,6 +1843,15 @@
             "name": "id",
             "required": true,
             "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-role",
+            "in": "header",
+            "description": "User role (customer, super_user, service_provider)",
+            "required": true,
             "schema": {
               "type": "string"
             }
@@ -2276,11 +1869,23 @@
         },
         "responses": {
           "200": {
-            "description": ""
+            "description": "Category updated"
+          },
+          "403": {
+            "description": "Forbidden — super_user only"
+          },
+          "404": {
+            "description": "Category not found"
           }
         },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update a category",
         "tags": [
-          "Categories"
+          "categories"
         ]
       },
       "delete": {
@@ -2293,22 +1898,84 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "x-role",
+            "in": "header",
+            "description": "User role (customer, super_user, service_provider)",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
           "200": {
-            "description": ""
+            "description": "Category deleted"
+          },
+          "403": {
+            "description": "Forbidden — super_user only"
+          },
+          "404": {
+            "description": "Category not found"
           }
         },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Delete a category",
         "tags": [
-          "Categories"
+          "categories"
         ]
       }
     },
     "/services": {
+      "get": {
+        "operationId": "ServicesController_findAll",
+        "parameters": [
+          {
+            "name": "x-role",
+            "in": "header",
+            "description": "User role (customer, super_user, service_provider)",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of all services"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get all services",
+        "tags": [
+          "services"
+        ]
+      },
       "post": {
         "operationId": "ServicesController_create",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "x-role",
+            "in": "header",
+            "description": "User role (customer, super_user, service_provider)",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -2321,23 +1988,496 @@
         },
         "responses": {
           "201": {
-            "description": ""
+            "description": "Service created successfully"
+          },
+          "403": {
+            "description": "Forbidden — super_user only"
           }
         },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create a new service",
         "tags": [
-          "Services"
+          "services"
         ]
-      },
+      }
+    },
+    "/services/available": {
       "get": {
-        "operationId": "ServicesController_findAll",
+        "operationId": "ServicesController_findAvailable",
         "parameters": [],
         "responses": {
           "200": {
-            "description": ""
+            "description": "List of available services"
+          },
+          "403": {
+            "description": "Forbidden"
           }
         },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get all available services (is_available = true)",
         "tags": [
-          "Services"
+          "services"
+        ]
+      }
+    },
+    "/services/category/{categoryId}": {
+      "get": {
+        "operationId": "ServicesController_findByCategory",
+        "parameters": [
+          {
+            "name": "categoryId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-role",
+            "in": "header",
+            "description": "User role (customer, super_user, service_provider)",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of services in the category"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get services by category ID",
+        "tags": [
+          "services"
+        ]
+      }
+    },
+    "/services/{id}/skills": {
+      "get": {
+        "operationId": "ServicesController_getServiceSkills",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-role",
+            "in": "header",
+            "description": "User role (customer, super_user, service_provider)",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of skill links for the service"
+          },
+          "404": {
+            "description": "Service not found"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get skills linked to a service",
+        "tags": [
+          "services"
+        ]
+      },
+      "post": {
+        "operationId": "ServicesController_linkSkill",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-role",
+            "in": "header",
+            "description": "User role (customer, super_user, service_provider)",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LinkServiceSkillDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Skill linked to service"
+          },
+          "403": {
+            "description": "Forbidden — super_user only"
+          },
+          "404": {
+            "description": "Service not found"
+          },
+          "409": {
+            "description": "Skill already linked"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Link a skill to a service",
+        "tags": [
+          "services"
+        ]
+      }
+    },
+    "/services/{id}/skills/{skillId}": {
+      "delete": {
+        "operationId": "ServicesController_unlinkSkill",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "skillId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-role",
+            "in": "header",
+            "description": "User role (customer, super_user, service_provider)",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Skill unlinked from service"
+          },
+          "403": {
+            "description": "Forbidden — super_user only"
+          },
+          "404": {
+            "description": "Link not found"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Unlink a skill from a service",
+        "tags": [
+          "services"
+        ]
+      }
+    },
+    "/services/{id}/content": {
+      "get": {
+        "operationId": "ServicesController_getContent",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Service content returned (or null if none)"
+          },
+          "404": {
+            "description": "Service not found"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get content (how it works, coverage) for a service",
+        "tags": [
+          "services"
+        ]
+      },
+      "put": {
+        "operationId": "ServicesController_upsertContent",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpsertServiceContentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Service content upserted"
+          },
+          "403": {
+            "description": "Forbidden — super_user only"
+          },
+          "404": {
+            "description": "Service not found"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create or update service content (upsert)",
+        "tags": [
+          "services"
+        ]
+      }
+    },
+    "/services/{id}/faqs": {
+      "get": {
+        "operationId": "ServicesController_getFaqs",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-role",
+            "in": "header",
+            "description": "User role (customer, super_user, service_provider)",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of FAQs for the service"
+          },
+          "404": {
+            "description": "Service not found"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get FAQs for a service",
+        "tags": [
+          "services"
+        ]
+      },
+      "post": {
+        "operationId": "ServicesController_createFaq",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-role",
+            "in": "header",
+            "description": "User role (customer, super_user, service_provider)",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateServiceFaqDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "FAQ created"
+          },
+          "403": {
+            "description": "Forbidden — super_user only"
+          },
+          "404": {
+            "description": "Service not found"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create a FAQ for a service",
+        "tags": [
+          "services"
+        ]
+      }
+    },
+    "/services/faqs/{faqId}": {
+      "patch": {
+        "operationId": "ServicesController_updateFaq",
+        "parameters": [
+          {
+            "name": "faqId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-role",
+            "in": "header",
+            "description": "User role (customer, super_user, service_provider)",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateServiceFaqDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "FAQ updated"
+          },
+          "403": {
+            "description": "Forbidden — super_user only"
+          },
+          "404": {
+            "description": "FAQ not found"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update a FAQ",
+        "tags": [
+          "services"
+        ]
+      },
+      "delete": {
+        "operationId": "ServicesController_deleteFaq",
+        "parameters": [
+          {
+            "name": "faqId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-role",
+            "in": "header",
+            "description": "User role (customer, super_user, service_provider)",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "FAQ deleted"
+          },
+          "403": {
+            "description": "Forbidden — super_user only"
+          },
+          "404": {
+            "description": "FAQ not found"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Delete a FAQ",
+        "tags": [
+          "services"
         ]
       }
     },
@@ -2352,15 +2492,36 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "x-role",
+            "in": "header",
+            "description": "User role (customer, super_user, service_provider)",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
           "200": {
-            "description": ""
+            "description": "Service found"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Service not found"
           }
         },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get service by ID",
         "tags": [
-          "Services"
+          "services"
         ]
       },
       "patch": {
@@ -2370,6 +2531,15 @@
             "name": "id",
             "required": true,
             "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-role",
+            "in": "header",
+            "description": "User role (customer, super_user, service_provider)",
+            "required": true,
             "schema": {
               "type": "string"
             }
@@ -2387,11 +2557,23 @@
         },
         "responses": {
           "200": {
-            "description": ""
+            "description": "Service updated"
+          },
+          "403": {
+            "description": "Forbidden — super_user only"
+          },
+          "404": {
+            "description": "Service not found"
           }
         },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update a service",
         "tags": [
-          "Services"
+          "services"
         ]
       },
       "delete": {
@@ -2404,15 +2586,36 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "x-role",
+            "in": "header",
+            "description": "User role (customer, super_user, service_provider)",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
           "200": {
-            "description": ""
+            "description": "Service deleted"
+          },
+          "403": {
+            "description": "Forbidden — super_user only"
+          },
+          "404": {
+            "description": "Service not found"
           }
         },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Delete a service",
         "tags": [
-          "Services"
+          "services"
         ]
       }
     },
@@ -2421,9 +2624,9 @@
         "operationId": "SkillsController_findAll",
         "parameters": [
           {
-            "name": "Authorization",
+            "name": "x-role",
             "in": "header",
-            "description": "Bearer token",
+            "description": "User role (customer, super_user, service_provider)",
             "required": true,
             "schema": {
               "type": "string"
@@ -2452,9 +2655,9 @@
         "operationId": "SkillsController_create",
         "parameters": [
           {
-            "name": "Authorization",
+            "name": "x-role",
             "in": "header",
-            "description": "Bearer token",
+            "description": "User role (customer, super_user, service_provider)",
             "required": true,
             "schema": {
               "type": "string"
@@ -2503,9 +2706,9 @@
             }
           },
           {
-            "name": "Authorization",
+            "name": "x-role",
             "in": "header",
-            "description": "Bearer token",
+            "description": "User role (customer, super_user, service_provider)",
             "required": true,
             "schema": {
               "type": "string"
@@ -2545,9 +2748,9 @@
             }
           },
           {
-            "name": "Authorization",
+            "name": "x-role",
             "in": "header",
-            "description": "Bearer token",
+            "description": "User role (customer, super_user, service_provider)",
             "required": true,
             "schema": {
               "type": "string"
@@ -2597,9 +2800,9 @@
             }
           },
           {
-            "name": "Authorization",
+            "name": "x-role",
             "in": "header",
-            "description": "Bearer token",
+            "description": "User role (customer, super_user, service_provider)",
             "required": true,
             "schema": {
               "type": "string"
@@ -2641,9 +2844,9 @@
             }
           },
           {
-            "name": "Authorization",
+            "name": "x-role",
             "in": "header",
-            "description": "Bearer token",
+            "description": "User role (customer, super_user, service_provider)",
             "required": true,
             "schema": {
               "type": "string"
@@ -2682,9 +2885,9 @@
             }
           },
           {
-            "name": "Authorization",
+            "name": "x-role",
             "in": "header",
-            "description": "Bearer token",
+            "description": "User role (customer, super_user, service_provider)",
             "required": true,
             "schema": {
               "type": "string"
@@ -2715,9 +2918,9 @@
         "operationId": "ProviderSkillsController_create",
         "parameters": [
           {
-            "name": "Authorization",
+            "name": "x-role",
             "in": "header",
-            "description": "Bearer token",
+            "description": "User role (customer, super_user, service_provider)",
             "required": true,
             "schema": {
               "type": "string"
@@ -2766,9 +2969,9 @@
             }
           },
           {
-            "name": "Authorization",
+            "name": "x-role",
             "in": "header",
-            "description": "Bearer token",
+            "description": "User role (customer, super_user, service_provider)",
             "required": true,
             "schema": {
               "type": "string"
@@ -2812,9 +3015,9 @@
         "operationId": "ProviderUnavailabilityController_findAll",
         "parameters": [
           {
-            "name": "Authorization",
+            "name": "x-role",
             "in": "header",
-            "description": "Bearer token",
+            "description": "User role (customer, super_user, service_provider)",
             "required": true,
             "schema": {
               "type": "string"
@@ -2843,9 +3046,9 @@
         "operationId": "ProviderUnavailabilityController_create",
         "parameters": [
           {
-            "name": "Authorization",
+            "name": "x-role",
             "in": "header",
-            "description": "Bearer token",
+            "description": "User role (customer, super_user, service_provider)",
             "required": true,
             "schema": {
               "type": "string"
@@ -2894,9 +3097,9 @@
             }
           },
           {
-            "name": "Authorization",
+            "name": "x-role",
             "in": "header",
-            "description": "Bearer token",
+            "description": "User role (customer, super_user, service_provider)",
             "required": true,
             "schema": {
               "type": "string"
@@ -2935,9 +3138,9 @@
             }
           },
           {
-            "name": "Authorization",
+            "name": "x-role",
             "in": "header",
-            "description": "Bearer token",
+            "description": "User role (customer, super_user, service_provider)",
             "required": true,
             "schema": {
               "type": "string"
@@ -2977,9 +3180,9 @@
             }
           },
           {
-            "name": "Authorization",
+            "name": "x-role",
             "in": "header",
-            "description": "Bearer token",
+            "description": "User role (customer, super_user, service_provider)",
             "required": true,
             "schema": {
               "type": "string"
@@ -3029,9 +3232,9 @@
             }
           },
           {
-            "name": "Authorization",
+            "name": "x-role",
             "in": "header",
-            "description": "Bearer token",
+            "description": "User role (customer, super_user, service_provider)",
             "required": true,
             "schema": {
               "type": "string"
@@ -3060,39 +3263,177 @@
         ]
       }
     },
-    "/bookings": {
+    "/bookings/checkout": {
       "post": {
-        "operationId": "BookingsController_create",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateBookingDto"
-              }
+        "operationId": "BookingsController_checkout",
+        "parameters": [
+          {
+            "name": "x-role",
+            "in": "header",
+            "description": "User role (customer, super_user, service_provider)",
+            "required": true,
+            "schema": {
+              "type": "string"
             }
           }
-        },
+        ],
         "responses": {
           "201": {
-            "description": ""
+            "description": "Booking created from cart items"
+          },
+          "400": {
+            "description": "Cart empty or not found"
+          },
+          "403": {
+            "description": "Forbidden — customer only"
           }
         },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Checkout — create booking from cart",
         "tags": [
-          "Bookings"
+          "bookings"
         ]
-      },
+      }
+    },
+    "/bookings/my": {
       "get": {
-        "operationId": "BookingsController_findAll",
+        "operationId": "BookingsController_getMyBookings",
         "parameters": [],
         "responses": {
           "200": {
-            "description": ""
+            "description": "Customer bookings returned"
+          },
+          "403": {
+            "description": "Forbidden — customer only"
           }
         },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get my bookings (JWT customer)",
         "tags": [
-          "Bookings"
+          "bookings"
+        ]
+      }
+    },
+    "/bookings/customer/{customerId}": {
+      "get": {
+        "operationId": "BookingsController_findByCustomer",
+        "parameters": [
+          {
+            "name": "customerId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-role",
+            "in": "header",
+            "description": "User role (customer, super_user, service_provider)",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Customer bookings returned"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get bookings by customer ID",
+        "tags": [
+          "bookings"
+        ]
+      }
+    },
+    "/bookings/sector/{sectorId}": {
+      "get": {
+        "operationId": "BookingsController_findBySector",
+        "parameters": [
+          {
+            "name": "sectorId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-role",
+            "in": "header",
+            "description": "User role (customer, super_user, service_provider)",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Sector bookings returned"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get bookings by sector ID",
+        "tags": [
+          "bookings"
+        ]
+      }
+    },
+    "/bookings": {
+      "get": {
+        "operationId": "BookingsController_findAll",
+        "parameters": [
+          {
+            "name": "x-role",
+            "in": "header",
+            "description": "User role (customer, super_user, service_provider)",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "All bookings returned"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get all bookings",
+        "tags": [
+          "bookings"
         ]
       }
     },
@@ -3111,99 +3452,487 @@
         ],
         "responses": {
           "200": {
-            "description": ""
+            "description": "Booking with services returned"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Booking not found"
           }
         },
-        "tags": [
-          "Bookings"
-        ]
-      },
-      "patch": {
-        "operationId": "BookingsController_update",
-        "parameters": [
+        "security": [
           {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
+            "bearer": []
           }
         ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateBookingDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
+        "summary": "Get booking by ID (with services)",
         "tags": [
-          "Bookings"
-        ]
-      },
-      "delete": {
-        "operationId": "BookingsController_remove",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "Bookings"
+          "bookings"
         ]
       }
     },
-    "/job-assignments": {
-      "post": {
-        "operationId": "JobAssignmentsController_create",
+    "/bookings/{id}/cancel": {
+      "patch": {
+        "operationId": "BookingsController_cancel",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-role",
+            "in": "header",
+            "description": "User role (customer, super_user, service_provider)",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Booking cancelled"
+          },
+          "400": {
+            "description": "Booking already cancelled"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Booking not found"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Cancel a booking",
+        "tags": [
+          "bookings"
+        ]
+      }
+    },
+    "/cart": {
+      "get": {
+        "operationId": "CartController_getCart",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Cart with items returned"
+          },
+          "403": {
+            "description": "Forbidden — customer only"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get my cart with items (auto-creates if none)",
+        "tags": [
+          "cart"
+        ]
+      },
+      "patch": {
+        "operationId": "CartController_updateCartMeta",
         "parameters": [],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/CreateJobAssignmentDto"
+                "$ref": "#/components/schemas/UpdateCartMetaDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Cart metadata updated"
+          },
+          "403": {
+            "description": "Forbidden — customer only"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update cart metadata (booking_type, scheduled_at, service_address)",
+        "tags": [
+          "cart"
+        ]
+      }
+    },
+    "/cart/items": {
+      "post": {
+        "operationId": "CartController_addItem",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddCartItemDto"
               }
             }
           }
         },
         "responses": {
           "201": {
-            "description": ""
+            "description": "Item added to cart"
+          },
+          "403": {
+            "description": "Forbidden — customer only"
+          },
+          "404": {
+            "description": "Service not found"
           }
         },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Add an item to cart (or increment if already in cart)",
         "tags": [
-          "JobAssignments"
+          "cart"
         ]
       },
-      "get": {
-        "operationId": "JobAssignmentsController_findAll",
+      "delete": {
+        "operationId": "CartController_clearCart",
         "parameters": [],
         "responses": {
           "200": {
-            "description": ""
+            "description": "Cart cleared"
+          },
+          "403": {
+            "description": "Forbidden — customer only"
           }
         },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Clear entire cart (remove all items)",
         "tags": [
-          "JobAssignments"
+          "cart"
+        ]
+      }
+    },
+    "/cart/items/{itemId}": {
+      "patch": {
+        "operationId": "CartController_updateItemQuantity",
+        "parameters": [
+          {
+            "name": "itemId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-role",
+            "in": "header",
+            "description": "User role (customer, super_user, service_provider)",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateCartItemDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Item quantity updated"
+          },
+          "403": {
+            "description": "Forbidden — customer only"
+          },
+          "404": {
+            "description": "Cart item not found"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update cart item quantity",
+        "tags": [
+          "cart"
+        ]
+      },
+      "delete": {
+        "operationId": "CartController_removeItem",
+        "parameters": [
+          {
+            "name": "itemId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-role",
+            "in": "header",
+            "description": "User role (customer, super_user, service_provider)",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Item removed"
+          },
+          "403": {
+            "description": "Forbidden — customer only"
+          },
+          "404": {
+            "description": "Cart item not found"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Remove a single item from cart",
+        "tags": [
+          "cart"
+        ]
+      }
+    },
+    "/job-assignments/assign/{bookingId}": {
+      "post": {
+        "operationId": "JobAssignmentsController_autoAssign",
+        "parameters": [
+          {
+            "name": "bookingId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-role",
+            "in": "header",
+            "description": "User role (customer, super_user, service_provider)",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Providers assigned"
+          },
+          "400": {
+            "description": "No qualified provider found"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Booking not found"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Auto-assign providers to a booking",
+        "tags": [
+          "job-assignments"
+        ]
+      }
+    },
+    "/job-assignments/booking/{bookingId}": {
+      "get": {
+        "operationId": "JobAssignmentsController_findByBooking",
+        "parameters": [
+          {
+            "name": "bookingId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-role",
+            "in": "header",
+            "description": "User role (customer, super_user, service_provider)",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Assignments for the booking"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get assignments for a booking",
+        "tags": [
+          "job-assignments"
+        ]
+      }
+    },
+    "/job-assignments/provider/{spId}": {
+      "get": {
+        "operationId": "JobAssignmentsController_findByProvider",
+        "parameters": [
+          {
+            "name": "spId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-role",
+            "in": "header",
+            "description": "User role (customer, super_user, service_provider)",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Assignments for the provider"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get assignments for a provider",
+        "tags": [
+          "job-assignments"
+        ]
+      }
+    },
+    "/job-assignments/{id}/complete": {
+      "patch": {
+        "operationId": "JobAssignmentsController_markComplete",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CompleteJobDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Assignment marked complete"
+          },
+          "400": {
+            "description": "Already completed"
+          },
+          "403": {
+            "description": "Forbidden — service_provider only"
+          },
+          "404": {
+            "description": "Assignment not found"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Mark assignment as complete (triggers revenue split when all done)",
+        "tags": [
+          "job-assignments"
+        ]
+      }
+    },
+    "/job-assignments": {
+      "get": {
+        "operationId": "JobAssignmentsController_findAll",
+        "parameters": [
+          {
+            "name": "x-role",
+            "in": "header",
+            "description": "User role (customer, super_user, service_provider)",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "All assignments returned"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get all job assignments",
+        "tags": [
+          "job-assignments"
         ]
       }
     },
@@ -3218,55 +3947,12 @@
             "schema": {
               "type": "string"
             }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "JobAssignments"
-        ]
-      },
-      "patch": {
-        "operationId": "JobAssignmentsController_update",
-        "parameters": [
+          },
           {
-            "name": "id",
+            "name": "x-role",
+            "in": "header",
+            "description": "User role (customer, super_user, service_provider)",
             "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateJobAssignmentDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "JobAssignments"
-        ]
-      },
-      "delete": {
-        "operationId": "JobAssignmentsController_remove",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
             "schema": {
               "type": "string"
             }
@@ -3274,11 +3960,23 @@
         ],
         "responses": {
           "200": {
-            "description": ""
+            "description": "Assignment returned"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Assignment not found"
           }
         },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get assignment by ID",
         "tags": [
-          "JobAssignments"
+          "job-assignments"
         ]
       }
     },
@@ -3723,117 +4421,6 @@
         },
         "tags": [
           "PlatformSettings"
-        ]
-      }
-    },
-    "/cart": {
-      "post": {
-        "operationId": "CartController_create",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateCartDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "Cart"
-        ]
-      },
-      "get": {
-        "operationId": "CartController_findAll",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "Cart"
-        ]
-      }
-    },
-    "/cart/{id}": {
-      "get": {
-        "operationId": "CartController_findOne",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "Cart"
-        ]
-      },
-      "patch": {
-        "operationId": "CartController_update",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateCartDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "Cart"
-        ]
-      },
-      "delete": {
-        "operationId": "CartController_remove",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "Cart"
         ]
       }
     },
@@ -4503,19 +5090,223 @@
       },
       "CreateCategoryDto": {
         "type": "object",
-        "properties": {}
+        "properties": {
+          "category_name": {
+            "type": "string",
+            "example": "Home Cleaning"
+          },
+          "description": {
+            "type": "string",
+            "example": "All home cleaning services"
+          },
+          "icon": {
+            "type": "string",
+            "example": "🧹"
+          },
+          "image_url": {
+            "type": "string",
+            "example": "https://placehold.co/400x200/4A90D9/white?text=Home+Cleaning"
+          }
+        },
+        "required": [
+          "category_name"
+        ]
       },
       "UpdateCategoryDto": {
         "type": "object",
-        "properties": {}
+        "properties": {
+          "category_name": {
+            "type": "string",
+            "example": "Home Cleaning"
+          },
+          "description": {
+            "type": "string",
+            "example": "All home cleaning services"
+          },
+          "icon": {
+            "type": "string",
+            "example": "🧹"
+          },
+          "image_url": {
+            "type": "string",
+            "example": "https://placehold.co/400x200/4A90D9/white?text=Home+Cleaning"
+          }
+        }
+      },
+      "LinkServiceSkillDto": {
+        "type": "object",
+        "properties": {
+          "skill_id": {
+            "type": "string",
+            "description": "ID of the skill to link",
+            "example": "uuid-here"
+          }
+        },
+        "required": [
+          "skill_id"
+        ]
+      },
+      "HowItWorksStep": {
+        "type": "object",
+        "properties": {
+          "step_title": {
+            "type": "string",
+            "description": "Step title",
+            "example": "Book a slot"
+          },
+          "step_description": {
+            "type": "string",
+            "description": "Step description",
+            "example": "Choose a convenient time"
+          }
+        },
+        "required": [
+          "step_title",
+          "step_description"
+        ]
+      },
+      "UpsertServiceContentDto": {
+        "type": "object",
+        "properties": {
+          "how_it_works": {
+            "description": "How the service works (step-by-step)",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/HowItWorksStep"
+            }
+          },
+          "what_is_covered": {
+            "description": "What is covered by the service",
+            "example": [
+              "Living room",
+              "Kitchen",
+              "Bathrooms"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "what_is_not_covered": {
+            "description": "What is NOT covered by the service",
+            "example": [
+              "Outdoor areas",
+              "Balcony"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "CreateServiceFaqDto": {
+        "type": "object",
+        "properties": {
+          "question": {
+            "type": "string",
+            "description": "FAQ question",
+            "example": "How long does the service take?"
+          },
+          "answer": {
+            "type": "string",
+            "description": "FAQ answer",
+            "example": "Typically 1-2 hours depending on the scope."
+          },
+          "display_order": {
+            "type": "number",
+            "description": "Display order (auto-assigned if omitted)",
+            "example": 1
+          }
+        },
+        "required": [
+          "question",
+          "answer"
+        ]
+      },
+      "UpdateServiceFaqDto": {
+        "type": "object",
+        "properties": {
+          "question": {
+            "type": "string",
+            "description": "FAQ question",
+            "example": "How long does the service take?"
+          },
+          "answer": {
+            "type": "string",
+            "description": "FAQ answer",
+            "example": "Typically 1-2 hours depending on the scope."
+          },
+          "display_order": {
+            "type": "number",
+            "description": "Display order (auto-assigned if omitted)",
+            "example": 1
+          }
+        }
       },
       "CreateServiceDto": {
         "type": "object",
-        "properties": {}
+        "properties": {
+          "service_name": {
+            "type": "string",
+            "example": "Standard Home Clean"
+          },
+          "description": {
+            "type": "string",
+            "example": "Complete standard clean for up to 3BHK homes."
+          },
+          "image_url": {
+            "type": "string",
+            "example": "https://placehold.co/400x200/4A90D9/white?text=Standard+Clean"
+          },
+          "base_price": {
+            "type": "number",
+            "example": 499
+          },
+          "estimated_duration_min": {
+            "type": "number",
+            "example": 120
+          },
+          "category_id": {
+            "type": "string",
+            "example": "uuid-of-category"
+          }
+        },
+        "required": [
+          "service_name",
+          "base_price",
+          "estimated_duration_min",
+          "category_id"
+        ]
       },
       "UpdateServiceDto": {
         "type": "object",
-        "properties": {}
+        "properties": {
+          "service_name": {
+            "type": "string",
+            "example": "Standard Home Clean"
+          },
+          "description": {
+            "type": "string",
+            "example": "Complete standard clean for up to 3BHK homes."
+          },
+          "image_url": {
+            "type": "string",
+            "example": "https://placehold.co/400x200/4A90D9/white?text=Standard+Clean"
+          },
+          "base_price": {
+            "type": "number",
+            "example": 499
+          },
+          "estimated_duration_min": {
+            "type": "number",
+            "example": 120
+          },
+          "category_id": {
+            "type": "string",
+            "example": "uuid-of-category"
+          }
+        }
       },
       "CreateSkillDto": {
         "type": "object",
@@ -4626,21 +5417,70 @@
           }
         }
       },
-      "CreateBookingDto": {
+      "AddCartItemDto": {
         "type": "object",
-        "properties": {}
+        "properties": {
+          "service_id": {
+            "type": "string",
+            "description": "ID of the service to add",
+            "example": "uuid-here"
+          },
+          "quantity": {
+            "type": "number",
+            "description": "Quantity (defaults to 1)",
+            "example": 1
+          }
+        },
+        "required": [
+          "service_id"
+        ]
       },
-      "UpdateBookingDto": {
+      "UpdateCartItemDto": {
         "type": "object",
-        "properties": {}
+        "properties": {
+          "quantity": {
+            "type": "number",
+            "description": "New quantity (min 1)",
+            "example": 2
+          }
+        },
+        "required": [
+          "quantity"
+        ]
       },
-      "CreateJobAssignmentDto": {
+      "UpdateCartMetaDto": {
         "type": "object",
-        "properties": {}
+        "properties": {
+          "booking_type": {
+            "type": "string",
+            "description": "Booking type",
+            "enum": [
+              "INSTANT",
+              "SCHEDULED"
+            ],
+            "example": "SCHEDULED"
+          },
+          "scheduled_at": {
+            "type": "string",
+            "description": "Scheduled date/time (ISO 8601)",
+            "example": "2026-06-15T10:00:00Z"
+          },
+          "service_address": {
+            "type": "string",
+            "description": "Service address",
+            "example": "42, MG Road, Chennai"
+          }
+        }
       },
-      "UpdateJobAssignmentDto": {
+      "CompleteJobDto": {
         "type": "object",
-        "properties": {}
+        "properties": {
+          "notes": {
+            "type": "string",
+            "description": "Optional completion notes",
+            "example": "Work completed satisfactorily"
+          }
+        }
       },
       "CreateTransactionDto": {
         "type": "object",
@@ -4671,14 +5511,6 @@
         "properties": {}
       },
       "UpdatePlatformSettingDto": {
-        "type": "object",
-        "properties": {}
-      },
-      "CreateCartDto": {
-        "type": "object",
-        "properties": {}
-      },
-      "UpdateCartDto": {
         "type": "object",
         "properties": {}
       },
