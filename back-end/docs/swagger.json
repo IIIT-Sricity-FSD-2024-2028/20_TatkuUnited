@@ -3282,10 +3282,743 @@
         ]
       }
     },
+    "/revenue-ledger/summary/platform": {
+      "get": {
+        "operationId": "RevenueLedgerController_getPlatformSummary",
+        "parameters": [
+          {
+            "name": "x-id",
+            "in": "header",
+            "description": "Caller user ID (UUID)",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | customer | service_provider | unit_manager | collective_manager",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "total / pending / disbursed platform amounts"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Platform-wide revenue summary — super_user only",
+        "tags": [
+          "Revenue Ledger"
+        ]
+      }
+    },
+    "/revenue-ledger/provider/{spId}": {
+      "get": {
+        "operationId": "RevenueLedgerController_getProviderEarnings",
+        "parameters": [
+          {
+            "name": "x-id",
+            "in": "header",
+            "description": "Caller user ID (UUID)",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | customer | service_provider | unit_manager | collective_manager",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "spId",
+            "required": true,
+            "in": "path",
+            "description": "sp_id UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "{ pending, disbursed, rows }"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Provider earnings summary — SP (own) or super_user",
+        "tags": [
+          "Revenue Ledger"
+        ]
+      }
+    },
+    "/revenue-ledger/unit-manager/{umId}": {
+      "get": {
+        "operationId": "RevenueLedgerController_getUmEarnings",
+        "parameters": [
+          {
+            "name": "x-id",
+            "in": "header",
+            "description": "Caller user ID (UUID)",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | customer | service_provider | unit_manager | collective_manager",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "umId",
+            "required": true,
+            "in": "path",
+            "description": "um_id UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Unit manager earnings returned"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Unit Manager earnings — UM (own) or super_user",
+        "tags": [
+          "Revenue Ledger"
+        ]
+      }
+    },
+    "/revenue-ledger/collective/{cmId}": {
+      "get": {
+        "operationId": "RevenueLedgerController_getCmEarnings",
+        "parameters": [
+          {
+            "name": "x-id",
+            "in": "header",
+            "description": "Caller user ID (UUID)",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | customer | service_provider | unit_manager | collective_manager",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "cmId",
+            "required": true,
+            "in": "path",
+            "description": "cm_id UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Collective manager earnings returned"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Collective Manager earnings — CM (own) or super_user",
+        "tags": [
+          "Revenue Ledger"
+        ]
+      }
+    },
+    "/revenue-ledger/{id}/payout": {
+      "patch": {
+        "operationId": "RevenueLedgerController_dispatchPayout",
+        "parameters": [
+          {
+            "name": "x-id",
+            "in": "header",
+            "description": "Caller user ID (UUID)",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | customer | service_provider | unit_manager | collective_manager",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "ledger_id UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Payout disbursed; paid_at stamped"
+          },
+          "400": {
+            "description": "Entry not in PENDING state"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Ledger entry not found"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Dispatch payout for a PENDING ledger entry — super_user only",
+        "tags": [
+          "Revenue Ledger"
+        ]
+      }
+    },
+    "/revenue-ledger/{id}": {
+      "get": {
+        "operationId": "RevenueLedgerController_findOne",
+        "parameters": [
+          {
+            "name": "x-id",
+            "in": "header",
+            "description": "Caller user ID (UUID)",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | customer | service_provider | unit_manager | collective_manager",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "ledger_id UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Ledger entry returned"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get ledger entry by ID — super_user only",
+        "tags": [
+          "Revenue Ledger"
+        ]
+      },
+      "delete": {
+        "operationId": "RevenueLedgerController_remove",
+        "parameters": [
+          {
+            "name": "x-id",
+            "in": "header",
+            "description": "Caller user ID (UUID)",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | customer | service_provider | unit_manager | collective_manager",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "ledger_id UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Entry deleted"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Hard delete a ledger entry — super_user only (admin correction)",
+        "tags": [
+          "Revenue Ledger"
+        ]
+      }
+    },
+    "/revenue-ledger": {
+      "post": {
+        "operationId": "RevenueLedgerController_create",
+        "parameters": [
+          {
+            "name": "x-id",
+            "in": "header",
+            "description": "Caller user ID (UUID)",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | customer | service_provider | unit_manager | collective_manager",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateRevenueLedgerDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Ledger entry created"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Manually create ledger entry — super_user only (admin correction)",
+        "tags": [
+          "Revenue Ledger"
+        ]
+      },
+      "get": {
+        "operationId": "RevenueLedgerController_findAll",
+        "parameters": [
+          {
+            "name": "x-id",
+            "in": "header",
+            "description": "Caller user ID (UUID)",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | customer | service_provider | unit_manager | collective_manager",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Array of RevenueLedger rows"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List all ledger entries — super_user only",
+        "tags": [
+          "Revenue Ledger"
+        ]
+      }
+    },
+    "/platform-settings": {
+      "post": {
+        "operationId": "PlatformSettingsController_create",
+        "parameters": [
+          {
+            "name": "x-id",
+            "in": "header",
+            "description": "Caller user ID (UUID)",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | customer | service_provider | unit_manager | collective_manager",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePlatformSettingDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Setting created"
+          },
+          "403": {
+            "description": "Forbidden — super_user only"
+          },
+          "409": {
+            "description": "Key already exists (ConflictException)"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create a new platform setting",
+        "tags": [
+          "Platform Settings"
+        ]
+      },
+      "get": {
+        "operationId": "PlatformSettingsController_findAll",
+        "parameters": [
+          {
+            "name": "x-id",
+            "in": "header",
+            "description": "Caller user ID (UUID)",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | customer | service_provider | unit_manager | collective_manager",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Array of all settings"
+          },
+          "403": {
+            "description": "Forbidden — super_user only"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List all platform settings",
+        "tags": [
+          "Platform Settings"
+        ]
+      }
+    },
+    "/platform-settings/{keyOrId}": {
+      "get": {
+        "operationId": "PlatformSettingsController_findOne",
+        "parameters": [
+          {
+            "name": "x-id",
+            "in": "header",
+            "description": "Caller user ID (UUID)",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | customer | service_provider | unit_manager | collective_manager",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "keyOrId",
+            "required": true,
+            "in": "path",
+            "description": "setting_id (UUID) or key string",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Setting found"
+          },
+          "403": {
+            "description": "Key not whitelisted for this role"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get one setting by UUID or key string",
+        "tags": [
+          "Platform Settings"
+        ]
+      }
+    },
+    "/platform-settings/{key}": {
+      "put": {
+        "operationId": "PlatformSettingsController_update",
+        "parameters": [
+          {
+            "name": "x-id",
+            "in": "header",
+            "description": "Caller user ID (UUID)",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | customer | service_provider | unit_manager | collective_manager",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "key",
+            "required": true,
+            "in": "path",
+            "description": "Setting key string",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePlatformSettingDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Setting updated"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Upsert a setting by key — super_user only",
+        "tags": [
+          "Platform Settings"
+        ]
+      }
+    },
+    "/platform-settings/{id}": {
+      "delete": {
+        "operationId": "PlatformSettingsController_remove",
+        "parameters": [
+          {
+            "name": "x-id",
+            "in": "header",
+            "description": "Caller user ID (UUID)",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | customer | service_provider | unit_manager | collective_manager",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "setting_id UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Setting deleted"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Delete a setting by UUID — super_user only",
+        "tags": [
+          "Platform Settings"
+        ]
+      }
+    },
     "/transactions": {
       "post": {
         "operationId": "TransactionsController_create",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "x-id",
+            "in": "header",
+            "description": "Caller user ID (UUID)",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | customer | service_provider | unit_manager | collective_manager",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -3298,21 +4031,115 @@
         },
         "responses": {
           "201": {
-            "description": ""
+            "description": "Transaction created"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "409": {
+            "description": "Duplicate idempotency key or booking already has a transaction"
           }
         },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create a transaction at checkout — customer only",
         "tags": [
           "Transactions"
         ]
       },
       "get": {
         "operationId": "TransactionsController_findAll",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "x-id",
+            "in": "header",
+            "description": "Caller user ID (UUID)",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | customer | service_provider | unit_manager | collective_manager",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "200": {
-            "description": ""
+            "description": "Array of transactions"
+          },
+          "403": {
+            "description": "Forbidden"
           }
         },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List all transactions — super_user only",
+        "tags": [
+          "Transactions"
+        ]
+      }
+    },
+    "/transactions/booking/{bookingId}": {
+      "get": {
+        "operationId": "TransactionsController_findByBooking",
+        "parameters": [
+          {
+            "name": "x-id",
+            "in": "header",
+            "description": "Caller user ID (UUID)",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | customer | service_provider | unit_manager | collective_manager",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "bookingId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Transaction found"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get transaction by booking ID — customer or super_user",
         "tags": [
           "Transactions"
         ]
@@ -3323,9 +4150,28 @@
         "operationId": "TransactionsController_findOne",
         "parameters": [
           {
+            "name": "x-id",
+            "in": "header",
+            "description": "Caller user ID (UUID)",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | customer | service_provider | unit_manager | collective_manager",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "name": "id",
             "required": true,
             "in": "path",
+            "description": "transaction_id UUID",
             "schema": {
               "type": "string"
             }
@@ -3333,9 +4179,21 @@
         ],
         "responses": {
           "200": {
-            "description": ""
+            "description": "Transaction found"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found"
           }
         },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get transaction by ID — super_user or unit_manager",
         "tags": [
           "Transactions"
         ]
@@ -3344,9 +4202,28 @@
         "operationId": "TransactionsController_update",
         "parameters": [
           {
+            "name": "x-id",
+            "in": "header",
+            "description": "Caller user ID (UUID)",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | customer | service_provider | unit_manager | collective_manager",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "name": "id",
             "required": true,
             "in": "path",
+            "description": "transaction_id UUID",
             "schema": {
               "type": "string"
             }
@@ -3364,9 +4241,21 @@
         },
         "responses": {
           "200": {
-            "description": ""
+            "description": "Transaction updated"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found"
           }
         },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update transaction status (webhook) — super_user only",
         "tags": [
           "Transactions"
         ]
@@ -3375,9 +4264,28 @@
         "operationId": "TransactionsController_remove",
         "parameters": [
           {
+            "name": "x-id",
+            "in": "header",
+            "description": "Caller user ID (UUID)",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | customer | service_provider | unit_manager | collective_manager",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "name": "id",
             "required": true,
             "in": "path",
+            "description": "transaction_id UUID",
             "schema": {
               "type": "string"
             }
@@ -3385,79 +4293,53 @@
         ],
         "responses": {
           "200": {
-            "description": ""
+            "description": "Transaction voided"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found"
           }
         },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Void a transaction (soft — sets status to FAILED) — super_user",
         "tags": [
           "Transactions"
         ]
       }
     },
-    "/revenue-ledger": {
+    "/transactions/{id}/refund": {
       "post": {
-        "operationId": "RevenueLedgerController_create",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateRevenueLedgerDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "RevenueLedger"
-        ]
-      },
-      "get": {
-        "operationId": "RevenueLedgerController_findAll",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "RevenueLedger"
-        ]
-      }
-    },
-    "/revenue-ledger/{id}": {
-      "get": {
-        "operationId": "RevenueLedgerController_findOne",
+        "operationId": "TransactionsController_refund",
         "parameters": [
           {
-            "name": "id",
+            "name": "x-id",
+            "in": "header",
+            "description": "Caller user ID (UUID)",
             "required": true,
-            "in": "path",
             "schema": {
               "type": "string"
             }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "RevenueLedger"
-        ]
-      },
-      "patch": {
-        "operationId": "RevenueLedgerController_update",
-        "parameters": [
+          },
+          {
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | customer | service_provider | unit_manager | collective_manager",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
           {
             "name": "id",
             "required": true,
             "in": "path",
+            "description": "transaction_id UUID",
             "schema": {
               "type": "string"
             }
@@ -3468,39 +4350,41 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/UpdateRevenueLedgerDto"
+                "properties": {
+                  "reason": {
+                    "type": "string",
+                    "example": "Service not rendered"
+                  }
+                },
+                "required": [
+                  "reason"
+                ]
               }
             }
           }
         },
         "responses": {
           "200": {
-            "description": ""
+            "description": "Refund applied; linked booking cancelled"
+          },
+          "400": {
+            "description": "Already refunded or not in SUCCESS state"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Transaction not found"
           }
         },
-        "tags": [
-          "RevenueLedger"
-        ]
-      },
-      "delete": {
-        "operationId": "RevenueLedgerController_remove",
-        "parameters": [
+        "security": [
           {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
+            "bearer": []
           }
         ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
+        "summary": "Refund a SUCCESS transaction — super_user only",
         "tags": [
-          "RevenueLedger"
+          "Transactions"
         ]
       }
     },
@@ -3612,117 +4496,6 @@
         },
         "tags": [
           "Reviews"
-        ]
-      }
-    },
-    "/platform-settings": {
-      "post": {
-        "operationId": "PlatformSettingsController_create",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreatePlatformSettingDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "PlatformSettings"
-        ]
-      },
-      "get": {
-        "operationId": "PlatformSettingsController_findAll",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "PlatformSettings"
-        ]
-      }
-    },
-    "/platform-settings/{id}": {
-      "get": {
-        "operationId": "PlatformSettingsController_findOne",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "PlatformSettings"
-        ]
-      },
-      "patch": {
-        "operationId": "PlatformSettingsController_update",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdatePlatformSettingDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "PlatformSettings"
-        ]
-      },
-      "delete": {
-        "operationId": "PlatformSettingsController_remove",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "PlatformSettings"
         ]
       }
     },
@@ -3971,8 +4744,8 @@
     }
   },
   "info": {
-    "title": "Service Platform API",
-    "description": "UrbanCo-style on-demand service platform",
+    "title": "TatkuUnited API",
+    "description": "Service platform API — Part 4: Payments, Finance, Platform Settings",
     "version": "1.0",
     "contact": {}
   },
@@ -3984,7 +4757,7 @@
         "scheme": "bearer",
         "bearerFormat": "JWT",
         "type": "http",
-        "description": "Paste JWT access token from /auth/login"
+        "description": "Paste your JWT token (without the Bearer prefix)"
       },
       "x-role": {
         "type": "apiKey",
@@ -4642,35 +5415,264 @@
         "type": "object",
         "properties": {}
       },
+      "CreateRevenueLedgerDto": {
+        "type": "object",
+        "properties": {
+          "booking_id": {
+            "type": "string",
+            "example": "b123-uuid",
+            "description": "Associated booking ID"
+          },
+          "sp_id": {
+            "type": "string",
+            "example": "sp123-uuid",
+            "description": "Service Provider ID"
+          },
+          "um_id": {
+            "type": "string",
+            "example": "um123-uuid",
+            "description": "Unit Manager ID"
+          },
+          "cm_id": {
+            "type": "string",
+            "example": "cm123-uuid",
+            "description": "Collective Manager ID"
+          },
+          "provider_amount": {
+            "type": "number",
+            "example": 1013.22,
+            "description": "Provider amount"
+          },
+          "um_amount": {
+            "type": "number",
+            "example": 103.92,
+            "description": "Unit Manager amount"
+          },
+          "cm_amount": {
+            "type": "number",
+            "example": 51.96,
+            "description": "Collective Manager amount"
+          },
+          "platform_amount": {
+            "type": "number",
+            "example": 129.9,
+            "description": "Platform amount"
+          },
+          "payout_status": {
+            "type": "string",
+            "example": "PENDING",
+            "enum": [
+              "PENDING",
+              "DISBURSED",
+              "FAILED",
+              "HELD"
+            ],
+            "description": "Payout status"
+          }
+        },
+        "required": [
+          "booking_id",
+          "sp_id",
+          "um_id",
+          "cm_id",
+          "provider_amount",
+          "um_amount",
+          "cm_amount",
+          "platform_amount"
+        ]
+      },
+      "CreatePlatformSettingDto": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string",
+            "example": "max_booking_window_days",
+            "description": "Unique configuration key"
+          },
+          "value": {
+            "type": "string",
+            "example": "30",
+            "description": "Configuration value (always stored as string)"
+          },
+          "description": {
+            "type": "string",
+            "example": "Max days ahead a customer can schedule",
+            "description": "Human-readable description of the setting"
+          },
+          "updated_by": {
+            "type": "string",
+            "example": "uuid-v4-super-user-id",
+            "description": "super_user_id of the caller (from x-id header)"
+          }
+        },
+        "required": [
+          "key",
+          "value",
+          "updated_by"
+        ]
+      },
+      "UpdatePlatformSettingDto": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string",
+            "example": "max_booking_window_days",
+            "description": "Unique configuration key"
+          },
+          "value": {
+            "type": "string",
+            "example": "30",
+            "description": "Configuration value (always stored as string)"
+          },
+          "description": {
+            "type": "string",
+            "example": "Max days ahead a customer can schedule",
+            "description": "Human-readable description of the setting"
+          },
+          "updated_by": {
+            "type": "string",
+            "example": "uuid-v4-super-user-id",
+            "description": "super_user_id of the caller (from x-id header)"
+          }
+        }
+      },
       "CreateTransactionDto": {
         "type": "object",
-        "properties": {}
+        "properties": {
+          "booking_id": {
+            "type": "string",
+            "example": "uuid-v4-booking-id",
+            "description": "Associated booking"
+          },
+          "payment_gateway_ref": {
+            "type": "string",
+            "example": "PGR20260401001",
+            "description": "Payment gateway reference ID"
+          },
+          "payment_method": {
+            "type": "string",
+            "example": "UPI",
+            "enum": [
+              "UPI",
+              "CARD",
+              "NETBANK",
+              "WALLET"
+            ],
+            "description": "Payment method used"
+          },
+          "idempotency_key": {
+            "type": "string",
+            "example": "idem-bkg001-001",
+            "description": "Idempotency key to prevent duplicate processing"
+          },
+          "payment_status": {
+            "type": "string",
+            "example": "PENDING",
+            "enum": [
+              "PENDING",
+              "SUCCESS",
+              "FAILED",
+              "REFUNDED"
+            ],
+            "description": "Initial payment status"
+          },
+          "amount": {
+            "type": "number",
+            "example": 1299,
+            "description": "Transaction amount"
+          },
+          "refund_amount": {
+            "type": "number",
+            "example": 0,
+            "description": "Refund amount (if any)"
+          },
+          "refund_reason": {
+            "type": "string",
+            "example": "Customer requested cancellation",
+            "description": "Reason for refund"
+          },
+          "verified_at": {
+            "type": "string",
+            "example": "2026-04-01T16:34:20Z",
+            "description": "Timestamp when gateway verified the payment"
+          }
+        },
+        "required": [
+          "booking_id",
+          "payment_gateway_ref",
+          "payment_method",
+          "idempotency_key",
+          "payment_status",
+          "amount"
+        ]
       },
       "UpdateTransactionDto": {
         "type": "object",
-        "properties": {}
-      },
-      "CreateRevenueLedgerDto": {
-        "type": "object",
-        "properties": {}
-      },
-      "UpdateRevenueLedgerDto": {
-        "type": "object",
-        "properties": {}
+        "properties": {
+          "booking_id": {
+            "type": "string",
+            "example": "uuid-v4-booking-id",
+            "description": "Associated booking"
+          },
+          "payment_gateway_ref": {
+            "type": "string",
+            "example": "PGR20260401001",
+            "description": "Payment gateway reference ID"
+          },
+          "payment_method": {
+            "type": "string",
+            "example": "UPI",
+            "enum": [
+              "UPI",
+              "CARD",
+              "NETBANK",
+              "WALLET"
+            ],
+            "description": "Payment method used"
+          },
+          "idempotency_key": {
+            "type": "string",
+            "example": "idem-bkg001-001",
+            "description": "Idempotency key to prevent duplicate processing"
+          },
+          "payment_status": {
+            "type": "string",
+            "example": "PENDING",
+            "enum": [
+              "PENDING",
+              "SUCCESS",
+              "FAILED",
+              "REFUNDED"
+            ],
+            "description": "Initial payment status"
+          },
+          "amount": {
+            "type": "number",
+            "example": 1299,
+            "description": "Transaction amount"
+          },
+          "refund_amount": {
+            "type": "number",
+            "example": 0,
+            "description": "Refund amount (if any)"
+          },
+          "refund_reason": {
+            "type": "string",
+            "example": "Customer requested cancellation",
+            "description": "Reason for refund"
+          },
+          "verified_at": {
+            "type": "string",
+            "example": "2026-04-01T16:34:20Z",
+            "description": "Timestamp when gateway verified the payment"
+          }
+        }
       },
       "CreateReviewDto": {
         "type": "object",
         "properties": {}
       },
       "UpdateReviewDto": {
-        "type": "object",
-        "properties": {}
-      },
-      "CreatePlatformSettingDto": {
-        "type": "object",
-        "properties": {}
-      },
-      "UpdatePlatformSettingDto": {
         "type": "object",
         "properties": {}
       },
