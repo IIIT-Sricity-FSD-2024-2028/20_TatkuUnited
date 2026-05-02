@@ -1,20 +1,23 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsNotEmpty, IsOptional, IsString, IsUUID, Matches } from 'class-validator';
+import { TIME_24H_REGEX } from '../../../common/validation/patterns';
 
 export class CreateProviderUnavailabilityDto {
   @ApiProperty({ example: 'provider-uuid' })
-  @IsString()
+  @IsUUID()
   @IsNotEmpty()
   provider_id: string;
 
   @ApiProperty({ example: '08:00' })
   @IsString()
   @IsNotEmpty()
+  @Matches(TIME_24H_REGEX, { message: 'start_time must be in HH:mm 24-hour format' })
   start_time: string;
 
   @ApiProperty({ example: '12:00' })
   @IsString()
   @IsNotEmpty()
+  @Matches(TIME_24H_REGEX, { message: 'end_time must be in HH:mm 24-hour format' })
   end_time: string;
 
   @ApiProperty({ example: 'Medical leave', required: false })

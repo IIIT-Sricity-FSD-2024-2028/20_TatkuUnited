@@ -1,11 +1,13 @@
 import {
   Controller,
+  ForbiddenException,
   Get,
   Post,
   Body,
   Patch,
   Param,
   Delete,
+  Request,
   UseGuards,
 } from '@nestjs/common';
 import {
@@ -21,13 +23,20 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { Role } from '../../common/enums/role.enum';
+import { JwtPayload } from '../auth/interfaces/jwt-payload.interface';
+import { AccessScopeService } from '../../common/access/access-scope.service';
+import { ApiRoleHeader } from '../../common/decorators/api-role-header.decorator';
 
 @ApiTags('unit-managers')
 @ApiBearerAuth('bearer')
+@ApiRoleHeader()
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('unit-managers')
 export class UnitManagersController {
-  constructor(private readonly unitManagersService: UnitManagersService) { }
+  constructor(
+    private readonly unitManagersService: UnitManagersService,
+    private readonly accessScope: AccessScopeService,
+  ) {}
 
   @Get()
   @Roles(Role.SUPER_USER)
@@ -43,7 +52,11 @@ export class UnitManagersController {
   @ApiOperation({ summary: 'Get unit managers by unit ID' })
   @ApiResponse({ status: 200, description: 'Success' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
-  findByUnit(@Param('unit_id') unitId: string) {
+  findByUnit(
+    @Param('unit_id') unitId: string,
+    @Request() req: { user: JwtPayload },
+  ) {
+    this.accessScope.assertUnitAccess(req.user, unitId);
     return this.unitManagersService.findByUnit(unitId);
   }
 
@@ -53,8 +66,13 @@ export class UnitManagersController {
   @ApiResponse({ status: 200, description: 'Success' })
   @ApiResponse({ status: 404, description: 'Not found' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
-  findOne(@Param('id') id: string) {
-    return this.unitManagersService.findOne(id);
+  findOne(@Param('id') id: string, @Request() req: { user: JwtPayload }) {
+    const manager = this.unitManagersService.findOne(id);
+    if (req.user.role === Role.UNIT_MANAGER && req.user.sub !== id) {
+      throw new ForbiddenException('Unit managers can only access their own account');
+    }
+    this.accessScope.assertUnitAccess(req.user, manager.unit_id);
+    return manager;
   }
 
   @Post()
@@ -72,7 +90,19 @@ export class UnitManagersController {
   @ApiResponse({ status: 200, description: 'Success' })
   @ApiResponse({ status: 404, description: 'Not found' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
-  update(@Param('id') id: string, @Body() dto: UpdateUnitManagerDto) {
+  update(
+    @Param('id') id: string,
+    @Body() dto: UpdateUnitManagerDto,
+    @Request() req: { user: JwtPayload },
+  ) {
+    const manager = this.unitManagersService.findOne(id);
+    if (req.user.role === Role.UNIT_MANAGER && req.user.sub !== id) {
+      throw new ForbiddenException('Unit managers can only update their own account');
+    }
+    this.accessScope.assertUnitAccess(req.user, manager.unit_id);
+    if (dto.unit_id !== undefined) {
+      this.accessScope.assertUnitAccess(req.user, dto.unit_id);
+    }
     return this.unitManagersService.update(id, dto);
   }
 

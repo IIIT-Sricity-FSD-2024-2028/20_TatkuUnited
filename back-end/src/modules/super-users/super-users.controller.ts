@@ -21,9 +21,11 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { Role } from '../../common/enums/role.enum';
+import { ApiRoleHeader } from '../../common/decorators/api-role-header.decorator';
 
 @ApiTags('super-users')
 @ApiBearerAuth('bearer')
+@ApiRoleHeader()
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('super-users')
 export class SuperUsersController {

@@ -12,7 +12,6 @@ import {
 import {
   ApiBearerAuth,
   ApiBody,
-  ApiHeader,
   ApiOperation,
   ApiParam,
   ApiResponse,
@@ -25,19 +24,15 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { Role } from '../../common/enums/role.enum';
+import {
+  ApiActorIdHeader,
+  ApiRoleHeader,
+} from '../../common/decorators/api-role-header.decorator';
 
 @ApiTags('Platform Settings')
 @ApiBearerAuth('bearer')
-@ApiHeader({
-  name: 'x-role',
-  description: 'Caller role: super_user | customer | service_provider | unit_manager | collective_manager',
-  required: true,
-})
-@ApiHeader({
-  name: 'x-id',
-  description: 'Caller user ID (UUID)',
-  required: true,
-})
+@ApiRoleHeader()
+@ApiActorIdHeader()
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('platform-settings')
 export class PlatformSettingsController {

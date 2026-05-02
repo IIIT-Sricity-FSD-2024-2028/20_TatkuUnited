@@ -271,6 +271,14 @@ export class JobAssignmentsService {
     return this.jaRepo.findByBooking(bookingId);
   }
 
+  findBooking(bookingId: string) {
+    const booking = this.bookingsRepo.findById(bookingId);
+    if (!booking) {
+      throw new NotFoundException(`Booking "${bookingId}" not found`);
+    }
+    return booking;
+  }
+
   findByProvider(spId: string) {
     return this.jaRepo.findByProvider(spId);
   }

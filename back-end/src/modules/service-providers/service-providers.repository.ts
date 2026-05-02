@@ -4,7 +4,7 @@ import { CreateServiceProviderDto } from './dto/create-service-provider.dto';
 import { UpdateServiceProviderDto } from './dto/update-service-provider.dto';
 import { UpdateWorkingHoursDto } from './dto/update-working-hours.dto';
 import { UpdateProviderProfileDto } from './dto/update-provider-profile.dto';
-import { v4 as uuid } from 'uuid';
+import { randomUUID } from 'crypto';
 
 @Injectable()
 export class ServiceProvidersRepository {
@@ -44,7 +44,7 @@ export class ServiceProvidersRepository {
 
   create(dto: CreateServiceProviderDto): ServiceProvider {
     const provider = {
-      sp_id: uuid(),
+      sp_id: randomUUID(),
       name: dto.full_name,
       email: dto.email,
       password_hash: this.databaseService.storePassword(dto.password),

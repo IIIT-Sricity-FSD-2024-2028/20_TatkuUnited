@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsBoolean, IsEmail, IsNotEmpty, IsOptional, IsString, MinLength } from 'class-validator';
+import { IsBoolean, IsEmail, IsNotEmpty, IsString, IsUUID, MinLength } from 'class-validator';
 
 export class CreateCollectiveManagerDto {
   @ApiProperty({ example: 'manager@tatku.com' })
@@ -24,7 +24,7 @@ export class CreateCollectiveManagerDto {
   phone: string;
 
   @ApiProperty({ example: 'collective-uuid' })
-  @IsString()
+  @IsUUID()
   @IsNotEmpty()
   collective_id: string;
 

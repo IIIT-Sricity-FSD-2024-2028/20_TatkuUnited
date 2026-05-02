@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { DatabaseService, Skill } from '../../common/database/database.service';
 import { CreateSkillDto } from './dto/create-skill.dto';
 import { UpdateSkillDto } from './dto/update-skill.dto';
-import { v4 as uuid } from 'uuid';
+import { randomUUID } from 'crypto';
 
 @Injectable()
 export class SkillsRepository {
@@ -24,7 +24,7 @@ export class SkillsRepository {
 
   create(dto: CreateSkillDto): Skill {
     const skill = {
-      skill_id: uuid(),
+      skill_id: randomUUID(),
       skill_name: dto.name,
       description: dto.description || '',
       created_at: new Date().toISOString(),

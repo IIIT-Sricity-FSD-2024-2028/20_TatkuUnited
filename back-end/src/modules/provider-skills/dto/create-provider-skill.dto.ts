@@ -1,14 +1,14 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsBoolean, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsBoolean, IsNotEmpty, IsOptional, IsUUID } from 'class-validator';
 
 export class CreateProviderSkillDto {
   @ApiProperty({ example: 'provider-uuid' })
-  @IsString()
+  @IsUUID()
   @IsNotEmpty()
   service_provider_id: string;
 
   @ApiProperty({ example: 'skill-uuid' })
-  @IsString()
+  @IsUUID()
   @IsNotEmpty()
   skill_id: string;
 

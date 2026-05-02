@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { DatabaseService, Category } from '../../common/database/database.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
-import { v4 as uuid } from 'uuid';
+import { randomUUID } from 'crypto';
 
 @Injectable()
 export class CategoriesRepository {
@@ -24,7 +24,7 @@ export class CategoriesRepository {
 
   create(dto: CreateCategoryDto): Category {
     const category: Category = {
-      category_id: uuid(),
+      category_id: randomUUID(),
       category_name: dto.category_name,
       description: dto.description || '',
       icon: dto.icon || '',

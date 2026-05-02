@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { DatabaseService, SuperUser } from '../../common/database/database.service';
 import { CreateSuperUserDto } from './dto/create-super-user.dto';
 import { UpdateSuperUserDto } from './dto/update-super-user.dto';
-import { v4 as uuid } from 'uuid';
+import { randomUUID } from 'crypto';
 
 @Injectable()
 export class SuperUsersRepository {
@@ -30,7 +30,7 @@ export class SuperUsersRepository {
 
   create(dto: CreateSuperUserDto): SuperUser {
     const superUser: SuperUser = {
-      super_user_id: uuid(),
+      super_user_id: randomUUID(),
       name: dto.name,
       email: dto.email,
       password_hash: this.databaseService.storePassword(dto.password),

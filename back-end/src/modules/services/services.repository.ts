@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { DatabaseService, Service } from '../../common/database/database.service';
 import { CreateServiceDto } from './dto/create-service.dto';
 import { UpdateServiceDto } from './dto/update-service.dto';
-import { v4 as uuid } from 'uuid';
+import { randomUUID } from 'crypto';
 
 @Injectable()
 export class ServicesRepository {
@@ -36,7 +36,7 @@ export class ServicesRepository {
 
   create(dto: CreateServiceDto): Service {
     const service: Service = {
-      service_id: uuid(),
+      service_id: randomUUID(),
       service_name: dto.service_name,
       description: dto.description || '',
       image_url: dto.image_url || '',

@@ -26,13 +26,19 @@ import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { Role } from '../../common/enums/role.enum';
 import { JwtPayload } from '../auth/interfaces/jwt-payload.interface';
+import { AccessScopeService } from '../../common/access/access-scope.service';
+import { ApiRoleHeader } from '../../common/decorators/api-role-header.decorator';
 
 @ApiTags('service-providers')
 @ApiBearerAuth('bearer')
+@ApiRoleHeader()
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('service-providers')
 export class ServiceProvidersController {
-  constructor(private readonly serviceProvidersService: ServiceProvidersService) {}
+  constructor(
+    private readonly serviceProvidersService: ServiceProvidersService,
+    private readonly accessScope: AccessScopeService,
+  ) {}
 
   @Get()
   @Roles(Role.SUPER_USER)
@@ -48,7 +54,11 @@ export class ServiceProvidersController {
   @ApiOperation({ summary: 'Get service providers by unit ID' })
   @ApiResponse({ status: 200, description: 'Success' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
-  findByUnit(@Param('unit_id') unitId: string) {
+  findByUnit(
+    @Param('unit_id') unitId: string,
+    @Request() req: { user: JwtPayload },
+  ) {
+    this.accessScope.assertUnitAccess(req.user, unitId);
     return this.serviceProvidersService.findByUnit(unitId);
   }
 
@@ -57,7 +67,11 @@ export class ServiceProvidersController {
   @ApiOperation({ summary: 'Get service providers by sector ID' })
   @ApiResponse({ status: 200, description: 'Success' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
-  findBySector(@Param('sector_id') sectorId: string) {
+  findBySector(
+    @Param('sector_id') sectorId: string,
+    @Request() req: { user: JwtPayload },
+  ) {
+    this.accessScope.assertSectorAccess(req.user, sectorId);
     return this.serviceProvidersService.findBySector(sectorId);
   }
 
@@ -71,6 +85,9 @@ export class ServiceProvidersController {
     if (req.user.role === Role.SERVICE_PROVIDER && req.user.sub !== id) {
       throw new ForbiddenException('Providers can only access their own account');
     }
+    if (req.user.role === Role.UNIT_MANAGER) {
+      this.accessScope.assertProviderAccess(req.user, id);
+    }
     return this.serviceProvidersService.findOne(id);
   }
 
@@ -79,7 +96,12 @@ export class ServiceProvidersController {
   @ApiOperation({ summary: 'Create a new service provider' })
   @ApiResponse({ status: 201, description: 'Created successfully' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
-  create(@Body() dto: CreateServiceProviderDto) {
+  create(@Body() dto: CreateServiceProviderDto, @Request() req: { user: JwtPayload }) {
+    if (req.user.role === Role.COLLECTIVE_MANAGER) {
+      this.accessScope.assertUnitAccess(req.user, dto.unit_id);
+      this.accessScope.assertSectorAccess(req.user, dto.sector_id);
+    }
+    this.accessScope.assertUnitAndSectorCompatible(dto.unit_id, dto.sector_id);
     return this.serviceProvidersService.create(dto);
   }
 
@@ -96,6 +118,19 @@ export class ServiceProvidersController {
   ) {
     if (req.user.role === Role.SERVICE_PROVIDER && req.user.sub !== id) {
       throw new ForbiddenException('Providers can only update their own account');
+    }
+    if (req.user.role === Role.UNIT_MANAGER) {
+      this.accessScope.assertProviderAccess(req.user, id);
+    }
+    if (dto.unit_id !== undefined || dto.sector_id !== undefined) {
+      const provider = this.serviceProvidersService.findOne(id);
+      const nextUnitId = dto.unit_id ?? provider.unit_id;
+      const nextSectorId = dto.sector_id ?? provider.home_sector_id;
+      this.accessScope.assertUnitAndSectorCompatible(nextUnitId, nextSectorId);
+      if (req.user.role === Role.UNIT_MANAGER) {
+        this.accessScope.assertUnitAccess(req.user, nextUnitId);
+        this.accessScope.assertSectorAccess(req.user, nextSectorId);
+      }
     }
     return this.serviceProvidersService.update(id, dto);
   }
@@ -153,7 +188,10 @@ export class ServiceProvidersController {
   @ApiResponse({ status: 200, description: 'Success' })
   @ApiResponse({ status: 404, description: 'Not found' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
-  remove(@Param('id') id: string) {
+  remove(@Param('id') id: string, @Request() req: { user: JwtPayload }) {
+    if (req.user.role === Role.COLLECTIVE_MANAGER || req.user.role === Role.UNIT_MANAGER) {
+      this.accessScope.assertProviderAccess(req.user, id);
+    }
     return this.serviceProvidersService.remove(id);
   }
 }

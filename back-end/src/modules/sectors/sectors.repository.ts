@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { DatabaseService, Sector } from '../../common/database/database.service';
 import { CreateSectorDto } from './dto/create-sector.dto';
 import { UpdateSectorDto } from './dto/update-sector.dto';
-import { v4 as uuid } from 'uuid';
+import { randomUUID } from 'crypto';
 
 @Injectable()
 export class SectorsRepository {
@@ -30,7 +30,7 @@ export class SectorsRepository {
 
   create(dto: CreateSectorDto): Sector {
     const sector: Sector = {
-      sector_id: uuid(),
+      sector_id: randomUUID(),
       sector_name: dto.sector_name,
       state: dto.state,
       region: dto.region,

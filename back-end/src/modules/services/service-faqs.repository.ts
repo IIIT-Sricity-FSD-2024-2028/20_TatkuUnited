@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { DatabaseService, ServiceFaq } from '../../common/database/database.service';
-import { v4 as uuid } from 'uuid';
+import { randomUUID } from 'crypto';
 
 @Injectable()
 export class ServiceFaqsRepository {
@@ -29,7 +29,7 @@ export class ServiceFaqsRepository {
     );
 
     const faq: ServiceFaq = {
-      faq_id: uuid(),
+      faq_id: randomUUID(),
       question: data.question,
       answer: data.answer,
       display_order: data.display_order ?? maxOrder + 1,

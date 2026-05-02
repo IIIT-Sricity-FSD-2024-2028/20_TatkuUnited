@@ -24,13 +24,19 @@ import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { Role } from '../../common/enums/role.enum';
 import { JwtPayload } from '../auth/interfaces/jwt-payload.interface';
+import { AccessScopeService } from '../../common/access/access-scope.service';
+import { ApiRoleHeader } from '../../common/decorators/api-role-header.decorator';
 
 @ApiTags('customers')
 @ApiBearerAuth('bearer')
+@ApiRoleHeader()
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('customers')
 export class CustomersController {
-  constructor(private readonly customersService: CustomersService) {}
+  constructor(
+    private readonly customersService: CustomersService,
+    private readonly accessScope: AccessScopeService,
+  ) {}
 
   @Get()
   @Roles(Role.SUPER_USER)
@@ -46,7 +52,11 @@ export class CustomersController {
   @ApiOperation({ summary: 'Get customers by sector ID' })
   @ApiResponse({ status: 200, description: 'Success' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
-  findBySector(@Param('sector_id') sectorId: string) {
+  findBySector(
+    @Param('sector_id') sectorId: string,
+    @Request() req: { user: JwtPayload },
+  ) {
+    this.accessScope.assertSectorAccess(req.user, sectorId);
     return this.customersService.findBySector(sectorId);
   }
 

@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { DatabaseService, Customer } from '../../common/database/database.service';
 import { CreateCustomerDto } from './dto/create-customer.dto';
 import { UpdateCustomerDto } from './dto/update-customer.dto';
-import { v4 as uuid } from 'uuid';
+import { randomUUID } from 'crypto';
 
 @Injectable()
 export class CustomersRepository {
@@ -36,7 +36,7 @@ export class CustomersRepository {
 
   create(dto: CreateCustomerDto): Customer {
     const customer = {
-      customer_id: uuid(),
+      customer_id: randomUUID(),
       full_name: dto.name,
       email: dto.email,
       password_hash: this.databaseService.storePassword(dto.password),

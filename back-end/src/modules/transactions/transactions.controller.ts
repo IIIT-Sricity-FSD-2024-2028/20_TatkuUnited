@@ -1,17 +1,18 @@
 import {
   Controller,
+  ForbiddenException,
   Get,
   Post,
   Patch,
   Delete,
   Body,
   Param,
+  Request,
   UseGuards,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiBody,
-  ApiHeader,
   ApiOperation,
   ApiParam,
   ApiResponse,
@@ -24,19 +25,16 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { Role } from '../../common/enums/role.enum';
+import { JwtPayload } from '../auth/interfaces/jwt-payload.interface';
+import {
+  ApiActorIdHeader,
+  ApiRoleHeader,
+} from '../../common/decorators/api-role-header.decorator';
 
 @ApiTags('Transactions')
 @ApiBearerAuth('bearer')
-@ApiHeader({
-  name: 'x-role',
-  description: 'Caller role: super_user | customer | service_provider | unit_manager | collective_manager',
-  required: true,
-})
-@ApiHeader({
-  name: 'x-id',
-  description: 'Caller user ID (UUID)',
-  required: true,
-})
+@ApiRoleHeader()
+@ApiActorIdHeader()
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('transactions')
 export class TransactionsController {
@@ -54,8 +52,8 @@ export class TransactionsController {
     status: 409,
     description: 'Duplicate idempotency key or booking already has a transaction',
   })
-  create(@Body() dto: CreateTransactionDto) {
-    return this.transactionsService.create(dto);
+  create(@Body() dto: CreateTransactionDto, @Request() req: { user: JwtPayload }) {
+    return this.transactionsService.create(dto, req.user);
   }
 
   // ─────────────────────────── GET /transactions ───────────────────────────
@@ -80,8 +78,11 @@ export class TransactionsController {
   @ApiResponse({ status: 200, description: 'Transaction found' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
   @ApiResponse({ status: 404, description: 'Not found' })
-  findByBooking(@Param('bookingId') bookingId: string) {
-    return this.transactionsService.findByBooking(bookingId);
+  findByBooking(
+    @Param('bookingId') bookingId: string,
+    @Request() req: { user: JwtPayload },
+  ) {
+    return this.transactionsService.findByBookingScoped(bookingId, req.user);
   }
 
   // ─────────────────── GET /transactions/:id ──────────────────────────────
@@ -93,8 +94,8 @@ export class TransactionsController {
   @ApiResponse({ status: 200, description: 'Transaction found' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
   @ApiResponse({ status: 404, description: 'Not found' })
-  findOne(@Param('id') id: string) {
-    return this.transactionsService.findOne(id);
+  findOne(@Param('id') id: string, @Request() req: { user: JwtPayload }) {
+    return this.transactionsService.findOneScoped(id, req.user);
   }
 
   // ─────────────────── PATCH /transactions/:id ────────────────────────────

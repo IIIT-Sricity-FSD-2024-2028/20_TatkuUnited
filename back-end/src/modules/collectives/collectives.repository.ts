@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { DatabaseService, Collective } from '../../common/database/database.service';
 import { CreateCollectiveDto } from './dto/create-collective.dto';
 import { UpdateCollectiveDto } from './dto/update-collective.dto';
-import { v4 as uuid } from 'uuid';
+import { randomUUID } from 'crypto';
 
 @Injectable()
 export class CollectivesRepository {
@@ -24,7 +24,7 @@ export class CollectivesRepository {
 
   create(dto: CreateCollectiveDto): Collective {
     const collective: Collective = {
-      collective_id: uuid(),
+      collective_id: randomUUID(),
       collective_name: dto.collective_name,
       is_active: dto.is_active,
       created_at: new Date().toISOString(),

@@ -11,7 +11,7 @@ import {
 import { ApiBearerAuth,
   ApiOperation,
   ApiResponse,
-  ApiTags, ApiHeader } from '@nestjs/swagger';
+  ApiTags } from '@nestjs/swagger';
 import { CategoriesService } from './categories.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
@@ -19,9 +19,11 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { Role } from '../../common/enums/role.enum';
+import { ApiRoleHeader } from '../../common/decorators/api-role-header.decorator';
 
 @ApiTags('categories')
 @ApiBearerAuth('bearer')
+@ApiRoleHeader()
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('categories')
 export class CategoriesController {
@@ -30,7 +32,6 @@ export class CategoriesController {
   @Get()
   @Roles(Role.SUPER_USER, Role.COLLECTIVE_MANAGER, Role.UNIT_MANAGER, Role.SERVICE_PROVIDER, Role.CUSTOMER)
   @ApiOperation({ summary: 'Get all categories' })
-  @ApiHeader({ name: 'x-role', required: true, description: 'User role (customer, super_user, service_provider)' })
   @ApiResponse({ status: 200, description: 'List of all categories' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
   findAll() {
@@ -40,7 +41,6 @@ export class CategoriesController {
   @Get(':id')
   @Roles(Role.SUPER_USER, Role.COLLECTIVE_MANAGER, Role.UNIT_MANAGER, Role.SERVICE_PROVIDER, Role.CUSTOMER)
   @ApiOperation({ summary: 'Get category by ID' })
-  @ApiHeader({ name: 'x-role', required: true, description: 'User role (customer, super_user, service_provider)' })
   @ApiResponse({ status: 200, description: 'Category found' })
   @ApiResponse({ status: 404, description: 'Category not found' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
@@ -51,7 +51,6 @@ export class CategoriesController {
   @Post()
   @Roles(Role.SUPER_USER)
   @ApiOperation({ summary: 'Create a new category' })
-  @ApiHeader({ name: 'x-role', required: true, description: 'User role (customer, super_user, service_provider)' })
   @ApiResponse({ status: 201, description: 'Category created successfully' })
   @ApiResponse({ status: 403, description: 'Forbidden — super_user only' })
   create(@Body() dto: CreateCategoryDto) {
@@ -61,7 +60,6 @@ export class CategoriesController {
   @Patch(':id')
   @Roles(Role.SUPER_USER)
   @ApiOperation({ summary: 'Update a category' })
-  @ApiHeader({ name: 'x-role', required: true, description: 'User role (customer, super_user, service_provider)' })
   @ApiResponse({ status: 200, description: 'Category updated' })
   @ApiResponse({ status: 404, description: 'Category not found' })
   @ApiResponse({ status: 403, description: 'Forbidden — super_user only' })
@@ -72,7 +70,6 @@ export class CategoriesController {
   @Delete(':id')
   @Roles(Role.SUPER_USER)
   @ApiOperation({ summary: 'Delete a category' })
-  @ApiHeader({ name: 'x-role', required: true, description: 'User role (customer, super_user, service_provider)' })
   @ApiResponse({ status: 200, description: 'Category deleted' })
   @ApiResponse({ status: 404, description: 'Category not found' })
   @ApiResponse({ status: 403, description: 'Forbidden — super_user only' })

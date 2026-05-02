@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { DatabaseService, CollectiveManager } from '../../common/database/database.service';
 import { CreateCollectiveManagerDto } from './dto/create-collective-manager.dto';
 import { UpdateCollectiveManagerDto } from './dto/update-collective-manager.dto';
-import { v4 as uuid } from 'uuid';
+import { randomUUID } from 'crypto';
 
 @Injectable()
 export class CollectiveManagersRepository {
@@ -30,7 +30,7 @@ export class CollectiveManagersRepository {
 
   create(dto: CreateCollectiveManagerDto): CollectiveManager {
     const manager: CollectiveManager = {
-      cm_id: uuid(),
+      cm_id: randomUUID(),
       name: dto.name,
       email: dto.email,
       password_hash: this.databaseService.storePassword(dto.password),

@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsBoolean, IsEmail, IsNotEmpty, IsOptional, IsString, MinLength } from 'class-validator';
+import { IsBoolean, IsEmail, IsNotEmpty, IsString, IsUUID, MinLength } from 'class-validator';
 
 export class CreateServiceProviderDto {
   @ApiProperty({ example: 'provider@tatku.com' })
@@ -24,12 +24,12 @@ export class CreateServiceProviderDto {
   phone: string;
 
   @ApiProperty({ example: 'unit-uuid' })
-  @IsString()
+  @IsUUID()
   @IsNotEmpty()
   unit_id: string;
 
   @ApiProperty({ example: 'sector-uuid' })
-  @IsString()
+  @IsUUID()
   @IsNotEmpty()
   sector_id: string;
 

@@ -1,11 +1,13 @@
 import {
   Controller,
+  ForbiddenException,
   Get,
   Post,
   Body,
   Patch,
   Param,
   Delete,
+  Request,
   UseGuards,
 } from '@nestjs/common';
 import {
@@ -21,13 +23,20 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { Role } from '../../common/enums/role.enum';
+import { JwtPayload } from '../auth/interfaces/jwt-payload.interface';
+import { AccessScopeService } from '../../common/access/access-scope.service';
+import { ApiRoleHeader } from '../../common/decorators/api-role-header.decorator';
 
 @ApiTags('collective-managers')
 @ApiBearerAuth('bearer')
+@ApiRoleHeader()
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('collective-managers')
 export class CollectiveManagersController {
-  constructor(private readonly collectiveManagersService: CollectiveManagersService) {}
+  constructor(
+    private readonly collectiveManagersService: CollectiveManagersService,
+    private readonly accessScope: AccessScopeService,
+  ) {}
 
   @Get()
   @Roles(Role.SUPER_USER)
@@ -43,7 +52,11 @@ export class CollectiveManagersController {
   @ApiOperation({ summary: 'Get collective managers by collective ID' })
   @ApiResponse({ status: 200, description: 'Success' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
-  findByCollective(@Param('collective_id') collectiveId: string) {
+  findByCollective(
+    @Param('collective_id') collectiveId: string,
+    @Request() req: { user: JwtPayload },
+  ) {
+    this.accessScope.assertCollectiveAccess(req.user, collectiveId);
     return this.collectiveManagersService.findByCollective(collectiveId);
   }
 
@@ -53,7 +66,12 @@ export class CollectiveManagersController {
   @ApiResponse({ status: 200, description: 'Success' })
   @ApiResponse({ status: 404, description: 'Not found' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
-  findOne(@Param('id') id: string) {
+  findOne(@Param('id') id: string, @Request() req: { user: JwtPayload }) {
+    const manager = this.collectiveManagersService.findOne(id);
+    if (req.user.role === Role.COLLECTIVE_MANAGER && req.user.sub !== id) {
+      throw new ForbiddenException('Collective managers can only access their own account');
+    }
+    this.accessScope.assertCollectiveAccess(req.user, manager.collective_id);
     return this.collectiveManagersService.findOne(id);
   }
 
@@ -72,7 +90,19 @@ export class CollectiveManagersController {
   @ApiResponse({ status: 200, description: 'Success' })
   @ApiResponse({ status: 404, description: 'Not found' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
-  update(@Param('id') id: string, @Body() dto: UpdateCollectiveManagerDto) {
+  update(
+    @Param('id') id: string,
+    @Body() dto: UpdateCollectiveManagerDto,
+    @Request() req: { user: JwtPayload },
+  ) {
+    const manager = this.collectiveManagersService.findOne(id);
+    if (req.user.role === Role.COLLECTIVE_MANAGER && req.user.sub !== id) {
+      throw new ForbiddenException('Collective managers can only update their own account');
+    }
+    this.accessScope.assertCollectiveAccess(req.user, manager.collective_id);
+    if (dto.collective_id !== undefined) {
+      this.accessScope.assertCollectiveAccess(req.user, dto.collective_id);
+    }
     return this.collectiveManagersService.update(id, dto);
   }
 

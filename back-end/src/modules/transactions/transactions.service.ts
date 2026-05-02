@@ -3,6 +3,7 @@ import {
   ConflictException,
   NotFoundException,
   BadRequestException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { TransactionsRepository } from './transactions.repository';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
@@ -11,12 +12,16 @@ import {
   DatabaseService,
   Transaction,
 } from '../../common/database/database.service';
+import { JwtPayload } from '../auth/interfaces/jwt-payload.interface';
+import { Role } from '../../common/enums/role.enum';
+import { AccessScopeService } from '../../common/access/access-scope.service';
 
 @Injectable()
 export class TransactionsService {
   constructor(
     private readonly repo: TransactionsRepository,
     private readonly db: DatabaseService,
+    private readonly accessScope: AccessScopeService,
   ) {}
 
   // ──────────────────────────── create ──────────────────────────────────────
@@ -27,7 +32,12 @@ export class TransactionsService {
    *   1. Duplicate idempotency key → ConflictException
    *   2. Booking already has a transaction → ConflictException
    */
-  create(dto: CreateTransactionDto): Transaction {
+  create(dto: CreateTransactionDto, user: JwtPayload): Transaction {
+    const booking = this.findBooking(dto.booking_id);
+    if (user.role === Role.CUSTOMER && booking.customer_id !== user.sub) {
+      throw new ForbiddenException('Customers can only create transactions for their own bookings');
+    }
+
     // 1. Idempotency guard
     const byKey = this.repo.findByIdempotencyKey(dto.idempotency_key);
     if (byKey) {
@@ -116,6 +126,15 @@ export class TransactionsService {
     return row;
   }
 
+  findOneScoped(id: string, user: JwtPayload): Transaction {
+    const row = this.findOne(id);
+    if (user.role === Role.UNIT_MANAGER) {
+      const booking = this.findBooking(row.booking_id);
+      this.accessScope.assertSectorAccess(user, booking.sector_id);
+    }
+    return row;
+  }
+
   /** Find the transaction for a given booking. */
   findByBooking(bookingId: string): Transaction {
     const row = this.repo.findByBookingId(bookingId);
@@ -125,6 +144,27 @@ export class TransactionsService {
       );
     }
     return row;
+  }
+
+  findByBookingScoped(bookingId: string, user: JwtPayload): Transaction {
+    const booking = this.findBooking(bookingId);
+    if (user.role === Role.CUSTOMER && booking.customer_id !== user.sub) {
+      throw new ForbiddenException(
+        'Customers can only access their own booking transactions',
+      );
+    }
+    if (user.role === Role.UNIT_MANAGER) {
+      this.accessScope.assertSectorAccess(user, booking.sector_id);
+    }
+    return this.findByBooking(bookingId);
+  }
+
+  findBooking(bookingId: string) {
+    const booking = this.db.bookings.find((row) => row.booking_id === bookingId);
+    if (!booking) {
+      throw new NotFoundException(`Booking with id "${bookingId}" not found`);
+    }
+    return booking;
   }
 
   /** Patch a transaction (used for webhook status updates). */

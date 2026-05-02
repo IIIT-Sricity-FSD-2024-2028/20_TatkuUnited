@@ -13,7 +13,7 @@ import {
 import { ApiBearerAuth,
   ApiOperation,
   ApiResponse,
-  ApiTags, ApiHeader } from '@nestjs/swagger';
+  ApiTags } from '@nestjs/swagger';
 import { ProviderUnavailabilityService } from './provider-unavailability.service';
 import { CreateProviderUnavailabilityDto } from './dto/create-provider-unavailability.dto';
 import { UpdateProviderUnavailabilityDto } from './dto/update-provider-unavailability.dto';
@@ -22,29 +22,44 @@ import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { Role } from '../../common/enums/role.enum';
 import { JwtPayload } from '../auth/interfaces/jwt-payload.interface';
+import { AccessScopeService } from '../../common/access/access-scope.service';
+import { ApiRoleHeader } from '../../common/decorators/api-role-header.decorator';
 
 @ApiTags('provider-unavailability')
 @ApiBearerAuth('bearer')
+@ApiRoleHeader()
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('provider-unavailability')
 export class ProviderUnavailabilityController {
-  constructor(private readonly providerUnavailabilityService: ProviderUnavailabilityService) {}
+  constructor(
+    private readonly providerUnavailabilityService: ProviderUnavailabilityService,
+    private readonly accessScope: AccessScopeService,
+  ) {}
 
   @Get()
   @Roles(Role.SUPER_USER, Role.UNIT_MANAGER, Role.COLLECTIVE_MANAGER)
   @ApiOperation({ summary: 'Get all provider unavailabilities' })
   
-  @ApiHeader({ name: 'x-role', required: true, description: 'User role (customer, super_user, service_provider)' })@ApiResponse({ status: 200, description: 'Success' })
+  @ApiResponse({ status: 200, description: 'Success' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
-  findAll() {
-    return this.providerUnavailabilityService.findAll();
+  findAll(@Request() req: { user: JwtPayload }) {
+    const rows = this.providerUnavailabilityService.findAll();
+    if (req.user.role === Role.SUPER_USER) return rows;
+    return rows.filter((row) => {
+      try {
+        this.accessScope.assertProviderAccess(req.user, row.sp_id);
+        return true;
+      } catch {
+        return false;
+      }
+    });
   }
 
   @Get('provider/:provider_id')
   @Roles(Role.SUPER_USER, Role.SERVICE_PROVIDER, Role.UNIT_MANAGER, Role.COLLECTIVE_MANAGER)
   @ApiOperation({ summary: 'Get provider unavailabilities by provider ID' })
   
-  @ApiHeader({ name: 'x-role', required: true, description: 'User role (customer, super_user, service_provider)' })@ApiResponse({ status: 200, description: 'Success' })
+  @ApiResponse({ status: 200, description: 'Success' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
   findByProvider(
     @Param('provider_id') providerId: string,
@@ -53,6 +68,9 @@ export class ProviderUnavailabilityController {
     if (req.user.role === Role.SERVICE_PROVIDER && req.user.sub !== providerId) {
       throw new ForbiddenException('Providers can only access their own unavailability');
     }
+    if (req.user.role === Role.COLLECTIVE_MANAGER || req.user.role === Role.UNIT_MANAGER) {
+      this.accessScope.assertProviderAccess(req.user, providerId);
+    }
     return this.providerUnavailabilityService.findByProvider(providerId);
   }
 
@@ -60,13 +78,16 @@ export class ProviderUnavailabilityController {
   @Roles(Role.SUPER_USER, Role.SERVICE_PROVIDER, Role.UNIT_MANAGER, Role.COLLECTIVE_MANAGER)
   @ApiOperation({ summary: 'Get provider unavailability by ID' })
   
-  @ApiHeader({ name: 'x-role', required: true, description: 'User role (customer, super_user, service_provider)' })@ApiResponse({ status: 200, description: 'Success' })
+  @ApiResponse({ status: 200, description: 'Success' })
   @ApiResponse({ status: 404, description: 'Not found' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
   findOne(@Param('id') id: string, @Request() req: { user: JwtPayload }) {
     const record = this.providerUnavailabilityService.findOne(id);
     if (req.user.role === Role.SERVICE_PROVIDER && req.user.sub !== record.sp_id) {
       throw new ForbiddenException('Providers can only access their own unavailability');
+    }
+    if (req.user.role === Role.COLLECTIVE_MANAGER || req.user.role === Role.UNIT_MANAGER) {
+      this.accessScope.assertProviderAccess(req.user, record.sp_id);
     }
     return record;
   }
@@ -75,7 +96,7 @@ export class ProviderUnavailabilityController {
   @Roles(Role.SUPER_USER, Role.SERVICE_PROVIDER)
   @ApiOperation({ summary: 'Create a new provider unavailability' })
   
-  @ApiHeader({ name: 'x-role', required: true, description: 'User role (customer, super_user, service_provider)' })@ApiResponse({ status: 201, description: 'Created successfully' })
+  @ApiResponse({ status: 201, description: 'Created successfully' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
   create(
     @Body() dto: CreateProviderUnavailabilityDto,
@@ -91,7 +112,7 @@ export class ProviderUnavailabilityController {
   @Roles(Role.SUPER_USER, Role.SERVICE_PROVIDER)
   @ApiOperation({ summary: 'Update a provider unavailability' })
   
-  @ApiHeader({ name: 'x-role', required: true, description: 'User role (customer, super_user, service_provider)' })@ApiResponse({ status: 200, description: 'Success' })
+  @ApiResponse({ status: 200, description: 'Success' })
   @ApiResponse({ status: 404, description: 'Not found' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
   update(
@@ -110,7 +131,7 @@ export class ProviderUnavailabilityController {
   @Roles(Role.SUPER_USER, Role.SERVICE_PROVIDER)
   @ApiOperation({ summary: 'Delete a provider unavailability' })
   
-  @ApiHeader({ name: 'x-role', required: true, description: 'User role (customer, super_user, service_provider)' })@ApiResponse({ status: 200, description: 'Success' })
+  @ApiResponse({ status: 200, description: 'Success' })
   @ApiResponse({ status: 404, description: 'Not found' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
   remove(@Param('id') id: string, @Request() req: { user: JwtPayload }) {

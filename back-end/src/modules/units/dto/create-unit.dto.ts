@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsBoolean, IsNotEmpty, IsString } from 'class-validator';
+import { IsBoolean, IsNotEmpty, IsString, IsUUID } from 'class-validator';
 
 export class CreateUnitDto {
   @ApiProperty({ example: 'Cleaning & Pest Control' })
@@ -12,7 +12,7 @@ export class CreateUnitDto {
   is_active: boolean;
 
   @ApiProperty({ example: 'uuid-of-collective' })
-  @IsString()
+  @IsUUID()
   @IsNotEmpty()
   collective_id: string;
 }

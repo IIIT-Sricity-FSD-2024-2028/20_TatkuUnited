@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsBoolean, IsEmail, IsNotEmpty, IsOptional, IsString, MinLength } from 'class-validator';
+import { IsBoolean, IsEmail, IsNotEmpty, IsString, IsUUID, MinLength } from 'class-validator';
 
 export class CreateUnitManagerDto {
   @ApiProperty({ example: 'unitmanager@tatku.com' })
@@ -24,7 +24,7 @@ export class CreateUnitManagerDto {
   phone: string;
 
   @ApiProperty({ example: 'unit-uuid' })
-  @IsString()
+  @IsUUID()
   @IsNotEmpty()
   unit_id: string;
 

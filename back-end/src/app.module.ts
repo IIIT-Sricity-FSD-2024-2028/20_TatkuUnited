@@ -1,4 +1,5 @@
-import { Module } from '@nestjs/common';
+import { Module, ValidationPipe } from '@nestjs/common';
+import { APP_GUARD, APP_PIPE } from '@nestjs/core';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { SuperUsersModule } from './modules/super-users/super-users.module';
@@ -23,6 +24,7 @@ import { PlatformSettingsModule } from './modules/platform-settings/platform-set
 import { DatabaseModule } from './common/database/database.module';
 import { CartModule } from './modules/cart/cart.module';
 import { AuthModule } from './modules/auth/auth.module';
+import { RolesGuard } from './common/guards/roles.guard';
 
 @Module({
   imports: [
@@ -50,6 +52,16 @@ import { AuthModule } from './modules/auth/auth.module';
     AuthModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: APP_GUARD,
+      useClass: RolesGuard,
+    },
+    {
+      provide: APP_PIPE,
+      useValue: new ValidationPipe({ whitelist: true, transform: true }),
+    },
+  ],
 })
 export class AppModule {}

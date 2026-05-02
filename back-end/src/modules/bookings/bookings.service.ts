@@ -90,6 +90,18 @@ export class BookingsService {
     return this.bookingsRepo.findByCustomer(customerId);
   }
 
+  findByProvider(providerId: string) {
+    return this.bookingsRepo.findByProvider(providerId);
+  }
+
+  findAssignmentsByBooking(bookingId: string) {
+    return this.db.jobAssignments.filter((row) => row.booking_id === bookingId);
+  }
+
+  findByProviderAssignmentsForUnit(unitId: string) {
+    return this.db.serviceProviders.filter((provider) => provider.unit_id === unitId);
+  }
+
   findBySector(sectorId: string) {
     return this.db.bookings.filter((b) => b.sector_id === sectorId);
   }

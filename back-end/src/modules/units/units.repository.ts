@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { DatabaseService, Unit } from '../../common/database/database.service';
 import { CreateUnitDto } from './dto/create-unit.dto';
 import { UpdateUnitDto } from './dto/update-unit.dto';
-import { v4 as uuid } from 'uuid';
+import { randomUUID } from 'crypto';
 
 @Injectable()
 export class UnitsRepository {
@@ -30,7 +30,7 @@ export class UnitsRepository {
 
   create(dto: CreateUnitDto): Unit {
     const unit: Unit = {
-      unit_id: uuid(),
+      unit_id: randomUUID(),
       unit_name: dto.unit_name,
       rating: 0,
       rating_count: 0,

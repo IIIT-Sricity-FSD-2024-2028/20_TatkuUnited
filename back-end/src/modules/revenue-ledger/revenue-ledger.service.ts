@@ -3,6 +3,9 @@ import { RevenueLedgerRepository } from './revenue-ledger.repository';
 import { CreateRevenueLedgerDto } from './dto/create-revenue-ledger.dto';
 import { DatabaseService, JobAssignment } from '../../common/database/database.service';
 import { PlatformSettingsService } from '../platform-settings/platform-settings.service';
+import { JwtPayload } from '../auth/interfaces/jwt-payload.interface';
+import { Role } from '../../common/enums/role.enum';
+import { AccessScopeService } from '../../common/access/access-scope.service';
 
 @Injectable()
 export class RevenueLedgerService {
@@ -10,6 +13,7 @@ export class RevenueLedgerService {
     private readonly repo: RevenueLedgerRepository,
     private readonly db: DatabaseService,
     private readonly ps: PlatformSettingsService,
+    private readonly accessScope: AccessScopeService,
   ) {}
 
   computeSplit(gross: number) {
@@ -86,6 +90,13 @@ export class RevenueLedgerService {
     };
   }
 
+  getProviderEarningsScoped(spId: string, user: JwtPayload) {
+    if (user.role === Role.SERVICE_PROVIDER && user.sub !== spId) {
+      throw new NotFoundException('Provider earnings not found');
+    }
+    return this.getProviderEarnings(spId);
+  }
+
   getUmEarnings(umId: string) {
     const rows = this.repo.findByUm(umId);
     return {
@@ -99,6 +110,13 @@ export class RevenueLedgerService {
     };
   }
 
+  getUmEarningsScoped(umId: string, user: JwtPayload) {
+    if (user.role === Role.UNIT_MANAGER && user.sub !== umId) {
+      throw new NotFoundException('Unit manager earnings not found');
+    }
+    return this.getUmEarnings(umId);
+  }
+
   getCmEarnings(cmId: string) {
     const rows = this.repo.findByCm(cmId);
     return {
@@ -110,6 +128,13 @@ export class RevenueLedgerService {
         .reduce((s, r) => s + r.cm_amount, 0),
       rows,
     };
+  }
+
+  getCmEarningsScoped(cmId: string, user: JwtPayload) {
+    if (user.role === Role.COLLECTIVE_MANAGER && user.sub !== cmId) {
+      throw new NotFoundException('Collective manager earnings not found');
+    }
+    return this.getCmEarnings(cmId);
   }
 
   getPlatformSummary() {
@@ -157,6 +182,20 @@ export class RevenueLedgerService {
   findOne(id: string) {
     const row = this.repo.findById(id);
     if (!row) throw new NotFoundException();
+    return row;
+  }
+
+  findOneScoped(id: string, user: JwtPayload) {
+    const row = this.findOne(id);
+    if (user.role === Role.UNIT_MANAGER) {
+      this.accessScope.assertUnitAccess(user, this.accessScope.getUnitManager(row.um_id).unit_id);
+    }
+    if (user.role === Role.COLLECTIVE_MANAGER) {
+      this.accessScope.assertCollectiveAccess(
+        user,
+        this.accessScope.getCollectiveManager(row.cm_id).collective_id,
+      );
+    }
     return row;
   }
 

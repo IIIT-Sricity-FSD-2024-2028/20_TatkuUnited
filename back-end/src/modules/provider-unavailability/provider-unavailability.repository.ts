@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { DatabaseService, ProviderUnavailability } from '../../common/database/database.service';
 import { CreateProviderUnavailabilityDto } from './dto/create-provider-unavailability.dto';
 import { UpdateProviderUnavailabilityDto } from './dto/update-provider-unavailability.dto';
-import { v4 as uuid } from 'uuid';
+import { randomUUID } from 'crypto';
 
 @Injectable()
 export class ProviderUnavailabilityRepository {
@@ -30,7 +30,7 @@ export class ProviderUnavailabilityRepository {
 
   create(dto: CreateProviderUnavailabilityDto): ProviderUnavailability {
     const record: ProviderUnavailability = {
-      unavailability_id: uuid(),
+      unavailability_id: randomUUID(),
       date: null,
       hour_start: dto.start_time,
       hour_end: dto.end_time,

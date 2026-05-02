@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { DatabaseService, UnitManager } from '../../common/database/database.service';
 import { CreateUnitManagerDto } from './dto/create-unit-manager.dto';
 import { UpdateUnitManagerDto } from './dto/update-unit-manager.dto';
-import { v4 as uuid } from 'uuid';
+import { randomUUID } from 'crypto';
 
 @Injectable()
 export class UnitManagersRepository {
@@ -30,7 +30,7 @@ export class UnitManagersRepository {
 
   create(dto: CreateUnitManagerDto): UnitManager {
     const manager: UnitManager = {
-      um_id: uuid(),
+      um_id: randomUUID(),
       name: dto.name,
       email: dto.email,
       password_hash: this.databaseService.storePassword(dto.password),

@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { v4 as uuid } from 'uuid';
-import { randomBytes, scryptSync, timingSafeEqual } from 'crypto';
+import { randomBytes, randomUUID, scryptSync, timingSafeEqual } from 'crypto';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // ENTITY INTERFACES
@@ -1411,7 +1410,7 @@ export class DatabaseService {
   // ─────────────────────────────────────────────────────────────────────────
 
   genId(): string {
-    return uuid();
+    return randomUUID();
   }
 
   hashPassword(plainPassword: string): string {

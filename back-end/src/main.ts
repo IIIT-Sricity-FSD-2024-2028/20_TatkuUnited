@@ -1,15 +1,18 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import * as path from 'path';
 import * as fs from 'fs';
 import { Role } from './common/enums/role.enum';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  app.enableCors();
-  app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
+  const frontendOrigin = process.env.FRONTEND_ORIGIN || 'http://localhost:3000';
+  app.enableCors({
+    origin: frontendOrigin,
+    credentials: true,
+  });
 
   const config = new DocumentBuilder()
     .setTitle('TatkuUnited API')
@@ -44,8 +47,12 @@ async function bootstrap() {
     },
   });
 
-  // Auto-export swagger.json for docs/
-  fs.writeFileSync('./docs/swagger.json', JSON.stringify(document, null, 2));
+  const docsDir = path.join(process.cwd(), 'docs');
+  fs.mkdirSync(docsDir, { recursive: true });
+  fs.writeFileSync(
+    path.join(docsDir, 'swagger.json'),
+    JSON.stringify(document, null, 2),
+  );
 
   const PORT = process.env.PORT || 10000;
   await app.listen(PORT);

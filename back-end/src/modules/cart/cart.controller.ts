@@ -12,7 +12,7 @@ import {
 import { ApiBearerAuth,
   ApiOperation,
   ApiResponse,
-  ApiTags, ApiHeader } from '@nestjs/swagger';
+  ApiTags } from '@nestjs/swagger';
 import { CartService } from './cart.service';
 import { AddCartItemDto } from './dto/add-cart-item.dto';
 import { UpdateCartItemDto } from './dto/update-cart-item.dto';
@@ -21,9 +21,11 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { Role } from '../../common/enums/role.enum';
+import { ApiRoleHeader } from '../../common/decorators/api-role-header.decorator';
 
 @ApiTags('cart')
 @ApiBearerAuth('bearer')
+@ApiRoleHeader()
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('cart')
 export class CartController {
@@ -32,7 +34,6 @@ export class CartController {
   @Get()
   @Roles(Role.CUSTOMER)
   @ApiOperation({ summary: 'Get my cart with items (auto-creates if none)' })
-  @ApiHeader({ name: 'x-role', required: true, description: 'User role (customer, super_user, service_provider)' })
   @ApiResponse({ status: 200, description: 'Cart with items returned' })
   @ApiResponse({ status: 403, description: 'Forbidden — customer only' })
   getCart(@Request() req) {
@@ -42,7 +43,6 @@ export class CartController {
   @Post('items')
   @Roles(Role.CUSTOMER)
   @ApiOperation({ summary: 'Add an item to cart (or increment if already in cart)' })
-  @ApiHeader({ name: 'x-role', required: true, description: 'User role (customer, super_user, service_provider)' })
   @ApiResponse({ status: 201, description: 'Item added to cart' })
   @ApiResponse({ status: 404, description: 'Service not found' })
   @ApiResponse({ status: 403, description: 'Forbidden — customer only' })
@@ -53,7 +53,6 @@ export class CartController {
   @Patch('items/:itemId')
   @Roles(Role.CUSTOMER)
   @ApiOperation({ summary: 'Update cart item quantity' })
-  @ApiHeader({ name: 'x-role', required: true, description: 'User role (customer, super_user, service_provider)' })
   @ApiResponse({ status: 200, description: 'Item quantity updated' })
   @ApiResponse({ status: 404, description: 'Cart item not found' })
   @ApiResponse({ status: 403, description: 'Forbidden — customer only' })
@@ -68,7 +67,6 @@ export class CartController {
   @Delete('items/:itemId')
   @Roles(Role.CUSTOMER)
   @ApiOperation({ summary: 'Remove a single item from cart' })
-  @ApiHeader({ name: 'x-role', required: true, description: 'User role (customer, super_user, service_provider)' })
   @ApiResponse({ status: 200, description: 'Item removed' })
   @ApiResponse({ status: 404, description: 'Cart item not found' })
   @ApiResponse({ status: 403, description: 'Forbidden — customer only' })
@@ -79,7 +77,6 @@ export class CartController {
   @Delete('items')
   @Roles(Role.CUSTOMER)
   @ApiOperation({ summary: 'Clear entire cart (remove all items)' })
-  @ApiHeader({ name: 'x-role', required: true, description: 'User role (customer, super_user, service_provider)' })
   @ApiResponse({ status: 200, description: 'Cart cleared' })
   @ApiResponse({ status: 403, description: 'Forbidden — customer only' })
   clearCart(@Request() req) {
@@ -89,7 +86,6 @@ export class CartController {
   @Patch()
   @Roles(Role.CUSTOMER)
   @ApiOperation({ summary: 'Update cart metadata (booking_type, scheduled_at, service_address)' })
-  @ApiHeader({ name: 'x-role', required: true, description: 'User role (customer, super_user, service_provider)' })
   @ApiResponse({ status: 200, description: 'Cart metadata updated' })
   @ApiResponse({ status: 403, description: 'Forbidden — customer only' })
   updateCartMeta(@Request() req, @Body() dto: UpdateCartMetaDto) {

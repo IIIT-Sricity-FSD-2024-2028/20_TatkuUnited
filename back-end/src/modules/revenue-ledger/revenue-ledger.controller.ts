@@ -1,17 +1,18 @@
 import {
   Controller,
+  ForbiddenException,
   Get,
   Post,
   Body,
   Patch,
   Param,
   Delete,
+  Request,
   UseGuards,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiBody,
-  ApiHeader,
   ApiOperation,
   ApiParam,
   ApiResponse,
@@ -23,19 +24,16 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { Role } from '../../common/enums/role.enum';
+import { JwtPayload } from '../auth/interfaces/jwt-payload.interface';
+import {
+  ApiActorIdHeader,
+  ApiRoleHeader,
+} from '../../common/decorators/api-role-header.decorator';
 
 @ApiTags('Revenue Ledger')
 @ApiBearerAuth('bearer')
-@ApiHeader({
-  name: 'x-role',
-  description: 'Caller role: super_user | customer | service_provider | unit_manager | collective_manager',
-  required: true,
-})
-@ApiHeader({
-  name: 'x-id',
-  description: 'Caller user ID (UUID)',
-  required: true,
-})
+@ApiRoleHeader()
+@ApiActorIdHeader()
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('revenue-ledger')
 export class RevenueLedgerController {
@@ -60,8 +58,11 @@ export class RevenueLedgerController {
   @ApiParam({ name: 'spId', description: 'sp_id UUID' })
   @ApiResponse({ status: 200, description: '{ pending, disbursed, rows }' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
-  getProviderEarnings(@Param('spId') spId: string) {
-    return this.revenueLedgerService.getProviderEarnings(spId);
+  getProviderEarnings(
+    @Param('spId') spId: string,
+    @Request() req: { user: JwtPayload },
+  ) {
+    return this.revenueLedgerService.getProviderEarningsScoped(spId, req.user);
   }
 
   // ── GET /revenue-ledger/unit-manager/:umId ──────────────────────────────
@@ -72,8 +73,11 @@ export class RevenueLedgerController {
   @ApiParam({ name: 'umId', description: 'um_id UUID' })
   @ApiResponse({ status: 200, description: 'Unit manager earnings returned' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
-  getUmEarnings(@Param('umId') umId: string) {
-    return this.revenueLedgerService.getUmEarnings(umId);
+  getUmEarnings(
+    @Param('umId') umId: string,
+    @Request() req: { user: JwtPayload },
+  ) {
+    return this.revenueLedgerService.getUmEarningsScoped(umId, req.user);
   }
 
   // ── GET /revenue-ledger/collective/:cmId ────────────────────────────────
@@ -84,8 +88,11 @@ export class RevenueLedgerController {
   @ApiParam({ name: 'cmId', description: 'cm_id UUID' })
   @ApiResponse({ status: 200, description: 'Collective manager earnings returned' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
-  getCmEarnings(@Param('cmId') cmId: string) {
-    return this.revenueLedgerService.getCmEarnings(cmId);
+  getCmEarnings(
+    @Param('cmId') cmId: string,
+    @Request() req: { user: JwtPayload },
+  ) {
+    return this.revenueLedgerService.getCmEarningsScoped(cmId, req.user);
   }
 
   // ── PATCH /revenue-ledger/:id/payout ────────────────────────────────────
@@ -111,8 +118,8 @@ export class RevenueLedgerController {
   @ApiResponse({ status: 200, description: 'Ledger entry returned' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
   @ApiResponse({ status: 404, description: 'Not found' })
-  findOne(@Param('id') id: string) {
-    return this.revenueLedgerService.findOne(id);
+  findOne(@Param('id') id: string, @Request() req: { user: JwtPayload }) {
+    return this.revenueLedgerService.findOneScoped(id, req.user);
   }
 
   // ── POST /revenue-ledger ────────────────────────────────────────────────
