@@ -1,13 +1,13 @@
-/* notifications.js */
-// Depends on: store.js → auth.js (loaded before this script)
+/* notifications.js — Super User Notifications — API-backed */
 
-AppStore.ready.then(() => {
+(async () => {
   /* ── 1. Auth gate ── */
   const session = Auth.requireSession(["super_user"]);
   if (!session) return;
 
-  /* ── 2. Pull tables ── */
-  const allNotifications = AppStore.getTable("super_user_notifications") || [];
+  /* ── 2. Pull notifications from API (fallback to empty) ── */
+  let allNotifications = [];
+  try { allNotifications = await Api.get("/notifications/super-user", { silent: true }) || []; } catch (_) {}
 
   /* ── 3. Transform notifications ── */
   function transformNotifications(notifList) {
@@ -27,13 +27,7 @@ AppStore.ready.then(() => {
   }
 
   function getCategoryColor(category) {
-    const colors = {
-      security: "red",
-      system: "red",
-      user: "yellow",
-      revenue: "green",
-      default: "blue",
-    };
+    const colors = { security: "red", system: "red", user: "yellow", revenue: "green", default: "blue" };
     return colors[category] || colors["default"];
   }
 
@@ -50,19 +44,9 @@ AppStore.ready.then(() => {
 
   function getActionsForCategory(category) {
     const actions = {
-      security: [
-        { label: "Lock Account", cls: "danger" },
-        { label: "Investigate", cls: "warning" },
-        { label: "Dismiss", cls: "ghost" },
-      ],
-      system: [
-        { label: "Troubleshoot", cls: "danger" },
-        { label: "Reassign Manually", cls: "ghost" },
-      ],
-      user: [
-        { label: "Open Queue", cls: "primary" },
-        { label: "Delegate", cls: "ghost" },
-      ],
+      security: [{ label: "Lock Account", cls: "danger" }, { label: "Investigate", cls: "warning" }, { label: "Dismiss", cls: "ghost" }],
+      system: [{ label: "Troubleshoot", cls: "danger" }, { label: "Reassign Manually", cls: "ghost" }],
+      user: [{ label: "Open Queue", cls: "primary" }, { label: "Delegate", cls: "ghost" }],
       revenue: [{ label: "View Report", cls: "primary" }],
       default: [{ label: "View", cls: "primary" }],
     };
@@ -73,7 +57,6 @@ AppStore.ready.then(() => {
     const now = new Date();
     const then = new Date(timestamp);
     const diff = Math.floor((now - then) / 1000);
-
     if (diff < 60) return `${diff} seconds ago`;
     if (diff < 3600) return `${Math.floor(diff / 60)} minutes ago`;
     if (diff < 86400) return `${Math.floor(diff / 3600)} hours ago`;
@@ -96,20 +79,13 @@ AppStore.ready.then(() => {
 
   let activeTab = "all";
 
-  function resetPagination() {
-    visibleCount = PAGE_SIZE;
-  }
+  function resetPagination() { visibleCount = PAGE_SIZE; }
 
   function getFiltered() {
-    const q = (
-      document.getElementById("search-input")?.value || ""
-    ).toLowerCase();
+    const q = (document.getElementById("search-input")?.value || "").toLowerCase();
     return notifications.filter((n) => {
       const matchTab = activeTab === "all" || n.category === activeTab;
-      const matchSearch =
-        !q ||
-        n.title.toLowerCase().includes(q) ||
-        n.desc.toLowerCase().includes(q);
+      const matchSearch = !q || n.title.toLowerCase().includes(q) || n.desc.toLowerCase().includes(q);
       return matchTab && matchSearch;
     });
   }
@@ -117,32 +93,17 @@ AppStore.ready.then(() => {
   function renderTabs() {
     const el = document.getElementById("notif-tabs");
     if (!el) return;
-    el.innerHTML = tabs
-      .map((t) => {
-        const count = notifications.filter(
-          (n) => (t.key === "all" || n.category === t.key) && !n.read,
-        ).length;
-        const isUrgent =
-          notifications.filter(
-            (n) =>
-              (t.key === "all" || n.category === t.key) && n.urgent && !n.read,
-          ).length > 0;
-        return `<button class="tab ${activeTab === t.key ? "active" : ""}" onclick="setTab('${t.key}')">
+    el.innerHTML = tabs.map((t) => {
+      const count = notifications.filter((n) => (t.key === "all" || n.category === t.key) && !n.read).length;
+      const isUrgent = notifications.filter((n) => (t.key === "all" || n.category === t.key) && n.urgent && !n.read).length > 0;
+      return `<button class="tab ${activeTab === t.key ? "active" : ""}" onclick="setTab('${t.key}')">
         ${t.label}
         ${count > 0 ? `<span class="tab-count ${isUrgent ? "urgent" : ""}">${count}</span>` : ""}
       </button>`;
-      })
-      .join("");
+    }).join("");
   }
 
-  function setTab(key) {
-    activeTab = key;
-    resetPagination();
-    renderTabs();
-    renderNotifications();
-  }
-
-  // Make setTab globally accessible
+  function setTab(key) { activeTab = key; resetPagination(); renderTabs(); renderNotifications(); }
   window.setTab = setTab;
 
   function renderNotifications() {
@@ -161,9 +122,7 @@ AppStore.ready.then(() => {
       updateLoadMoreButton(0, 0);
       return;
     }
-    list.innerHTML = visible
-      .map(
-        (n, i) => `
+    list.innerHTML = visible.map((n, i) => `
       <div class="notif-item ${n.read ? "" : "unread"} ${n.urgent ? "urgent" : ""}" id="notif-${n.id}" style="animation-delay:${i * 0.04}s">
         <div class="notif-icon ${n.color}">${n.icon}</div>
         <div class="notif-body">
@@ -178,9 +137,7 @@ AppStore.ready.then(() => {
         </div>
         <button class="notif-dismiss" onclick="dismiss(${n.id})" title="Dismiss">×</button>
       </div>
-    `,
-      )
-      .join("");
+    `).join("");
     updateLoadMoreButton(visible.length, filtered.length);
     updateBadge();
   }
@@ -189,140 +146,57 @@ AppStore.ready.then(() => {
     const btn = document.querySelector(".load-more-btn");
     if (!btn) return;
     const remaining = Math.max(0, total - visible);
-    if (remaining <= 0) {
-      btn.textContent = "No more notifications";
-      btn.disabled = true;
-      return;
-    }
-    btn.textContent = `Load previous notifications (${remaining})`;
-    btn.disabled = false;
+    if (remaining <= 0) { btn.textContent = "No more notifications"; btn.disabled = true; return; }
+    btn.textContent = `Load previous notifications (${remaining})`; btn.disabled = false;
   }
 
   function showToast(message, type = "info") {
     const previous = document.getElementById("su-notif-toast");
     if (previous) previous.remove();
-
-    const colors = {
-      success: "#16a34a",
-      warning: "#d97706",
-      error: "#dc2626",
-      info: "#2563eb",
-    };
-
+    const colors = { success: "#16a34a", warning: "#d97706", error: "#dc2626", info: "#2563eb" };
     const toast = document.createElement("div");
     toast.id = "su-notif-toast";
     toast.textContent = message;
-    toast.style.cssText =
-      "position:fixed;right:20px;bottom:20px;z-index:1200;padding:10px 14px;border-radius:10px;" +
-      "color:#fff;font-size:.85rem;font-weight:600;box-shadow:0 12px 28px rgba(0,0,0,.35);" +
-      "font-family:'DM Sans',sans-serif;opacity:0;transform:translateY(8px);transition:all .2s ease;";
+    toast.style.cssText = "position:fixed;right:20px;bottom:20px;z-index:1200;padding:10px 14px;border-radius:10px;color:#fff;font-size:.85rem;font-weight:600;box-shadow:0 12px 28px rgba(0,0,0,.35);font-family:'DM Sans',sans-serif;opacity:0;transform:translateY(8px);transition:all .2s ease;";
     toast.style.background = colors[type] || colors.info;
     document.body.appendChild(toast);
-
-    requestAnimationFrame(() => {
-      toast.style.opacity = "1";
-      toast.style.transform = "translateY(0)";
-    });
-
-    setTimeout(() => {
-      toast.style.opacity = "0";
-      toast.style.transform = "translateY(8px)";
-      setTimeout(() => toast.remove(), 220);
-    }, TOAST_DURATION_MS);
+    requestAnimationFrame(() => { toast.style.opacity = "1"; toast.style.transform = "translateY(0)"; });
+    setTimeout(() => { toast.style.opacity = "0"; toast.style.transform = "translateY(8px)"; setTimeout(() => toast.remove(), 220); }, TOAST_DURATION_MS);
   }
 
   function handleAction(id, label) {
     const n = notifications.find((x) => x.id === id);
     if (n) n.read = true;
-
     switch (label) {
-      case "Dismiss":
-        dismiss(id);
-        return;
-      case "Lock Account":
-        showToast("Opening user management queue", "warning");
-        window.location.href = "user_management.html";
-        return;
-      case "Investigate":
-        showToast("Opening security-related records", "info");
-        window.location.href = "user_management.html";
-        return;
-      case "Troubleshoot":
-        showToast("Opening platform settings", "info");
-        window.location.href = "platform_settings.html";
-        return;
-      case "Reassign Manually":
-        showToast("Opening dashboard for manual reassignment", "info");
-        window.location.href = "super_user_dashboard.html";
-        return;
-      case "Open Queue":
-        window.location.href = "user_management.html";
-        return;
-      case "Delegate":
-        showToast("Task delegated", "success");
-        break;
-      case "View Report":
-        window.location.href = "super_user_dashboard.html";
-        return;
-      case "View":
-        window.location.href = "super_user_dashboard.html";
-        return;
-      default:
-        showToast(label + " completed", "success");
-        break;
+      case "Dismiss": dismiss(id); return;
+      case "Lock Account": showToast("Opening user management queue", "warning"); window.location.href = "user_management.html"; return;
+      case "Investigate": showToast("Opening security-related records", "info"); window.location.href = "user_management.html"; return;
+      case "Troubleshoot": showToast("Opening platform settings", "info"); window.location.href = "platform_settings.html"; return;
+      case "Reassign Manually": showToast("Opening dashboard for manual reassignment", "info"); window.location.href = "super_user_dashboard.html"; return;
+      case "Open Queue": window.location.href = "user_management.html"; return;
+      case "Delegate": showToast("Task delegated", "success"); break;
+      case "View Report": case "View": window.location.href = "super_user_dashboard.html"; return;
+      default: showToast(label + " completed", "success"); break;
     }
-
-    renderTabs();
-    renderNotifications();
+    renderTabs(); renderNotifications();
   }
 
-  function dismiss(id) {
-    notifications = notifications.filter((n) => n.id !== id);
-    renderTabs();
-    renderNotifications();
-  }
-
-  function markAllRead() {
-    notifications.forEach((n) => (n.read = true));
-    renderTabs();
-    renderNotifications();
-  }
-
-  function filterNotifications() {
-    resetPagination();
-    renderNotifications();
-  }
-
+  function dismiss(id) { notifications = notifications.filter((n) => n.id !== id); renderTabs(); renderNotifications(); }
+  function markAllRead() { notifications.forEach((n) => (n.read = true)); renderTabs(); renderNotifications(); }
+  function filterNotifications() { resetPagination(); renderNotifications(); }
   function updateBadge() {
     const badge = document.getElementById("notif-badge");
     const count = notifications.filter((n) => !n.read).length;
-    if (badge) {
-      badge.textContent = count > 0 ? count : "";
-      badge.style.display = count > 0 ? "flex" : "none";
-    }
+    if (badge) { badge.textContent = count > 0 ? count : ""; badge.style.display = count > 0 ? "flex" : "none"; }
   }
+  function loadMore() { const total = getFiltered().length; visibleCount = Math.min(total, visibleCount + PAGE_SIZE); renderNotifications(); }
 
-  function loadMore() {
-    const total = getFiltered().length;
-    visibleCount = Math.min(total, visibleCount + PAGE_SIZE);
-    renderNotifications();
-  }
-
-  // Make functions globally accessible
   window.handleAction = handleAction;
   window.dismiss = dismiss;
   window.markAllRead = markAllRead;
   window.filterNotifications = filterNotifications;
   window.loadMore = loadMore;
 
-  /* ── Initialize on DOM ready ── */
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", () => {
-      renderTabs();
-      renderNotifications();
-    });
-  } else {
-    renderTabs();
-    renderNotifications();
-  }
-});
+  renderTabs();
+  renderNotifications();
+})();

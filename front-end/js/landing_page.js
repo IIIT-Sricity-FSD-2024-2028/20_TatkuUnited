@@ -1,9 +1,7 @@
 /* ── MAINTENANCE MODE ── */
-function getPlatformSettings() {
-  if (window.AppStore && typeof AppStore.getPlatformSettings === "function") {
-    return AppStore.getPlatformSettings();
-  }
-  return null;
+let _landingData = {};
+async function getPlatformSettings() {
+  try { return await Api.get("/platform-settings", { silent: true }); } catch (_) { return null; }
 }
 
 function setMaintenanceLinkState(active) {
@@ -28,8 +26,8 @@ function setMaintenanceLinkState(active) {
   });
 }
 
-function renderMaintenanceBanner() {
-  const settings = getPlatformSettings();
+async function renderMaintenanceBanner() {
+  const settings = await getPlatformSettings();
   const active = !!(settings && settings.maintenanceMode);
   const fromQuery =
     new URLSearchParams(window.location.search).get("maintenance") === "1";
@@ -79,13 +77,13 @@ function parseScheduledDateTime(dateStr, timeStr) {
 }
 
 function computeLandingMetrics() {
-  const bookings = AppStore.getTable("bookings") || [];
-  const customers = AppStore.getTable("customers") || [];
-  const providers = AppStore.getTable("service_providers") || [];
-  const categories = AppStore.getTable("categories") || [];
-  const assignments = AppStore.getTable("job_assignments") || [];
-  const bookingServices = AppStore.getTable("booking_services") || [];
-  const services = AppStore.getTable("services") || [];
+  const bookings = _landingData.bookings || [];
+  const customers = _landingData.customers || [];
+  const providers = _landingData.service_providers || [];
+  const categories = _landingData.categories || [];
+  const assignments = _landingData.job_assignments || [];
+  const bookingServices = _landingData.booking_services || [];
+  const services = _landingData.services || [];
 
   const householdsServed =
     new Set(bookings.map((b) => b.customer_id).filter(Boolean)).size ||
@@ -321,10 +319,7 @@ function getLandingContent() {
     },
   };
 
-  const data =
-    window.AppStore && AppStore.data && AppStore.data.landing_page_content
-      ? AppStore.data.landing_page_content
-      : {};
+  const data = {};
 
   return {
     ...defaults,
@@ -615,7 +610,7 @@ function renderLandingContent() {
     if (title)
       title.textContent = content.footer?.servicesTitle || "Services";
     if (links) {
-      const categories = (AppStore.getTable("categories") || [])
+      const categories = (_landingData.categories || [])
         .filter((cat) => cat.is_active)
         .slice(0, 4);
       links.innerHTML = categories
@@ -658,10 +653,10 @@ function renderDynamicServices() {
   const servicesGrid = document.getElementById("servicesGrid");
   if (!servicesGrid) return;
 
-  const allServices = AppStore.getTable("services") || [];
-  const allCategories = AppStore.getTable("categories") || [];
-  const allAssignments = AppStore.getTable("job_assignments") || [];
-  const allBookingServices = AppStore.getTable("booking_services") || [];
+  const allServices = _landingData.services || [];
+  const allCategories = _landingData.categories || [];
+  const allAssignments = _landingData.job_assignments || [];
+  const allBookingServices = _landingData.booking_services || [];
 
   // Compute live real-time stats (just like service_discovery.js)
   const assignmentByBooking = new Map(allAssignments.map(a => [a.booking_id, a]));
@@ -774,11 +769,15 @@ function renderDynamicServices() {
   });
 }
 
-AppStore.ready.then(() => {
+(async () => {
+  const endpoints = { bookings: '/bookings', customers: '/customers', service_providers: '/service-providers', categories: '/categories', job_assignments: '/job-assignments', booking_services: '/booking-services', services: '/services' };
+  await Promise.all(Object.entries(endpoints).map(async ([key, url]) => {
+    try { _landingData[key] = await Api.get(url, { silent: true }) || []; } catch (_) { _landingData[key] = []; }
+  }));
   renderLandingContent();
   renderMaintenanceBanner();
   renderDynamicServices();
-});
+})();
 
 /* ── CURSOR ── */
 const cursor = document.getElementById("cursor");

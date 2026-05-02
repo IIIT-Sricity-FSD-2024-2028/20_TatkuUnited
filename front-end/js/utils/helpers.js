@@ -1,7 +1,6 @@
 /* =============================================================================
    TATKU UNITED — HELPERS UTILITY
    front-end/js/utils/helpers.js
-   Depends on: js/data/store.js (AppStore)
    ============================================================================= */
 
 /* ─── Toast Container bootstrap ─── */
@@ -240,8 +239,8 @@ function showBlockDialog(message) {
 /* =============================================================================
    resolveFk(tableName, idField, idValue, displayField)
    ============================================================================= */
-function resolveFk(tableName, idField, idValue, displayField) {
-    const table = AppStore.getTable(tableName) || [];
+function resolveFk(tableName, idField, idValue, displayField, data) {
+    const table = data || (window._resolveCache && window._resolveCache[tableName]) || [];
     const record = table.find(r => r[idField] === idValue);
     return record ? (record[displayField] ?? "—") : "—";
 }

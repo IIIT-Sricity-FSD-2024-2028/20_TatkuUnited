@@ -1,24 +1,32 @@
-/* collective_unit.js */
-// Depends on: store.js -> auth.js (loaded before this script)
+/* collective_unit.js — API-backed */
 
-AppStore.ready.then(function () {
+var _cache = {
+  collectives: [], units: [], sectors: [], unitManagers: [], collectiveManagers: [],
+  providers: [], providerSkills: [], skills: [], assignments: []
+};
+
+async function _loadCache() {
+  const endpoints = [
+    ["/collectives", "collectives"], ["/units", "units"], ["/sectors", "sectors"],
+    ["/unit-managers", "unitManagers"], ["/collective-managers", "collectiveManagers"],
+    ["/service-providers", "providers"], ["/provider-skills", "providerSkills"],
+    ["/skills", "skills"], ["/job-assignments", "assignments"]
+  ];
+  await Promise.all(endpoints.map(async ([url, key]) => {
+    try { _cache[key] = await Api.get(url, { silent: true }) || []; } catch (_) {}
+  }));
+}
+
+(async function () {
   var session = Auth.requireSession(["super_user"]);
   if (!session) return;
 
+  await _loadCache();
+
   function updateNotificationBadges() {
-    var unread = (AppStore.getTable("super_user_notifications") || []).filter(
-      function (n) {
-        return !n.is_read;
-      },
-    ).length;
     document.querySelectorAll(".notif-badge").forEach(function (badge) {
-      if (unread > 0) {
-        badge.textContent = String(unread);
-        badge.style.display = "flex";
-      } else {
-        badge.textContent = "";
-        badge.style.display = "none";
-      }
+      badge.textContent = "";
+      badge.style.display = "none";
     });
   }
 
@@ -278,7 +286,7 @@ AppStore.ready.then(function () {
   }
 
   function getUsedSectorIds(excludeCollectiveId) {
-    var collectives = AppStore.getTable("collectives") || [];
+    var collectives = _cache.collectives;
     var used = [];
     collectives.forEach(function (c) {
       if (c.collective_id === excludeCollectiveId) return;
@@ -406,8 +414,8 @@ AppStore.ready.then(function () {
   }
 
   function openReassignModal(providerId) {
-    var providers = AppStore.getTable("service_providers") || [];
-    var units = AppStore.getTable("units") || [];
+    var providers = _cache.providers;
+    var units = _cache.units;
     var provider = providers.find(function (row) {
       return row.service_provider_id === providerId;
     });
@@ -447,51 +455,28 @@ AppStore.ready.then(function () {
     closeModal(el.reassignModal);
   }
 
-  function submitReassignProvider() {
+  async function submitReassignProvider() {
     var providerId = state.reassignProviderId;
     var targetUnitId = String(el.reassignUnitSelect.value || "").trim();
 
-    if (!providerId) {
-      closeReassignModal();
-      return;
-    }
+    if (!providerId) { closeReassignModal(); return; }
     if (!targetUnitId) {
-      setFieldError(
-        el.reassignUnitSelect,
-        el.reassignUnitError,
-        "Please choose a target unit.",
-      );
+      setFieldError(el.reassignUnitSelect, el.reassignUnitError, "Please choose a target unit.");
       return;
     }
     setFieldError(el.reassignUnitSelect, el.reassignUnitError, "");
 
-    var providers = AppStore.getTable("service_providers") || [];
-    var units = AppStore.getTable("units") || [];
-    var provider = providers.find(function (row) {
-      return row.service_provider_id === providerId;
-    });
+    var provider = _cache.providers.find(function (row) { return row.service_provider_id === providerId; });
+    if (!provider) { notify("Provider not found."); closeReassignModal(); return; }
 
-    if (!provider) {
-      notify("Provider not found.");
-      closeReassignModal();
-      return;
-    }
+    var targetUnit = _cache.units.find(function (unit) { return unit.unit_id === targetUnitId; });
+    if (!targetUnit) { setFieldError(el.reassignUnitSelect, el.reassignUnitError, "Selected unit is invalid."); return; }
 
-    var targetUnit = units.find(function (unit) {
-      return unit.unit_id === targetUnitId;
-    });
-    if (!targetUnit) {
-      setFieldError(
-        el.reassignUnitSelect,
-        el.reassignUnitError,
-        "Selected unit is invalid.",
-      );
-      return;
-    }
-
-    provider.unit_id = targetUnitId;
-    provider.is_active = true;
-    AppStore.save();
+    try {
+      await Api.patch("/service-providers/" + providerId, { unit_id: targetUnitId, is_active: true });
+      provider.unit_id = targetUnitId;
+      provider.is_active = true;
+    } catch (_) {}
 
     state.selectedUnitId = targetUnitId;
     state.providerPage = 1;
@@ -501,24 +486,14 @@ AppStore.ready.then(function () {
   }
 
   function getTables() {
-    return {
-      collectives: AppStore.getTable("collectives") || [],
-      units: AppStore.getTable("units") || [],
-      sectors: AppStore.getTable("sectors") || [],
-      unitManagers: AppStore.getTable("unit_managers") || [],
-      collectiveManagers: AppStore.getTable("collective_managers") || [],
-      providers: AppStore.getTable("service_providers") || [],
-      providerSkills: AppStore.getTable("provider_skills") || [],
-      skills: AppStore.getTable("skills") || [],
-      assignments: AppStore.getTable("job_assignments") || [],
-    };
+    return _cache;
   }
 
   function setupCmAutocomplete(inputEl, dropdownEl, errorEl, selectedIdKey, includeCollectiveId) {
     if (!inputEl || !dropdownEl) return;
 
     function renderDropdown(query) {
-      var managers = AppStore.getTable("collective_managers") || [];
+      var managers = _cache.collectiveManagers;
       var q = String(query || "").trim().toLowerCase();
 
       var options = managers.filter(function (m) {
@@ -1070,7 +1045,7 @@ AppStore.ready.then(function () {
   }
 
   function getSelectedUnit() {
-    var units = AppStore.getTable("units") || [];
+    var units = _cache.units;
     for (var i = 0; i < units.length; i += 1) {
       if (units[i].unit_id === state.selectedUnitId) return units[i];
     }
@@ -1100,7 +1075,7 @@ AppStore.ready.then(function () {
         var status = getProviderStatus(
           p,
           tables.assignments,
-          AppStore.getTable("provider_unavailability") || [],
+          [],
         );
 
         return {
@@ -1313,39 +1288,40 @@ AppStore.ready.then(function () {
     };
   }
 
-  function submitCreateCollective() {
+  async function submitCreateCollective() {
     var result = validateCollectiveForm();
     if (!result) return;
 
-    var newCollective = {
-      collective_id: AppStore.nextId("COL"),
-      collective_name: result.name,
-      is_active: result.isActive,
-      created_at: new Date().toISOString(),
-      sector_ids: result.sectorIds,
-    };
+    try {
+      var newCollective = await Api.post("/collectives", {
+        collective_name: result.name,
+        is_active: result.isActive,
+        sector_ids: result.sectorIds,
+      });
+      _cache.collectives.push(newCollective);
 
-    AppStore.getTable("collectives").push(newCollective);
-
-    // Assign CM
-    var managers = AppStore.getTable("collective_managers");
-    managers.forEach(function (m) {
-      if (m.cm_id === result.cmId) {
-        m.collective_id = newCollective.collective_id;
-        m.updated_at = new Date().toISOString();
+      // Assign CM
+      if (result.cmId) {
+        await Api.patch("/collective-managers/" + result.cmId, { collective_id: newCollective.collective_id });
+        _cache.collectiveManagers.forEach(function (m) {
+          if (m.cm_id === result.cmId) {
+            m.collective_id = newCollective.collective_id;
+            m.updated_at = new Date().toISOString();
+          }
+        });
       }
-    });
 
-    AppStore.save();
+      state.selectedCollectiveId = newCollective.collective_id;
+      state.selectedUnitId = null;
+      state.providerPage = 1;
 
-    state.selectedCollectiveId = newCollective.collective_id;
-    state.selectedUnitId = null;
-    state.providerPage = 1;
-
-    closeModal(el.collectiveModal);
-    populateFilters();
-    renderCollectives();
-    notify("Collective created successfully: " + newCollective.collective_id);
+      closeModal(el.collectiveModal);
+      populateFilters();
+      renderCollectives();
+      notify("Collective created successfully: " + newCollective.collective_id);
+    } catch (err) {
+      notify("Failed to create collective.");
+    }
   }
 
   function openReassignCmModal(collectiveId) {
@@ -1369,18 +1345,14 @@ AppStore.ready.then(function () {
     setupCmAutocomplete(el.reassignCmInput, el.reassignCmDropdown, el.reassignCmError, "reassignCmId", collectiveId);
   }
 
-  function submitReassignCm() {
-    if (!state.reassignCollectiveId) {
-      closeModal(el.reassignCmModal);
-      return;
-    }
-
+  async function submitReassignCm() {
+    if (!state.reassignCollectiveId) { closeModal(el.reassignCmModal); return; }
     if (!state.reassignCmId) {
       setFieldError(el.reassignCmInput, el.reassignCmError, "Please select a valid manager from the list.");
       return;
     }
 
-    var managers = AppStore.getTable("collective_managers");
+    var managers = _cache.collectiveManagers;
     var collectiveId = state.reassignCollectiveId;
     var chosenId = state.reassignCmId;
 
@@ -1390,18 +1362,15 @@ AppStore.ready.then(function () {
       return;
     }
 
-    // Remove existing
-    managers.forEach(function (m) {
-      if (m.collective_id === collectiveId) {
-        m.collective_id = null;
-      }
-    });
+    try {
+      // Unassign old
+      managers.forEach(function (m) { if (m.collective_id === collectiveId) m.collective_id = null; });
+      // Assign new
+      await Api.patch("/collective-managers/" + chosenId, { collective_id: collectiveId });
+      chosenManager.collective_id = collectiveId;
+      chosenManager.updated_at = new Date().toISOString();
+    } catch (_) {}
 
-    // Assign new
-    chosenManager.collective_id = collectiveId;
-    chosenManager.updated_at = new Date().toISOString();
-
-    AppStore.save();
     closeModal(el.reassignCmModal);
     renderCollectives();
     notify("Collective Manager updated.");
@@ -1578,26 +1547,20 @@ AppStore.ready.then(function () {
     if (!valid) return;
 
     // Apply CM change
-    var managers = AppStore.getTable("collective_managers");
+    var managers = _cache.collectiveManagers;
     // Unassign old manager from this collective
-    managers.forEach(function (m) {
-      if (m.collective_id === collectiveId) {
-        m.collective_id = null;
-      }
-    });
+    managers.forEach(function (m) { if (m.collective_id === collectiveId) m.collective_id = null; });
     // Assign new manager
-    var newMgr = managers.find(function (m) {
-      return m.cm_id === state.editCmId;
-    });
+    var newMgr = managers.find(function (m) { return m.cm_id === state.editCmId; });
     if (newMgr) {
       newMgr.collective_id = collectiveId;
       newMgr.updated_at = new Date().toISOString();
+      try { Api.patch("/collective-managers/" + state.editCmId, { collective_id: collectiveId }); } catch (_) {}
     }
 
     // Apply sector changes
     collective.sector_ids = sectorIds;
-
-    AppStore.save();
+    try { Api.patch("/collectives/" + collectiveId, { sector_ids: sectorIds }); } catch (_) {}
     closeModal(el.editCollectiveModal);
     populateFilters();
     renderCollectives();
@@ -1606,7 +1569,7 @@ AppStore.ready.then(function () {
 
   function assignUnitManager(unitId, managerRef) {
     if (!managerRef) return true;
-    var managers = AppStore.getTable("unit_managers") || [];
+    var managers = _cache.unitManagers;
     var selected = managers.find(function (m) {
       return (
         m.um_id === managerRef ||
@@ -1722,13 +1685,11 @@ AppStore.ready.then(function () {
     var result = validateUnitForm();
     if (!result) return;
 
-    var units = AppStore.getTable("units");
-    var managers = AppStore.getTable("unit_managers") || [];
-    var unitId = state.editingUnitId || AppStore.nextId("UNT");
+    var units = _cache.units;
+    var managers = _cache.unitManagers;
+    var unitId = state.editingUnitId || ("UNT-" + Date.now());
 
-    if (!assignUnitManager(unitId, result.managerRef)) {
-      return;
-    }
+    if (!assignUnitManager(unitId, result.managerRef)) return;
 
     if (!result.managerRef) {
       managers.forEach(function (manager) {
@@ -1736,30 +1697,24 @@ AppStore.ready.then(function () {
       });
     }
 
-    if (state.editingUnitId) {
-      var existing = units.find(function (unit) {
-        return unit.unit_id === state.editingUnitId;
-      });
-      if (!existing) {
-        notify("Unit not found.");
-        return;
+    try {
+      if (state.editingUnitId) {
+        var existing = units.find(function (unit) { return unit.unit_id === state.editingUnitId; });
+        if (!existing) { notify("Unit not found."); return; }
+        await Api.patch("/units/" + state.editingUnitId, {
+          unit_name: result.name, collective_id: result.collectiveId, is_active: result.isActive
+        });
+        existing.unit_name = result.name;
+        existing.collective_id = result.collectiveId;
+        existing.is_active = result.isActive;
+      } else {
+        var created = await Api.post("/units", {
+          unit_name: result.name, collective_id: result.collectiveId, is_active: result.isActive
+        });
+        unitId = created.unit_id || unitId;
+        units.push(created);
       }
-      existing.unit_name = result.name;
-      existing.collective_id = result.collectiveId;
-      existing.is_active = result.isActive;
-    } else {
-      units.push({
-        unit_id: unitId,
-        unit_name: result.name,
-        rating: null,
-        rating_count: 0,
-        is_active: result.isActive,
-        created_at: new Date().toISOString(),
-        collective_id: result.collectiveId,
-      });
-    }
-
-    AppStore.save();
+    } catch (err) { notify("Failed to save unit."); return; }
 
     state.selectedCollectiveId = result.collectiveId;
     state.selectedUnitId = unitId;
@@ -1776,17 +1731,16 @@ AppStore.ready.then(function () {
   }
 
   function removeProvider(providerId) {
-    var providers = AppStore.getTable("service_providers") || [];
-    var provider = providers.find(function (p) {
-      return p.service_provider_id === providerId;
-    });
+    var provider = _cache.providers.find(function (p) { return p.service_provider_id === providerId; });
     if (!provider) return;
 
     openConfirmModal(
       "Remove " + provider.name + " from this unit?",
-      function () {
-        provider.unit_id = null;
-        AppStore.save();
+      async function () {
+        try {
+          await Api.patch("/service-providers/" + providerId, { unit_id: null });
+          provider.unit_id = null;
+        } catch (_) {}
         renderCollectives();
         notify("Provider removed from unit.");
       },
@@ -1797,20 +1751,16 @@ AppStore.ready.then(function () {
     openReassignModal(providerId);
   }
 
-  function assignProvider(providerId) {
-    var providers = AppStore.getTable("service_providers") || [];
-    var provider = providers.find(function (p) {
-      return p.service_provider_id === providerId;
-    });
+  async function assignProvider(providerId) {
+    var provider = _cache.providers.find(function (p) { return p.service_provider_id === providerId; });
     if (!provider) return;
 
-    if (!state.selectedUnitId) {
-      notify("Select a unit first.");
-      return;
-    }
-    provider.unit_id = state.selectedUnitId;
-    provider.is_active = true;
-    AppStore.save();
+    if (!state.selectedUnitId) { notify("Select a unit first."); return; }
+    try {
+      await Api.patch("/service-providers/" + providerId, { unit_id: state.selectedUnitId, is_active: true });
+      provider.unit_id = state.selectedUnitId;
+      provider.is_active = true;
+    } catch (_) {}
     renderCollectives();
     notify("Provider assigned to selected unit.");
   }
@@ -1878,7 +1828,7 @@ AppStore.ready.then(function () {
     }
     if (el.createUnitBtn) {
       el.createUnitBtn.addEventListener("click", function () {
-        if (!(AppStore.getTable("collectives") || []).length) {
+        if (!_cache.collectives.length) {
           notify("Create a collective first.");
           return;
         }
@@ -2110,25 +2060,17 @@ AppStore.ready.then(function () {
   }
 
   function initSelection() {
-    var units = AppStore.getTable("units") || [];
+    var units = _cache.units;
     if (units.length) {
       state.selectedUnitId = units[0].unit_id;
       state.selectedCollectiveId = units[0].collective_id;
     }
   }
 
-  function init() {
-    updateNotificationBadges();
-    initSelection();
-    populateFilters();
-    bindEvents();
-    renderCollectives();
-    setupCmAutocomplete(el.collectiveManagerInput, el.collectiveManagerDropdown, el.collectiveManagerError, "selectedCmId", null);
-  }
-
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", init);
-  } else {
-    init();
-  }
-});
+  updateNotificationBadges();
+  initSelection();
+  populateFilters();
+  bindEvents();
+  renderCollectives();
+  setupCmAutocomplete(el.collectiveManagerInput, el.collectiveManagerDropdown, el.collectiveManagerError, "selectedCmId", null);
+})();

@@ -1,19 +1,9 @@
 /**
- * dashboard.js — Unit Manager: Dashboard Overview
- *
- * Buttons implemented:
- *  - "Last 30 Days"    → filters stat cards & bar chart to the last 30 days
- *                        of data (relative to latest transaction date)
- *  - "Download Report" → generates and downloads a CSV of the dashboard summary
- *  - "Assign Now"      → confirms training assignment to top providers; shows toast
- *  - "Reassign Job"    → prompts for provider selection; shows success toast
- *  - "Call Provider"   → shows a contact info popup for provider #1042
- *  - "Investigate"     → shows a detailed incident report for the rating alert
- *  - "Dismiss"         → slides out the rating alert card
+ * dashboard.js — Unit Manager: Dashboard Overview (API-backed)
  */
 
 /* ─────────────────────────────────────────────
-   1. LIVE DATA (from shared AppStore)
+   1. STATE
    ───────────────────────────────────────────── */
 
 let PROVIDERS = [];
@@ -21,10 +11,6 @@ let TRANSACTIONS = [];
 let BOOKINGS = [];
 let CHART_DATA_ALL = [];
 let CHART_DATA_30 = [];
-
-/* ─────────────────────────────────────────────
-   2. STATE
-   ───────────────────────────────────────────── */
 
 const FEE_RATE = 0.07;
 let LATEST_TXN_DATE = new Date();
@@ -70,62 +56,29 @@ function buildChartSeries(txns) {
     });
 }
 
-function loadDashboardDataFromStore(session) {
-  const allProviders = AppStore.getTable("service_providers") || [];
-  const allSkills = AppStore.getTable("skills") || [];
-  const allProviderSkills = AppStore.getTable("provider_skills") || [];
-  const allAssignments = AppStore.getTable("job_assignments") || [];
-  const allBookings = AppStore.getTable("bookings") || [];
-  const allTxns = AppStore.getTable("transactions") || [];
+async function loadDashboardData(session) {
+  const umId = session.id;
+  const unitId = session.unitId;
 
+  // Fetch providers for this unit
+  let allProviders = [];
+  try { allProviders = await Api.get("/service-providers", { silent: true }) || []; } catch (_) {}
+  const unitProviders = allProviders.filter((p) => p.unit_id === unitId);
+  const unitProviderIds = new Set(unitProviders.map((p) => p.service_provider_id));
+
+  // Fetch job assignments
+  let allAssignments = [];
+  try { allAssignments = await Api.get("/job-assignments", { silent: true }) || []; } catch (_) {}
+  const unitAssignments = allAssignments.filter((a) => unitProviderIds.has(a.service_provider_id));
+
+  // Fetch skills
+  let allSkills = [];
+  try { allSkills = await Api.get("/skills", { silent: true }) || []; } catch (_) {}
   const skillMap = {};
-  allSkills.forEach((s) => {
-    skillMap[s.skill_id] = s.skill_name;
-  });
+  allSkills.forEach((s) => { skillMap[s.skill_id] = s.skill_name; });
 
-  const unitProviders = allProviders.filter(
-    (p) => p.unit_id === session.unitId,
-  );
-  const unitProviderIds = new Set(
-    unitProviders.map((p) => p.service_provider_id),
-  );
-
-  const unitAssignments = allAssignments.filter((a) =>
-    unitProviderIds.has(a.service_provider_id),
-  );
-  const unitBookingIds = new Set(unitAssignments.map((a) => a.booking_id));
-
-  const allCustomers = AppStore.getTable("customers") || [];
-  BOOKINGS = allBookings
-    .filter((b) => unitBookingIds.has(b.booking_id))
-    .map((b) => {
-      const cust = allCustomers.find((c) => c.customer_id === b.customer_id);
-      return {
-        id: b.booking_id,
-        status: b.status,
-        customerName: cust ? cust.full_name : "Guest",
-        serviceName: b.service_name || "Home Service",
-        scheduledAt: b.scheduled_at,
-        price: b.price,
-      };
-    });
-
-  TRANSACTIONS = allTxns
-    .filter((t) => unitBookingIds.has(t.booking_id))
-    .map((t) => ({
-      id: t.transaction_id,
-      status: t.payment_status,
-      amount: Number(t.amount || 0),
-      date: t.verified_at || t.transaction_at || new Date().toISOString(),
-    }));
-
+  // Build providers list
   PROVIDERS = unitProviders.map((sp) => {
-    const firstSkillRel = allProviderSkills.find(
-      (ps) => ps.service_provider_id === sp.service_provider_id,
-    );
-    const specialty = firstSkillRel
-      ? skillMap[firstSkillRel.skill_id] || "General"
-      : "General";
     const providerAssignments = unitAssignments.filter(
       (a) => a.service_provider_id === sp.service_provider_id,
     );
@@ -135,9 +88,42 @@ function loadDashboardDataFromStore(session) {
       status: deriveProviderStatus(sp, providerAssignments),
       rating: typeof sp.rating === "number" ? sp.rating : 4.0,
       phone: String(sp.phone || "").replace(/^\+91/, ""),
-      specialty,
+      specialty: sp.specialty || "General",
     };
   });
+
+  // Fetch revenue ledger for this unit manager
+  let ledger = [];
+  try { ledger = await Api.get("/revenue-ledger/um/" + umId, { silent: true }) || []; } catch (_) {}
+
+  // Fetch transactions
+  let allTxns = [];
+  try { allTxns = await Api.get("/transactions", { silent: true }) || []; } catch (_) {}
+
+  const unitBookingIds = new Set(unitAssignments.map((a) => a.booking_id));
+  TRANSACTIONS = allTxns
+    .filter((t) => unitBookingIds.has(t.booking_id))
+    .map((t) => ({
+      id: t.transaction_id,
+      status: t.payment_status,
+      amount: Number(t.amount || 0),
+      date: t.verified_at || t.transaction_at || new Date().toISOString(),
+    }));
+
+  // Fetch bookings
+  let allBookings = [];
+  try { allBookings = await Api.get("/bookings", { silent: true }) || []; } catch (_) {}
+
+  BOOKINGS = allBookings
+    .filter((b) => unitBookingIds.has(b.booking_id))
+    .map((b) => ({
+      id: b.booking_id,
+      status: b.status,
+      customerName: b.customer_name || "Guest",
+      serviceName: b.service_name || "Home Service",
+      scheduledAt: b.scheduled_at,
+      price: b.price || b.total_price || 0,
+    }));
 
   if (TRANSACTIONS.length) {
     LATEST_TXN_DATE = new Date(
@@ -185,7 +171,6 @@ function setBar(id, pct) {
    ───────────────────────────────────────────── */
 
 function showToast(message, type = "success") {
-  // Remove existing toast if any
   document.getElementById("dashToast")?.remove();
 
   const colors = {
@@ -288,7 +273,7 @@ function closeModal() {
   backdropEl.style.display = "none";
   modalEl.style.transform = "translate(-50%,-50%) scale(.95)";
 }
-window.closeModal = closeModal; // expose for onclick in innerHTML
+window.closeModal = closeModal;
 
 /* ─────────────────────────────────────────────
    6. COMPUTE STATS
@@ -323,9 +308,9 @@ function renderStatCards(mode30 = false) {
     ? Math.min(3, activeBookings.length)
     : activeBookings.length;
 
-  const avgRating = (
-    PROVIDERS.reduce((s, p) => s + p.rating, 0) / PROVIDERS.length
-  ).toFixed(1);
+  const avgRating = PROVIDERS.length
+    ? (PROVIDERS.reduce((s, p) => s + p.rating, 0) / PROVIDERS.length).toFixed(1)
+    : "0.0";
 
   setHTML("statBookings", bookingCount.toLocaleString("en-IN"));
   setText("statBookingsBadge", `\u2191 ${count} paid`);
@@ -346,7 +331,7 @@ function renderStatCards(mode30 = false) {
    ───────────────────────────────────────────── */
 
 function renderCapacity() {
-  const total = PROVIDERS.length;
+  const total = PROVIDERS.length || 1;
   const counts = {
     active: PROVIDERS.filter((p) => p.status === "Active").length,
     onJob: PROVIDERS.filter((p) => p.status === "On-Job").length,
@@ -412,7 +397,7 @@ const BTN30_SVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" st
   <line x1="3"  y1="10" x2="21" y2="10"/>
 </svg>`;
 
-document.getElementById("btn30Days").addEventListener("click", function () {
+document.getElementById("btn30Days")?.addEventListener("click", function () {
   is30DayMode = !is30DayMode;
 
   if (is30DayMode) {
@@ -420,10 +405,7 @@ document.getElementById("btn30Days").addEventListener("click", function () {
     this.style.outline = "2px solid currentColor";
     renderStatCards(true);
     renderBarChart(CHART_DATA_30);
-    showToast(
-      "Showing data for the last 30 days (Mar 15 \u2013 Apr 14, 2026)",
-      "info",
-    );
+    showToast("Showing data for the last 30 days", "info");
   } else {
     this.innerHTML = BTN30_SVG + " Last 30 Days";
     this.style.outline = "";
@@ -435,44 +417,29 @@ document.getElementById("btn30Days").addEventListener("click", function () {
 
 /* ─────────────────────────────────────────────
    11. BUTTON: "Download Report"
-       Generates and downloads a CSV summary
    ───────────────────────────────────────────── */
 
-document.getElementById("btnDownload").addEventListener("click", function () {
+document.getElementById("btnDownload")?.addEventListener("click", function () {
   const { totalRevenue, fees, net } = getStatsFull();
-  const avgRating = (
-    PROVIDERS.reduce((s, p) => s + p.rating, 0) / PROVIDERS.length
-  ).toFixed(1);
+  const avgRating = PROVIDERS.length
+    ? (PROVIDERS.reduce((s, p) => s + p.rating, 0) / PROVIDERS.length).toFixed(1)
+    : "0.0";
 
   const rows = [
-    ["Dashboard Report", "Unit Manager \u2013 Unit 402"],
+    ["Dashboard Report", "Unit Manager Dashboard"],
     ["Generated At", new Date().toLocaleString("en-IN")],
     [],
     ["=== SUMMARY STATS ==="],
-    [
-      "Total Bookings (active)",
-      BOOKINGS.filter((b) => b.status !== "CANCELLED").length,
-    ],
+    ["Total Bookings (active)", BOOKINGS.filter((b) => b.status !== "CANCELLED").length],
     ["Total Revenue (gross)", totalRevenue.toFixed(2)],
     ["Platform Fees (7%)", fees.toFixed(2)],
     ["Net Earnings", net.toFixed(2)],
     ["Avg Provider Rating", avgRating + " / 5.0"],
     ["Total Providers", PROVIDERS.length],
     [],
-    ["=== PROVIDER CAPACITY ==="],
-    ["Status", "Count", "Percentage"],
-    ...["Active", "On-Job", "Idle", "Unavailable"].map((s) => {
-      const c = PROVIDERS.filter((p) => p.status === s).length;
-      return [s, c, Math.round((c / PROVIDERS.length) * 100) + "%"];
-    }),
-    [],
     ["=== PROVIDER LIST ==="],
     ["ID", "Name", "Specialty", "Status", "Rating"],
     ...PROVIDERS.map((p) => [p.id, p.name, p.specialty, p.status, p.rating]),
-    [],
-    ["=== TRANSACTIONS ==="],
-    ["ID", "Date", "Amount", "Status"],
-    ...TRANSACTIONS.map((t) => [t.id, t.date, t.amount.toFixed(2), t.status]),
   ];
 
   const csv = rows
@@ -488,127 +455,91 @@ document.getElementById("btnDownload").addEventListener("click", function () {
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
 
-  showToast(
-    "Report downloaded as CSV \u2014 open in Excel or Google Sheets",
-    "success",
-  );
+  showToast("Report downloaded as CSV", "success");
 });
 
 /* ─────────────────────────────────────────────
    13. BUTTON: "Reassign Job"
    ───────────────────────────────────────────── */
 
-document
-  .getElementById("btnReassignJob")
-  .addEventListener("click", function () {
-    const available = PROVIDERS.filter(
-      (p) => p.status === "Active" || p.status === "Idle",
-    );
-    const options = available
-      .map(
-        (p) =>
-          `<option value="${p.id}">${p.name} \u2014 ${p.specialty} (\u2605 ${p.rating})</option>`,
-      )
-      .join("");
+document.getElementById("btnReassignJob")?.addEventListener("click", function () {
+  const available = PROVIDERS.filter(
+    (p) => p.status === "Active" || p.status === "Idle",
+  );
+  const options = available
+    .map(
+      (p) =>
+        `<option value="${p.id}">${p.name} \u2014 ${p.specialty} (\u2605 ${p.rating})</option>`,
+    )
+    .join("");
 
-    openModal(
-      "\uD83D\uDD04 Reassign Job #B-9921",
-      `<p style="margin-bottom:14px">Provider #1042 is a no-show. Select an available provider to reassign:</p>
+  openModal(
+    "\uD83D\uDD04 Reassign Job",
+    `<p style="margin-bottom:14px">Select an available provider to reassign:</p>
      <select id="reassignSelect" style="width:100%;padding:10px;border-radius:8px;
       border:1px solid var(--border,#334155);background:var(--surface2,#0f172a);
       color:var(--text-primary,#f1f5f9);font-size:.9rem;cursor:pointer">
        ${options}
      </select>`,
-      `<button onclick="closeModal()" style="padding:8px 16px;border-radius:8px;border:1px solid var(--border,#334155);
+    `<button onclick="closeModal()" style="padding:8px 16px;border-radius:8px;border:1px solid var(--border,#334155);
       background:none;color:var(--text-secondary,#94a3b8);cursor:pointer">Cancel</button>
      <button onclick="confirmReassign()" style="padding:8px 16px;border-radius:8px;border:none;
       background:#dc2626;color:#fff;cursor:pointer;font-weight:500">Reassign</button>`,
-    );
-  });
+  );
+});
 
 window.confirmReassign = function () {
   const sel = document.getElementById("reassignSelect");
-  const name = sel
-    ? sel.options[sel.selectedIndex].text.split(" \u2014")[0]
-    : "Provider";
+  const name = sel ? sel.options[sel.selectedIndex].text.split(" \u2014")[0] : "Provider";
   closeModal();
-  // Mark alert as resolved
   const alert = document.getElementById("alertNoShow");
   if (alert) {
     alert.style.opacity = "0.4";
     alert.style.pointerEvents = "none";
     alert.querySelector("strong").textContent = "No-Show Resolved";
   }
-  showToast(`Job #B-9921 reassigned to ${name} \u2713`, "success");
+  showToast(`Job reassigned to ${name} \u2713`, "success");
 };
 
 /* ─────────────────────────────────────────────
    14. BUTTON: "Call Provider"
    ───────────────────────────────────────────── */
 
-document
-  .getElementById("btnCallProvider")
-  .addEventListener("click", function () {
-    openModal(
-      "\uD83D\uDCDE Call Provider #1042",
-      `<div style="text-align:center;padding:12px 0">
+document.getElementById("btnCallProvider")?.addEventListener("click", function () {
+  const firstProvider = PROVIDERS[0];
+  const name = firstProvider ? firstProvider.name : "Provider";
+  const phone = firstProvider ? firstProvider.phone : "N/A";
+  openModal(
+    "\uD83D\uDCDE Contact Provider",
+    `<div style="text-align:center;padding:12px 0">
        <div style="font-size:2rem;margin-bottom:8px">\uD83D\uDC64</div>
        <div style="font-size:1rem;font-weight:600;
-         color:var(--text-primary,#f1f5f9);margin-bottom:4px">Arun Kumar</div>
+         color:var(--text-primary,#f1f5f9);margin-bottom:4px">${name}</div>
        <div style="color:var(--text-secondary,#94a3b8);font-size:.85rem;
-         margin-bottom:16px">SP-1042 \u00b7 Plumbing Specialist</div>
-       <a href="tel:+919880011042" style="display:inline-block;padding:10px 24px;
-         border-radius:8px;background:#16a34a;color:#fff;text-decoration:none;
-         font-weight:600;font-size:.9rem">\uD83D\uDCDE Call Now: +91 98800 11042</a>
-     </div>
-     <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border,#334155);
-       font-size:.82rem">
-       <strong style="color:var(--text-primary,#f1f5f9)">Note:</strong>
-       Provider has not responded to 2 prior alerts. If unreachable, use
-       <em>Reassign Job</em> to assign a nearby available provider.
+         margin-bottom:16px">Phone: ${phone}</div>
      </div>`,
-    );
-  });
+  );
+});
 
 /* ─────────────────────────────────────────────
    15. BUTTON: "Investigate"
    ───────────────────────────────────────────── */
 
-document
-  .getElementById("btnInvestigate")
-  .addEventListener("click", function () {
-    openModal(
-      "\u26A0\uFE0F Rating Incident — Provider #2281",
-      `<table style="width:100%;border-collapse:collapse;font-size:.85rem">
-      ${[
-        ["Provider", "Sanjay Menon (SP-2281)"],
-        ["Booking", "BKG-8834 \u2014 Deep Cleaning"],
-        ["Customer", "Kavitha S. (CUS-0044)"],
-        ["Rating Given", "1.0 \u2605 (1 hour ago)"],
-        ["Previous Avg", "4.2 \u2605 over 38 jobs"],
-        ["Status", "Under Review"],
-      ]
-        .map(
-          ([k, v]) => `
-        <tr style="border-bottom:1px solid var(--border,#334155)">
-          <td style="padding:9px 0;color:var(--text-secondary,#94a3b8);width:45%">${k}</td>
-          <td style="padding:9px 0;color:var(--text-primary,#f1f5f9);font-weight:500">${v}</td>
-        </tr>`,
-        )
-        .join("")}
-    </table>
-    <div style="margin-top:16px;padding:12px;border-radius:8px;background:rgba(220,38,38,.1);
+document.getElementById("btnInvestigate")?.addEventListener("click", function () {
+  openModal(
+    "\u26A0\uFE0F Rating Incident",
+    `<div style="margin-top:16px;padding:12px;border-radius:8px;background:rgba(220,38,38,.1);
       border:1px solid rgba(220,38,38,.3);font-size:.82rem;color:#fca5a5">
       <strong>Recommended Action:</strong> Contact the customer directly, review job photos,
       and suspend provider pending outcome if pattern repeats.
     </div>`,
-      `<button onclick="closeModal()" style="padding:8px 16px;border-radius:8px;
+    `<button onclick="closeModal()" style="padding:8px 16px;border-radius:8px;
       border:1px solid var(--border,#334155);background:none;
       color:var(--text-secondary,#94a3b8);cursor:pointer">Close</button>
      <button onclick="escalate()" style="padding:8px 16px;border-radius:8px;border:none;
       background:#d97706;color:#fff;cursor:pointer;font-weight:500">Escalate to Manager</button>`,
-    );
-  });
+  );
+});
 
 window.escalate = function () {
   closeModal();
@@ -622,15 +553,8 @@ window.escalate = function () {
 function showBookingsModal() {
   const tableRows = BOOKINGS.map((b) => {
     const d = new Date(b.scheduledAt);
-    const dateStr = d.toLocaleDateString("en-IN", {
-      day: "numeric",
-      month: "short",
-      year: "numeric",
-    });
-    const timeStr = d.toLocaleTimeString("en-IN", {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
+    const dateStr = d.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
+    const timeStr = d.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" });
 
     const statusBadgeCls = {
       PENDING: "background:#fef3c7;color:#92400e;",
@@ -654,8 +578,12 @@ function showBookingsModal() {
     `;
   }).join("");
 
-  const bodyHtml = `
-    <div style="overflow-x:auto;max-height:400px;margin-top:10px;">
+  buildModal();
+  modalEl.style.width = "min(640px, 95vw)";
+
+  openModal(
+    `📋 Customer Bookings (${BOOKINGS.length})`,
+    `<div style="overflow-x:auto;max-height:400px;margin-top:10px;">
       <table style="width:100%;border-collapse:collapse;text-align:left;">
         <thead>
           <tr style="border-bottom:2px solid var(--border,#334155)">
@@ -671,16 +599,7 @@ function showBookingsModal() {
           ${tableRows || '<tr><td colspan="6" style="padding:20px;text-align:center;color:var(--text-secondary,#94a3b8)">No bookings found</td></tr>'}
         </tbody>
       </table>
-    </div>
-  `;
-
-  // Briefly widen modal for the table
-  buildModal();
-  modalEl.style.width = "min(640px, 95vw)";
-  
-  openModal(
-    `📋 Customer Bookings (${BOOKINGS.length})`,
-    bodyHtml,
+    </div>`,
     `<button onclick="modalEl.style.width='min(420px, 90vw)';closeModal()" style="padding:8px 16px;border-radius:8px;border:1px solid var(--border,#334155);background:none;color:var(--text-secondary,#94a3b8);cursor:pointer">Close</button>`
   );
 }
@@ -689,11 +608,11 @@ function showBookingsModal() {
   17. INITIALISE
    ───────────────────────────────────────────── */
 
-AppStore.ready.then(() => {
+(async () => {
   const session = Auth.requireSession(["unit_manager"]);
   if (!session) return;
 
-  loadDashboardDataFromStore(session);
+  await loadDashboardData(session);
   renderStatCards(false);
   renderCapacity();
   renderBarChart(CHART_DATA_ALL);
@@ -703,4 +622,4 @@ AppStore.ready.then(() => {
   if (totalBookingsCard) {
     totalBookingsCard.addEventListener("click", showBookingsModal);
   }
-});
+})();

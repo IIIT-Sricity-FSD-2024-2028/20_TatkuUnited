@@ -1,4 +1,4 @@
-// ── Collective Manager – Manage Units JS ──
+// ── Collective Manager – Manage Units JS — API-backed ──
 
 let units = [];
 let currentSession = null;
@@ -21,7 +21,7 @@ function renderTable(data) {
 
   data.forEach(u => {
     const tr = document.createElement('tr');
-    tr.dataset.id = u.id; // Store ID for row click
+    tr.dataset.id = u.id;
     const ratingDisplay = u.rating ? u.rating.toFixed(1) : 'N/A';
     
     tr.innerHTML = `
@@ -47,21 +47,16 @@ function renderTable(data) {
       </td>
     `;
 
-    // Row click for Dashboard
     tr.addEventListener('click', (e) => {
-      if (e.target.closest('.tbl-actions')) return; // Ignore if clicking action buttons
+      if (e.target.closest('.tbl-actions')) return;
       openUnitDetails(u.id);
     });
 
     tbody.appendChild(tr);
   });
 
-  // Action button listeners
   document.querySelectorAll('.btn-view-det').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      openUnitDetails(btn.dataset.id);
-    });
+    btn.addEventListener('click', (e) => { e.stopPropagation(); openUnitDetails(btn.dataset.id); });
   });
 
   document.querySelectorAll('.btn-edit').forEach(btn => {
@@ -87,31 +82,27 @@ function applyFilters() {
 document.getElementById('unitSearch').addEventListener('input', applyFilters);
 document.getElementById('statusFilter').addEventListener('change', applyFilters);
 
+/* ── Cached API data for detail views ── */
+let _allProviders = [], _allManagers = [], _allAssignments = [];
+
 /* ── Unit Detailed Dashboard ── */
-function openUnitDetails(unitId) {
-  const allUnits = AppStore.getTable('units') || [];
-  const unit = allUnits.find(u => u.unit_id === unitId);
+async function openUnitDetails(unitId) {
+  const unit = units.find(u => u.id === unitId);
   if (!unit) return;
 
-  const allManagers = AppStore.getTable('unit_managers') || [];
-  const manager = allManagers.find(m => m.unit_id === unitId);
+  const manager = _allManagers.find(m => m.unit_id === unitId);
+  const unitProviders = _allProviders.filter(p => p.unit_id === unitId);
 
-  const allProviders = AppStore.getTable('service_providers') || [];
-  const unitProviders = allProviders.filter(p => p.unit_id === unitId);
-
-  // Populate Dashboard
-  document.getElementById('det-unit-name').textContent = unit.unit_name;
+  document.getElementById('det-unit-name').textContent = unit.name;
   document.getElementById('det-unit-cat').textContent = unit.category || 'Service Unit';
   document.getElementById('det-unit-rating').textContent = (unit.rating ? unit.rating.toFixed(1) : 'N/A') + ' ★';
   
-  // Stats
-  const completedJobs = AppStore.getTable('job_assignments').filter(ja => {
-     const p = allProviders.find(prov => prov.service_provider_id === ja.service_provider_id);
-     return p && p.unit_id === unitId && ja.status === 'COMPLETED';
+  const completedJobs = _allAssignments.filter(ja => {
+    const p = _allProviders.find(prov => prov.service_provider_id === ja.service_provider_id);
+    return p && p.unit_id === unitId && ja.status === 'COMPLETED';
   }).length;
   document.getElementById('det-unit-done').textContent = completedJobs;
 
-  // Manager Card
   const mgrName = document.getElementById('det-mgr-name');
   const mgrIcon = document.getElementById('det-mgr-icon');
   const mgrStatus = document.getElementById('det-mgr-status');
@@ -123,12 +114,7 @@ function openUnitDetails(unitId) {
     mgrStatus.textContent = manager.is_active ? 'Active' : 'Inactive';
     mgrStatus.style.color = manager.is_active ? '#16a34a' : '#dc2626';
     mgrContact.textContent = manager.email || 'No email';
-    
-    // Click manager to see their details (reusing existing view logic if needed, or just staying here)
-    document.getElementById('det-manager-card').onclick = () => {
-       // Optionally open a manager-specific modal or just show toast
-       showToast(`Viewing details for Manager: ${manager.name}`);
-    };
+    document.getElementById('det-manager-card').onclick = () => showToast(`Viewing details for Manager: ${manager.name}`);
   } else {
     mgrName.textContent = 'Unassigned';
     mgrIcon.textContent = '?';
@@ -136,7 +122,6 @@ function openUnitDetails(unitId) {
     mgrContact.textContent = '—';
   }
 
-  // Roster rendering
   const rosterBody = document.getElementById('det-roster-body');
   rosterBody.innerHTML = '';
   if (unitProviders.length === 0) {
@@ -150,9 +135,7 @@ function openUnitDetails(unitId) {
         <td><span class="rating"><span class="star">★</span>${r}</span></td>
         <td><span class="status-active" style="background:${p.is_active ? '#f0fdf4':'#fef2f2'}; color:${p.is_active ? '#16a34a':'#dc2626'};">${p.is_active ? 'Active' : 'Inactive'}</span></td>
       `;
-      tr.onclick = () => {
-         window.location.href = `provider_profile.html?id=${p.service_provider_id}`;
-      };
+      tr.onclick = () => { window.location.href = `provider_profile.html?id=${p.service_provider_id}`; };
       rosterBody.appendChild(tr);
     });
   }
@@ -160,14 +143,9 @@ function openUnitDetails(unitId) {
   document.getElementById('unitDetailOverlay').classList.add('open');
 }
 
-function closeUnitDetails() {
-  document.getElementById('unitDetailOverlay').classList.remove('open');
-}
-
+function closeUnitDetails() { document.getElementById('unitDetailOverlay').classList.remove('open'); }
 document.getElementById('det-modal-close').onclick = closeUnitDetails;
-document.getElementById('unitDetailOverlay').onclick = (e) => {
-  if (e.target === e.currentTarget) closeUnitDetails();
-};
+document.getElementById('unitDetailOverlay').onclick = (e) => { if (e.target === e.currentTarget) closeUnitDetails(); };
 
 /* ── Edit/Create Modal ── */
 let editingId = null;
@@ -206,26 +184,27 @@ function updateSummaryCards() {
 }
 
 /* ── Initialization ── */
-AppStore.ready.then(() => {
+(async () => {
   const session = Auth.requireSession(['collective_manager']);
   if (!session) return;
   currentSession = session;
 
-  const allUnits = AppStore.getTable('units').filter(u => u.collective_id === session.collectiveId);
-  const allProviders = AppStore.getTable('service_providers') || [];
-  const allManagers = AppStore.getTable('unit_managers') || [];
-  const allAssignments = AppStore.getTable('job_assignments') || [];
+  let allUnits = [];
+  try { allUnits = await Api.get("/units", { silent: true }) || []; } catch (_) {}
+  allUnits = allUnits.filter(u => u.collective_id === session.collectiveId);
 
-  const managerMap = Object.fromEntries(allManagers.map(m => [m.unit_id, m.name]));
+  try { _allProviders = await Api.get("/service-providers", { silent: true }) || []; } catch (_) {}
+  try { _allManagers = await Api.get("/unit-managers", { silent: true }) || []; } catch (_) {}
+  try { _allAssignments = await Api.get("/job-assignments", { silent: true }) || []; } catch (_) {}
+
+  const managerMap = Object.fromEntries(_allManagers.map(m => [m.unit_id, m.name]));
   const providersByUnit = {};
-  allProviders.forEach(p => {
-    providersByUnit[p.unit_id] = (providersByUnit[p.unit_id] || 0) + 1;
-  });
+  _allProviders.forEach(p => { providersByUnit[p.unit_id] = (providersByUnit[p.unit_id] || 0) + 1; });
 
   const completedMap = {};
   const activeMap = {};
-  allAssignments.forEach(ja => {
-    const p = allProviders.find(prov => prov.service_provider_id === ja.service_provider_id);
+  _allAssignments.forEach(ja => {
+    const p = _allProviders.find(prov => prov.service_provider_id === ja.service_provider_id);
     if (!p) return;
     if (ja.status === 'COMPLETED') completedMap[p.unit_id] = (completedMap[p.unit_id] || 0) + 1;
     else activeMap[p.unit_id] = (activeMap[p.unit_id] || 0) + 1;
@@ -248,4 +227,4 @@ AppStore.ready.then(() => {
 
   updateSummaryCards();
   renderTable(units);
-});
+})();

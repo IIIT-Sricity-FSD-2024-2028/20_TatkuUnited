@@ -1,66 +1,45 @@
-/* dashboard.js */
-// Depends on: store.js → auth.js (loaded before this script)
+/* super_user_dashboard.js — API-backed */
 
-AppStore.ready.then(() => {
+(async () => {
   /* ── 1. Auth gate ── */
   const session = Auth.requireSession(["super_user"]);
   if (!session) return;
 
-  /* ── 2. Pull tables ── */
-  const allEvents = AppStore.getTable("super_user_platform_events") || [];
-  const allActions = AppStore.getTable("super_user_actions") || [];
-  const allCustomers = AppStore.getTable("customers") || [];
-  const allProviders = AppStore.getTable("service_providers") || [];
-  const allCMs = AppStore.getTable("collective_managers") || [];
-  const allUMs = AppStore.getTable("unit_managers") || [];
-  const allSUs = AppStore.getTable("super_users") || [];
-  const allAssignments = AppStore.getTable("job_assignments") || [];
-  const allTransactions = AppStore.getTable("transactions") || [];
-  const allBookings = AppStore.getTable("bookings") || [];
-  const allUnits = AppStore.getTable("units") || [];
-  const allCollectives = AppStore.getTable("collectives") || [];
-  const allServices = AppStore.getTable("services") || [];
-  const allCategories = AppStore.getTable("categories") || [];
-  const allLedger = AppStore.getTable("revenue_ledger") || [];
+  /* ── 2. Pull from API ── */
+  let allCustomers = [];
+  let allProviders = [];
+  let allCMs = [];
+  let allUMs = [];
+  let allAssignments = [];
+  let allTransactions = [];
+  let allServices = [];
+  let allCategories = [];
+  let allLedger = [];
+  let allEvents = [];
+  let allActions = [];
 
-  function updateNotificationBadges() {
-    const unread = (AppStore.getTable("super_user_notifications") || []).filter(
-      (n) => !n.is_read,
-    ).length;
-    document.querySelectorAll(".notif-badge").forEach((badge) => {
-      if (unread > 0) {
-        badge.textContent = String(unread);
-        badge.style.display = "flex";
-      } else {
-        badge.textContent = "";
-        badge.style.display = "none";
-      }
-    });
-  }
+  try { allCustomers = await Api.get("/customers", { silent: true }) || []; } catch (_) {}
+  try { allProviders = await Api.get("/service-providers", { silent: true }) || []; } catch (_) {}
+  try { allCMs = await Api.get("/collective-managers", { silent: true }) || []; } catch (_) {}
+  try { allUMs = await Api.get("/unit-managers", { silent: true }) || []; } catch (_) {}
+  try { allAssignments = await Api.get("/job-assignments", { silent: true }) || []; } catch (_) {}
+  try { allTransactions = await Api.get("/transactions", { silent: true }) || []; } catch (_) {}
+  try { allServices = await Api.get("/services", { silent: true }) || []; } catch (_) {}
+  try { allCategories = await Api.get("/categories", { silent: true }) || []; } catch (_) {}
+  try { allLedger = await Api.get("/revenue-ledger", { silent: true }) || []; } catch (_) {}
 
-  /* ── 3. Transform platform events ── */
+  /* ── 3. Transform platform events (static for now) ── */
   function transformEvents(events) {
     return events
-      .filter(
-        (e) =>
-          e.title !== "Provider verification pending from Unit 24 Logistics",
-      )
       .slice(0, 4)
       .map((e) => ({
-        time: new Date(e.timestamp).toLocaleTimeString("en-IN", {
+        time: new Date(e.timestamp || e.created_at || Date.now()).toLocaleTimeString("en-IN", {
           hour: "2-digit",
           minute: "2-digit",
         }),
-        type:
-          e.event_type === "security"
-            ? "security"
-            : e.event_type === "system"
-              ? "system"
-              : e.event_type === "user"
-                ? "user"
-                : "action",
-        typeLabel: e.event_type.toUpperCase(),
-        desc: e.title,
+        type: e.event_type === "security" ? "security" : e.event_type === "system" ? "system" : e.event_type === "user" ? "user" : "action",
+        typeLabel: (e.event_type || "action").toUpperCase(),
+        desc: e.title || e.description || "",
       }));
   }
 
@@ -103,18 +82,12 @@ AppStore.ready.then(() => {
 
   /* ── 6. Render ── */
   function renderKPIs() {
-    const activeCustomers = allCustomers.filter(
-      (c) => c.is_active !== false,
-    ).length;
-    const activeProviders = allProviders.filter(
-      (p) => p.is_active || p.account_status === "active",
-    ).length;
+    const activeCustomers = allCustomers.filter((c) => c.is_active !== false).length;
+    const activeProviders = allProviders.filter((p) => p.is_active || p.account_status === "active").length;
     const activeCMs = allCMs.filter((m) => m.is_active).length;
     const activeUMs = allUMs.filter((m) => m.is_active).length;
-    const activeSUs = allSUs.filter((u) => u.is_active).length;
 
-    const activeUsers =
-      activeCustomers + activeProviders + activeCMs + activeUMs + activeSUs;
+    const activeUsers = activeCustomers + activeProviders + activeCMs + activeUMs + 1; // +1 for current SU
 
     const failedAssignments = allAssignments.filter(
       (a) => a.status === "CANCELLED" || a.status === "FAILED",
@@ -150,24 +123,18 @@ AppStore.ready.then(() => {
 
     let totalGMV = 0;
     allTransactions.forEach((tx) => {
-      if (
-        tx.payment_status === "SUCCESS" ||
-        tx.payment_status === "COMPLETED"
-      ) {
+      if (tx.payment_status === "SUCCESS" || tx.payment_status === "COMPLETED") {
         totalGMV += Number(tx.amount || 0) - Number(tx.refund_amount || 0);
       }
     });
 
     const totalDistributed = roleOrder.reduce(
-      (sum, roleMeta) => sum + revenueByRole[roleMeta.role].amount,
-      0,
+      (sum, roleMeta) => sum + revenueByRole[roleMeta.role].amount, 0,
     );
 
-    const distributionRate =
-      totalGMV > 0 ? Math.min((totalDistributed / totalGMV) * 100, 100) : 0;
+    const distributionRate = totalGMV > 0 ? Math.min((totalDistributed / totalGMV) * 100, 100) : 0;
 
-    const formatInr = (value) =>
-      `₹${Math.round(value).toLocaleString("en-IN")}`;
+    const formatInr = (value) => `₹${Math.round(value).toLocaleString("en-IN")}`;
 
     const revEl = document.getElementById("totalRevenueValue");
     if (revEl) revEl.textContent = formatInr(totalGMV);
@@ -184,8 +151,7 @@ AppStore.ready.then(() => {
     const barsEl = document.getElementById("revenue-breakdown-bars");
     if (barsEl) {
       const peakAmount = Math.max(
-        ...roleOrder.map((roleMeta) => revenueByRole[roleMeta.role].amount),
-        0,
+        ...roleOrder.map((roleMeta) => revenueByRole[roleMeta.role].amount), 0,
       );
 
       barsEl.innerHTML = roleOrder
@@ -221,14 +187,12 @@ AppStore.ready.then(() => {
         })
         .join("");
 
-      tbody.innerHTML =
-        rows +
-        `
-          <tr class="revenue-total-row">
-            <td><strong>Total GMV</strong></td>
-            <td class="revenue-table-amount revenue-amount">${formatInr(totalGMV)}</td>
-          </tr>
-        `;
+      tbody.innerHTML = rows + `
+        <tr class="revenue-total-row">
+          <td><strong>Total GMV</strong></td>
+          <td class="revenue-table-amount revenue-amount">${formatInr(totalGMV)}</td>
+        </tr>
+      `;
     }
   }
 
@@ -288,8 +252,7 @@ AppStore.ready.then(() => {
           typeof svc.average_rating === "number" && (svc.rating_count || 0) > 0
             ? svc.average_rating
             : null;
-        const ratingText =
-          typeof rating === "number" ? rating.toFixed(1) : "N/A";
+        const ratingText = typeof rating === "number" ? rating.toFixed(1) : "N/A";
         return `
           <div class="top-item">
             <div class="top-item-info">
@@ -318,13 +281,12 @@ AppStore.ready.then(() => {
           typeof cat.average_rating === "number" && (cat.rating_count || 0) > 0
             ? cat.average_rating
             : null;
-        const ratingText =
-          typeof rating === "number" ? rating.toFixed(1) : "N/A";
+        const ratingText = typeof rating === "number" ? rating.toFixed(1) : "N/A";
         return `
           <div class="top-item">
             <div class="top-item-info">
               <div class="top-item-name">${cat.category_name}</div>
-              <div class="top-item-meta">${cat.icon} ${cat.description}</div>
+              <div class="top-item-meta">${cat.icon || ""} ${cat.description || ""}</div>
             </div>
             <div class="top-item-rating">
               <div class="rating-value">${ratingText}${typeof rating === "number" ? " ⭐" : ""}</div>
@@ -336,18 +298,7 @@ AppStore.ready.then(() => {
     }
   }
 
-  /* ── 7. Initialize on DOM ready ── */
-  function initDashboard() {
-    updateNotificationBadges();
-    renderKPIs();
-    renderRevenue();
-    renderEvents();
-    renderSuperUserActions();
-    renderTopServices();
-    renderTopCategories();
-    setupDownloadLog();
-  }
-
+  /* ── 7. Initialize ── */
   function setupDownloadLog() {
     const btn = document.querySelector(".download-log-btn");
     if (btn) {
@@ -369,9 +320,11 @@ AppStore.ready.then(() => {
     }
   }
 
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", initDashboard);
-  } else {
-    initDashboard();
-  }
-});
+  renderKPIs();
+  renderRevenue();
+  renderEvents();
+  renderSuperUserActions();
+  renderTopServices();
+  renderTopCategories();
+  setupDownloadLog();
+})();

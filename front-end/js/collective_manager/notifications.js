@@ -1,6 +1,6 @@
-// ── Collective Manager Notifications JS ──
+// ── Collective Manager Notifications JS — API-backed ──
 
-AppStore.ready.then(() => {
+(async () => {
   const session = Auth.requireSession(["collective_manager"]);
   if (!session) return;
 
@@ -41,13 +41,17 @@ AppStore.ready.then(() => {
     return "Just now";
   }
 
-  // 1. Unassigned Providers (Needing Admission)
-  const allProviders = AppStore.getTable("service_providers") || [];
-  const allBookings = AppStore.getTable("bookings") || [];
-  const allTransactions = AppStore.getTable("transactions") || [];
+  // Fetch data from API
+  let allProviders = [], allBookings = [], allTransactions = [], allCollectives = [], allUnits = [], allJobAssignments = [];
+  try { allProviders = await Api.get("/service-providers", { silent: true }) || []; } catch (_) {}
+  try { allBookings = await Api.get("/bookings", { silent: true }) || []; } catch (_) {}
+  try { allTransactions = await Api.get("/transactions", { silent: true }) || []; } catch (_) {}
+  try { allCollectives = await Api.get("/collectives", { silent: true }) || []; } catch (_) {}
+  try { allUnits = await Api.get("/units", { silent: true }) || []; } catch (_) {}
+  try { allJobAssignments = await Api.get("/job-assignments", { silent: true }) || []; } catch (_) {}
 
   // Mapping collective -> sector_ids
-  const myCollective = (AppStore.getTable("collectives") || []).find(
+  const myCollective = allCollectives.find(
     (c) => c.collective_id === collectiveId,
   );
   const mySectors = myCollective ? myCollective.sector_ids : [];
@@ -74,15 +78,12 @@ AppStore.ready.then(() => {
   }
 
   // 2. High rated providers under this CM
-  const allUnits = AppStore.getTable("units") || [];
   const myUnits = allUnits.filter((u) => u.collective_id === collectiveId);
   const myUnitIds = new Set(myUnits.map((u) => u.unit_id));
   const myProviders = allProviders.filter((p) => myUnitIds.has(p.unit_id));
   const myProviderIds = new Set(myProviders.map((p) => p.service_provider_id));
   const myBookings = allBookings.filter((b) => {
-    const bookingAssignments = (
-      AppStore.getTable("job_assignments") || []
-    ).filter((a) => a.booking_id === b.booking_id);
+    const bookingAssignments = allJobAssignments.filter((a) => a.booking_id === b.booking_id);
     return bookingAssignments.some((a) =>
       myProviderIds.has(a.service_provider_id),
     );
@@ -422,4 +423,4 @@ AppStore.ready.then(() => {
   // Initial renders
   renderTabs();
   renderNotifications();
-});
+})();

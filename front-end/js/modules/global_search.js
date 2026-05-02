@@ -1,7 +1,16 @@
-/* ── Global Search JS ── */
+/* ── Global Search JS — API-backed ── */
 // Hooks into the topbar search input to provide site-wide quick navigation.
 
 (function() {
+  let _providers = null, _units = null, _managers = null;
+
+  async function loadSearchData() {
+    if (_providers !== null) return; // already loaded
+    try { _providers = await Api.get('/service-providers', { silent: true }) || []; } catch(_) { _providers = []; }
+    try { _units = await Api.get('/units', { silent: true }) || []; } catch(_) { _units = []; }
+    try { _managers = await Api.get('/unit-managers', { silent: true }) || []; } catch(_) { _managers = []; }
+  }
+
   function initGlobalSearch() {
     const searchWrap = document.querySelector('.topbar .search-wrap');
     if (!searchWrap) return;
@@ -19,17 +28,21 @@
       if (!searchWrap.contains(e.target)) dropdown.classList.remove('open');
     });
 
-    searchInput.addEventListener('input', (e) => {
+    searchInput.addEventListener('input', async (e) => {
       const q = e.target.value.trim().toLowerCase();
       if (q.length < 2) {
         dropdown.classList.remove('open');
         return;
       }
+      await loadSearchData();
       renderResults(q, dropdown);
     });
 
-    searchInput.addEventListener('focus', (e) => {
-      if (e.target.value.trim().length >= 2) dropdown.classList.add('open');
+    searchInput.addEventListener('focus', async (e) => {
+      if (e.target.value.trim().length >= 2) {
+        await loadSearchData();
+        dropdown.classList.add('open');
+      }
     });
   }
 
@@ -37,10 +50,9 @@
     dropdown.innerHTML = '';
     dropdown.classList.add('open');
 
-    // Fetch data from AppStore
-    const allProviders = AppStore.getTable('service_providers') || [];
-    const allUnits     = AppStore.getTable('units') || [];
-    const allManagers  = AppStore.getTable('unit_managers') || [];
+    const allProviders = _providers || [];
+    const allUnits     = _units || [];
+    const allManagers  = _managers || [];
 
     // Filter
     const matchedProviders = allProviders.filter(p => 
@@ -112,10 +124,10 @@
     return a;
   }
 
-  // Start on AppStore ready
-  if (window.AppStore) {
-    AppStore.ready.then(initGlobalSearch);
-  } else {
+  // Start on DOM ready
+  if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initGlobalSearch);
+  } else {
+    initGlobalSearch();
   }
 })();

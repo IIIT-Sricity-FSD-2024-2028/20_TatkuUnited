@@ -1,54 +1,26 @@
-/* manage_skills.js */
-// Depends on: store.js → auth.js (loaded before this script)
+/* manage_skills.js — API-backed */
 
-AppStore.ready.then(() => {
+(async () => {
   /* ── 1. Auth gate ── */
   const session = Auth.requireSession(["super_user"]);
   if (!session) return;
 
-  /* ── 2. Pull tables ── */
-  const allSkills = AppStore.getTable("skills") || [];
-  const allProviderSkills = AppStore.getTable("provider_skills") || [];
-  const allServiceSkills = AppStore.getTable("service_skills") || [];
-
-  function updateNotificationBadges() {
-    const unread = (AppStore.getTable("super_user_notifications") || []).filter(
-      (n) => !n.is_read,
-    ).length;
-    document.querySelectorAll(".notif-badge").forEach((badge) => {
-      if (unread > 0) {
-        badge.textContent = String(unread);
-        badge.style.display = "flex";
-      } else {
-        badge.textContent = "";
-        badge.style.display = "none";
-      }
-    });
-  }
+  /* ── 2. Pull from API ── */
+  let allSkills = [];
+  try { allSkills = await Api.get("/skills") || []; } catch (_) {}
 
   /* ── 3. Transform and enrich skills ── */
   function transformSkills(skillsList) {
     return skillsList.map((sk, idx) => {
-      // Count providers with this skill
-      const providersWithSkill = allProviderSkills.filter(
-        (ps) => ps.skill_id === sk.skill_id,
-      ).length;
-
-      // Count unique services mapped to this skill from service_skills.
-      const servicesForSkill = new Set(
-        allServiceSkills
-          .filter((ss) => ss.skill_id === sk.skill_id)
-          .map((ss) => ss.service_id),
-      ).size;
-
-      // Determine status (derived from providers count)
+      const providersWithSkill = sk.provider_count || 0;
+      const servicesForSkill = sk.service_count || 0;
       const status = providersWithSkill > 0 ? "Active" : "Inactive";
 
       return {
         skillId: sk.skill_id,
         id: parseInt(sk.skill_id.replace("SKL", "")) || idx + 1,
         name: sk.skill_name,
-        desc: sk.description,
+        desc: sk.description || "",
         providers: providersWithSkill,
         services: servicesForSkill,
         status: status,
@@ -60,9 +32,15 @@ AppStore.ready.then(() => {
   const PAGE_SIZE = 8;
   let currentPage = 1;
   let filteredSkills = skills.slice();
-  function refreshSkillsFromStore() {
-    skills = transformSkills(AppStore.getTable("skills") || []);
-    filteredSkills = skills.slice();
+
+  async function refreshSkills() {
+    try {
+      allSkills = await Api.get("/skills") || [];
+      skills = transformSkills(allSkills);
+      filteredSkills = skills.slice();
+    } catch (err) {
+      console.error("[skills] Load failed:", err);
+    }
   }
 
   let editingId = null;
@@ -207,7 +185,6 @@ AppStore.ready.then(() => {
 
   function setupEventListeners() {
     const skillSearch = document.getElementById("skillSearch");
-
     if (skillSearch) skillSearch.addEventListener("input", applyFilters);
   }
 
@@ -281,34 +258,18 @@ AppStore.ready.then(() => {
       if (e.target === e.currentTarget) closeDeleteModal();
     });
   }
+
+  /* ── Delete Skill ── */
   if (deleteConfirmBtn) {
-    deleteConfirmBtn.addEventListener("click", () => {
-      const skillsTable = AppStore.getTable("skills") || [];
-      const providerSkillsTable = AppStore.getTable("provider_skills") || [];
-      const serviceSkillsTable = AppStore.getTable("service_skills") || [];
-      const storeSkill = skillsTable.find((s) => s.skill_id === deletingId);
+    deleteConfirmBtn.addEventListener("click", async () => {
+      if (!deletingId) return;
 
-      if (storeSkill) {
-        const skillIndex = skillsTable.findIndex(
-          (s) => s.skill_id === deletingId,
-        );
-        if (skillIndex !== -1) skillsTable.splice(skillIndex, 1);
-
-        for (let i = providerSkillsTable.length - 1; i >= 0; i -= 1) {
-          if (providerSkillsTable[i].skill_id === deletingId) {
-            providerSkillsTable.splice(i, 1);
-          }
-        }
-
-        for (let i = serviceSkillsTable.length - 1; i >= 0; i -= 1) {
-          if (serviceSkillsTable[i].skill_id === deletingId) {
-            serviceSkillsTable.splice(i, 1);
-          }
-        }
-
-        AppStore.save();
-        refreshSkillsFromStore();
-        showToast(`✓ "${storeSkill.skill_name}" permanently deleted`);
+      try {
+        await Api.del("/skills/" + deletingId);
+        await refreshSkills();
+        showToast("Skill deleted successfully");
+      } catch (err) {
+        console.error("[skills] Delete failed:", err);
       }
 
       closeDeleteModal();
@@ -316,67 +277,46 @@ AppStore.ready.then(() => {
     });
   }
 
+  /* ── Save Skill ── */
   if (btnSave) {
-    btnSave.addEventListener("click", () => {
+    btnSave.addEventListener("click", async () => {
       const name = document.getElementById("skillName")?.value.trim();
       const desc = document.getElementById("skillDesc")?.value.trim();
 
-      if (!name) {
-        showToast("⚠ Skill name is required");
-        return;
-      }
-      if (!desc) {
-        showToast("⚠ Description is required");
-        return;
-      }
+      if (!name) { showToast("⚠ Skill name is required"); return; }
+      if (!desc) { showToast("⚠ Description is required"); return; }
 
-      const skillsTable = AppStore.getTable("skills") || [];
-      const duplicateSkill = skillsTable.find(
-        (s) =>
-          s.skill_name.toLowerCase() === name.toLowerCase() &&
-          s.skill_id !== editingId,
+      // Duplicate check against cached list
+      const dup = skills.find(
+        (s) => s.name.toLowerCase() === name.toLowerCase() && s.skillId !== editingId,
       );
-      if (duplicateSkill) {
-        showToast("⚠ Skill name already exists");
-        return;
-      }
+      if (dup) { showToast("⚠ Skill name already exists"); return; }
 
-      if (editingId) {
-        const storeSkill = skillsTable.find((s) => s.skill_id === editingId);
-        if (storeSkill) {
-          storeSkill.skill_name = name;
-          storeSkill.description = desc;
-          AppStore.save();
-          refreshSkillsFromStore();
+      try {
+        if (editingId) {
+          await Api.patch("/skills/" + editingId, {
+            skill_name: name,
+            description: desc,
+          });
           showToast(`✓ "${name}" updated successfully`);
+        } else {
+          await Api.post("/skills", {
+            skill_name: name,
+            description: desc,
+          });
+          showToast(`✓ "${name}" added to skill catalog`);
         }
-      } else {
-        skillsTable.push({
-          skill_id: AppStore.nextId("SKL"),
-          skill_name: name,
-          description: desc,
-        });
-        AppStore.save();
-        refreshSkillsFromStore();
-        showToast(`✓ "${name}" added to skill catalog`);
+        await refreshSkills();
+      } catch (err) {
+        console.error("[skills] Save failed:", err);
       }
       closeModal();
       applyFilters();
     });
   }
 
-  /* ── Initialize on DOM ready ── */
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", () => {
-      updateNotificationBadges();
-      setupEventListeners();
-      renderTable(skills);
-      updateKPIs(skills);
-    });
-  } else {
-    updateNotificationBadges();
-    setupEventListeners();
-    renderTable(skills);
-    updateKPIs(skills);
-  }
-});
+  /* ── Initialize ── */
+  setupEventListeners();
+  renderTable(skills);
+  updateKPIs(skills);
+})();

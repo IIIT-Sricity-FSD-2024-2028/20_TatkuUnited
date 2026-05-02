@@ -56,13 +56,14 @@ function formatPaymentMethod(method) {
   return "Credit / Debit Card";
 }
 
-function getReceiptContext() {
+async function getReceiptContext() {
   const session = Auth.getSession();
   const customerId = session && session.role === "customer" ? session.id : null;
-  if (!customerId || !window.AppStore) return null;
+  if (!customerId) return null;
 
   const meta = getCheckoutMeta() || {};
-  const bookings = AppStore.getTable("bookings") || [];
+  let bookings = [];
+  try { bookings = await Api.get("/bookings/my", { silent: true }) || []; } catch (_) {}
   const sortedBookings = bookings
     .filter((booking) => booking.customer_id === customerId)
     .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
@@ -177,8 +178,8 @@ function onVerified() {
     bookingDetails.classList.add("visible");
   }, 400);
 
-  setTimeout(() => {
-    const receiptContext = getReceiptContext();
+  setTimeout(async () => {
+    const receiptContext = await getReceiptContext();
     if (receiptContext) {
       updateReceiptView(receiptContext);
     }
@@ -227,10 +228,10 @@ document.addEventListener("keydown", (e) => {
 /* ═══════════════════════════════════════════
    DOWNLOAD RECEIPT (simulated)
 ═══════════════════════════════════════════ */
-document.getElementById("downloadBtn").addEventListener("click", () => {
+document.getElementById("downloadBtn").addEventListener("click", async () => {
   const btn = document.getElementById("downloadBtn");
   const original = btn.innerHTML;
-  const receiptContext = getReceiptContext();
+  const receiptContext = await getReceiptContext();
 
   if (!receiptContext) {
     showSuccessToast("Unable to load receipt details right now.");
@@ -265,7 +266,7 @@ document.getElementById("downloadBtn").addEventListener("click", () => {
 });
 
 /* ── Auth guard ── */
-AppStore.ready.then(() => {
+(function() {
   const session = Auth.requireSession(["customer"]);
   if (!session) return;
-});
+})();

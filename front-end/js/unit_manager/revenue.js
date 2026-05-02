@@ -14,7 +14,7 @@
  */
 
 /* ─────────────────────────────────────────────
-  1. LIVE DATA (from shared AppStore)
+  1. LIVE DATA (from API)
   ───────────────────────────────────────────── */
 
 let ALL_TRANSACTIONS = [];
@@ -55,31 +55,27 @@ function mapMethod(m) {
   );
 }
 
-function loadRevenueDataFromStore(session) {
-  const allLedger = AppStore.getTable("revenue_ledger") || [];
-  const allTxns = AppStore.getTable("transactions") || [];
+async function loadRevenueData(session) {
+  const umId = session.id;
 
-  const unitId = session.unitId;
+  // Fetch revenue ledger entries for this unit manager
+  let unitLedgerEntries = [];
+  try { unitLedgerEntries = await Api.get("/revenue-ledger/um/" + umId, { silent: true }) || []; } catch (_) {}
 
-  // Filter ledger entries for this unit manager
-  const unitLedgerEntries = allLedger.filter(
-    (entry) => entry.role === "unit_manager" && entry.unit_id === unitId,
-  );
+  // Fetch transactions
+  let allTxns = [];
+  try { allTxns = await Api.get("/transactions", { silent: true }) || []; } catch (_) {}
 
-  // Build transaction map
   const txnById = new Map(allTxns.map((t) => [t.transaction_id, t]));
 
-  // Convert ledger entries to transaction view
   ALL_TRANSACTIONS = unitLedgerEntries.map((ledger_entry) => {
     const txn = txnById.get(ledger_entry.transaction_id);
-    const status = "SUCCESS"; // Ledger entries are only for successful transactions
-
     return {
       id: ledger_entry.transaction_id,
       method: txn ? mapMethod(txn.payment_method) : "Unknown",
-      status,
-      amount: Number(txn ? txn.amount || 0 : 0), // Gross amount
-      unitManagerCut: Number(ledger_entry.amount || 0), // 7% cut for unit manager
+      status: "SUCCESS",
+      amount: Number(txn ? txn.amount || 0 : 0),
+      unitManagerCut: Number(ledger_entry.amount || 0),
       refund: 0,
       date: ledger_entry.created_at,
       booking_id: txn ? txn.booking_id : "-",
@@ -95,13 +91,9 @@ function loadRevenueDataFromStore(session) {
 
   activeTxns = [...ALL_TRANSACTIONS];
 
-  // Calculate unit-level GMV
   unitGMVData = {
     totalGMV: ALL_TRANSACTIONS.reduce((sum, t) => sum + t.amount, 0),
-    unitManagerCut: ALL_TRANSACTIONS.reduce(
-      (sum, t) => sum + t.unitManagerCut,
-      0,
-    ),
+    unitManagerCut: ALL_TRANSACTIONS.reduce((sum, t) => sum + t.unitManagerCut, 0),
     transactionCount: ALL_TRANSACTIONS.length,
   };
 }
@@ -601,15 +593,15 @@ document.getElementById("btnExportPDF").addEventListener("click", function () {
    10. INITIAL RENDER
    ───────────────────────────────────────────── */
 
-AppStore.ready.then(() => {
+(async () => {
   const session = Auth.requireSession(["unit_manager"]);
   if (!session) return;
 
-  loadRevenueDataFromStore(session);
+  await loadRevenueData(session);
   renderStatCards();
   renderTransactions();
 
   /* Draw chart one tick later so CSS layout has applied
     and canvas.offsetWidth returns the real pixel width */
   setTimeout(drawChart, 0);
-});
+})();

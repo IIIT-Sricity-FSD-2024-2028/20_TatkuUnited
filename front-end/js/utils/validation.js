@@ -51,10 +51,7 @@ window.Validators = (() => {
     if (isNaN(selected)) return _fail("Invalid date/time format.");
 
     const now = new Date();
-    const rules =
-      window.AppStore && typeof AppStore.getBookingRules === "function"
-        ? AppStore.getBookingRules()
-        : {
+    const rules = {
             minNoticeMinutes: 60,
             maxAdvanceMinutes: 7 * 24 * 60,
             minNoticeLabel: "1 hour",

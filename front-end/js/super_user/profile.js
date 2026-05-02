@@ -1,63 +1,46 @@
-/* profile.js */
-// Depends on: store.js → auth.js (loaded before this script)
+/* profile.js — Super User Profile — API-backed */
 
-AppStore.ready.then(() => {
+(async () => {
   /* ── 1. Auth gate ── */
   const session = Auth.requireSession(["super_user"]);
   if (!session) return;
 
-  /* ── 2. Pull tables ── */
-  const allBookings = AppStore.getTable("bookings") || [];
-  const allTransactions = AppStore.getTable("transactions") || [];
-  const allSuperUsers = AppStore.getTable("super_users") || [];
   const currentUser = Auth.getCurrentUser();
 
-  function updateNotificationBadges() {
-    const unread = (AppStore.getTable("super_user_notifications") || []).filter(
-      (n) => !n.is_read,
-    ).length;
-    document.querySelectorAll(".notif-badge").forEach((badge) => {
-      if (unread > 0) {
-        badge.textContent = String(unread);
-        badge.style.display = "flex";
-      } else {
-        badge.textContent = "";
-        badge.style.display = "none";
-      }
-    });
-  }
+  /* ── 2. Fetch data from API ── */
+  let suRecord = null;
+  try { suRecord = await Api.get("/super-users/" + session.id, { silent: true }); } catch (_) {}
+
+  let collectivesCount = 0;
+  let unitsCount = 0;
+  try {
+    const collectives = await Api.get("/collectives", { silent: true }) || [];
+    collectivesCount = collectives.length;
+  } catch (_) {}
+  try {
+    const units = await Api.get("/units", { silent: true }) || [];
+    unitsCount = units.filter(u => u.is_active).length;
+  } catch (_) {}
+
+  let totalUsers = 0;
+  try {
+    const [customers, providers, ums, cms] = await Promise.all([
+      Api.get("/customers", { silent: true }).catch(() => []),
+      Api.get("/service-providers", { silent: true }).catch(() => []),
+      Api.get("/unit-managers", { silent: true }).catch(() => []),
+      Api.get("/collective-managers", { silent: true }).catch(() => []),
+    ]);
+    totalUsers = (customers || []).length + (providers || []).length +
+                 (ums || []).length + (cms || []).length + 1;
+  } catch (_) {}
 
   const permissions = [
-    {
-      name: "Full User Management",
-      desc: "Create, suspend, delete any account",
-      cls: "",
-    },
-    {
-      name: "Platform Configuration",
-      desc: "Modify all system settings",
-      cls: "",
-    },
-    {
-      name: "Financial Controls",
-      desc: "Access revenue, payout & billing data",
-      cls: "",
-    },
-    {
-      name: "Security Administration",
-      desc: "Manage roles, sessions & 2FA enforcement",
-      cls: "",
-    },
-    {
-      name: "Audit Log Access",
-      desc: "View complete system event history",
-      cls: "",
-    },
-    {
-      name: "Emergency Overrides",
-      desc: "Force-terminate jobs and escalate issues",
-      cls: "yellow",
-    },
+    { name: "Full User Management", desc: "Create, suspend, delete any account", cls: "" },
+    { name: "Platform Configuration", desc: "Modify all system settings", cls: "" },
+    { name: "Financial Controls", desc: "Access revenue, payout & billing data", cls: "" },
+    { name: "Security Administration", desc: "Manage roles, sessions & 2FA enforcement", cls: "" },
+    { name: "Audit Log Access", desc: "View complete system event history", cls: "" },
+    { name: "Emergency Overrides", desc: "Force-terminate jobs and escalate issues", cls: "yellow" },
   ];
 
   /* ── 5. Render functions ── */
@@ -97,36 +80,23 @@ AppStore.ready.then(() => {
     if (heroEmail) heroEmail.textContent = v || "super_user@tatku.com";
   }
 
-  function saveSection(section) {
+  async function saveSection(section) {
     if (section === "personal") {
-      const suTable = AppStore.getTable("super_users") || [];
-      const session = Auth.getSession();
-      const suRow = suTable.find(
-        (s) => s.super_user_id === (session && session.id),
-      );
-
       const name = (document.getElementById("full-name")?.value || "").trim();
       const rawPhone = (document.getElementById("phone")?.value || "").trim();
 
-      if (!name) {
-        showToast("Name cannot be empty.");
-        return;
-      }
-      if (rawPhone && !/^\d{10}$/.test(rawPhone)) {
-        showToast("Phone must be exactly 10 digits.");
-        return;
-      }
+      if (!name) { showToast("Name cannot be empty."); return; }
+      if (rawPhone && !/^\d{10}$/.test(rawPhone)) { showToast("Phone must be exactly 10 digits."); return; }
 
-      if (suRow) {
-        suRow.name = name;
-        suRow.phone = rawPhone;
-        suRow.updated_at = new Date().toISOString();
-        AppStore.save();
+      try {
+        await Api.patch("/super-users/" + session.id, { name, phone: rawPhone });
+        if (suRecord) { suRecord.name = name; suRecord.phone = rawPhone; }
+        syncName();
+        syncEmail();
+        showToast("Super User profile saved successfully ✓");
+      } catch (err) {
+        showToast("Failed to save profile.");
       }
-
-      syncName();
-      syncEmail();
-      showToast("Super User profile saved successfully ✓");
       return;
     }
     showToast("Changes saved!");
@@ -144,7 +114,6 @@ AppStore.ready.then(() => {
   function closePwdModalBtn() {
     const pwdModal = document.getElementById("pwd-modal");
     if (pwdModal) pwdModal.classList.remove("open");
-    // Clear fields
     const fields = ["pwd-current", "pwd-new", "pwd-confirm"];
     fields.forEach((id) => {
       const el = document.getElementById(id);
@@ -157,20 +126,9 @@ AppStore.ready.then(() => {
     const newPwd = document.getElementById("pwd-new")?.value;
     const confirmPwd = document.getElementById("pwd-confirm")?.value;
 
-    if (!currentPwd || !newPwd || !confirmPwd) {
-      showToast("Please fill in all password fields.");
-      return;
-    }
-
-    if (newPwd !== confirmPwd) {
-      showToast("New passwords do not match.");
-      return;
-    }
-
-    if (newPwd.length < 12) {
-      showToast("New password must be at least 12 characters.");
-      return;
-    }
+    if (!currentPwd || !newPwd || !confirmPwd) { showToast("Please fill in all password fields."); return; }
+    if (newPwd !== confirmPwd) { showToast("New passwords do not match."); return; }
+    if (newPwd.length < 12) { showToast("New password must be at least 12 characters."); return; }
 
     const res = Auth.changePassword(currentPwd, newPwd);
     if (res.success) {
@@ -198,29 +156,18 @@ AppStore.ready.then(() => {
   function updateAvatar(input) {
     if (!input.files || !input.files[0]) return;
     const file = input.files[0];
-    if (!file.type.startsWith("image/")) {
-      showToast("Please choose a valid image file.");
-      return;
-    }
-    if (file.size > 2 * 1024 * 1024) {
-      showToast("Profile photo must be under 2 MB.");
-      return;
-    }
+    if (!file.type.startsWith("image/")) { showToast("Please choose a valid image file."); return; }
+    if (file.size > 2 * 1024 * 1024) { showToast("Profile photo must be under 2 MB."); return; }
 
     const reader = new FileReader();
     reader.onload = (e) => {
       const imageData = e.target.result;
       const res = Auth.updateProfilePicture(imageData);
-      if (!res.success) {
-        showToast("Unable to update profile photo.");
-        return;
-      }
+      if (!res.success) { showToast("Unable to update profile photo."); return; }
 
       if (currentUser) currentUser.pfp_url = imageData;
-
       const av = document.getElementById("profile-avatar");
       if (av) av.innerHTML = `<img src="${imageData}" alt="Super User" />`;
-
       showToast("Profile photo updated ✓");
     };
     reader.readAsDataURL(file);
@@ -240,58 +187,45 @@ AppStore.ready.then(() => {
   /* ── Event Listeners ── */
   const fullNameInput = document.getElementById("full-name");
   const emailInput = document.getElementById("email");
-
   if (fullNameInput) fullNameInput.addEventListener("input", syncName);
   if (emailInput) emailInput.addEventListener("input", syncEmail);
 
-  /* ── Initialize on DOM ready ── */
-  function init() {
-    updateNotificationBadges();
-    if (currentUser) {
-      const nameEl = document.getElementById("full-name");
-      const emailEl = document.getElementById("email");
-      const phoneEl = document.getElementById("phone");
-      const codeSpan = document.getElementById("phone-code");
-      const idEl = document.getElementById("super-user-id");
+  /* ── Initialize ── */
+  // Notification badges — no-op until API endpoint exists
+  document.querySelectorAll(".notif-badge").forEach((badge) => {
+    badge.textContent = "";
+    badge.style.display = "none";
+  });
 
-      if (nameEl) nameEl.value = currentUser.name || "";
-      if (emailEl) emailEl.value = currentUser.email || "";
+  if (currentUser) {
+    const nameEl = document.getElementById("full-name");
+    const emailEl = document.getElementById("email");
+    const phoneEl = document.getElementById("phone");
+    const idEl = document.getElementById("super-user-id");
 
-      const rawPhone = currentUser.phone || "";
-      if (phoneEl)
-        phoneEl.value = String(rawPhone).replace(/\D/g, "").slice(-10);
+    if (nameEl) nameEl.value = currentUser.name || "";
+    if (emailEl) emailEl.value = currentUser.email || "";
 
-      if (idEl) idEl.value = currentUser.id || "";
+    const rawPhone = currentUser.phone || "";
+    if (phoneEl) phoneEl.value = String(rawPhone).replace(/\D/g, "").slice(-10);
+    if (idEl) idEl.value = currentUser.id || "";
 
-      const avatarEl = document.getElementById("profile-avatar");
-      if (avatarEl && currentUser.pfp_url) {
-        avatarEl.innerHTML = `<img src="${currentUser.pfp_url}" alt="Super User" style="border-radius:50%;width:100%;height:100%;object-fit:cover;" />`;
-      }
-      syncName();
-      syncEmail();
+    const avatarEl = document.getElementById("profile-avatar");
+    if (avatarEl && currentUser.pfp_url) {
+      avatarEl.innerHTML = `<img src="${currentUser.pfp_url}" alt="Super User" style="border-radius:50%;width:100%;height:100%;object-fit:cover;" />`;
     }
-
-    // Populate Hero Stats dynamically
-    const collectivesCount = (AppStore.getTable("collectives") || []).length;
-    const unitsCount = (AppStore.getTable("units") || []).filter(
-      (u) => u.is_active,
-    ).length;
-    const totalUsers = (window.AuthRegistry || []).length;
-
-    const collEl = document.getElementById("hero-collectives");
-    const unitsEl = document.getElementById("hero-units");
-    const usersEl = document.getElementById("hero-users");
-
-    if (collEl) collEl.textContent = collectivesCount;
-    if (unitsEl) unitsEl.textContent = unitsCount;
-    if (usersEl) usersEl.textContent = totalUsers;
-
-    renderPermissions();
+    syncName();
+    syncEmail();
   }
 
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", init);
-  } else {
-    init();
-  }
-});
+  // Populate Hero Stats from API data
+  const collEl = document.getElementById("hero-collectives");
+  const unitsEl = document.getElementById("hero-units");
+  const usersEl = document.getElementById("hero-users");
+
+  if (collEl) collEl.textContent = collectivesCount;
+  if (unitsEl) unitsEl.textContent = unitsCount;
+  if (usersEl) usersEl.textContent = totalUsers;
+
+  renderPermissions();
+})();

@@ -1,16 +1,13 @@
-// ── Work Hours (persisted via shared store) ──────────────────────────────────
+// ── Work Hours (persisted via API) ───────────────────────────────
 const DEFAULT_START = "08:00";
 const DEFAULT_END = "18:00";
+let _spId = null;
 
 function getWorkHours() {
-  const data = window.getData ? window.getData() : null;
-  if (data && data.workingHours) {
-    return {
-      start: data.workingHours.start || DEFAULT_START,
-      end: data.workingHours.end || DEFAULT_END,
-    };
-  }
-  return { start: DEFAULT_START, end: DEFAULT_END };
+  return {
+    start: document.getElementById("work-start")?.value || DEFAULT_START,
+    end: document.getElementById("work-end")?.value || DEFAULT_END,
+  };
 }
 
 function initWorkHours() {
@@ -60,86 +57,71 @@ function toMinutes(t) {
   return h * 60 + m;
 }
 
-function saveWorkHours() {
-  const startEl = document.getElementById("work-start");
-  const endEl = document.getElementById("work-end");
-  if (!startEl || !endEl) return;
-
-  const start = startEl.value;
-  const end = endEl.value;
-
+async function saveWorkHours() {
+  const { start, end } = getWorkHours();
   if (start >= end) {
     showToast("⚠ End time must be after start time.", true);
     return;
   }
 
-  if (window.getData) {
-    const data = window.getData();
-    if (data) {
-      if (!data.workingHours) data.workingHours = {};
-      data.workingHours.start = start;
-      data.workingHours.end = end;
-      window.setData(data);
+  if (_spId) {
+    try {
+      await Api.post("/provider-working-hours/" + _spId, {
+        hour_start: start,
+        hour_end: end,
+      });
+      showToast("Work hours saved!");
+    } catch (err) {
+      showToast("Failed to save work hours.", true);
     }
   }
-
   updateWorkHoursPreview();
-  showToast("Work hours saved!");
 }
 
-function saveSection(section) {
-  if (window.getData) {
-    const data = window.getData();
-    if (data && data.provider) {
-      if (section === "personal") {
-        const nameEl = document.getElementById("full-name");
-        const emailEl = document.getElementById("email");
-        const phoneEl = document.getElementById("phone");
-        const addrEl = document.getElementById("address");
+async function saveSection(section) {
+  if (!_spId) return;
 
-        if (nameEl) data.provider.name = nameEl.value;
-        if (emailEl) data.provider.email = emailEl.value;
-        if (phoneEl) {
-          data.provider.phone = (phoneEl.value || "").trim();
-        }
+  if (section === "personal") {
+    const nameEl = document.getElementById("full-name");
+    const emailEl = document.getElementById("email");
+    const phoneEl = document.getElementById("phone");
+    const addrEl = document.getElementById("address");
 
-        if (addrEl) data.provider.address = addrEl.value;
+    const payload = {};
+    if (nameEl) payload.name = nameEl.value;
+    if (emailEl) payload.email = emailEl.value;
+    if (phoneEl) payload.phone = (phoneEl.value || "").trim();
+    if (addrEl) payload.address = addrEl.value;
 
-        // Update topbar instantly
-        document
-          .querySelectorAll(".user-chip span")
-          .forEach((el) => (el.textContent = data.provider.name || "Provider"));
-      } else if (section === "professional") {
-        const skillsRows = document.querySelectorAll(".skill-row");
-        data.provider.skills = Array.from(skillsRows).map((row) =>
-          row.getAttribute("data-skill"),
-        );
-
-        // Serialize File objects generically for JSON mock-storage safety
-        data.provider.resumeFiles = uploadedFiles["resume-list"].map((f) => ({
-          name: f.name,
-          size: f.size,
-          type: f.type || "application/pdf",
-        }));
-        data.provider.certFiles = uploadedFiles["certs-list"].map((f) => ({
-          name: f.name,
-          size: f.size,
-          type: f.type || "application/pdf",
-        }));
-
-        const serviceCatEl = document.getElementById("service-cat");
-        const experienceEl = document.getElementById("experience");
-        if (serviceCatEl) data.provider.service_category = serviceCatEl.value;
-        if (experienceEl) data.provider.experience = experienceEl.value;
+    try {
+      await Api.patch("/service-providers/" + _spId, payload);
+      if (payload.name) {
+        document.querySelectorAll(".user-chip span").forEach((el) => (el.textContent = payload.name));
       }
+    } catch (err) {
+      console.error("[profile] Save failed:", err);
+      return;
+    }
+  } else if (section === "professional") {
+    const skillsRows = document.querySelectorAll(".skill-row");
+    const skills = Array.from(skillsRows).map((row) => row.getAttribute("data-skill"));
+    const serviceCatEl = document.getElementById("service-cat");
+    const experienceEl = document.getElementById("experience");
 
-      window.setData(data);
+    const payload = { skills };
+    if (serviceCatEl) payload.service_category = serviceCatEl.value;
+    if (experienceEl) payload.experience = experienceEl.value;
+
+    try {
+      await Api.patch("/service-providers/" + _spId, payload);
+    } catch (err) {
+      console.error("[profile] Save failed:", err);
+      return;
     }
   }
+
   showToast(
-    section === "personal"
-      ? "Personal info saved!"
-      : "Professional details saved!",
+    section === "personal" ? "Personal info saved!" : "Professional details saved!",
   );
 }
 
@@ -184,14 +166,6 @@ function updateAvatar(input) {
     if (!authRes.success) {
       showToast("Unable to update profile photo.", true);
       return;
-    }
-
-    if (window.getData && window.setData) {
-      const data = window.getData();
-      if (data && data.provider) {
-        data.provider.pfp_url = imageData;
-        window.setData(data);
-      }
     }
 
     renderProviderAvatar(
@@ -417,44 +391,22 @@ function handlePasswordChange() {
   }
 }
 
-function confirmDeactivate() {
-  const data = window.getData();
-  if (!data || !data.provider) return;
+async function confirmDeactivate() {
+  if (!_spId) return;
 
-  if (data.provider.account_status === "inactive") {
-    showToast("Account is already deactivated.", true);
-    return;
-  }
+  if (!confirm("Are you sure you want to deactivate your account? This action cannot be undone.")) return;
 
-  if (
-    confirm(
-      "Are you sure you want to deactivate your account? This action cannot be undone.",
-    )
-  ) {
-    const unfinishedJobs = data.jobs.filter((j) =>
-      ["assigned", "inprogress", "pending"].includes(j.status),
-    );
-
-    if (unfinishedJobs.length === 0) {
-      // Immediate deactivation
-      data.provider.account_status = "inactive";
-      data.provider.is_active = false;
-      data.provider.deactivation_requested = true;
-      window.setData(data);
-      showToast("Account deactivated successfully. Logging out...");
-      setTimeout(() => {
-        window.location.href = "../auth_pages/logout.html";
-      }, 2000);
-    } else {
-      // Pending deactivation
-      data.provider.account_status = "pending_deactivation";
-      data.provider.deactivation_requested = true;
-      window.setData(data);
-      updateDeactivationUI("pending_deactivation");
-      showToast(
-        "Notice: Your account will only deactivate once all currently assigned jobs are completed.",
-      );
-    }
+  try {
+    await Api.patch("/service-providers/" + _spId, {
+      is_active: false,
+      account_status: "inactive",
+    });
+    showToast("Account deactivated successfully. Logging out...");
+    setTimeout(() => {
+      Auth.logout();
+    }, 2000);
+  } catch (err) {
+    console.error("[profile] Deactivate failed:", err);
   }
 }
 
@@ -483,85 +435,92 @@ function updateDeactivationUI(status) {
 }
 
 // ── Init ─────────────────────────────────────────────────────────────────────
-document.addEventListener("DOMContentLoaded", () => {
-  if (window.initData) {
-    window.initData().then(() => {
-      const data = window.getData();
-      if (!data || !data.provider) return;
+(async () => {
+  const session = Auth.requireSession(["provider"]);
+  if (!session) return;
+  _spId = session.id;
 
-      const sp = data.provider;
-      updateDeactivationUI(sp.account_status);
+  let sp = {};
+  try {
+    sp = await Api.get("/service-providers/" + _spId, { silent: true }) || {};
+  } catch (_) {}
 
-      // Topbar styling
-      document
-        .querySelectorAll(".user-chip span")
-        .forEach((el) => (el.textContent = sp.name || "Provider"));
-      if (sp.pfp_url) {
-        document.querySelectorAll(".user-avatar").forEach((el) => {
-          el.innerHTML = `<img src="${sp.pfp_url}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
-        });
-      }
+  updateDeactivationUI(sp.account_status);
 
-      renderProviderAvatar(sp.pfp_url, sp.name);
-
-      // Fill Personal Information
-      const nameEl = document.getElementById("full-name");
-      const emailEl = document.getElementById("email");
-      const phoneEl = document.getElementById("phone");
-      const addrEl = document.getElementById("address");
-
-      if (nameEl) nameEl.value = sp.name || "";
-      if (emailEl) emailEl.value = sp.email || "";
-      if (phoneEl) {
-        const rawPhone = sp.phone ? String(sp.phone) : "";
-        phoneEl.value = rawPhone.replace(/\D/g, "").slice(-10);
-      }
-      if (addrEl) addrEl.value = sp.address || "";
-
-      // Fill Professional Details
-      const serviceCatEl = document.getElementById("service-cat");
-      const experienceEl = document.getElementById("experience");
-      if (serviceCatEl)
-        serviceCatEl.value = sp.service_category || "Home Cleaning";
-      if (experienceEl) experienceEl.value = sp.experience || "8";
-
-      // Fill Skills Data
-      const skillsList = document.getElementById("skills-list");
-      if (skillsList && sp.skills) {
-        skillsList.innerHTML = sp.skills
-          .map(
-            (skill) => `
-          <div class="skill-row" data-skill="${skill}">
-            <span class="skill-badge">
-              <svg viewBox="0 0 24 24" width="13" height="13">
-                <polyline points="20 6 9 17 4 12" />
-              </svg>
-              ${skill}
-            </span>
-          </div>
-        `,
-          )
-          .join("");
-      }
-
-      // Fill Files Data
-      if (sp.resumeFiles && sp.resumeFiles.length > 0) {
-        sp.resumeFiles.forEach((f) => {
-          uploadedFiles["resume-list"].push(f);
-          renderFileItem(f, "resume-list");
-        });
-      }
-      if (sp.certFiles && sp.certFiles.length > 0) {
-        sp.certFiles.forEach((f) => {
-          uploadedFiles["certs-list"].push(f);
-          renderFileItem(f, "certs-list");
-        });
-      }
-
-      // Work hours
-      initWorkHours();
+  // Topbar
+  document.querySelectorAll(".user-chip span").forEach((el) => (el.textContent = sp.name || "Provider"));
+  if (sp.pfp_url) {
+    document.querySelectorAll(".user-avatar").forEach((el) => {
+      el.innerHTML = `<img src="${sp.pfp_url}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
     });
-  } else {
-    initWorkHours();
   }
-});
+
+  renderProviderAvatar(sp.pfp_url, sp.name);
+
+  // Personal info
+  const nameEl = document.getElementById("full-name");
+  const emailEl = document.getElementById("email");
+  const phoneEl = document.getElementById("phone");
+  const addrEl = document.getElementById("address");
+
+  if (nameEl) nameEl.value = sp.name || "";
+  if (emailEl) emailEl.value = sp.email || "";
+  if (phoneEl) {
+    const rawPhone = sp.phone ? String(sp.phone) : "";
+    phoneEl.value = rawPhone.replace(/\D/g, "").slice(-10);
+  }
+  if (addrEl) addrEl.value = sp.address || "";
+
+  // Professional
+  const serviceCatEl = document.getElementById("service-cat");
+  const experienceEl = document.getElementById("experience");
+  if (serviceCatEl) serviceCatEl.value = sp.service_category || "Home Cleaning";
+  if (experienceEl) experienceEl.value = sp.experience || "8";
+
+  // Skills
+  const skillsList = document.getElementById("skills-list");
+  if (skillsList && sp.skills) {
+    const skillsArr = Array.isArray(sp.skills) ? sp.skills : [];
+    skillsList.innerHTML = skillsArr
+      .map(
+        (skill) => `
+      <div class="skill-row" data-skill="${skill}">
+        <span class="skill-badge">
+          <svg viewBox="0 0 24 24" width="13" height="13">
+            <polyline points="20 6 9 17 4 12" />
+          </svg>
+          ${skill}
+        </span>
+      </div>
+    `,
+      )
+      .join("");
+  }
+
+  // Files
+  if (sp.resumeFiles && sp.resumeFiles.length > 0) {
+    sp.resumeFiles.forEach((f) => {
+      uploadedFiles["resume-list"].push(f);
+      renderFileItem(f, "resume-list");
+    });
+  }
+  if (sp.certFiles && sp.certFiles.length > 0) {
+    sp.certFiles.forEach((f) => {
+      uploadedFiles["certs-list"].push(f);
+      renderFileItem(f, "certs-list");
+    });
+  }
+
+  // Work hours
+  try {
+    const wh = await Api.get("/provider-working-hours/" + _spId, { silent: true });
+    if (wh && wh.hour_start) {
+      const whStartEl = document.getElementById("work-start");
+      const whEndEl = document.getElementById("work-end");
+      if (whStartEl) whStartEl.value = wh.hour_start;
+      if (whEndEl) whEndEl.value = wh.hour_end;
+    }
+  } catch (_) {}
+
+  initWorkHours();
+})();

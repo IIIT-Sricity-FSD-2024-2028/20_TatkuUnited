@@ -40,16 +40,10 @@ function fmt12(t) {
   return `${h % 12 || 12}:${pad(m)} ${h >= 12 ? "PM" : "AM"}`;
 }
 
-// ── Work hours (read from mockData dynamically) ─────────────
+// ── Work hours (cached from API) ─────────────
+let _cachedWorkHours = { start: "08:00", end: "18:00" };
 function getWorkHours() {
-  const data = window.getData() || {};
-  if (data.workingHours) {
-    return data.workingHours;
-  }
-  return {
-    start: "08:00",
-    end: "18:00",
-  };
+  return _cachedWorkHours;
 }
 
 // ── Calendar render ──────────────────────────────────────────────────────────
@@ -597,42 +591,76 @@ function saveSchedule() {
 }
 
 function syncUnavailability() {
-  const data = window.getData();
-  if (!data) return;
-  data.unavailability = unavailability;
-  window.setData(data);
+  // Unavailability is managed locally; saved on "Save" click
 }
 
 function openManageBlocks() {
   alert("Manage Blocks panel coming soon!");
 }
 
-window.initData().then(() => {
-  const data = window.getData();
+(async () => {
+  const session = Auth.requireSession(["provider"]);
+  if (!session) return;
+  const spId = session.id;
+
+  // Load provider profile
+  let provider = null;
+  try { provider = await Api.get("/service-providers/" + spId, { silent: true }); } catch (_) {}
+
+  // Load job assignments
+  let rawJobs = [];
+  try { rawJobs = await Api.get("/job-assignments/provider/" + spId, { silent: true }) || []; } catch (_) {}
+
+  // Load working hours
+  try {
+    const wh = await Api.get("/provider-working-hours/" + spId, { silent: true });
+    if (wh && wh.hour_start && wh.hour_end) {
+      _cachedWorkHours = { start: wh.hour_start, end: wh.hour_end };
+    }
+  } catch (_) {}
+
+  // Load unavailability
+  try {
+    const uvList = await Api.get("/provider-unavailability/" + spId, { silent: true }) || [];
+    unavailability = {};
+    uvList.forEach((uv) => {
+      if (!unavailability[uv.date]) unavailability[uv.date] = [];
+      unavailability[uv.date].push({ from: uv.hour_start, to: uv.hour_end });
+    });
+  } catch (_) {}
+
+  // Map jobs to calendar events
   events = {};
-  data.jobs.forEach((j) => {
-    if (j.status === "cancelled" || j.status === "completed") return;
-    if (!events[j.date]) events[j.date] = [];
-    events[j.date].push({
-      service: j.service,
-      customer: j.customer,
-      time: j.startTime,
-      endTime: j.endTime,
-      fullJob: j,
+  rawJobs.forEach((ja) => {
+    if (ja.status === "CANCELLED" || ja.status === "COMPLETED") return;
+    const scheduledAt = ja.scheduled_at || (ja.booking && ja.booking.scheduled_at);
+    if (!scheduledAt) return;
+    const dt = new Date(scheduledAt);
+    const key = `${dt.getFullYear()}-${pad(dt.getMonth() + 1)}-${pad(dt.getDate())}`;
+    const startTime = `${pad(dt.getHours())}:${pad(dt.getMinutes())}`;
+    const durMin = ja.estimated_duration_min || 60;
+    const endDt = new Date(dt.getTime() + durMin * 60000);
+    const endTime = `${pad(endDt.getHours())}:${pad(endDt.getMinutes())}`;
+
+    if (!events[key]) events[key] = [];
+    events[key].push({
+      service: ja.service_name || "Service",
+      customer: ja.customer_name || "Customer",
+      time: startTime,
+      endTime: endTime,
+      fullJob: ja,
     });
   });
-  unavailability = data.unavailability || {};
 
-  if (data.provider) {
-    document
-      .querySelectorAll(".user-chip span")
-      .forEach((el) => (el.textContent = data.provider.name || "Provider"));
-    if (data.provider.pfp_url) {
+  // Set provider info in topbar
+  if (provider) {
+    document.querySelectorAll(".user-chip span").forEach((el) => (el.textContent = provider.name || "Provider"));
+    if (provider.pfp_url) {
       document.querySelectorAll(".user-avatar").forEach((el) => {
-        el.innerHTML = `<img src="${data.provider.pfp_url}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
+        el.innerHTML = `<img src="${provider.pfp_url}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
       });
     }
   }
 
   renderCalendar();
-});
+})();

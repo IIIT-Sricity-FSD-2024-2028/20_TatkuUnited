@@ -1,6 +1,5 @@
 /*
- * provider_profile.js — Provider Details (Unit Manager View)
- * Fetches data from shared AppStore and URL search params.
+ * provider_profile.js — Provider Details (Unit Manager View) — API-backed
  */
 
 (function () {
@@ -38,16 +37,12 @@
     return out;
   }
 
-  function loadProviderDetails() {
-    var allProviders = AppStore.getTable("service_providers") || [];
-    var allSkills = AppStore.getTable("skills") || [];
-    var allProviderSkills = AppStore.getTable("provider_skills") || [];
-    var allSectors = AppStore.getTable("sectors") || [];
-    var allAssignments = AppStore.getTable("job_assignments") || [];
-    var allBookings = AppStore.getTable("bookings") || [];
-    var allTxns = AppStore.getTable("transactions") || [];
+  async function loadProviderDetails() {
+    // Fetch provider
+    try {
+      providerData = await Api.get("/service-providers/" + providerId, { silent: true });
+    } catch (_) {}
 
-    providerData = allProviders.find((p) => p.service_provider_id === providerId);
     if (!providerData) {
       document.querySelector(".content").innerHTML = "<h3>Provider not found.</h3>";
       return;
@@ -77,14 +72,18 @@
     avatar.textContent = getInitials(providerData.name);
 
     // Sector
-    var sector = allSectors.find((s) => s.sector_id === providerData.home_sector_id);
-    document.getElementById("info-sector").textContent = sector ? sector.sector_name : "N/A";
+    var sectorEl = document.getElementById("info-sector");
+    if (sectorEl) sectorEl.textContent = providerData.sector_name || "N/A";
 
-    // Skills
-    var mySkillIds = allProviderSkills
-      .filter((ps) => ps.service_provider_id === providerId)
-      .map((ps) => ps.skill_id);
-    var mySkills = allSkills.filter((s) => mySkillIds.indexOf(s.skill_id) !== -1);
+    // Skills — fetch from API
+    var mySkills = [];
+    try {
+      var allSkills = await Api.get("/skills", { silent: true }) || [];
+      var providerSkills = await Api.get("/provider-skills/" + providerId, { silent: true }) || [];
+      var mySkillIds = providerSkills.map((ps) => ps.skill_id);
+      mySkills = allSkills.filter((s) => mySkillIds.indexOf(s.skill_id) !== -1);
+    } catch (_) {}
+
     var skillContainer = document.getElementById("skills-list");
     skillContainer.innerHTML = "";
     mySkills.forEach((s) => {
@@ -101,28 +100,34 @@
     });
     if (!mySkills.length) skillContainer.innerHTML = '<span class="list-secondary">No skills listed.</span>';
 
-    // Job History & Statistics
-    var myAssignments = allAssignments.filter((a) => a.service_provider_id === providerId);
+    // Job History — fetch from API
+    var myAssignments = [];
+    try {
+      myAssignments = await Api.get("/job-assignments/provider/" + providerId, { silent: true }) || [];
+    } catch (_) {}
+
+    // Revenue ledger for this provider
+    var ledger = [];
+    try {
+      ledger = await Api.get("/revenue-ledger/provider/" + providerId, { silent: true }) || [];
+    } catch (_) {}
+
     var historyBody = document.getElementById("history-body");
     historyBody.innerHTML = "";
     
-    var totalEarnings = 0;
+    var totalEarnings = ledger.reduce((sum, r) => sum + (r.provider_amount || r.amount || 0), 0);
     var completedCount = 0;
     var ratingSum = 0;
     var ratedCount = 0;
 
-    myAssignments.sort((a,b) => new Date(b.assigned_at) - new Date(a.assigned_at));
+    myAssignments.sort((a, b) => new Date(b.assigned_at) - new Date(a.assigned_at));
     
     myAssignments.forEach((a) => {
-      var booking = allBookings.find((b) => b.booking_id === a.booking_id);
-      var txn = allTxns.find((t) => t.booking_id === a.booking_id && t.payment_status === "SUCCESS");
-      
       if (a.status === "COMPLETED") completedCount++;
       if (typeof a.assignment_score === "number") {
         ratingSum += a.assignment_score;
         ratedCount++;
       }
-      if (txn) totalEarnings += Number(txn.amount || 0);
 
       var tr = document.createElement("tr");
       tr.innerHTML = `
@@ -130,7 +135,7 @@
         <td><span style="font-weight:600">${a.booking_id}</span></td>
         <td><span class="pill ${a.status === "COMPLETED" ? "pill-green" : "pill-blue"}">${a.status}</span></td>
         <td><span class="stars">${buildStars(a.assignment_score)}</span></td>
-        <td>${txn ? "₹" + Number(txn.amount).toLocaleString() : "-"}</td>
+        <td>${totalEarnings > 0 ? "₹" + Math.round(totalEarnings / myAssignments.length).toLocaleString() : "-"}</td>
       `;
       historyBody.appendChild(tr);
     });
@@ -151,7 +156,7 @@
     document.getElementById("info-perf-bar").style.width = perfPct + "%";
   }
 
-  AppStore.ready.then(() => {
+  (async () => {
     session = Auth.requireSession(["unit_manager"]);
     if (!session) return;
     
@@ -161,7 +166,7 @@
       return;
     }
 
-    loadProviderDetails();
-  });
+    await loadProviderDetails();
+  })();
 
 })();

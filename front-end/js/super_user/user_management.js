@@ -1,17 +1,22 @@
-/* user_management.js */
-// Depends on: store.js → auth.js (loaded before this script)
+/* user_management.js — API-backed */
 
-AppStore.ready.then(() => {
+(async () => {
   /* ── 1. Auth gate ── */
   const session = Auth.requireSession(["super_user"]);
   if (!session) return;
 
-  /* ── 2. Pull tables ── */
-  const allCustomers = AppStore.getTable("customers") || [];
-  const allProviders = AppStore.getTable("service_providers") || [];
-  const allCollectiveManagers = AppStore.getTable("collective_managers") || [];
-  const allUnitManagers = AppStore.getTable("unit_managers") || [];
-  const allSuperUsers = AppStore.getTable("super_users") || [];
+  /* ── 2. Pull from API ── */
+  let allCustomers = [];
+  let allProviders = [];
+  let allCollectiveManagers = [];
+  let allUnitManagers = [];
+  let allSuperUsers = [];
+
+  try { allCustomers = await Api.get("/customers", { silent: true }) || []; } catch (_) {}
+  try { allProviders = await Api.get("/service-providers", { silent: true }) || []; } catch (_) {}
+  try { allCollectiveManagers = await Api.get("/collective-managers", { silent: true }) || []; } catch (_) {}
+  try { allUnitManagers = await Api.get("/unit-managers", { silent: true }) || []; } catch (_) {}
+  try { allSuperUsers = await Api.get("/super-users", { silent: true }) || []; } catch (_) {}
 
   function formatDate(value) {
     if (!value) return "-";
@@ -121,16 +126,10 @@ AppStore.ready.then(() => {
       if (nameEl) nameEl.textContent = sessionUser.name;
     }
 
-    const allNotifs = AppStore.getTable("super_user_notifications") || [];
-    const unread = allNotifs.filter((n) => !n.is_read).length;
+    // Notification badges — no-op until API available
     document.querySelectorAll(".notif-badge").forEach((notifBadge) => {
-      if (unread > 0) {
-        notifBadge.textContent = String(unread);
-        notifBadge.style.display = "flex";
-      } else {
-        notifBadge.textContent = "";
-        notifBadge.style.display = "none";
-      }
+      notifBadge.textContent = "";
+      notifBadge.style.display = "none";
     });
   }
 
@@ -319,7 +318,7 @@ AppStore.ready.then(() => {
     // Suspend / Reactivate action logic
     const tbody = document.getElementById("users-tbody");
     if (tbody) {
-      tbody.addEventListener("click", (e) => {
+      tbody.addEventListener("click", async (e) => {
         const btn = e.target.closest(".action-link");
         if (!btn) return;
 
@@ -327,33 +326,41 @@ AppStore.ready.then(() => {
         const role = btn.getAttribute("data-role");
         if (!id || !role) return;
 
-        let targetArray = null;
-        let idField = "";
+        // Determine endpoint and find user
+        let endpoint = "";
+        let targetUser = null;
 
-        if (role === "Customer") { targetArray = allCustomers; idField = "customer_id"; }
-        else if (role === "Provider") { targetArray = allProviders; idField = "service_provider_id"; }
-        else if (role === "Collective Manager") { targetArray = allCollectiveManagers; idField = "cm_id"; }
-        else if (role === "Unit Manager") { targetArray = allUnitManagers; idField = "um_id"; }
-        else if (role === "Super User") { targetArray = allSuperUsers; idField = "super_user_id"; }
+        if (role === "Customer") {
+          endpoint = "/customers/" + id;
+          targetUser = allCustomers.find((u) => u.customer_id === id);
+        } else if (role === "Provider") {
+          endpoint = "/service-providers/" + id;
+          targetUser = allProviders.find((u) => u.service_provider_id === id);
+        } else if (role === "Collective Manager") {
+          endpoint = "/collective-managers/" + id;
+          targetUser = allCollectiveManagers.find((u) => u.cm_id === id);
+        } else if (role === "Unit Manager") {
+          endpoint = "/unit-managers/" + id;
+          targetUser = allUnitManagers.find((u) => u.um_id === id);
+        } else if (role === "Super User") {
+          endpoint = "/super-users/" + id;
+          targetUser = allSuperUsers.find((u) => u.super_user_id === id);
+        }
 
-        if (targetArray) {
-          const userObj = targetArray.find(u => u[idField] === id);
-          if (userObj) {
-            // Confirm action
-            const actionVerb = userObj.is_active ? "suspend" : "reactivate";
-            if (!confirm(`Are you sure you want to ${actionVerb} this user?`)) return;
+        if (!targetUser || !endpoint) return;
 
-            // Toggle active status
-            userObj.is_active = !userObj.is_active;
-            userObj.updated_at = new Date().toISOString();
+        const actionVerb = targetUser.is_active ? "suspend" : "reactivate";
+        if (!confirm(`Are you sure you want to ${actionVerb} this user?`)) return;
 
-            // Save and refresh
-            AppStore.save();
-            USERS = transformUsers();
-            
-            renderKpis();
-            renderTable();
-          }
+        try {
+          await Api.patch(endpoint, { is_active: !targetUser.is_active });
+          targetUser.is_active = !targetUser.is_active;
+          targetUser.updated_at = new Date().toISOString();
+          USERS = transformUsers();
+          renderKpis();
+          renderTable();
+        } catch (err) {
+          console.error("[user_mgmt] Toggle failed:", err);
         }
       });
     }
@@ -378,7 +385,7 @@ AppStore.ready.then(() => {
     }
 
     if (form) {
-      form.addEventListener("submit", (e) => {
+      form.addEventListener("submit", async (e) => {
         e.preventDefault();
 
         const role = document.getElementById("new-user-role").value;
@@ -391,45 +398,42 @@ AppStore.ready.then(() => {
           return;
         }
 
-        const nowIso = new Date().toISOString();
-        let targetArray = null;
-        let idVal = "";
-        let newRecord = {
+        const newRecord = {
           name,
           email,
           phone,
           password: "Password@123",
           is_active: true,
-          created_at: nowIso,
-          updated_at: nowIso,
-          pfp_url: "https://i.pravatar.cc/150?img=" + Math.floor(Math.random() * 70)
         };
 
+        let endpoint = "";
         if (role === "Unit Manager") {
-          targetArray = allUnitManagers;
-          idVal = AppStore.nextId("UM");
-          newRecord.um_id = idVal;
-          newRecord.unit_id = null; // Unassigned initially
+          endpoint = "/unit-managers";
         } else if (role === "Collective Manager") {
-          targetArray = allCollectiveManagers;
-          idVal = AppStore.nextId("CM");
-          newRecord.cm_id = idVal;
-          newRecord.collective_id = null; // Unassigned initially
+          endpoint = "/collective-managers";
         } else if (role === "Super User") {
-          targetArray = allSuperUsers;
-          idVal = AppStore.nextId("SU");
-          newRecord.super_user_id = idVal;
+          endpoint = "/super-users";
         }
 
-        if (targetArray) {
-          targetArray.push(newRecord);
-          // Save to AppStore
-          AppStore.save();
-          // Recompute USERS
+        if (!endpoint) {
+          alert("Cannot add users of role: " + role);
+          return;
+        }
+
+        try {
+          const created = await Api.post(endpoint, newRecord);
+          // Refresh the list from API
+          if (role === "Unit Manager") {
+            allUnitManagers = await Api.get("/unit-managers", { silent: true }) || [];
+          } else if (role === "Collective Manager") {
+            allCollectiveManagers = await Api.get("/collective-managers", { silent: true }) || [];
+          } else if (role === "Super User") {
+            allSuperUsers = await Api.get("/super-users", { silent: true }) || [];
+          }
+
           USERS = transformUsers();
-          // Reset view to page 1 to show the newly added user (or sort might put them at top)
           currentPage = 1;
-          
+
           populateRoleFilter();
           renderKpis();
           renderTable();
@@ -437,25 +441,17 @@ AppStore.ready.then(() => {
           modal.style.display = "none";
           form.reset();
           alert(`New ${role} added successfully! Temporary password is Password@123`);
+        } catch (err) {
+          console.error("[user_mgmt] Add failed:", err);
         }
       });
     }
   }
 
-  /* ── Initialize on DOM ready ── */
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", () => {
-      initTopbar();
-      renderKpis();
-      populateRoleFilter();
-      renderTable();
-      setupEventListeners();
-    });
-  } else {
-    initTopbar();
-    renderKpis();
-    populateRoleFilter();
-    renderTable();
-    setupEventListeners();
-  }
-});
+  /* ── Initialize ── */
+  initTopbar();
+  renderKpis();
+  populateRoleFilter();
+  renderTable();
+  setupEventListeners();
+})();

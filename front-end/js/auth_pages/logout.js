@@ -11,7 +11,7 @@
 document.getElementById("login-again").addEventListener("click", () => {
   window.location.href = "/front-end/html/auth_pages/login.html";
 });
-// Keep AppStore cache intact on logout.
+// Session cleared on logout.
 
 /* ── Step 2: Auto-redirect countdown (optional UI) ── */
 const redirectNote = document.getElementById("redirect-note");

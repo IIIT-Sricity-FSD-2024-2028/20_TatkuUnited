@@ -1,28 +1,17 @@
-/* manage_services.js */
-// Depends on: store.js → auth.js (loaded before this script)
-
-AppStore.ready.then(() => {
+(async () => {
   /* ── 1. Auth gate ── */
   const session = Auth.requireSession(["super_user"]);
   if (!session) return;
 
-  /* ── 2. Pull tables ── */
-  const allServices = AppStore.getTable("services") || [];
-  const allCategories = AppStore.getTable("categories") || [];
-  let allServiceContent = AppStore.getTable("service_content") || [];
+  /* ── 2. Pull from API ── */
+  let allCategories = [];
+  try { allCategories = await Api.get("/categories") || []; } catch (_) {}
 
   function updateNotificationBadges() {
-    const unread = (AppStore.getTable("super_user_notifications") || []).filter(
-      (n) => !n.is_read,
-    ).length;
+    // Notifications will be loaded from API when endpoint is available
     document.querySelectorAll(".notif-badge").forEach((badge) => {
-      if (unread > 0) {
-        badge.textContent = String(unread);
-        badge.style.display = "flex";
-      } else {
-        badge.textContent = "";
-        badge.style.display = "none";
-      }
+      badge.textContent = "";
+      badge.style.display = "none";
     });
   }
 
@@ -59,16 +48,22 @@ AppStore.ready.then(() => {
     });
   }
 
-  let services = transformServices(allServices);
+  let services = [];
   const PAGE_SIZE = 8;
   let currentPage = 1;
-  let filteredServices = services.slice();
+  let filteredServices = [];
   let tableActionsBound = false;
 
-  function refreshServicesFromStore() {
-    services = transformServices(AppStore.getTable("services") || []);
-    filteredServices = services.slice();
-    allServiceContent = AppStore.getTable("service_content") || [];
+  async function refreshServices() {
+    try {
+      const raw = await Api.get("/services") || [];
+      services = transformServices(raw);
+      filteredServices = services.slice();
+    } catch (err) {
+      console.error("[services] Load failed:", err);
+      services = [];
+      filteredServices = [];
+    }
   }
 
   let editingId = null;
@@ -265,19 +260,16 @@ AppStore.ready.then(() => {
   }
 
   /* ── Toggle Availability ── */
-  function toggleServiceAvailability(svc) {
-    const servicesTable = AppStore.getTable("services") || [];
-    const storeService = servicesTable.find(
-      (s) => s.service_id === svc.serviceId,
-    );
-
-    if (storeService) {
-      storeService.is_available = !storeService.is_available;
-      AppStore.save();
-      refreshServicesFromStore();
-      const action = storeService.is_available ? "activated" : "deactivated";
+  async function toggleServiceAvailability(svc) {
+    try {
+      const newState = !svc.isAvailable;
+      await Api.patch("/services/" + svc.serviceId, { is_available: newState });
+      await refreshServices();
+      const action = newState ? "activated" : "deactivated";
       showToast(`✓ "${svc.name}" ${action}`);
       applyFilters();
+    } catch (err) {
+      console.error("[services] Toggle failed:", err);
     }
   }
 
@@ -313,8 +305,6 @@ AppStore.ready.then(() => {
   /* ── Add/Edit Modal ── */
   function openModal(svc) {
     editingId = svc ? svc.serviceId : null;
-    // Refresh service_content from store
-    allServiceContent = AppStore.getTable("service_content") || [];
 
     const modalTitle = document.getElementById("modalTitle");
     const serviceName = document.getElementById("serviceName");
@@ -348,24 +338,20 @@ AppStore.ready.then(() => {
       serviceWhatCovered &&
       serviceWhatNotCovered
     ) {
-      const content = allServiceContent.find(
-        (c) => c.service_id === svc.serviceId,
-      );
-      if (content) {
-        // Format how_it_works array into textarea format
-        const howItWorksText = content.how_it_works
-          .map((step) => `${step.step_title} | ${step.step_description}`)
-          .join("\n");
-        serviceHowItWorks.value = howItWorksText;
-
-        // Format what_is_covered array into textarea format
-        const whatCoveredText = content.what_is_covered.join("\n");
-        serviceWhatCovered.value = whatCoveredText;
-
-        // Format what_is_not_covered array into textarea format
-        const whatNotCoveredText = content.what_is_not_covered.join("\n");
-        serviceWhatNotCovered.value = whatNotCoveredText;
-      }
+      // Load content from API
+      (async () => {
+        try {
+          const content = await Api.get("/service-content/service/" + svc.serviceId, { silent: true });
+          if (content) {
+            const howItWorksText = (content.how_it_works || [])
+              .map((step) => `${step.step_title} | ${step.step_description}`)
+              .join("\n");
+            serviceHowItWorks.value = howItWorksText;
+            serviceWhatCovered.value = (content.what_is_covered || []).join("\n");
+            serviceWhatNotCovered.value = (content.what_is_not_covered || []).join("\n");
+          }
+        } catch (_) {}
+      })();
     } else {
       // Clear service_content fields when adding new service
       if (serviceHowItWorks) serviceHowItWorks.value = "";
@@ -435,21 +421,15 @@ AppStore.ready.then(() => {
 
   /* ── Delete Service ── */
   if (deleteConfirmBtn) {
-    deleteConfirmBtn.addEventListener("click", () => {
-      const servicesTable = AppStore.getTable("services") || [];
-      const storeService = servicesTable.find(
-        (s) => s.service_id === deletingId,
-      );
+    deleteConfirmBtn.addEventListener("click", async () => {
+      if (!deletingId) return;
 
-      if (storeService) {
-        const serviceIndex = servicesTable.findIndex(
-          (s) => s.service_id === deletingId,
-        );
-        if (serviceIndex !== -1) servicesTable.splice(serviceIndex, 1);
-
-        AppStore.save();
-        refreshServicesFromStore();
-        showToast(`✓ "${storeService.service_name}" permanently deleted`);
+      try {
+        await Api.del("/services/" + deletingId);
+        await refreshServices();
+        showToast("Service deleted successfully");
+      } catch (err) {
+        console.error("[services] Delete failed:", err);
       }
 
       closeDeleteModal();
@@ -459,7 +439,7 @@ AppStore.ready.then(() => {
 
   /* ── Save Service ── */
   if (btnSave) {
-    btnSave.addEventListener("click", () => {
+    btnSave.addEventListener("click", async () => {
       const name = document.getElementById("serviceName")?.value.trim();
       const categoryId = document.getElementById("serviceCategory")?.value;
       const desc = document.getElementById("serviceDesc")?.value.trim();
@@ -479,163 +459,68 @@ AppStore.ready.then(() => {
         document.getElementById("serviceWhatNotCovered")?.value.trim() || "";
 
       // Validation
-      if (!name) {
-        showToast("⚠ Service name is required");
-        return;
-      }
-      if (!categoryId) {
-        showToast("⚠ Category is required");
-        return;
-      }
-      if (!desc) {
-        showToast("⚠ Description is required");
-        return;
-      }
-      if (price < 0) {
-        showToast("⚠ Price must be positive");
-        return;
-      }
-      if (duration < 0) {
-        showToast("⚠ Duration must be positive");
-        return;
-      }
+      if (!name) { showToast("⚠ Service name is required"); return; }
+      if (!categoryId) { showToast("⚠ Category is required"); return; }
+      if (!desc) { showToast("⚠ Description is required"); return; }
+      if (price < 0) { showToast("⚠ Price must be positive"); return; }
+      if (duration < 0) { showToast("⚠ Duration must be positive"); return; }
 
-      const servicesTable = AppStore.getTable("services") || [];
-      const duplicateService = servicesTable.find(
-        (s) =>
-          s.service_name.toLowerCase() === name.toLowerCase() &&
-          s.service_id !== editingId,
+      // Duplicate check against cached list
+      const dup = services.find(
+        (s) => s.name.toLowerCase() === name.toLowerCase() && s.serviceId !== editingId,
       );
-      if (duplicateService) {
-        showToast("⚠ Service name already exists");
-        return;
-      }
+      if (dup) { showToast("⚠ Service name already exists"); return; }
 
-      // Helper to parse service content
-      function parseServiceContent(
-        howItWorksText,
-        whatCoveredText,
-        whatNotCoveredText,
-      ) {
-        // Parse how_it_works: "Title | Description" format
-        const howItWorks = howItWorksText
-          .split("\n")
-          .filter((line) => line.trim())
-          .map((line) => {
-            const [title, description] = line.split("|").map((s) => s.trim());
-            return {
-              step_title: title || "",
-              step_description: description || "",
-            };
-          });
+      const payload = {
+        service_name: name,
+        category_id: categoryId,
+        description: desc,
+        base_price: price,
+        estimated_duration_min: duration,
+        is_available: isAvailable,
+      };
 
-        // Parse what_is_covered: one item per line
-        const whatIsCovered = whatCoveredText
-          .split("\n")
-          .filter((line) => line.trim());
+      // Parse service content textarea fields
+      const howItWorks = howItWorksText
+        .split("\n").filter((l) => l.trim())
+        .map((line) => {
+          const [title, description] = line.split("|").map((s) => s.trim());
+          return { step_title: title || "", step_description: description || "" };
+        });
+      const whatIsCovered = whatCoveredText.split("\n").filter((l) => l.trim());
+      const whatIsNotCovered = whatNotCoveredText.split("\n").filter((l) => l.trim());
+      const parsedContent = {
+        how_it_works: howItWorks,
+        what_is_covered: whatIsCovered,
+        what_is_not_covered: whatIsNotCovered,
+      };
 
-        // Parse what_is_not_covered: one item per line
-        const whatIsNotCovered = whatNotCoveredText
-          .split("\n")
-          .filter((line) => line.trim());
-
-        return {
-          how_it_works: howItWorks,
-          what_is_covered: whatIsCovered,
-          what_is_not_covered: whatIsNotCovered,
-        };
-      }
-
-      if (editingId) {
-        const storeService = servicesTable.find(
-          (s) => s.service_id === editingId,
-        );
-        if (storeService) {
-          storeService.service_name = name;
-          storeService.category_id = categoryId;
-          storeService.description = desc;
-          storeService.base_price = price;
-          storeService.estimated_duration_min = duration;
-          storeService.is_available = isAvailable;
-
-          // Update or create service_content
-          const serviceContentTable =
-            AppStore.getTable("service_content") || [];
-          let contentRecord = serviceContentTable.find(
-            (c) => c.service_id === editingId,
-          );
-          if (!contentRecord) {
-            contentRecord = { service_id: editingId };
-            serviceContentTable.push(contentRecord);
-          }
-
-          const parsedContent = parseServiceContent(
-            howItWorksText,
-            whatCoveredText,
-            whatNotCoveredText,
-          );
-          contentRecord.how_it_works = parsedContent.how_it_works;
-          contentRecord.what_is_covered = parsedContent.what_is_covered;
-          contentRecord.what_is_not_covered = parsedContent.what_is_not_covered;
-
-          AppStore.save();
-          refreshServicesFromStore();
+      try {
+        if (editingId) {
+          await Api.patch("/services/" + editingId, payload);
+          await Api.put("/service-content/service/" + editingId, parsedContent);
           showToast(`✓ "${name}" updated successfully`);
+        } else {
+          const created = await Api.post("/services", payload);
+          if (created && created.service_id) {
+            await Api.put("/service-content/service/" + created.service_id, parsedContent);
+          }
+          showToast(`✓ "${name}" added to service catalog`);
         }
-      } else {
-        // Generate next service ID
-        const nextId = AppStore.nextId("SVC");
-        servicesTable.push({
-          service_id: nextId,
-          service_name: name,
-          category_id: categoryId,
-          description: desc,
-          image_url:
-            "https://placehold.co/400x200/6B7280/white?text=" +
-            encodeURIComponent(name),
-          base_price: price,
-          estimated_duration_min: duration,
-          average_rating: null,
-          rating_count: 0,
-          is_available: isAvailable,
-        });
-
-        // Create service_content for new service
-        const serviceContentTable = AppStore.getTable("service_content") || [];
-        const parsedContent = parseServiceContent(
-          howItWorksText,
-          whatCoveredText,
-          whatNotCoveredText,
-        );
-        serviceContentTable.push({
-          service_id: nextId,
-          how_it_works: parsedContent.how_it_works,
-          what_is_covered: parsedContent.what_is_covered,
-          what_is_not_covered: parsedContent.what_is_not_covered,
-        });
-
-        AppStore.save();
-        refreshServicesFromStore();
-        showToast(`✓ "${name}" added to service catalog`);
+        await refreshServices();
+      } catch (err) {
+        console.error("[services] Save failed:", err);
       }
       closeModal();
       applyFilters();
     });
   }
 
-  /* ── Initialize on DOM ready ── */
-  function init() {
-    updateNotificationBadges();
-    populateCategoryDropdown();
-    setupEventListeners();
-    bindTableActions();
-    renderTable(services);
-    updateKPIs(services);
-  }
-
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", init);
-  } else {
-    init();
-  }
-});
+  /* ── Initialize ── */
+  await refreshServices();
+  populateCategoryDropdown();
+  setupEventListeners();
+  bindTableActions();
+  renderTable(services);
+  updateKPIs(services);
+})();

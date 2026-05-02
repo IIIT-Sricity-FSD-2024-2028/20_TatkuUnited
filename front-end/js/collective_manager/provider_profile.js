@@ -1,6 +1,6 @@
-// ── Provider Profile Manager View JS ──
+// ── Provider Profile Manager View JS — API-backed ──
 
-AppStore.ready.then(() => {
+(async () => {
   const session = Auth.requireSession(['collective_manager']);
   if (!session) return;
 
@@ -11,39 +11,28 @@ AppStore.ready.then(() => {
   const content = document.getElementById('providerDetails');
   const errorState = document.getElementById('errorState');
 
-  if (!providerId) {
-    showError();
-    return;
-  }
+  if (!providerId) { showError(); return; }
 
-  // 1. Fetch Data
-  const allProviders = AppStore.getTable('service_providers') || [];
-  const provider = allProviders.find(p => p.service_provider_id === providerId);
+  // 1. Fetch Data from API
+  let provider = null;
+  try { provider = await Api.get("/service-providers/" + providerId, { silent: true }); } catch (_) {}
+  if (!provider) { showError(); return; }
 
-  if (!provider) {
-    showError();
-    return;
-  }
+  let allUnits = [], allCollectives = [], allSectors = [], allProviderSkills = [], allSkills = [], allJobs = [];
+  try { allUnits = await Api.get("/units", { silent: true }) || []; } catch (_) {}
+  try { allCollectives = await Api.get("/collectives", { silent: true }) || []; } catch (_) {}
+  try { allSectors = await Api.get("/sectors", { silent: true }) || []; } catch (_) {}
+  try { allProviderSkills = await Api.get("/provider-skills/" + providerId, { silent: true }) || []; } catch (_) {}
+  if (!Array.isArray(allProviderSkills)) allProviderSkills = [];
+  try { allSkills = await Api.get("/skills", { silent: true }) || []; } catch (_) {}
+  try { allJobs = await Api.get("/job-assignments/provider/" + providerId, { silent: true }) || []; } catch (_) {}
 
-  // 2. Fetch Associated Info
-  const allUnits = AppStore.getTable('units') || [];
   const unit = allUnits.find(u => u.unit_id === provider.unit_id);
-  
-  const allCollectives = AppStore.getTable('collectives') || [];
   const collective = unit ? allCollectives.find(c => c.collective_id === unit.collective_id) : null;
-
-  const allSectors = AppStore.getTable('sectors') || [];
   const sector = allSectors.find(s => s.sector_id === provider.home_sector_id);
 
-  const allProviderSkills = AppStore.getTable('provider_skills') || [];
-  const mySkills = allProviderSkills.filter(ps => ps.service_provider_id === providerId);
-  
-  const allSkills = AppStore.getTable('skills') || [];
-
-  const allJobs = AppStore.getTable('job_assignments') || [];
-  const myUnfinishedJobs = allJobs.filter(j => 
-    j.service_provider_id === providerId && 
-    ["assigned", "inprogress", "in_progress", "pending"].includes(j.status.toLowerCase())
+  const myUnfinishedJobs = allJobs.filter(j =>
+    ["assigned","inprogress","in_progress","pending"].includes((j.status||'').toLowerCase())
   );
 
   // 3. Populate UI
@@ -56,18 +45,15 @@ AppStore.ready.then(() => {
      document.getElementById('profilePfp').innerHTML = `<img src="${provider.pfp_url}" style="width:100%;height:100%;object-fit:cover;">`;
   }
 
-  // Status Badge
   const badge = document.getElementById('profileStatusBadge');
   const status = (provider.account_status || (provider.is_active ? 'active' : 'inactive')).toLowerCase();
   badge.textContent = status.replace('_', ' ');
   badge.className = 'status-badge ' + (status === 'active' ? '' : (status === 'inactive' ? 'inactive' : 'pending'));
 
-  // Info Details
   document.getElementById('infoName').textContent = provider.name;
   document.getElementById('infoEmail').textContent = provider.email;
   document.getElementById('infoPhone').textContent = provider.phone;
   document.getElementById('infoRating').textContent = (provider.rating || 'N/A') + ' ★';
-  
   document.getElementById('infoUnit').textContent = unit ? unit.unit_name : 'Not Assigned';
   document.getElementById('infoSector').textContent = sector ? sector.sector_name : 'N/A';
   document.getElementById('infoDate').textContent = new Date(provider.created_at).toLocaleDateString();
@@ -75,17 +61,13 @@ AppStore.ready.then(() => {
 
   // Skills
   const skillsList = document.getElementById('skillsList');
+  const mySkills = Array.isArray(allProviderSkills) ? allProviderSkills : [];
   if (mySkills.length === 0) {
      skillsList.innerHTML = '<p style="color:var(--text-2); font-size:14px;">No skills registered yet.</p>';
   } else {
      skillsList.innerHTML = mySkills.map(ps => {
         const s = allSkills.find(sk => sk.skill_id === ps.skill_id);
-        return `
-           <div class="skill-card">
-              <span class="skill-name">${s ? s.skill_name : ps.skill_id}</span>
-              <span class="skill-status">${ps.verification_status}</span>
-           </div>
-        `;
+        return `<div class="skill-card"><span class="skill-name">${s ? s.skill_name : ps.skill_id}</span><span class="skill-status">${ps.verification_status}</span></div>`;
      }).join('');
   }
 
@@ -101,13 +83,10 @@ AppStore.ready.then(() => {
 
   if (myUnfinishedJobs.length > 0) {
      jobsSummary.innerHTML = `<strong>Current Assignments:</strong> <span>${myUnfinishedJobs.length} active job(s)</span>`;
-     jobsSummary.style.background = '#fff7ed';
-     jobsSummary.style.color = '#9a3412';
+     jobsSummary.style.background = '#fff7ed'; jobsSummary.style.color = '#9a3412';
   } else {
      jobsSummary.innerHTML = `<strong>Current Assignments:</strong> <span>None</span>`;
-     jobsSummary.style.background = '#f0fdf4';
-     jobsSummary.style.color = '#166534';
-     jobsSummary.style.borderColor = '#dcfce7';
+     jobsSummary.style.background = '#f0fdf4'; jobsSummary.style.color = '#166534'; jobsSummary.style.borderColor = '#dcfce7';
   }
 
   // Final Reveal
@@ -118,4 +97,4 @@ AppStore.ready.then(() => {
      loader.classList.add('hidden');
      errorState.classList.remove('hidden');
   }
-});
+})();

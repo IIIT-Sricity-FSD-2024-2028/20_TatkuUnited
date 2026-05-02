@@ -1,21 +1,26 @@
-// ── Collective Manager Dashboard JS ──
-// Depends on: store.js → auth.js (loaded before this script)
+// ── Collective Manager Dashboard JS — API-backed ──
 
-AppStore.ready.then(() => {
+(async () => {
   /* ── 1. Auth gate ── */
   const session = Auth.requireSession(['collective_manager']);
   if (!session) return;
 
   const collectiveId = session.collectiveId;
 
-  /* ── 2. Pull tables ── */
-  const allUnits       = AppStore.getTable('units')           || [];
-  const allProviders   = AppStore.getTable('service_providers') || [];
-  const allAssignments = AppStore.getTable('job_assignments')  || [];
-  const allTransactions= AppStore.getTable('transactions')     || [];
-  const allBookings    = AppStore.getTable('bookings')         || [];
-  const collective     = (AppStore.getTable('collectives') || [])
-                           .find(c => c.collective_id === collectiveId);
+  /* ── 2. Pull from API ── */
+  let allUnits = [], allProviders = [], allAssignments = [], allTransactions = [], allBookings = [];
+  let collective = null, allSectors = [];
+
+  try { allUnits = await Api.get("/units", { silent: true }) || []; } catch (_) {}
+  try { allProviders = await Api.get("/service-providers", { silent: true }) || []; } catch (_) {}
+  try { allAssignments = await Api.get("/job-assignments", { silent: true }) || []; } catch (_) {}
+  try { allTransactions = await Api.get("/transactions", { silent: true }) || []; } catch (_) {}
+  try { allBookings = await Api.get("/bookings", { silent: true }) || []; } catch (_) {}
+  try {
+    const collectives = await Api.get("/collectives", { silent: true }) || [];
+    collective = collectives.find(c => c.collective_id === collectiveId) || null;
+  } catch (_) {}
+  try { allSectors = await Api.get("/sectors", { silent: true }) || []; } catch (_) {}
 
   /* ── 3. Scope data to this collective ── */
   const myUnits       = allUnits.filter(u => u.collective_id === collectiveId);
@@ -23,14 +28,11 @@ AppStore.ready.then(() => {
   const myProviders   = allProviders.filter(p => myUnitIds.has(p.unit_id));
   const myProviderIds = new Set(myProviders.map(p => p.service_provider_id));
 
-  // Assignments where the provider belongs to this collective
   const myAssignments = allAssignments.filter(a => myProviderIds.has(a.service_provider_id));
   const myBookingIds  = new Set(myAssignments.map(a => a.booking_id));
 
-  // Completed assignments
   const completedAssignments = myAssignments.filter(a => a.status === 'COMPLETED');
 
-  // Revenue: sum of SUCCESS transactions for this collective's bookings
   const totalRevenue = allTransactions
     .filter(t => myBookingIds.has(t.booking_id) && t.payment_status === 'SUCCESS')
     .reduce((sum, t) => sum + (t.amount || 0), 0);
@@ -46,38 +48,29 @@ AppStore.ready.then(() => {
   setStatCard('stat-completed',        completedServices);
   setText('stat-revenue',              formatCurrency(totalRevenue));
 
-  /* ── 6. Topbar: name initial + avatar ── */
+  /* ── 6. Topbar ── */
   const initials = getInitials(session.name);
   setText('topbar-avatar', initials);
   setText('page-greeting', `Welcome back, ${session.name.split(' ')[0]}!`);
 
   /* ── 7. Collective Banner ── */
-  const allSectors     = AppStore.getTable('sectors') || [];
-  const allCMgrs       = AppStore.getTable('collective_managers') || [];
-
   const banner = document.getElementById('collective-banner');
   if (banner) banner.style.display = '';
 
   setText('collective-name', collective ? collective.collective_name : '—');
   setText('collective-units', myUnits.length.toString());
 
-  // Sector names
   if (collective && Array.isArray(collective.sector_ids)) {
     const sectorNames = collective.sector_ids
-      .map(sid => {
-        const sec = allSectors.find(s => s.sector_id === sid);
-        return sec ? sec.sector_name : sid;
-      })
+      .map(sid => { const sec = allSectors.find(s => s.sector_id === sid); return sec ? sec.sector_name : sid; })
       .join(', ');
     setText('collective-sectors', sectorNames || '—');
   } else {
     setText('collective-sectors', '—');
   }
 
-  // Manager name (the logged-in CM)
   setText('collective-manager-name', session.name);
 
-  // Status badge
   const statusBadge = document.getElementById('collective-status-badge');
   if (statusBadge) {
     const isActive = collective && collective.is_active;
@@ -86,19 +79,18 @@ AppStore.ready.then(() => {
     statusBadge.style.color        = isActive ? '#22c55e' : '#ef4444';
   }
 
-  /* ── 8. Revenue chart (per-month from transactions) ── */
+  /* ── 8. Revenue chart ── */
   renderRevenueChart(allTransactions, myBookingIds);
 
   /* ── 9. Recent Activity ── */
   renderActivity(myAssignments, allBookings, allProviders, myUnits);
-});
+})();
 
 /* ─── HELPERS ─────────────────────────────────────────── */
 
 function setStatCard(id, value) {
   const el = document.getElementById(id);
   if (!el) return;
-  // Animated counter
   const target = parseInt(value, 10);
   if (isNaN(target)) { el.textContent = value; return; }
   const duration = 1200;
@@ -146,32 +138,26 @@ function renderRevenueChart(allTransactions, myBookingIds) {
     monthlyRev[date.getMonth()] += (t.amount || 0);
   });
 
-  const maxVal = Math.max(...monthlyRev, 1000); // at least ₹1000 scale
+  const maxVal = Math.max(...monthlyRev, 1000);
 
-  // Update Y-axis labels
   const ySteps = [maxVal, maxVal * 0.75, maxVal * 0.5, maxVal * 0.25, 0];
   const yLabels = document.querySelectorAll('.y-labels span');
-  yLabels.forEach((el, i) => {
-    el.textContent = formatCurrency(ySteps[i]);
-  });
+  yLabels.forEach((el, i) => { el.textContent = formatCurrency(ySteps[i]); });
 
   barsEl.innerHTML   = '';
   xLabelsEl.innerHTML = '';
 
   months.forEach((m, i) => {
     const pct = maxVal > 0 ? (monthlyRev[i] / maxVal) * 100 : 0;
-
     const bar = document.createElement('div');
     bar.className = 'bar';
     bar.style.height = pct + '%';
     bar.style.animationDelay = (i * 0.05) + 's';
-
     const tip = document.createElement('div');
     tip.className   = 'bar-tooltip';
     tip.textContent = formatCurrency(monthlyRev[i]);
     bar.appendChild(tip);
     barsEl.appendChild(bar);
-
     const lbl = document.createElement('div');
     lbl.className   = 'x-label';
     lbl.textContent = m;
@@ -184,22 +170,15 @@ function renderActivity(myAssignments, allBookings, allProviders, myUnits) {
   const listEl = document.querySelector('.activity-list');
   if (!listEl) return;
 
-  // Sort assignments by most recently updated
-  const sorted = [...myAssignments].sort((a, b) =>
-    new Date(b.updated_at) - new Date(a.updated_at)
-  ).slice(0, 5);
+  const sorted = [...myAssignments].sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at)).slice(0, 5);
 
   if (!sorted.length) {
     listEl.innerHTML = '<li class="activity-item"><div class="activity-content"><span class="activity-title">No recent activity</span></div></li>';
     return;
   }
 
-  const providerMap = Object.fromEntries(
-    allProviders.map(p => [p.service_provider_id, p])
-  );
-  const unitMap = Object.fromEntries(
-    myUnits.map(u => [u.unit_id, u])
-  );
+  const providerMap = Object.fromEntries(allProviders.map(p => [p.service_provider_id, p]));
+  const unitMap = Object.fromEntries(myUnits.map(u => [u.unit_id, u]));
 
   listEl.innerHTML = sorted.map(ja => {
     const provider = providerMap[ja.service_provider_id];
@@ -209,30 +188,11 @@ function renderActivity(myAssignments, allBookings, allProviders, myUnits) {
 
     let title, sub, dotClass;
     switch (ja.status) {
-      case 'COMPLETED':
-        title    = 'Service completed';
-        sub      = `${provName} completed a job in ${unitName}`;
-        dotClass = 'activity-dot--green';
-        break;
-      case 'IN_PROGRESS':
-        title    = 'Service in progress';
-        sub      = `${provName} is currently on a job`;
-        dotClass = 'activity-dot--blue';
-        break;
-      case 'ASSIGNED':
-        title    = 'Job assigned';
-        sub      = `${provName} assigned to a booking in ${unitName}`;
-        dotClass = '';
-        break;
-      case 'CANCELLED':
-        title    = 'Assignment cancelled';
-        sub      = `Booking cancelled — assigned to ${provName}`;
-        dotClass = 'activity-dot--red';
-        break;
-      default:
-        title    = 'Activity';
-        sub      = `Assignment ${ja.assignment_id} updated`;
-        dotClass = '';
+      case 'COMPLETED':  title = 'Service completed';    sub = `${provName} completed a job in ${unitName}`;         dotClass = 'activity-dot--green'; break;
+      case 'IN_PROGRESS': title = 'Service in progress'; sub = `${provName} is currently on a job`;                   dotClass = 'activity-dot--blue';  break;
+      case 'ASSIGNED':    title = 'Job assigned';         sub = `${provName} assigned to a booking in ${unitName}`;   dotClass = '';                    break;
+      case 'CANCELLED':   title = 'Assignment cancelled'; sub = `Booking cancelled — assigned to ${provName}`;        dotClass = 'activity-dot--red';   break;
+      default:            title = 'Activity';             sub = `Assignment ${ja.assignment_id} updated`;              dotClass = '';                    break;
     }
 
     return `
