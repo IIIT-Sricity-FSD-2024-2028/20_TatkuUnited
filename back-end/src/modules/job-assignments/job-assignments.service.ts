@@ -7,6 +7,7 @@ import { JobAssignmentsRepository } from './job-assignments.repository';
 import { BookingsRepository } from '../bookings/bookings.repository';
 import { DatabaseService } from '../../common/database/database.service';
 import { CompleteJobDto } from './dto/complete-job.dto';
+import { RevenueLedgerService } from '../revenue-ledger/revenue-ledger.service';
 
 @Injectable()
 export class JobAssignmentsService {
@@ -14,7 +15,8 @@ export class JobAssignmentsService {
     private readonly jaRepo: JobAssignmentsRepository,
     private readonly bookingsRepo: BookingsRepository,
     private readonly db: DatabaseService,
-  ) { }
+    private readonly revenueLedger: RevenueLedgerService,
+  ) {}
 
   // ── Auto-assign ────────────────────────────────────────
 
@@ -130,7 +132,7 @@ export class JobAssignmentsService {
 
   // ── Mark complete ──────────────────────────────────────
 
-  markComplete(assignmentId: string, dto: CompleteJobDto) {
+  async markComplete(assignmentId: string, dto: CompleteJobDto) {
     // 1. Find assignment
     const assignment = this.jaRepo.findById(assignmentId);
     if (!assignment) {
@@ -146,8 +148,14 @@ export class JobAssignmentsService {
       status: 'COMPLETED',
       notes: dto.notes || assignment.notes,
     });
+    
+    assignment.status = 'COMPLETED';
+    assignment.updated_at = this.db.now();
 
-    // 3. Check if ALL assignments for this booking are COMPLETED
+    // 3. Trigger ledger creation using the other developer's logic
+    await this.revenueLedger.createFromJobCompletion(assignment);
+
+    // 4. Check if ALL assignments for this booking are COMPLETED
     const allForBooking = this.jaRepo.findByBooking(assignment.booking_id);
     const allComplete = allForBooking.every(
       (ja) => ja.status === 'COMPLETED',
@@ -156,80 +164,9 @@ export class JobAssignmentsService {
     if (allComplete) {
       // Set booking status → COMPLETED
       this.bookingsRepo.update(assignment.booking_id, { status: 'COMPLETED' });
-
-      // 4. Trigger revenue split for each completed assignment
-      this.createRevenueLedger(assignment.booking_id);
     }
 
     return this.jaRepo.findById(assignmentId);
-  }
-
-  private createRevenueLedger(bookingId: string) {
-    // Look up platform_settings for split percentages
-    const spPct = this.getSetting('sp_revenue_pct', 78);
-    const umPct = this.getSetting('um_revenue_pct', 8);
-    const cmPct = this.getSetting('cm_revenue_pct', 4);
-    const platPct = this.getSetting('platform_revenue_pct', 10);
-
-    // Calculate total booking amount
-    const bookingServices = this.bookingsRepo.findServicesByBooking(bookingId);
-    const totalAmount = bookingServices.reduce(
-      (sum, bs) => sum + bs.price_at_booking * bs.quantity,
-      0,
-    );
-
-    // Get assignments to find providers
-    const assignments = this.jaRepo.findByBooking(bookingId);
-
-    for (const ja of assignments) {
-      // Find provider's unit manager and collective manager
-      const provider = this.db.serviceProviders.find(
-        (sp) => sp.sp_id === ja.sp_id,
-      );
-      // UnitManager is linked via unit_id
-      const um = this.db.unitManagers?.find(
-        (u) => u.unit_id === provider?.unit_id,
-      );
-      const umId = um?.um_id || '';
-      // Unit → collective_id → CollectiveManager
-      const unit = this.db.units?.find(
-        (u) => u.unit_id === provider?.unit_id,
-      );
-      const cm = this.db.collectiveManagers?.find(
-        (c) => c.collective_id === unit?.collective_id,
-      );
-      const cmId = cm?.cm_id || '';
-
-      // Per-assignment amount (proportional to service price)
-      const bs = bookingServices.find(
-        (b) => b.service_id === ja.service_id,
-      );
-      const assignmentAmount = bs
-        ? bs.price_at_booking * bs.quantity
-        : totalAmount / assignments.length;
-
-      this.db.revenueLedger.push({
-        ledger_id: this.db.genId(),
-        payout_status: 'PENDING',
-        provider_amount: Math.round(assignmentAmount * spPct / 100),
-        um_amount: Math.round(assignmentAmount * umPct / 100),
-        cm_amount: Math.round(assignmentAmount * cmPct / 100),
-        platform_amount: Math.round(assignmentAmount * platPct / 100),
-        created_at: this.db.now(),
-        paid_at: null,
-        booking_id: bookingId,
-        sp_id: ja.sp_id,
-        um_id: umId,
-        cm_id: cmId,
-      });
-    }
-  }
-
-  private getSetting(key: string, defaultVal: number): number {
-    const setting = this.db.platformSettings?.find(
-      (s) => s.key === key,
-    );
-    return setting ? Number(setting.value) : defaultVal;
   }
 
   // ── Queries ────────────────────────────────────────────
@@ -253,5 +190,4 @@ export class JobAssignmentsService {
     }
     return ja;
   }
-
 }
