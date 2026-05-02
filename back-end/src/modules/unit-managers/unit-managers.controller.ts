@@ -10,7 +10,6 @@ import {
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
-  ApiHeader,
   ApiOperation,
   ApiResponse,
   ApiTags,
@@ -32,11 +31,6 @@ export class UnitManagersController {
 
   @Get()
   @Roles(Role.SUPER_USER)
-  @ApiHeader({
-    name: 'Authorization',
-    description: 'Bearer token',
-    required: true
-  })
   @ApiOperation({ summary: 'Get all unit managers' })
   @ApiResponse({ status: 200, description: 'Success' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
@@ -46,11 +40,6 @@ export class UnitManagersController {
 
   @Get('unit/:unit_id')
   @Roles(Role.SUPER_USER, Role.UNIT_MANAGER)
-  @ApiHeader({
-    name: 'Authorization',
-    description: 'Bearer token',
-    required: true
-  })
   @ApiOperation({ summary: 'Get unit managers by unit ID' })
   @ApiResponse({ status: 200, description: 'Success' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
@@ -60,11 +49,6 @@ export class UnitManagersController {
 
   @Get(':id')
   @Roles(Role.SUPER_USER, Role.UNIT_MANAGER)
-  @ApiHeader({
-    name: 'Authorization',
-    description: 'Bearer token',
-    required: true
-  })
   @ApiOperation({ summary: 'Get unit manager by ID' })
   @ApiResponse({ status: 200, description: 'Success' })
   @ApiResponse({ status: 404, description: 'Not found' })
@@ -75,11 +59,6 @@ export class UnitManagersController {
 
   @Post()
   @Roles(Role.SUPER_USER)
-  @ApiHeader({
-    name: 'Authorization',
-    description: 'Bearer token',
-    required: true
-  })
   @ApiOperation({ summary: 'Create a new unit manager' })
   @ApiResponse({ status: 201, description: 'Created successfully' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
@@ -89,11 +68,6 @@ export class UnitManagersController {
 
   @Patch(':id')
   @Roles(Role.SUPER_USER, Role.UNIT_MANAGER)
-  @ApiHeader({
-    name: 'Authorization',
-    description: 'Bearer token',
-    required: true
-  })
   @ApiOperation({ summary: 'Update a unit manager' })
   @ApiResponse({ status: 200, description: 'Success' })
   @ApiResponse({ status: 404, description: 'Not found' })
@@ -104,11 +78,6 @@ export class UnitManagersController {
 
   @Delete(':id')
   @Roles(Role.SUPER_USER)
-  @ApiHeader({
-    name: 'Authorization',
-    description: 'Bearer token',
-    required: true
-  })
   @ApiOperation({ summary: 'Delete a unit manager' })
   @ApiResponse({ status: 200, description: 'Success' })
   @ApiResponse({ status: 404, description: 'Not found' })

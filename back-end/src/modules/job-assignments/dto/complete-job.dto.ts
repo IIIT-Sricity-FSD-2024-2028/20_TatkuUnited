@@ -1,11 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsOptional, IsString } from 'class-validator';
 
-export class CreateBookingDto {
+export class CompleteJobDto {
   @ApiProperty({
-    description: 'Optional notes for the booking',
+    description: 'Optional completion notes',
     required: false,
-    example: 'Please bring extra cleaning supplies',
+    example: 'Work completed satisfactorily',
   })
   @IsOptional()
   @IsString()
