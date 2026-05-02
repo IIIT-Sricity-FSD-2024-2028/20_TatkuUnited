@@ -15,10 +15,34 @@
         ]
       }
     },
+    "/health": {
+      "get": {
+        "operationId": "AppController_getHealth",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "App"
+        ]
+      }
+    },
     "/super-users": {
       "get": {
         "operationId": "SuperUsersController_findAll",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Success"
@@ -39,7 +63,17 @@
       },
       "post": {
         "operationId": "SuperUsersController_create",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -74,6 +108,15 @@
         "operationId": "SuperUsersController_findOne",
         "parameters": [
           {
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "name": "id",
             "required": true,
             "in": "path",
@@ -106,6 +149,15 @@
       "patch": {
         "operationId": "SuperUsersController_update",
         "parameters": [
+          {
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
           {
             "name": "id",
             "required": true,
@@ -150,6 +202,15 @@
         "operationId": "SuperUsersController_remove",
         "parameters": [
           {
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "name": "id",
             "required": true,
             "in": "path",
@@ -183,7 +244,17 @@
     "/collective-managers": {
       "get": {
         "operationId": "CollectiveManagersController_findAll",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Success"
@@ -204,7 +275,17 @@
       },
       "post": {
         "operationId": "CollectiveManagersController_create",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -239,6 +320,15 @@
         "operationId": "CollectiveManagersController_findByCollective",
         "parameters": [
           {
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "name": "collective_id",
             "required": true,
             "in": "path",
@@ -270,6 +360,15 @@
       "get": {
         "operationId": "CollectiveManagersController_findOne",
         "parameters": [
+          {
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
           {
             "name": "id",
             "required": true,
@@ -303,6 +402,15 @@
       "patch": {
         "operationId": "CollectiveManagersController_update",
         "parameters": [
+          {
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
           {
             "name": "id",
             "required": true,
@@ -347,6 +455,15 @@
         "operationId": "CollectiveManagersController_remove",
         "parameters": [
           {
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "name": "id",
             "required": true,
             "in": "path",
@@ -380,7 +497,17 @@
     "/unit-managers": {
       "get": {
         "operationId": "UnitManagersController_findAll",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Success"
@@ -401,7 +528,17 @@
       },
       "post": {
         "operationId": "UnitManagersController_create",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -436,6 +573,15 @@
         "operationId": "UnitManagersController_findByUnit",
         "parameters": [
           {
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "name": "unit_id",
             "required": true,
             "in": "path",
@@ -467,6 +613,15 @@
       "get": {
         "operationId": "UnitManagersController_findOne",
         "parameters": [
+          {
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
           {
             "name": "id",
             "required": true,
@@ -500,6 +655,15 @@
       "patch": {
         "operationId": "UnitManagersController_update",
         "parameters": [
+          {
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
           {
             "name": "id",
             "required": true,
@@ -544,6 +708,15 @@
         "operationId": "UnitManagersController_remove",
         "parameters": [
           {
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "name": "id",
             "required": true,
             "in": "path",
@@ -577,7 +750,17 @@
     "/service-providers": {
       "get": {
         "operationId": "ServiceProvidersController_findAll",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Success"
@@ -598,7 +781,17 @@
       },
       "post": {
         "operationId": "ServiceProvidersController_create",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -633,6 +826,15 @@
         "operationId": "ServiceProvidersController_findByUnit",
         "parameters": [
           {
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "name": "unit_id",
             "required": true,
             "in": "path",
@@ -664,6 +866,15 @@
       "get": {
         "operationId": "ServiceProvidersController_findBySector",
         "parameters": [
+          {
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
           {
             "name": "sector_id",
             "required": true,
@@ -697,6 +908,15 @@
         "operationId": "ServiceProvidersController_findOne",
         "parameters": [
           {
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "name": "id",
             "required": true,
             "in": "path",
@@ -729,6 +949,15 @@
       "patch": {
         "operationId": "ServiceProvidersController_update",
         "parameters": [
+          {
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
           {
             "name": "id",
             "required": true,
@@ -773,6 +1002,15 @@
         "operationId": "ServiceProvidersController_remove",
         "parameters": [
           {
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "name": "id",
             "required": true,
             "in": "path",
@@ -807,6 +1045,15 @@
       "patch": {
         "operationId": "ServiceProvidersController_updateWorkingHours",
         "parameters": [
+          {
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
           {
             "name": "id",
             "required": true,
@@ -853,6 +1100,15 @@
         "operationId": "ServiceProvidersController_updateProfile",
         "parameters": [
           {
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "name": "id",
             "required": true,
             "in": "path",
@@ -898,6 +1154,15 @@
         "operationId": "ServiceProvidersController_requestDeactivation",
         "parameters": [
           {
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "name": "id",
             "required": true,
             "in": "path",
@@ -931,7 +1196,17 @@
     "/customers": {
       "get": {
         "operationId": "CustomersController_findAll",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Success"
@@ -952,7 +1227,17 @@
       },
       "post": {
         "operationId": "CustomersController_create",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -987,6 +1272,15 @@
         "operationId": "CustomersController_findBySector",
         "parameters": [
           {
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "name": "sector_id",
             "required": true,
             "in": "path",
@@ -1018,6 +1312,15 @@
       "get": {
         "operationId": "CustomersController_findOne",
         "parameters": [
+          {
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
           {
             "name": "id",
             "required": true,
@@ -1051,6 +1354,15 @@
       "patch": {
         "operationId": "CustomersController_update",
         "parameters": [
+          {
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
           {
             "name": "id",
             "required": true,
@@ -1095,6 +1407,15 @@
         "operationId": "CustomersController_remove",
         "parameters": [
           {
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "name": "id",
             "required": true,
             "in": "path",
@@ -1130,6 +1451,15 @@
         "operationId": "CustomersController_deleteAccount",
         "parameters": [
           {
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "name": "id",
             "required": true,
             "in": "path",
@@ -1163,7 +1493,17 @@
     "/collectives": {
       "get": {
         "operationId": "CollectivesController_findAll",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Returns all collectives"
@@ -1184,7 +1524,17 @@
       },
       "post": {
         "operationId": "CollectivesController_create",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -1219,6 +1569,15 @@
         "operationId": "CollectivesController_findOne",
         "parameters": [
           {
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "name": "id",
             "required": true,
             "in": "path",
@@ -1251,6 +1610,15 @@
       "patch": {
         "operationId": "CollectivesController_update",
         "parameters": [
+          {
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
           {
             "name": "id",
             "required": true,
@@ -1295,6 +1663,15 @@
         "operationId": "CollectivesController_remove",
         "parameters": [
           {
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "name": "id",
             "required": true,
             "in": "path",
@@ -1328,7 +1705,17 @@
     "/sectors": {
       "get": {
         "operationId": "SectorsController_findAll",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Success"
@@ -1349,7 +1736,17 @@
       },
       "post": {
         "operationId": "SectorsController_create",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -1384,6 +1781,15 @@
         "operationId": "SectorsController_findByCollective",
         "parameters": [
           {
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "name": "collectiveId",
             "required": true,
             "in": "path",
@@ -1415,6 +1821,15 @@
       "get": {
         "operationId": "SectorsController_findOne",
         "parameters": [
+          {
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
           {
             "name": "id",
             "required": true,
@@ -1448,6 +1863,15 @@
       "patch": {
         "operationId": "SectorsController_update",
         "parameters": [
+          {
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
           {
             "name": "id",
             "required": true,
@@ -1492,6 +1916,15 @@
         "operationId": "SectorsController_remove",
         "parameters": [
           {
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "name": "id",
             "required": true,
             "in": "path",
@@ -1525,7 +1958,17 @@
     "/units": {
       "get": {
         "operationId": "UnitsController_findAll",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Success"
@@ -1546,7 +1989,17 @@
       },
       "post": {
         "operationId": "UnitsController_create",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -1581,6 +2034,15 @@
         "operationId": "UnitsController_findByCollective",
         "parameters": [
           {
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "name": "collectiveId",
             "required": true,
             "in": "path",
@@ -1612,6 +2074,15 @@
       "get": {
         "operationId": "UnitsController_findOne",
         "parameters": [
+          {
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
           {
             "name": "id",
             "required": true,
@@ -1645,6 +2116,15 @@
       "patch": {
         "operationId": "UnitsController_update",
         "parameters": [
+          {
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
           {
             "name": "id",
             "required": true,
@@ -1689,6 +2169,15 @@
         "operationId": "UnitsController_remove",
         "parameters": [
           {
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "name": "id",
             "required": true,
             "in": "path",
@@ -1726,7 +2215,7 @@
           {
             "name": "x-role",
             "in": "header",
-            "description": "User role (customer, super_user, service_provider)",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
             "required": true,
             "schema": {
               "type": "string"
@@ -1757,7 +2246,7 @@
           {
             "name": "x-role",
             "in": "header",
-            "description": "User role (customer, super_user, service_provider)",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
             "required": true,
             "schema": {
               "type": "string"
@@ -1798,18 +2287,18 @@
         "operationId": "CategoriesController_findOne",
         "parameters": [
           {
-            "name": "id",
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
             "required": true,
-            "in": "path",
             "schema": {
               "type": "string"
             }
           },
           {
-            "name": "x-role",
-            "in": "header",
-            "description": "User role (customer, super_user, service_provider)",
+            "name": "id",
             "required": true,
+            "in": "path",
             "schema": {
               "type": "string"
             }
@@ -1840,18 +2329,18 @@
         "operationId": "CategoriesController_update",
         "parameters": [
           {
-            "name": "id",
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
             "required": true,
-            "in": "path",
             "schema": {
               "type": "string"
             }
           },
           {
-            "name": "x-role",
-            "in": "header",
-            "description": "User role (customer, super_user, service_provider)",
+            "name": "id",
             "required": true,
+            "in": "path",
             "schema": {
               "type": "string"
             }
@@ -1892,18 +2381,18 @@
         "operationId": "CategoriesController_remove",
         "parameters": [
           {
-            "name": "id",
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
             "required": true,
-            "in": "path",
             "schema": {
               "type": "string"
             }
           },
           {
-            "name": "x-role",
-            "in": "header",
-            "description": "User role (customer, super_user, service_provider)",
+            "name": "id",
             "required": true,
+            "in": "path",
             "schema": {
               "type": "string"
             }
@@ -1938,7 +2427,7 @@
           {
             "name": "x-role",
             "in": "header",
-            "description": "User role (customer, super_user, service_provider)",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
             "required": true,
             "schema": {
               "type": "string"
@@ -1969,7 +2458,7 @@
           {
             "name": "x-role",
             "in": "header",
-            "description": "User role (customer, super_user, service_provider)",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
             "required": true,
             "schema": {
               "type": "string"
@@ -2008,7 +2497,17 @@
     "/services/available": {
       "get": {
         "operationId": "ServicesController_findAvailable",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "List of available services"
@@ -2033,18 +2532,18 @@
         "operationId": "ServicesController_findByCategory",
         "parameters": [
           {
-            "name": "categoryId",
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
             "required": true,
-            "in": "path",
             "schema": {
               "type": "string"
             }
           },
           {
-            "name": "x-role",
-            "in": "header",
-            "description": "User role (customer, super_user, service_provider)",
+            "name": "categoryId",
             "required": true,
+            "in": "path",
             "schema": {
               "type": "string"
             }
@@ -2074,18 +2573,18 @@
         "operationId": "ServicesController_getServiceSkills",
         "parameters": [
           {
-            "name": "id",
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
             "required": true,
-            "in": "path",
             "schema": {
               "type": "string"
             }
           },
           {
-            "name": "x-role",
-            "in": "header",
-            "description": "User role (customer, super_user, service_provider)",
+            "name": "id",
             "required": true,
+            "in": "path",
             "schema": {
               "type": "string"
             }
@@ -2113,18 +2612,18 @@
         "operationId": "ServicesController_linkSkill",
         "parameters": [
           {
-            "name": "id",
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
             "required": true,
-            "in": "path",
             "schema": {
               "type": "string"
             }
           },
           {
-            "name": "x-role",
-            "in": "header",
-            "description": "User role (customer, super_user, service_provider)",
+            "name": "id",
             "required": true,
+            "in": "path",
             "schema": {
               "type": "string"
             }
@@ -2170,6 +2669,15 @@
         "operationId": "ServicesController_unlinkSkill",
         "parameters": [
           {
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "name": "id",
             "required": true,
             "in": "path",
@@ -2181,15 +2689,6 @@
             "name": "skillId",
             "required": true,
             "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "x-role",
-            "in": "header",
-            "description": "User role (customer, super_user, service_provider)",
-            "required": true,
             "schema": {
               "type": "string"
             }
@@ -2222,6 +2721,15 @@
         "operationId": "ServicesController_getContent",
         "parameters": [
           {
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "name": "id",
             "required": true,
             "in": "path",
@@ -2251,6 +2759,15 @@
       "put": {
         "operationId": "ServicesController_upsertContent",
         "parameters": [
+          {
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
           {
             "name": "id",
             "required": true,
@@ -2297,18 +2814,18 @@
         "operationId": "ServicesController_getFaqs",
         "parameters": [
           {
-            "name": "id",
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
             "required": true,
-            "in": "path",
             "schema": {
               "type": "string"
             }
           },
           {
-            "name": "x-role",
-            "in": "header",
-            "description": "User role (customer, super_user, service_provider)",
+            "name": "id",
             "required": true,
+            "in": "path",
             "schema": {
               "type": "string"
             }
@@ -2336,18 +2853,18 @@
         "operationId": "ServicesController_createFaq",
         "parameters": [
           {
-            "name": "id",
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
             "required": true,
-            "in": "path",
             "schema": {
               "type": "string"
             }
           },
           {
-            "name": "x-role",
-            "in": "header",
-            "description": "User role (customer, super_user, service_provider)",
+            "name": "id",
             "required": true,
+            "in": "path",
             "schema": {
               "type": "string"
             }
@@ -2390,18 +2907,18 @@
         "operationId": "ServicesController_updateFaq",
         "parameters": [
           {
-            "name": "faqId",
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
             "required": true,
-            "in": "path",
             "schema": {
               "type": "string"
             }
           },
           {
-            "name": "x-role",
-            "in": "header",
-            "description": "User role (customer, super_user, service_provider)",
+            "name": "faqId",
             "required": true,
+            "in": "path",
             "schema": {
               "type": "string"
             }
@@ -2442,18 +2959,18 @@
         "operationId": "ServicesController_deleteFaq",
         "parameters": [
           {
-            "name": "faqId",
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
             "required": true,
-            "in": "path",
             "schema": {
               "type": "string"
             }
           },
           {
-            "name": "x-role",
-            "in": "header",
-            "description": "User role (customer, super_user, service_provider)",
+            "name": "faqId",
             "required": true,
+            "in": "path",
             "schema": {
               "type": "string"
             }
@@ -2486,18 +3003,18 @@
         "operationId": "ServicesController_findOne",
         "parameters": [
           {
-            "name": "id",
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
             "required": true,
-            "in": "path",
             "schema": {
               "type": "string"
             }
           },
           {
-            "name": "x-role",
-            "in": "header",
-            "description": "User role (customer, super_user, service_provider)",
+            "name": "id",
             "required": true,
+            "in": "path",
             "schema": {
               "type": "string"
             }
@@ -2528,18 +3045,18 @@
         "operationId": "ServicesController_update",
         "parameters": [
           {
-            "name": "id",
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
             "required": true,
-            "in": "path",
             "schema": {
               "type": "string"
             }
           },
           {
-            "name": "x-role",
-            "in": "header",
-            "description": "User role (customer, super_user, service_provider)",
+            "name": "id",
             "required": true,
+            "in": "path",
             "schema": {
               "type": "string"
             }
@@ -2580,18 +3097,18 @@
         "operationId": "ServicesController_remove",
         "parameters": [
           {
-            "name": "id",
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
             "required": true,
-            "in": "path",
             "schema": {
               "type": "string"
             }
           },
           {
-            "name": "x-role",
-            "in": "header",
-            "description": "User role (customer, super_user, service_provider)",
+            "name": "id",
             "required": true,
+            "in": "path",
             "schema": {
               "type": "string"
             }
@@ -2626,7 +3143,7 @@
           {
             "name": "x-role",
             "in": "header",
-            "description": "User role (customer, super_user, service_provider)",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
             "required": true,
             "schema": {
               "type": "string"
@@ -2657,7 +3174,7 @@
           {
             "name": "x-role",
             "in": "header",
-            "description": "User role (customer, super_user, service_provider)",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
             "required": true,
             "schema": {
               "type": "string"
@@ -2698,18 +3215,18 @@
         "operationId": "SkillsController_findOne",
         "parameters": [
           {
-            "name": "id",
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
             "required": true,
-            "in": "path",
             "schema": {
               "type": "string"
             }
           },
           {
-            "name": "x-role",
-            "in": "header",
-            "description": "User role (customer, super_user, service_provider)",
+            "name": "id",
             "required": true,
+            "in": "path",
             "schema": {
               "type": "string"
             }
@@ -2740,18 +3257,18 @@
         "operationId": "SkillsController_update",
         "parameters": [
           {
-            "name": "id",
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
             "required": true,
-            "in": "path",
             "schema": {
               "type": "string"
             }
           },
           {
-            "name": "x-role",
-            "in": "header",
-            "description": "User role (customer, super_user, service_provider)",
+            "name": "id",
             "required": true,
+            "in": "path",
             "schema": {
               "type": "string"
             }
@@ -2792,18 +3309,18 @@
         "operationId": "SkillsController_remove",
         "parameters": [
           {
-            "name": "id",
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
             "required": true,
-            "in": "path",
             "schema": {
               "type": "string"
             }
           },
           {
-            "name": "x-role",
-            "in": "header",
-            "description": "User role (customer, super_user, service_provider)",
+            "name": "id",
             "required": true,
+            "in": "path",
             "schema": {
               "type": "string"
             }
@@ -2836,18 +3353,18 @@
         "operationId": "ProviderSkillsController_findByProvider",
         "parameters": [
           {
-            "name": "provider_id",
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
             "required": true,
-            "in": "path",
             "schema": {
               "type": "string"
             }
           },
           {
-            "name": "x-role",
-            "in": "header",
-            "description": "User role (customer, super_user, service_provider)",
+            "name": "provider_id",
             "required": true,
+            "in": "path",
             "schema": {
               "type": "string"
             }
@@ -2877,18 +3394,18 @@
         "operationId": "ProviderSkillsController_findBySkill",
         "parameters": [
           {
-            "name": "skill_id",
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
             "required": true,
-            "in": "path",
             "schema": {
               "type": "string"
             }
           },
           {
-            "name": "x-role",
-            "in": "header",
-            "description": "User role (customer, super_user, service_provider)",
+            "name": "skill_id",
             "required": true,
+            "in": "path",
             "schema": {
               "type": "string"
             }
@@ -2920,7 +3437,7 @@
           {
             "name": "x-role",
             "in": "header",
-            "description": "User role (customer, super_user, service_provider)",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
             "required": true,
             "schema": {
               "type": "string"
@@ -2961,18 +3478,18 @@
         "operationId": "ProviderSkillsController_verifySkill",
         "parameters": [
           {
-            "name": "id",
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
             "required": true,
-            "in": "path",
             "schema": {
               "type": "string"
             }
           },
           {
-            "name": "x-role",
-            "in": "header",
-            "description": "User role (customer, super_user, service_provider)",
+            "name": "id",
             "required": true,
+            "in": "path",
             "schema": {
               "type": "string"
             }
@@ -3017,7 +3534,7 @@
           {
             "name": "x-role",
             "in": "header",
-            "description": "User role (customer, super_user, service_provider)",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
             "required": true,
             "schema": {
               "type": "string"
@@ -3048,7 +3565,7 @@
           {
             "name": "x-role",
             "in": "header",
-            "description": "User role (customer, super_user, service_provider)",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
             "required": true,
             "schema": {
               "type": "string"
@@ -3089,18 +3606,18 @@
         "operationId": "ProviderUnavailabilityController_findByProvider",
         "parameters": [
           {
-            "name": "provider_id",
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
             "required": true,
-            "in": "path",
             "schema": {
               "type": "string"
             }
           },
           {
-            "name": "x-role",
-            "in": "header",
-            "description": "User role (customer, super_user, service_provider)",
+            "name": "provider_id",
             "required": true,
+            "in": "path",
             "schema": {
               "type": "string"
             }
@@ -3130,18 +3647,18 @@
         "operationId": "ProviderUnavailabilityController_findOne",
         "parameters": [
           {
-            "name": "id",
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
             "required": true,
-            "in": "path",
             "schema": {
               "type": "string"
             }
           },
           {
-            "name": "x-role",
-            "in": "header",
-            "description": "User role (customer, super_user, service_provider)",
+            "name": "id",
             "required": true,
+            "in": "path",
             "schema": {
               "type": "string"
             }
@@ -3172,18 +3689,18 @@
         "operationId": "ProviderUnavailabilityController_update",
         "parameters": [
           {
-            "name": "id",
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
             "required": true,
-            "in": "path",
             "schema": {
               "type": "string"
             }
           },
           {
-            "name": "x-role",
-            "in": "header",
-            "description": "User role (customer, super_user, service_provider)",
+            "name": "id",
             "required": true,
+            "in": "path",
             "schema": {
               "type": "string"
             }
@@ -3224,18 +3741,18 @@
         "operationId": "ProviderUnavailabilityController_remove",
         "parameters": [
           {
-            "name": "id",
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
             "required": true,
-            "in": "path",
             "schema": {
               "type": "string"
             }
           },
           {
-            "name": "x-role",
-            "in": "header",
-            "description": "User role (customer, super_user, service_provider)",
+            "name": "id",
             "required": true,
+            "in": "path",
             "schema": {
               "type": "string"
             }
@@ -3270,7 +3787,7 @@
           {
             "name": "x-role",
             "in": "header",
-            "description": "User role (customer, super_user, service_provider)",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
             "required": true,
             "schema": {
               "type": "string"
@@ -3285,7 +3802,7 @@
             "description": "Cart empty or not found"
           },
           "403": {
-            "description": "Forbidden — customer only"
+            "description": "Forbidden - customer only"
           }
         },
         "security": [
@@ -3293,7 +3810,7 @@
             "bearer": []
           }
         ],
-        "summary": "Checkout — create booking from cart",
+        "summary": "Checkout - create booking from cart",
         "tags": [
           "bookings"
         ]
@@ -3302,13 +3819,23 @@
     "/bookings/my": {
       "get": {
         "operationId": "BookingsController_getMyBookings",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Customer bookings returned"
           },
           "403": {
-            "description": "Forbidden — customer only"
+            "description": "Forbidden - customer only"
           }
         },
         "security": [
@@ -3327,18 +3854,18 @@
         "operationId": "BookingsController_findByCustomer",
         "parameters": [
           {
-            "name": "customerId",
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
             "required": true,
-            "in": "path",
             "schema": {
               "type": "string"
             }
           },
           {
-            "name": "x-role",
-            "in": "header",
-            "description": "User role (customer, super_user, service_provider)",
+            "name": "customerId",
             "required": true,
+            "in": "path",
             "schema": {
               "type": "string"
             }
@@ -3368,18 +3895,18 @@
         "operationId": "BookingsController_findBySector",
         "parameters": [
           {
-            "name": "sectorId",
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
             "required": true,
-            "in": "path",
             "schema": {
               "type": "string"
             }
           },
           {
-            "name": "x-role",
-            "in": "header",
-            "description": "User role (customer, super_user, service_provider)",
+            "name": "sectorId",
             "required": true,
+            "in": "path",
             "schema": {
               "type": "string"
             }
@@ -3411,7 +3938,7 @@
           {
             "name": "x-role",
             "in": "header",
-            "description": "User role (customer, super_user, service_provider)",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
             "required": true,
             "schema": {
               "type": "string"
@@ -3441,6 +3968,15 @@
       "get": {
         "operationId": "BookingsController_findOne",
         "parameters": [
+          {
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
           {
             "name": "id",
             "required": true,
@@ -3477,18 +4013,18 @@
         "operationId": "BookingsController_cancel",
         "parameters": [
           {
-            "name": "id",
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
             "required": true,
-            "in": "path",
             "schema": {
               "type": "string"
             }
           },
           {
-            "name": "x-role",
-            "in": "header",
-            "description": "User role (customer, super_user, service_provider)",
+            "name": "id",
             "required": true,
+            "in": "path",
             "schema": {
               "type": "string"
             }
@@ -3522,7 +4058,17 @@
     "/cart": {
       "get": {
         "operationId": "CartController_getCart",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Cart with items returned"
@@ -3543,7 +4089,17 @@
       },
       "patch": {
         "operationId": "CartController_updateCartMeta",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -3576,7 +4132,17 @@
     "/cart/items": {
       "post": {
         "operationId": "CartController_addItem",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -3610,7 +4176,17 @@
       },
       "delete": {
         "operationId": "CartController_clearCart",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Cart cleared"
@@ -3635,18 +4211,18 @@
         "operationId": "CartController_updateItemQuantity",
         "parameters": [
           {
-            "name": "itemId",
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
             "required": true,
-            "in": "path",
             "schema": {
               "type": "string"
             }
           },
           {
-            "name": "x-role",
-            "in": "header",
-            "description": "User role (customer, super_user, service_provider)",
+            "name": "itemId",
             "required": true,
+            "in": "path",
             "schema": {
               "type": "string"
             }
@@ -3687,18 +4263,18 @@
         "operationId": "CartController_removeItem",
         "parameters": [
           {
-            "name": "itemId",
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
             "required": true,
-            "in": "path",
             "schema": {
               "type": "string"
             }
           },
           {
-            "name": "x-role",
-            "in": "header",
-            "description": "User role (customer, super_user, service_provider)",
+            "name": "itemId",
             "required": true,
+            "in": "path",
             "schema": {
               "type": "string"
             }
@@ -3731,18 +4307,18 @@
         "operationId": "JobAssignmentsController_autoAssign",
         "parameters": [
           {
-            "name": "bookingId",
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
             "required": true,
-            "in": "path",
             "schema": {
               "type": "string"
             }
           },
           {
-            "name": "x-role",
-            "in": "header",
-            "description": "User role (customer, super_user, service_provider)",
+            "name": "bookingId",
             "required": true,
+            "in": "path",
             "schema": {
               "type": "string"
             }
@@ -3778,18 +4354,18 @@
         "operationId": "JobAssignmentsController_findByBooking",
         "parameters": [
           {
-            "name": "bookingId",
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
             "required": true,
-            "in": "path",
             "schema": {
               "type": "string"
             }
           },
           {
-            "name": "x-role",
-            "in": "header",
-            "description": "User role (customer, super_user, service_provider)",
+            "name": "bookingId",
             "required": true,
+            "in": "path",
             "schema": {
               "type": "string"
             }
@@ -3819,18 +4395,18 @@
         "operationId": "JobAssignmentsController_findByProvider",
         "parameters": [
           {
-            "name": "spId",
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
             "required": true,
-            "in": "path",
             "schema": {
               "type": "string"
             }
           },
           {
-            "name": "x-role",
-            "in": "header",
-            "description": "User role (customer, super_user, service_provider)",
+            "name": "spId",
             "required": true,
+            "in": "path",
             "schema": {
               "type": "string"
             }
@@ -3860,6 +4436,15 @@
         "operationId": "JobAssignmentsController_markComplete",
         "parameters": [
           {
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "name": "id",
             "required": true,
             "in": "path",
@@ -3886,7 +4471,7 @@
             "description": "Already completed"
           },
           "403": {
-            "description": "Forbidden — service_provider only"
+            "description": "Forbidden - service_provider only"
           },
           "404": {
             "description": "Assignment not found"
@@ -3910,7 +4495,7 @@
           {
             "name": "x-role",
             "in": "header",
-            "description": "User role (customer, super_user, service_provider)",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
             "required": true,
             "schema": {
               "type": "string"
@@ -3941,18 +4526,18 @@
         "operationId": "JobAssignmentsController_findOne",
         "parameters": [
           {
-            "name": "id",
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
             "required": true,
-            "in": "path",
             "schema": {
               "type": "string"
             }
           },
           {
-            "name": "x-role",
-            "in": "header",
-            "description": "User role (customer, super_user, service_provider)",
+            "name": "id",
             "required": true,
+            "in": "path",
             "schema": {
               "type": "string"
             }
@@ -3996,7 +4581,7 @@
           {
             "name": "x-role",
             "in": "header",
-            "description": "Caller role: super_user | customer | service_provider | unit_manager | collective_manager",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
             "required": true,
             "schema": {
               "type": "string"
@@ -4038,7 +4623,7 @@
           {
             "name": "x-role",
             "in": "header",
-            "description": "Caller role: super_user | customer | service_provider | unit_manager | collective_manager",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
             "required": true,
             "schema": {
               "type": "string"
@@ -4089,7 +4674,7 @@
           {
             "name": "x-role",
             "in": "header",
-            "description": "Caller role: super_user | customer | service_provider | unit_manager | collective_manager",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
             "required": true,
             "schema": {
               "type": "string"
@@ -4140,7 +4725,7 @@
           {
             "name": "x-role",
             "in": "header",
-            "description": "Caller role: super_user | customer | service_provider | unit_manager | collective_manager",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
             "required": true,
             "schema": {
               "type": "string"
@@ -4191,7 +4776,7 @@
           {
             "name": "x-role",
             "in": "header",
-            "description": "Caller role: super_user | customer | service_provider | unit_manager | collective_manager",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
             "required": true,
             "schema": {
               "type": "string"
@@ -4248,7 +4833,7 @@
           {
             "name": "x-role",
             "in": "header",
-            "description": "Caller role: super_user | customer | service_provider | unit_manager | collective_manager",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
             "required": true,
             "schema": {
               "type": "string"
@@ -4300,7 +4885,7 @@
           {
             "name": "x-role",
             "in": "header",
-            "description": "Caller role: super_user | customer | service_provider | unit_manager | collective_manager",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
             "required": true,
             "schema": {
               "type": "string"
@@ -4354,7 +4939,7 @@
           {
             "name": "x-role",
             "in": "header",
-            "description": "Caller role: super_user | customer | service_provider | unit_manager | collective_manager",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
             "required": true,
             "schema": {
               "type": "string"
@@ -4404,7 +4989,7 @@
           {
             "name": "x-role",
             "in": "header",
-            "description": "Caller role: super_user | customer | service_provider | unit_manager | collective_manager",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
             "required": true,
             "schema": {
               "type": "string"
@@ -4446,7 +5031,7 @@
           {
             "name": "x-role",
             "in": "header",
-            "description": "Caller role: super_user | customer | service_provider | unit_manager | collective_manager",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
             "required": true,
             "schema": {
               "type": "string"
@@ -4499,7 +5084,7 @@
           {
             "name": "x-role",
             "in": "header",
-            "description": "Caller role: super_user | customer | service_provider | unit_manager | collective_manager",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
             "required": true,
             "schema": {
               "type": "string"
@@ -4541,7 +5126,7 @@
           {
             "name": "x-role",
             "in": "header",
-            "description": "Caller role: super_user | customer | service_provider | unit_manager | collective_manager",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
             "required": true,
             "schema": {
               "type": "string"
@@ -4595,7 +5180,7 @@
           {
             "name": "x-role",
             "in": "header",
-            "description": "Caller role: super_user | customer | service_provider | unit_manager | collective_manager",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
             "required": true,
             "schema": {
               "type": "string"
@@ -4656,7 +5241,7 @@
           {
             "name": "x-role",
             "in": "header",
-            "description": "Caller role: super_user | customer | service_provider | unit_manager | collective_manager",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
             "required": true,
             "schema": {
               "type": "string"
@@ -4710,7 +5295,7 @@
           {
             "name": "x-role",
             "in": "header",
-            "description": "Caller role: super_user | customer | service_provider | unit_manager | collective_manager",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
             "required": true,
             "schema": {
               "type": "string"
@@ -4763,7 +5348,7 @@
           {
             "name": "x-role",
             "in": "header",
-            "description": "Caller role: super_user | customer | service_provider | unit_manager | collective_manager",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
             "required": true,
             "schema": {
               "type": "string"
@@ -4805,7 +5390,7 @@
           {
             "name": "x-role",
             "in": "header",
-            "description": "Caller role: super_user | customer | service_provider | unit_manager | collective_manager",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
             "required": true,
             "schema": {
               "type": "string"
@@ -4859,7 +5444,7 @@
           {
             "name": "x-role",
             "in": "header",
-            "description": "Caller role: super_user | customer | service_provider | unit_manager | collective_manager",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
             "required": true,
             "schema": {
               "type": "string"
@@ -4911,7 +5496,7 @@
           {
             "name": "x-role",
             "in": "header",
-            "description": "Caller role: super_user | customer | service_provider | unit_manager | collective_manager",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
             "required": true,
             "schema": {
               "type": "string"
@@ -4973,7 +5558,7 @@
           {
             "name": "x-role",
             "in": "header",
-            "description": "Caller role: super_user | customer | service_provider | unit_manager | collective_manager",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
             "required": true,
             "schema": {
               "type": "string"
@@ -5027,7 +5612,7 @@
           {
             "name": "x-role",
             "in": "header",
-            "description": "Caller role: super_user | customer | service_provider | unit_manager | collective_manager",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
             "required": true,
             "schema": {
               "type": "string"
@@ -5089,7 +5674,17 @@
     "/reviews": {
       "post": {
         "operationId": "ReviewsController_create",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -5102,23 +5697,177 @@
         },
         "responses": {
           "201": {
-            "description": ""
+            "description": "Review created"
+          },
+          "400": {
+            "description": "Booking not completed, duplicate review, or invalid service/provider"
+          },
+          "403": {
+            "description": "Forbidden - customer only or not own booking"
           }
         },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create a review for a completed booking service",
         "tags": [
-          "Reviews"
+          "reviews"
         ]
       },
       "get": {
         "operationId": "ReviewsController_findAll",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "200": {
-            "description": ""
+            "description": "Reviews returned"
+          },
+          "403": {
+            "description": "Forbidden"
           }
         },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List all reviews for operational dashboards",
         "tags": [
-          "Reviews"
+          "reviews"
+        ]
+      }
+    },
+    "/reviews/booking/{bookingId}": {
+      "get": {
+        "operationId": "ReviewsController_findByBooking",
+        "parameters": [
+          {
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "bookingId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Booking reviews returned"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List reviews for a booking",
+        "tags": [
+          "reviews"
+        ]
+      }
+    },
+    "/reviews/provider/{spId}": {
+      "get": {
+        "operationId": "ReviewsController_findByProvider",
+        "parameters": [
+          {
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "spId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Provider reviews returned"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List reviews for a service provider",
+        "tags": [
+          "reviews"
+        ]
+      }
+    },
+    "/reviews/customer/{customerId}": {
+      "get": {
+        "operationId": "ReviewsController_findByCustomer",
+        "parameters": [
+          {
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "customerId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Customer reviews returned"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List reviews written by a customer",
+        "tags": [
+          "reviews"
         ]
       }
     },
@@ -5126,6 +5875,15 @@
       "get": {
         "operationId": "ReviewsController_findOne",
         "parameters": [
+          {
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
           {
             "name": "id",
             "required": true,
@@ -5137,16 +5895,37 @@
         ],
         "responses": {
           "200": {
-            "description": ""
+            "description": "Review returned"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Review not found"
           }
         },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get review by ID",
         "tags": [
-          "Reviews"
+          "reviews"
         ]
       },
       "patch": {
         "operationId": "ReviewsController_update",
         "parameters": [
+          {
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
           {
             "name": "id",
             "required": true,
@@ -5168,103 +5947,37 @@
         },
         "responses": {
           "200": {
-            "description": ""
+            "description": "Review updated"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Review not found"
           }
         },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update a review",
         "tags": [
-          "Reviews"
+          "reviews"
         ]
       },
       "delete": {
         "operationId": "ReviewsController_remove",
         "parameters": [
           {
-            "name": "id",
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
             "required": true,
-            "in": "path",
             "schema": {
               "type": "string"
             }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "Reviews"
-        ]
-      }
-    },
-<<<<<<< HEAD
-    "/platform-settings": {
-      "post": {
-        "operationId": "PlatformSettingsController_create",
-=======
-    "/cart": {
-      "post": {
-        "operationId": "CartController_create",
->>>>>>> d25a99e4388a9f23b5994465092251d33d64e285
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-<<<<<<< HEAD
-                "$ref": "#/components/schemas/CreatePlatformSettingDto"
-=======
-                "$ref": "#/components/schemas/CreateCartDto"
->>>>>>> d25a99e4388a9f23b5994465092251d33d64e285
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": ""
-          }
-        },
-        "tags": [
-<<<<<<< HEAD
-          "PlatformSettings"
-        ]
-      },
-      "get": {
-        "operationId": "PlatformSettingsController_findAll",
-=======
-          "Cart"
-        ]
-      },
-      "get": {
-        "operationId": "CartController_findAll",
->>>>>>> d25a99e4388a9f23b5994465092251d33d64e285
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": [
-<<<<<<< HEAD
-          "PlatformSettings"
-        ]
-      }
-    },
-    "/platform-settings/{id}": {
-      "get": {
-        "operationId": "PlatformSettingsController_findOne",
-=======
-          "Cart"
-        ]
-      }
-    },
-    "/cart/{id}": {
-      "get": {
-        "operationId": "CartController_findOne",
->>>>>>> d25a99e4388a9f23b5994465092251d33d64e285
-        "parameters": [
+          },
           {
             "name": "id",
             "required": true,
@@ -5276,87 +5989,23 @@
         ],
         "responses": {
           "200": {
-            "description": ""
+            "description": "Review deleted"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Review not found"
           }
         },
-        "tags": [
-<<<<<<< HEAD
-          "PlatformSettings"
-        ]
-      },
-      "patch": {
-        "operationId": "PlatformSettingsController_update",
-=======
-          "Cart"
-        ]
-      },
-      "patch": {
-        "operationId": "CartController_update",
->>>>>>> d25a99e4388a9f23b5994465092251d33d64e285
-        "parameters": [
+        "security": [
           {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
+            "bearer": []
           }
         ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-<<<<<<< HEAD
-                "$ref": "#/components/schemas/UpdatePlatformSettingDto"
-=======
-                "$ref": "#/components/schemas/UpdateCartDto"
->>>>>>> d25a99e4388a9f23b5994465092251d33d64e285
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
+        "summary": "Delete a review",
         "tags": [
-<<<<<<< HEAD
-          "PlatformSettings"
-        ]
-      },
-      "delete": {
-        "operationId": "PlatformSettingsController_remove",
-=======
-          "Cart"
-        ]
-      },
-      "delete": {
-        "operationId": "CartController_remove",
->>>>>>> d25a99e4388a9f23b5994465092251d33d64e285
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": [
-<<<<<<< HEAD
-          "PlatformSettings"
-=======
-          "Cart"
->>>>>>> d25a99e4388a9f23b5994465092251d33d64e285
+          "reviews"
         ]
       }
     },
@@ -6676,22 +7325,6 @@
         "properties": {}
       },
       "UpdateReviewDto": {
-        "type": "object",
-        "properties": {}
-      },
-<<<<<<< HEAD
-      "CreatePlatformSettingDto": {
-        "type": "object",
-        "properties": {}
-      },
-      "UpdatePlatformSettingDto": {
-=======
-      "CreateCartDto": {
-        "type": "object",
-        "properties": {}
-      },
-      "UpdateCartDto": {
->>>>>>> d25a99e4388a9f23b5994465092251d33d64e285
         "type": "object",
         "properties": {}
       },
