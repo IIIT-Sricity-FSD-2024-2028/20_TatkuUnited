@@ -448,7 +448,7 @@ function updateDeactivationUI(status) {
   updateDeactivationUI(sp.account_status);
 
   // Topbar
-  document.querySelectorAll(".user-chip span").forEach((el) => (el.textContent = sp.name || "Provider"));
+  document.querySelectorAll(".user-chip span").forEach((el) => (el.textContent = session.name || "Provider"));
   if (sp.pfp_url) {
     document.querySelectorAll(".user-avatar").forEach((el) => {
       el.innerHTML = `<img src="${sp.pfp_url}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;

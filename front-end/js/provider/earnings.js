@@ -49,7 +49,7 @@ async function buildPayoutRows() {
   try {
     const ledgerEntries = await Api.get("/revenue-ledger/provider/" + spId);
 
-    payoutRows = (ledgerEntries || []).map((entry) => {
+    payoutRows = (ledgerEntries.rows || []).map((entry) => {
       const status =
         (entry.payout_status || "").toUpperCase() === "DISBURSED" ||
         (entry.payout_status || "").toUpperCase() === "PAID"
