@@ -16,9 +16,9 @@
   function renderRevenue() {
     const roleOrder = [
       { role: "provider", label: "Providers (78%)" },
-      { role: "unit_manager", label: "Unit Managers (7%)" },
+      { role: "unit_manager", label: "Unit Managers (8%)" },
       { role: "collective_manager", label: "Collective Managers (4%)" },
-      { role: "super_user", label: "Platform / Super User (11%)" },
+      { role: "super_user", label: "Platform / Super User (10%)" },
     ];
 
     const revenueByRole = {
@@ -29,8 +29,11 @@
     };
 
     allLedger.forEach((entry) => {
-      if (revenueByRole[entry.role]) {
-        revenueByRole[entry.role].amount += Number(entry.amount || 0);
+      if (entry.payout_status === "DISBURSED") {
+        revenueByRole.provider.amount += Number(entry.provider_amount || 0);
+        revenueByRole.unit_manager.amount += Number(entry.um_amount || 0);
+        revenueByRole.collective_manager.amount += Number(entry.cm_amount || 0);
+        revenueByRole.super_user.amount += Number(entry.platform_amount || 0);
       }
     });
 

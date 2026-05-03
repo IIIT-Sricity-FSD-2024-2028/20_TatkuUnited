@@ -78,7 +78,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   renderLastUpdated(initialSettings);
 
   saveBtn.addEventListener("click", async () => {
-    const updatedBy = session?.name || "Super User";
+    const updatedBy = session?.id || "00000000-0000-0000-0000-000000000000";
 
     const settings = {
       ...defaultsFromUI(),

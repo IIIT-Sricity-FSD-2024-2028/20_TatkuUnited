@@ -536,7 +536,8 @@ async function _loadCache() {
       setTimeout(function () { dropdownEl.style.display = "none"; }, 150);
     });
 
-    dropdownEl.addEventListener("click", function (e) {
+    dropdownEl.addEventListener("mousedown", function (e) {
+      e.preventDefault(); // Prevent input blur
       var opt = e.target.closest(".cm-option");
       if (!opt) return;
       var id = opt.getAttribute("data-id");
