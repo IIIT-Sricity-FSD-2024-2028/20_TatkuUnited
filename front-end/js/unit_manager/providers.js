@@ -19,7 +19,7 @@
 
   function deriveStatus(sp) {
     if (!sp.is_active) return "Unavailable";
-    return statusCycle(sp.service_provider_id || "SP000");
+    return statusCycle(sp.sp_id || "SP000");
   }
 
   function statusClass(s) {
@@ -72,6 +72,16 @@
     return palette[String(name || "A").charCodeAt(0) % palette.length];
   }
 
+  function rupee(n) {
+    return (
+      "\u20b9" +
+      Number(n).toLocaleString("en-IN", {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0,
+      })
+    );
+  }
+
   async function loadProvidersFromApi() {
     try {
       var allProviders = await Api.get("/service-providers");
@@ -81,12 +91,28 @@
         return sp.unit_id === session.unitId || sp.unit_id === session.id;
       });
 
+      // Fetch revenue ledger for this unit manager
+      var ledgerResp = await Api.get("/revenue-ledger/unit-manager/" + session.id);
+      var ledgerRows = ledgerResp.rows || [];
+
       providers = unitProviders.map(function (sp) {
         var ratingVal = typeof sp.rating === "number" ? sp.rating : 4.0;
         var perf = Math.max(55, Math.min(99, Math.round(ratingVal * 20)));
         var p = perfMeta(perf);
+
+        // Sum GMV for this provider (total of all splits)
+        var earnings = ledgerRows
+          .filter(function(r) { return r.sp_id === sp.sp_id; })
+          .reduce(function(sum, r) { 
+            var gross = (r.provider_amount || 0) + 
+                        (r.um_amount || 0) + 
+                        (r.cm_amount || 0) + 
+                        (r.platform_amount || 0);
+            return sum + gross; 
+          }, 0);
+
         return {
-          id: sp.service_provider_id,
+          id: sp.sp_id,
           name: sp.name,
           specialty: sp.primary_skill || "General",
           status: deriveStatus(sp),
@@ -94,6 +120,7 @@
           perf: perf,
           perfLabel: p.label,
           perfClass: p.cls,
+          earnings: earnings,
         };
       });
     } catch (err) {
@@ -177,6 +204,7 @@
       '</span> <span class="rating-val">' +
       p.rating.toFixed(1) +
       "</span></td>" +
+      '<td style="font-weight:600; color:var(--text-primary)">' + rupee(p.earnings) + '</td>' +
       "<td>" +
       '  <div class="actions-cell">' +
       '    <button class="btn-action btn-view" onclick="viewProfile(\'' +
@@ -225,7 +253,7 @@
 
     if (pageSlice.length === 0) {
       tbody.innerHTML =
-        '<tr><td colspan="4" style="text-align:center;padding:30px;color:var(--text-secondary)">No providers match your search or filter.</td></tr>';
+        '<tr><td colspan="5" style="text-align:center;padding:30px;color:var(--text-secondary)">No providers match your search or filter.</td></tr>';
       renderPagination(totalRows);
       return;
     }
@@ -301,6 +329,8 @@
     }
   };
 
+
+
   window.deleteProvider = async function (id) {
     var p = providers.find(function (x) {
       return x.id === id;
@@ -332,7 +362,7 @@
   };
 
   window.viewProfile = function (id) {
-    window.location.href = "provider_profile.html?id=" + id;
+    window.location.href = "provider_profile.html#id=" + id;
   };
 
   document.addEventListener("keydown", function (e) {

@@ -42,6 +42,7 @@ export class UnitManagersRepository {
     };
     
     this.databaseService.unitManagers.push(manager);
+    this.databaseService.save();
     return manager;
   }
 
@@ -56,8 +57,11 @@ export class UnitManagersRepository {
     if (dto.phone !== undefined) manager.phone = dto.phone;
     if (dto.unit_id !== undefined) manager.unit_id = dto.unit_id;
     if (dto.is_active !== undefined) manager.is_active = dto.is_active;
+    if (dto.dob !== undefined) manager.dob = dto.dob;
+    if (dto.pfp_url !== undefined) manager.pfp_url = dto.pfp_url;
     
     manager.updated_at = new Date().toISOString();
+    this.databaseService.save();
     return manager;
   }
 
@@ -69,6 +73,7 @@ export class UnitManagersRepository {
       throw new NotFoundException(`UnitManager with id "${id}" not found`);
     }
     const [removed] = this.databaseService.unitManagers.splice(index, 1);
+    this.databaseService.save();
     return removed;
   }
 }

@@ -7,7 +7,13 @@
 
   function getQueryParam(name) {
     var params = new URLSearchParams(window.location.search);
-    return params.get(name);
+    let val = params.get(name);
+    if (!val && window.location.hash) {
+      const hashStr = window.location.hash.startsWith('#') ? window.location.hash.substring(1) : window.location.hash;
+      const hashParams = new URLSearchParams(hashStr);
+      val = hashParams.get(name);
+    }
+    return val;
   }
 
   function formatPrice(value) {

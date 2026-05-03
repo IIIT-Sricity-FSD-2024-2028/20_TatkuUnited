@@ -41,7 +41,7 @@ function renderRankedProviders(filter = '') {
     const unit = myUnits.find(u => u.unit_id === p.unit_id); p.unit_name = unit ? unit.unit_name : 'No Unit';
     const rating = p.rating ? p.rating.toFixed(1) : 'N/A';
     card.innerHTML = `<div class="r-provider-info"><div class="r-avatar">${getInitials(p.name)}</div><div><div class="r-name">${p.name}</div><div class="r-meta">${p.unit_name} &bull; ${p.service_provider_id}</div></div></div><div class="r-stats"><div class="r-rating"><span class="star-icon">★</span> ${rating}</div><div class="r-jobs">${p.is_active?'Active':'Inactive'}</div></div>`;
-    card.onclick = () => window.location.href = `provider_profile.html?id=${p.service_provider_id}`;
+    card.onclick = () => window.location.href = `provider_profile.html#id=${p.service_provider_id}`;
     list.appendChild(card);
   });
 }

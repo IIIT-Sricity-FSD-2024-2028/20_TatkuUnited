@@ -25,7 +25,13 @@
 
   function getQueryParam(name) {
     var params = new URLSearchParams(window.location.search);
-    return params.get(name);
+    let val = params.get(name);
+    if (!val && window.location.hash) {
+      const hashStr = window.location.hash.startsWith('#') ? window.location.hash.substring(1) : window.location.hash;
+      const hashParams = new URLSearchParams(hashStr);
+      val = hashParams.get(name);
+    }
+    return val;
   }
 
   function initHamburger() {
@@ -222,7 +228,7 @@
             })
             .join("") +
           "</ul>" +
-          '<a href="service_page.html?serviceId=' +
+          '<a href="service_page.html#serviceId=' +
           encodeURIComponent(service.service_id) +
           '" class="item-view-details">View details</a>' +
           "</div>" +

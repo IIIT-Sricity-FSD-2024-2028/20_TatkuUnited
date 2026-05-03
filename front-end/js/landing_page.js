@@ -617,7 +617,7 @@ function renderLandingContent() {
       links.innerHTML = categories
         .map(
           (cat) =>
-            `<li><a href="service_pages/category_page.html?categoryId=${encodeURIComponent(cat.category_id)}">${cat.category_name}</a></li>`,
+            `<li><a href="service_pages/category_page.html#categoryId=${encodeURIComponent(cat.category_id)}">${cat.category_name}</a></li>`,
         )
         .join("");
     }
@@ -723,7 +723,7 @@ function renderDynamicServices() {
 
     return `
         <a
-          href="service_pages/service_page.html?serviceId=${encodeURIComponent(svc.service_id)}"
+          href="service_pages/service_page.html#serviceId=${encodeURIComponent(svc.service_id)}"
           class="service-card reveal reveal-delay-${(i % 3) + 1}"
         >
           <div class="service-icon-wrap">${icon}</div>

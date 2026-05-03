@@ -1,0 +1,1299 @@
+{
+  "collectives": [
+    {
+      "collective_id": "b2b636cc-a295-445c-844f-eed968905d91",
+      "collective_name": "North Chennai Collective",
+      "is_active": true,
+      "created_at": "2025-10-01T00:00:00Z"
+    }
+  ],
+  "sectors": [
+    {
+      "sector_id": "a167786b-6c7b-464e-961b-c80e07939da9",
+      "sector_name": "Downtown Core",
+      "state": "Tamil Nadu",
+      "region": "Central",
+      "density_tier": "HIGH",
+      "is_active": true,
+      "collective_id": "b2b636cc-a295-445c-844f-eed968905d91"
+    },
+    {
+      "sector_id": "c4a3ff32-47d9-4061-8f88-8d13929e42f1",
+      "sector_name": "Anna Nagar West",
+      "state": "Tamil Nadu",
+      "region": "North",
+      "density_tier": "MEDIUM",
+      "is_active": true,
+      "collective_id": "b2b636cc-a295-445c-844f-eed968905d91"
+    },
+    {
+      "sector_id": "3e0f5367-375e-4234-87d0-2ebe00e7853f",
+      "sector_name": "Velachery South",
+      "state": "Tamil Nadu",
+      "region": "South",
+      "density_tier": "HIGH",
+      "is_active": true,
+      "collective_id": "b2b636cc-a295-445c-844f-eed968905d91"
+    }
+  ],
+  "units": [
+    {
+      "unit_id": "de90b05c-9dc0-4e6c-b2f8-8f42914783fa",
+      "unit_name": "Advanced Electrical Unit",
+      "rating": 4.33,
+      "rating_count": 3,
+      "is_active": true,
+      "created_at": "2025-10-31T00:00:00Z",
+      "collective_id": "b2b636cc-a295-445c-844f-eed968905d91",
+      "category": "Plumbing",
+      "zone": ""
+    },
+    {
+      "unit_id": "8f06716e-01e2-47d1-a51f-f7889dcdd68a",
+      "unit_name": "Plumbing & Sanitary Services",
+      "rating": 5,
+      "rating_count": 2,
+      "is_active": true,
+      "created_at": "2025-11-20T00:00:00Z",
+      "collective_id": "b2b636cc-a295-445c-844f-eed968905d91"
+    },
+    {
+      "unit_id": "fdf27d6a-0ab1-4f61-9a57-8cc1a886bf4d",
+      "unit_name": "Carpentry & Furniture Services",
+      "rating": 0,
+      "rating_count": 0,
+      "is_active": true,
+      "created_at": "2026-01-10T00:00:00Z",
+      "collective_id": "b2b636cc-a295-445c-844f-eed968905d91"
+    },
+    {
+      "unit_id": "ff4dc4e4-9be3-4960-b286-3cd79e497a41",
+      "unit_name": "Pest Control & Sanitization",
+      "rating": 0,
+      "rating_count": 0,
+      "is_active": true,
+      "created_at": "2026-01-15T00:00:00Z",
+      "collective_id": "b2b636cc-a295-445c-844f-eed968905d91"
+    },
+    {
+      "unit_id": "b4304bcb-eff4-4797-ad52-f7427c133a23",
+      "unit_name": "Home Cleaning Services",
+      "rating": 0,
+      "rating_count": 0,
+      "is_active": true,
+      "created_at": "2026-02-01T00:00:00Z",
+      "collective_id": "b2b636cc-a295-445c-844f-eed968905d91"
+    }
+  ],
+  "superUsers": [
+    {
+      "super_user_id": "7de6c1ad-a059-462a-af39-dbaea975c3cf",
+      "name": "Mark",
+      "email": "super_user.mark@tatku.com",
+      "password_hash": "scrypt:d249b97fea88233055bebc07129b8ddd:54eed49957d1e6b68cd295996170d3666992a12c78dd49983b272b6c429336c90399d382dcb8403e78948a48f683b69283773860713ecd7e2aa97c271651d59c",
+      "phone": "9876543210",
+      "is_active": true,
+      "last_login": "2026-03-31T10:00:00Z",
+      "created_at": "2023-01-01T00:00:00Z"
+    }
+  ],
+  "collectiveManagers": [
+    {
+      "cm_id": "895cfdc6-a51b-41f4-8a19-e14be2941c22",
+      "name": "Suresh Patel",
+      "email": "suresh@collective.com",
+      "password_hash": "scrypt:3d4c29d2e57fdf163812df24d61c6737:80f48acd07e1a15af93b80877db83caa04c36a52049f2aec099cb7ac6a565034dc67dfd28691e16ed77f0ba0d68950f97f5a2a9b904e33be2f905e9909c54b95",
+      "phone": "9988776655",
+      "is_active": true,
+      "created_at": "2024-10-10T00:00:00Z",
+      "updated_at": "2026-04-10T00:00:00Z",
+      "collective_id": "b2b636cc-a295-445c-844f-eed968905d91"
+    }
+  ],
+  "unitManagers": [
+    {
+      "um_id": "d86b4722-006e-45f8-8a14-303896f61528",
+      "name": "Karan Mehta",
+      "email": "karan.m@unit.com",
+      "password_hash": "scrypt:0e7129922fc8f95cf5d3b07e25784af5:417636cee3b87a6acf175ef0b55ccf60085527c8ad7985c11fde091446f4ac0d506e91f6103349e1c9f09e7d41b78621cb7ed7213cf09b4c4cf2107117e8dcba",
+      "phone": "9955443321",
+      "is_active": true,
+      "created_at": "2024-11-09T00:00:00Z",
+      "updated_at": "2026-05-03T21:05:02.959Z",
+      "unit_id": "de90b05c-9dc0-4e6c-b2f8-8f42914783fa",
+      "dob": "1995-05-05"
+    },
+    {
+      "um_id": "07c96683-e3cd-4670-9e91-72dca1b4c4da",
+      "name": "Naveen Raj",
+      "email": "naveen.r@unit.com",
+      "password_hash": "scrypt:c84a3e52417de03ffad210ecb7bfe58b:ac1f7c0e7f56c9f77cfd09a6c7bd8a7c8706635498b3b2f73a0c1d0c8850998dd4be6d287f0c32187435bffc3588e57094f8b274fa8ee749181e3826b1e0f9e0",
+      "phone": "9930012277",
+      "is_active": true,
+      "created_at": "2024-12-05T00:00:00Z",
+      "updated_at": "2026-04-09T00:00:00Z",
+      "unit_id": "8f06716e-01e2-47d1-a51f-f7889dcdd68a"
+    },
+    {
+      "um_id": "997b09ee-34f5-47e5-8fe7-cc42322bcdb6",
+      "name": "Anita Desai",
+      "email": "anita.d@unit.com",
+      "password_hash": "scrypt:f73b55491898a7e824d8435244b7df42:9abc4011879d6cce73a7b651a835b13f8ea2ba2be36bb8bb67900a0333c417f8ba1e8e2120d9ffcb126a4b3dca3b8951aea6eecc407e9eb256a5fb274902542f",
+      "phone": "9944332211",
+      "is_active": true,
+      "created_at": "2026-01-10T00:00:00Z",
+      "updated_at": "2026-04-10T00:00:00Z",
+      "unit_id": "fdf27d6a-0ab1-4f61-9a57-8cc1a886bf4d"
+    },
+    {
+      "um_id": "42f152f8-b0b6-465b-9fe3-17eddc4c8245",
+      "name": "Rahul Sharma",
+      "email": "rahul.s@unit.com",
+      "password_hash": "scrypt:db9b2bc35b6a9aa9456269b54ae99965:b455ff9b4498819fe6ff70af515327446f4c96643c9857fa1fd6afb28962c7b52c3d08a66b8195a682e362d659bf0c874398986d921c7f93e36f1f9e76309408",
+      "phone": "9955667788",
+      "is_active": true,
+      "created_at": "2026-01-15T00:00:00Z",
+      "updated_at": "2026-04-10T00:00:00Z",
+      "unit_id": "ff4dc4e4-9be3-4960-b286-3cd79e497a41"
+    },
+    {
+      "um_id": "4d77a4e7-3922-43d7-8867-9fd4d55e038a",
+      "name": "Meera Reddy",
+      "email": "meera.r@unit.com",
+      "password_hash": "scrypt:16120ccae0057ed050b3712cd389fc16:4432e805089bb8dc35eb503ae58145bfc39e611a7446b705ba12c9a708d570ccbe1e79622812bb2a89d22fdab55e68ce9f6cd5d24defd10e32993371ea74c4c7",
+      "phone": "9966778899",
+      "is_active": true,
+      "created_at": "2026-02-01T00:00:00Z",
+      "updated_at": "2026-04-10T00:00:00Z",
+      "unit_id": "b4304bcb-eff4-4797-ad52-f7427c133a23"
+    }
+  ],
+  "serviceProviders": [
+    {
+      "sp_id": "89b3386b-aea4-4602-a2f8-1199b5c14303",
+      "name": "Ravi Kumar",
+      "email": "ravi.kumar@mail.com",
+      "password_hash": "scrypt:3b3181469a9c8a73fe0aa904631d2f24:12a897d88627a18e6cd2981a726d4a90925854ad9cbd3e68a67383f13d079f8633434d3dac9de21a4a1198dcd3f335fcf8a4564a9feab50e208a610c36f449e0",
+      "phone": "9876543210",
+      "dob": "1990-04-12",
+      "address": "12 Anna Nagar, Chennai",
+      "gender": "Male",
+      "rating": 4.33,
+      "rating_count": 3,
+      "is_active": true,
+      "account_status": "active",
+      "deactivation_requested": false,
+      "hour_start": "07:00",
+      "hour_end": "23:00",
+      "created_at": "2024-10-31T08:00:00Z",
+      "updated_at": "2026-04-10T11:30:00Z",
+      "unit_id": "de90b05c-9dc0-4e6c-b2f8-8f42914783fa",
+      "home_sector_id": "a167786b-6c7b-464e-961b-c80e07939da9"
+    },
+    {
+      "sp_id": "02ded170-f08e-4870-8877-83566238dad9",
+      "name": "Manoj Selvam",
+      "email": "manoj.selvam@mail.com",
+      "password_hash": "scrypt:582095f92aee3ca1b806e0fa2c0bacf8:717a29b6a930e026370471caf876ba69b654e1ed302e2238e8ae8ec986b15620057f9a7452fcdef3479649e0dd6e0553f1e3c918c83486ae80f9d55bfa2330b6",
+      "phone": "9884411223",
+      "dob": "1988-11-28",
+      "address": "22 Mogappair, Chennai",
+      "gender": "Male",
+      "rating": 5,
+      "rating_count": 2,
+      "is_active": true,
+      "account_status": "active",
+      "deactivation_requested": false,
+      "hour_start": "07:00",
+      "hour_end": "23:00",
+      "created_at": "2024-11-22T08:00:00Z",
+      "updated_at": "2026-04-10T09:20:00Z",
+      "unit_id": "8f06716e-01e2-47d1-a51f-f7889dcdd68a",
+      "home_sector_id": "c4a3ff32-47d9-4061-8f88-8d13929e42f1"
+    },
+    {
+      "sp_id": "8b2ca424-d655-4005-a253-ddb53d463aa0",
+      "name": "Priya Nair",
+      "email": "priya.nair@mail.com",
+      "password_hash": "scrypt:cdbfc863885ca4f00822fd748c7fe41d:90752b789932a3a05f0b2ba8d3780e3556474b3aeca92a75077f2a45bf879735d44373af37a4a18f803d923acffa8d9a1a3c648c5f8b0e0a6400933f09ab5b96",
+      "phone": "9841015512",
+      "dob": "1994-02-10",
+      "address": "18 Velachery, Chennai",
+      "gender": "Female",
+      "rating": 0,
+      "rating_count": 0,
+      "is_active": true,
+      "account_status": "active",
+      "deactivation_requested": false,
+      "hour_start": "07:00",
+      "hour_end": "23:00",
+      "created_at": "2025-01-06T08:00:00Z",
+      "updated_at": "2026-04-01T10:00:00Z",
+      "unit_id": "de90b05c-9dc0-4e6c-b2f8-8f42914783fa",
+      "home_sector_id": "3e0f5367-375e-4234-87d0-2ebe00e7853f"
+    },
+    {
+      "sp_id": "f0b571d2-60d4-4368-bab7-4aa86846bb96",
+      "name": "Vikram Singh",
+      "email": "vikram.s@mail.com",
+      "password_hash": "scrypt:0839cef8fb255b1c4d8fa8f93feed032:03381c609db35d2c282af93c90dc0d19e114dd844db35bfb0d2d0dda07e052a507e3ac1835f8fe17d1eee39b90c77e1c680580671d88620a22a49466d8f2a3e5",
+      "phone": "9844556677",
+      "dob": "1985-06-20",
+      "address": "45 Adyar, Chennai",
+      "gender": "Male",
+      "rating": 0,
+      "rating_count": 0,
+      "is_active": true,
+      "account_status": "active",
+      "deactivation_requested": false,
+      "hour_start": "07:00",
+      "hour_end": "23:00",
+      "created_at": "2026-01-10T09:00:00Z",
+      "updated_at": "2026-04-10T10:00:00Z",
+      "unit_id": "fdf27d6a-0ab1-4f61-9a57-8cc1a886bf4d",
+      "home_sector_id": "a167786b-6c7b-464e-961b-c80e07939da9"
+    },
+    {
+      "sp_id": "d15687e3-f19c-439e-863c-a5df968c468f",
+      "name": "Saritha Reddy",
+      "email": "saritha.r@mail.com",
+      "password_hash": "scrypt:6c90608090a0c1a7176806c97982c4c5:ffa7674a52fafb16569d55581ea603a73882f0966680048492e7718276b42d569c91f3a5e36a6e73c4f8a74a5acac6b5e522fb97adda8a0bfa7b05dbfaeed39a",
+      "phone": "9844339900",
+      "dob": "1992-08-15",
+      "address": "12 T. Nagar, Chennai",
+      "gender": "Female",
+      "rating": 0,
+      "rating_count": 0,
+      "is_active": true,
+      "account_status": "active",
+      "deactivation_requested": false,
+      "hour_start": "07:00",
+      "hour_end": "23:00",
+      "created_at": "2026-01-12T09:00:00Z",
+      "updated_at": "2026-04-10T11:00:00Z",
+      "unit_id": "fdf27d6a-0ab1-4f61-9a57-8cc1a886bf4d",
+      "home_sector_id": "c4a3ff32-47d9-4061-8f88-8d13929e42f1"
+    },
+    {
+      "sp_id": "119bae69-96f2-4141-9d4f-fa9a0d4ab083",
+      "name": "Amit Verma",
+      "email": "amit.v@mail.com",
+      "password_hash": "scrypt:a563b9645dca71bda294a1f970cbb06f:b7a8905c00cccc458a7db7b0285d8438c251b254248cb05e50b354a735a09406370b2f165dcfcf5b8f6a26c0110548acd5471341ad7142609aa4b8e6bd90aeb4",
+      "phone": "9822334455",
+      "dob": "1989-12-05",
+      "address": "88 OMR, Chennai",
+      "gender": "Male",
+      "rating": 0,
+      "rating_count": 0,
+      "is_active": true,
+      "account_status": "active",
+      "deactivation_requested": false,
+      "hour_start": "07:00",
+      "hour_end": "23:00",
+      "created_at": "2026-01-15T08:00:00Z",
+      "updated_at": "2026-04-10T09:00:00Z",
+      "unit_id": "ff4dc4e4-9be3-4960-b286-3cd79e497a41",
+      "home_sector_id": "3e0f5367-375e-4234-87d0-2ebe00e7853f"
+    },
+    {
+      "sp_id": "5e3908ef-0319-4058-91eb-430a54860f7e",
+      "name": "Anjali Sharma",
+      "email": "anjali.s@mail.com",
+      "password_hash": "scrypt:96f572c79ecfbe96ae56f20bafead844:afae7b2c43b8401d84ea7b9c20abc8bdef2204f5b2d71d4f67861873c64769963a9bac684aab7df394986f7350d41e15184125f0770ed558d3347ffd1324ef74",
+      "phone": "9811223344",
+      "dob": "1995-03-25",
+      "address": "55 ECR, Chennai",
+      "gender": "Female",
+      "rating": 0,
+      "rating_count": 0,
+      "is_active": true,
+      "account_status": "active",
+      "deactivation_requested": false,
+      "hour_start": "07:00",
+      "hour_end": "23:00",
+      "created_at": "2026-02-01T08:00:00Z",
+      "updated_at": "2026-04-10T10:00:00Z",
+      "unit_id": "b4304bcb-eff4-4797-ad52-f7427c133a23",
+      "home_sector_id": "a167786b-6c7b-464e-961b-c80e07939da9"
+    }
+  ],
+  "providerUnavailability": [
+    {
+      "unavailability_id": "6116e5af-f847-4dde-b617-0aa8a31c4205",
+      "date": "2026-04-05",
+      "hour_start": "08:00",
+      "hour_end": "12:00",
+      "reason": "Medical leave",
+      "is_recurring": false,
+      "created_at": "2026-03-20T10:00:00Z",
+      "sp_id": "89b3386b-aea4-4602-a2f8-1199b5c14303"
+    },
+    {
+      "unavailability_id": "434d02a8-989e-49a4-a2ed-3af305f431b1",
+      "date": "2026-04-06",
+      "hour_start": "14:00",
+      "hour_end": "18:00",
+      "reason": "Family event",
+      "is_recurring": false,
+      "created_at": "2026-03-25T11:30:00Z",
+      "sp_id": "02ded170-f08e-4870-8877-83566238dad9"
+    }
+  ],
+  "skills": [
+    {
+      "skill_id": "be2872a9-e215-4230-b654-2cac3f75f53d",
+      "skill_name": "Plumbing",
+      "description": "Installation and repair of pipes, fixtures, fittings"
+    },
+    {
+      "skill_id": "15f25f4b-4ed5-48d6-9152-70e4333b485a",
+      "skill_name": "Electrical",
+      "description": "Electrical installation and repair"
+    },
+    {
+      "skill_id": "b0239c59-d7af-4031-aa66-af7e9834040d",
+      "skill_name": "Cleaning",
+      "description": "Professional home and office cleaning"
+    },
+    {
+      "skill_id": "0d5ffda2-1d52-4b91-8c4d-c0b0396eca2b",
+      "skill_name": "AC Repair",
+      "description": "Diagnostics and repair for split and window AC units"
+    },
+    {
+      "skill_id": "67bec565-562b-47f1-b548-c647fde071d0",
+      "skill_name": "Carpentry",
+      "description": "General woodwork, furniture repair and installation"
+    },
+    {
+      "skill_id": "db8e685c-70bb-4762-ba54-51e57c85ed35",
+      "skill_name": "Furniture Assembly",
+      "description": "Assembling flat-pack and complex furniture units"
+    },
+    {
+      "skill_id": "74c767ff-1538-49c7-a577-f1a7d2a3da29",
+      "skill_name": "Pest Control",
+      "description": "Chemical and non-chemical pest management services"
+    }
+  ],
+  "providerSkills": [
+    {
+      "sp_id": "89b3386b-aea4-4602-a2f8-1199b5c14303",
+      "skill_id": "15f25f4b-4ed5-48d6-9152-70e4333b485a",
+      "verification_status": "Verified",
+      "verified_at": "2026-03-25T10:00:00Z"
+    },
+    {
+      "sp_id": "89b3386b-aea4-4602-a2f8-1199b5c14303",
+      "skill_id": "0d5ffda2-1d52-4b91-8c4d-c0b0396eca2b",
+      "verification_status": "Verified",
+      "verified_at": "2026-03-25T10:05:00Z"
+    },
+    {
+      "sp_id": "89b3386b-aea4-4602-a2f8-1199b5c14303",
+      "skill_id": "b0239c59-d7af-4031-aa66-af7e9834040d",
+      "verification_status": "Verified",
+      "verified_at": "2026-03-26T09:00:00Z"
+    },
+    {
+      "sp_id": "02ded170-f08e-4870-8877-83566238dad9",
+      "skill_id": "be2872a9-e215-4230-b654-2cac3f75f53d",
+      "verification_status": "Verified",
+      "verified_at": "2026-03-26T09:30:00Z"
+    },
+    {
+      "sp_id": "8b2ca424-d655-4005-a253-ddb53d463aa0",
+      "skill_id": "b0239c59-d7af-4031-aa66-af7e9834040d",
+      "verification_status": "Verified",
+      "verified_at": "2026-03-28T12:00:00Z"
+    },
+    {
+      "sp_id": "f0b571d2-60d4-4368-bab7-4aa86846bb96",
+      "skill_id": "67bec565-562b-47f1-b548-c647fde071d0",
+      "verification_status": "Verified",
+      "verified_at": "2026-04-10T10:00:00Z"
+    },
+    {
+      "sp_id": "f0b571d2-60d4-4368-bab7-4aa86846bb96",
+      "skill_id": "db8e685c-70bb-4762-ba54-51e57c85ed35",
+      "verification_status": "Verified",
+      "verified_at": "2026-04-10T10:05:00Z"
+    },
+    {
+      "sp_id": "d15687e3-f19c-439e-863c-a5df968c468f",
+      "skill_id": "db8e685c-70bb-4762-ba54-51e57c85ed35",
+      "verification_status": "Verified",
+      "verified_at": "2026-04-10T11:00:00Z"
+    },
+    {
+      "sp_id": "119bae69-96f2-4141-9d4f-fa9a0d4ab083",
+      "skill_id": "74c767ff-1538-49c7-a577-f1a7d2a3da29",
+      "verification_status": "Verified",
+      "verified_at": "2026-04-10T09:00:00Z"
+    },
+    {
+      "sp_id": "5e3908ef-0319-4058-91eb-430a54860f7e",
+      "skill_id": "b0239c59-d7af-4031-aa66-af7e9834040d",
+      "verification_status": "Verified",
+      "verified_at": "2026-04-10T10:00:00Z"
+    }
+  ],
+  "customers": [
+    {
+      "customer_id": "1e541f38-cc88-4668-9495-bb41dea2aa76",
+      "full_name": "Aditya Verma",
+      "email": "aditya.v@gmail.com",
+      "password_hash": "scrypt:5522863746b67c74fb24868410261e77:ebd372201c86802bf8f4d5dc9bfdba4285adb2cc63a27a7eff81a4391001d4791423b85d036377ef24348e805bfaf90fc72417eb126aaf398b373a644cca00cb",
+      "phone": "9812345678",
+      "dob": "1992-03-15",
+      "address": "14 Boat Club Road, Chennai",
+      "rating": 0,
+      "is_active": true,
+      "home_sector_id": "a167786b-6c7b-464e-961b-c80e07939da9"
+    },
+    {
+      "customer_id": "ea92e879-8322-4578-9db8-6cc4e2f481cf",
+      "full_name": "Lakshmi Iyer",
+      "email": "lakshmi.iyer@gmail.com",
+      "password_hash": "scrypt:bdb4b0cf1703c4ba841bfc690cfe3ee8:a0dfe0ca4ce85bbe4e76c323875735ca822c1d7c28c472372999d5a18106c7719ce583d3e6e952053f44faf80a7b213933b2601ee3f233288d7c116085c8f816",
+      "phone": "9894098765",
+      "dob": "1995-07-09",
+      "address": "33 Anna Nagar, Chennai",
+      "rating": 0,
+      "is_active": true,
+      "home_sector_id": "c4a3ff32-47d9-4061-8f88-8d13929e42f1"
+    },
+    {
+      "customer_id": "df3791f4-9e12-468e-9c7d-9b5e26d03f1c",
+      "full_name": "Arjun N",
+      "email": "arjun.n@gmail.com",
+      "password_hash": "scrypt:3dbb9153976dacd4fd1106f6bbd77d32:c7f06876441da622d43d5b040ee2fd3d8262ab1188081c50828ceb515ff00c3d0e0402a8c2571179d6bdff2ed4b501b55a9197e66a5e33e1c75f05f6cd8ff73a",
+      "phone": "9900023456",
+      "dob": "1998-01-18",
+      "address": "77 Velachery Main Road, Chennai",
+      "rating": 0,
+      "is_active": true,
+      "home_sector_id": "3e0f5367-375e-4234-87d0-2ebe00e7853f"
+    }
+  ],
+  "carts": [],
+  "cartItems": [],
+  "categories": [
+    {
+      "category_id": "9d70ce12-ec1a-4a6b-b27d-9b163a2bf1d9",
+      "category_name": "Home Cleaning",
+      "description": "All home cleaning services",
+      "icon": "🧹",
+      "image_url": "https://placehold.co/400x200/4A90D9/white?text=Home+Cleaning",
+      "average_rating": 4,
+      "rating_count": 1,
+      "is_available": true
+    },
+    {
+      "category_id": "baf467f1-dfad-493a-9995-dfce7f14cb50",
+      "category_name": "Appliance Repair",
+      "description": "Appliance diagnostics and repair services",
+      "icon": "🛠️",
+      "image_url": "https://placehold.co/400x200/2D9CDB/white?text=Appliance+Repair",
+      "average_rating": 4.5,
+      "rating_count": 2,
+      "is_available": true
+    },
+    {
+      "category_id": "7991c5d3-ba82-47c5-970c-1a3d429d0eb8",
+      "category_name": "Plumbing",
+      "description": "Leak fixing, fittings, and sanitary service work",
+      "icon": "🚰",
+      "image_url": "https://placehold.co/400x200/1E8E3E/white?text=Plumbing",
+      "average_rating": 5,
+      "rating_count": 2,
+      "is_available": true
+    },
+    {
+      "category_id": "388e5317-5de7-4f3d-a802-eeb72670491a",
+      "category_name": "Carpentry & Furniture",
+      "description": "Woodwork, repairs, and furniture assembly",
+      "icon": "🪵",
+      "image_url": "https://placehold.co/400x200/8B4513/white?text=Carpentry",
+      "average_rating": 0,
+      "rating_count": 0,
+      "is_available": true
+    },
+    {
+      "category_id": "0f8373f8-e3a6-4c18-9f46-816f86c3f8f2",
+      "category_name": "Pest Control",
+      "description": "Safe and effective pest management",
+      "icon": "🐜",
+      "image_url": "https://placehold.co/400x200/EB5757/white?text=Pest+Control",
+      "average_rating": 0,
+      "rating_count": 0,
+      "is_available": true
+    }
+  ],
+  "services": [
+    {
+      "service_id": "916bc5fc-12b4-4a1e-aac1-c9003d9ad1ca",
+      "service_name": "Standard Home Clean",
+      "description": "Complete standard clean for up to 3BHK homes.",
+      "image_url": "https://placehold.co/400x200/4A90D9/white?text=Standard+Clean",
+      "base_price": 499,
+      "estimated_duration_min": 120,
+      "average_rating": 4,
+      "rating_count": 1,
+      "is_available": true,
+      "category_id": "9d70ce12-ec1a-4a6b-b27d-9b163a2bf1d9"
+    },
+    {
+      "service_id": "6f1c5ae3-d507-4b07-80f6-db26c7a1ef3c",
+      "service_name": "Deep Home Clean",
+      "description": "Deep cleaning for kitchen, bathrooms, and living areas.",
+      "image_url": "https://placehold.co/400x200/4A90D9/white?text=Deep+Clean",
+      "base_price": 899,
+      "estimated_duration_min": 180,
+      "average_rating": 0,
+      "rating_count": 0,
+      "is_available": true,
+      "category_id": "9d70ce12-ec1a-4a6b-b27d-9b163a2bf1d9"
+    },
+    {
+      "service_id": "15dab8e7-1465-4461-a9df-28798195b97a",
+      "service_name": "Split AC Repair",
+      "description": "Inspection and repair for common split AC faults.",
+      "image_url": "https://placehold.co/400x200/2D9CDB/white?text=AC+Repair",
+      "base_price": 1299,
+      "estimated_duration_min": 90,
+      "average_rating": 4.5,
+      "rating_count": 2,
+      "is_available": true,
+      "category_id": "baf467f1-dfad-493a-9995-dfce7f14cb50"
+    },
+    {
+      "service_id": "074e6b61-ab44-4948-a365-ad0ef50e92e9",
+      "service_name": "Kitchen Sink Leak Fix",
+      "description": "Leak detection and repair for kitchen sink pipelines.",
+      "image_url": "https://placehold.co/400x200/1E8E3E/white?text=Leak+Fix",
+      "base_price": 699,
+      "estimated_duration_min": 75,
+      "average_rating": 5,
+      "rating_count": 2,
+      "is_available": true,
+      "category_id": "7991c5d3-ba82-47c5-970c-1a3d429d0eb8"
+    },
+    {
+      "service_id": "4d97f6a2-3ddb-4dfd-88ed-1837e390ddfa",
+      "service_name": "Bed Assembly",
+      "description": "Expert assembly of all types of beds.",
+      "image_url": "https://placehold.co/400x200/8B4513/white?text=Bed+Assembly",
+      "base_price": 999,
+      "estimated_duration_min": 120,
+      "average_rating": 0,
+      "rating_count": 0,
+      "is_available": true,
+      "category_id": "388e5317-5de7-4f3d-a802-eeb72670491a"
+    },
+    {
+      "service_id": "5c5ee42e-0a18-41e0-a327-a788069d75dd",
+      "service_name": "Door Lock Repair",
+      "description": "Repair and replacement of door locks and handles.",
+      "image_url": "https://placehold.co/400x200/8B4513/white?text=Lock+Repair",
+      "base_price": 499,
+      "estimated_duration_min": 60,
+      "average_rating": 0,
+      "rating_count": 0,
+      "is_available": true,
+      "category_id": "388e5317-5de7-4f3d-a802-eeb72670491a"
+    },
+    {
+      "service_id": "cfdfe0ab-afec-445f-82d8-4e6810a6f903",
+      "service_name": "General Pest Control",
+      "description": "Treatment for cockroaches, ants, and other common pests.",
+      "image_url": "https://placehold.co/400x200/EB5757/white?text=Pest+Control",
+      "base_price": 1599,
+      "estimated_duration_min": 90,
+      "average_rating": 0,
+      "rating_count": 0,
+      "is_available": true,
+      "category_id": "0f8373f8-e3a6-4c18-9f46-816f86c3f8f2"
+    }
+  ],
+  "serviceSkills": [
+    {
+      "service_id": "916bc5fc-12b4-4a1e-aac1-c9003d9ad1ca",
+      "skill_id": "b0239c59-d7af-4031-aa66-af7e9834040d"
+    },
+    {
+      "service_id": "6f1c5ae3-d507-4b07-80f6-db26c7a1ef3c",
+      "skill_id": "b0239c59-d7af-4031-aa66-af7e9834040d"
+    },
+    {
+      "service_id": "15dab8e7-1465-4461-a9df-28798195b97a",
+      "skill_id": "0d5ffda2-1d52-4b91-8c4d-c0b0396eca2b"
+    },
+    {
+      "service_id": "15dab8e7-1465-4461-a9df-28798195b97a",
+      "skill_id": "15f25f4b-4ed5-48d6-9152-70e4333b485a"
+    },
+    {
+      "service_id": "074e6b61-ab44-4948-a365-ad0ef50e92e9",
+      "skill_id": "be2872a9-e215-4230-b654-2cac3f75f53d"
+    },
+    {
+      "service_id": "4d97f6a2-3ddb-4dfd-88ed-1837e390ddfa",
+      "skill_id": "db8e685c-70bb-4762-ba54-51e57c85ed35"
+    },
+    {
+      "service_id": "5c5ee42e-0a18-41e0-a327-a788069d75dd",
+      "skill_id": "67bec565-562b-47f1-b548-c647fde071d0"
+    },
+    {
+      "service_id": "cfdfe0ab-afec-445f-82d8-4e6810a6f903",
+      "skill_id": "74c767ff-1538-49c7-a577-f1a7d2a3da29"
+    }
+  ],
+  "serviceContent": [
+    {
+      "service_id": "916bc5fc-12b4-4a1e-aac1-c9003d9ad1ca",
+      "how_it_works": [
+        {
+          "step_title": "Pre-clean inspection",
+          "step_description": "The professional reviews room condition before starting."
+        },
+        {
+          "step_title": "Systematic cleaning",
+          "step_description": "Dusting, sweeping, mopping done area by area."
+        },
+        {
+          "step_title": "Final walkthrough",
+          "step_description": "Quality check performed with customer."
+        }
+      ],
+      "what_is_covered": [
+        "Dusting of furniture",
+        "Sweeping and mopping",
+        "Surface wipe-down"
+      ],
+      "what_is_not_covered": [
+        "Deep stain removal",
+        "Post-construction debris"
+      ]
+    },
+    {
+      "service_id": "6f1c5ae3-d507-4b07-80f6-db26c7a1ef3c",
+      "how_it_works": [
+        {
+          "step_title": "Area assessment",
+          "step_description": "Professional assesses deep cleaning requirement."
+        },
+        {
+          "step_title": "Deep cleaning pass",
+          "step_description": "High-touch and difficult areas are deep cleaned."
+        },
+        {
+          "step_title": "Final sanitization",
+          "step_description": "Final sanitization and completion check."
+        }
+      ],
+      "what_is_covered": [
+        "Kitchen degreasing",
+        "Bathroom descaling",
+        "Floor scrubbing"
+      ],
+      "what_is_not_covered": [
+        "Pest control",
+        "Wall repainting"
+      ]
+    },
+    {
+      "service_id": "15dab8e7-1465-4461-a9df-28798195b97a",
+      "how_it_works": [
+        {
+          "step_title": "Fault diagnosis",
+          "step_description": "Technician checks electrical and cooling issues."
+        },
+        {
+          "step_title": "Repair and replacement",
+          "step_description": "Required components are repaired or replaced."
+        },
+        {
+          "step_title": "Cooling performance test",
+          "step_description": "Post-repair cooling benchmark is verified."
+        }
+      ],
+      "what_is_covered": [
+        "Basic electrical checks",
+        "Gas pressure check",
+        "Minor part replacement"
+      ],
+      "what_is_not_covered": [
+        "Compressor replacement cost",
+        "External carpentry work"
+      ]
+    },
+    {
+      "service_id": "074e6b61-ab44-4948-a365-ad0ef50e92e9",
+      "how_it_works": [
+        {
+          "step_title": "Leak point tracing",
+          "step_description": "Plumber traces source of the leak."
+        },
+        {
+          "step_title": "Seal/fitting correction",
+          "step_description": "Faulty joints and fittings are corrected."
+        },
+        {
+          "step_title": "Flow test",
+          "step_description": "Post-fix flow and leak test are performed."
+        }
+      ],
+      "what_is_covered": [
+        "Leak tracing",
+        "Seal replacement",
+        "Pipe joint tightening"
+      ],
+      "what_is_not_covered": [
+        "Full pipeline relaying",
+        "Civil wall repair"
+      ]
+    },
+    {
+      "service_id": "4d97f6a2-3ddb-4dfd-88ed-1837e390ddfa",
+      "how_it_works": [
+        {
+          "step_title": "Unpacking",
+          "step_description": "Professional unpacks the furniture components."
+        },
+        {
+          "step_title": "Assembly",
+          "step_description": "Bed frame and components are assembled as per manual."
+        },
+        {
+          "step_title": "Stability check",
+          "step_description": "Final check for stability and alignment."
+        }
+      ],
+      "what_is_covered": [
+        "Frame assembly",
+        "Headboard attachment"
+      ],
+      "what_is_not_covered": [
+        "Mattress cleaning",
+        "Moving heavy furniture"
+      ]
+    },
+    {
+      "service_id": "5c5ee42e-0a18-41e0-a327-a788069d75dd",
+      "how_it_works": [
+        {
+          "step_title": "Inspection",
+          "step_description": "Technician checks the faulty lock mechanism."
+        },
+        {
+          "step_title": "Repair/Replace",
+          "step_description": "Internal components are repaired or the lock is replaced."
+        },
+        {
+          "step_title": "Testing",
+          "step_description": "Smooth operation of the lock is verified."
+        }
+      ],
+      "what_is_covered": [
+        "Lock mechanism repair",
+        "Handle tightening"
+      ],
+      "what_is_not_covered": [
+        "New lock hardware cost",
+        "Door repainting"
+      ]
+    },
+    {
+      "service_id": "cfdfe0ab-afec-445f-82d8-4e6810a6f903",
+      "how_it_works": [
+        {
+          "step_title": "Inspection",
+          "step_description": "Expert identifies pest hideouts and entry points."
+        },
+        {
+          "step_title": "Treatment",
+          "step_description": "Targeted gel or spray treatment is applied."
+        },
+        {
+          "step_title": "Advice",
+          "step_description": "Post-treatment precautions and prevention tips."
+        }
+      ],
+      "what_is_covered": [
+        "Cockroach gel treatment",
+        "Ant spray treatment"
+      ],
+      "what_is_not_covered": [
+        "Termite treatment",
+        "Bed bug treatment"
+      ]
+    }
+  ],
+  "serviceFaqs": [
+    {
+      "faq_id": "f755b502-957e-4a20-b06a-1a0177454dca",
+      "question": "How long does a standard clean take?",
+      "answer": "Typically 2 hours for a 2BHK flat.",
+      "display_order": 1,
+      "service_id": "916bc5fc-12b4-4a1e-aac1-c9003d9ad1ca"
+    },
+    {
+      "faq_id": "53808978-50cb-42cb-b607-50682600d4a2",
+      "question": "Do I need to provide any cleaning materials?",
+      "answer": "No, the professional carries standard supplies and tools.",
+      "display_order": 1,
+      "service_id": "6f1c5ae3-d507-4b07-80f6-db26c7a1ef3c"
+    },
+    {
+      "faq_id": "251a3a85-e0f9-4937-b846-8b898e44c310",
+      "question": "Is gas refill included in AC repair?",
+      "answer": "Gas refill is charged separately if required after diagnosis.",
+      "display_order": 1,
+      "service_id": "15dab8e7-1465-4461-a9df-28798195b97a"
+    },
+    {
+      "faq_id": "69804a31-43a2-4b06-a06b-2cb1231eda98",
+      "question": "Can this service fix concealed pipe leakage?",
+      "answer": "Only exposed and accessible leak points are covered.",
+      "display_order": 1,
+      "service_id": "074e6b61-ab44-4948-a365-ad0ef50e92e9"
+    },
+    {
+      "faq_id": "d364cf4f-f64f-433b-86cb-1ab8b462f2ec",
+      "question": "How long does bed assembly take?",
+      "answer": "Typically 1.5 to 2 hours depending on complexity.",
+      "display_order": 1,
+      "service_id": "4d97f6a2-3ddb-4dfd-88ed-1837e390ddfa"
+    },
+    {
+      "faq_id": "8c42bd4d-2f27-4049-9ee9-126ca49d7e5d",
+      "question": "Do you provide the new lock?",
+      "answer": "No, hardware cost is separate. We can help buy it if needed.",
+      "display_order": 1,
+      "service_id": "5c5ee42e-0a18-41e0-a327-a788069d75dd"
+    },
+    {
+      "faq_id": "e4eadaf1-299d-4413-b63d-3613c61938a8",
+      "question": "Is the pest control safe for kids?",
+      "answer": "Yes, we use government-approved safe chemicals.",
+      "display_order": 1,
+      "service_id": "cfdfe0ab-afec-445f-82d8-4e6810a6f903"
+    }
+  ],
+  "bookings": [
+    {
+      "booking_id": "e63de561-0bf0-4476-be40-24b9f617cb5e",
+      "booking_type": "INSTANT",
+      "service_address": "14 Boat Club Road, Chennai",
+      "scheduled_at": "2026-03-29T03:48:22Z",
+      "status": "COMPLETED",
+      "failure_reason": null,
+      "is_active": true,
+      "created_at": "2026-03-29T03:18:22Z",
+      "updated_at": "2026-03-29T06:18:22Z",
+      "customer_id": "1e541f38-cc88-4668-9495-bb41dea2aa76",
+      "sector_id": "a167786b-6c7b-464e-961b-c80e07939da9"
+    },
+    {
+      "booking_id": "8e542704-f41e-4191-bf1c-56b3dc337ab2",
+      "booking_type": "SCHEDULED",
+      "service_address": "33 Anna Nagar, Chennai",
+      "scheduled_at": "2026-04-02T09:00:00Z",
+      "status": "COMPLETED",
+      "failure_reason": null,
+      "is_active": true,
+      "created_at": "2026-04-01T16:30:00Z",
+      "updated_at": "2026-04-02T10:40:00Z",
+      "customer_id": "ea92e879-8322-4578-9db8-6cc4e2f481cf",
+      "sector_id": "c4a3ff32-47d9-4061-8f88-8d13929e42f1"
+    },
+    {
+      "booking_id": "c5bc5d10-c4f3-4813-b889-dc5c62adc9b9",
+      "booking_type": "SCHEDULED",
+      "service_address": "77 Velachery Main Road, Chennai",
+      "scheduled_at": "2026-04-03T12:00:00Z",
+      "status": "COMPLETED",
+      "failure_reason": null,
+      "is_active": true,
+      "created_at": "2026-04-02T08:10:00Z",
+      "updated_at": "2026-04-03T14:20:00Z",
+      "customer_id": "df3791f4-9e12-468e-9c7d-9b5e26d03f1c",
+      "sector_id": "3e0f5367-375e-4234-87d0-2ebe00e7853f"
+    },
+    {
+      "booking_id": "6f61b74c-24d9-4f22-9896-6966dd6f3c7e",
+      "booking_type": "SCHEDULED",
+      "service_address": "14 Boat Club Road, Chennai",
+      "scheduled_at": "2026-04-07T09:00:00Z",
+      "status": "COMPLETED",
+      "failure_reason": null,
+      "is_active": true,
+      "created_at": "2026-04-05T11:00:00Z",
+      "updated_at": "2026-04-07T12:30:00Z",
+      "customer_id": "1e541f38-cc88-4668-9495-bb41dea2aa76",
+      "sector_id": "a167786b-6c7b-464e-961b-c80e07939da9"
+    },
+    {
+      "booking_id": "faa244a5-c1e0-43ea-ab3a-be1b1f5b02e0",
+      "booking_type": "SCHEDULED",
+      "service_address": "14 Boat Club Road, Chennai",
+      "scheduled_at": "2026-04-10T11:00:00Z",
+      "status": "CANCELLED",
+      "failure_reason": "Customer cancelled before assignment",
+      "is_active": false,
+      "created_at": "2026-04-08T09:15:00Z",
+      "updated_at": "2026-04-08T10:00:00Z",
+      "customer_id": "1e541f38-cc88-4668-9495-bb41dea2aa76",
+      "sector_id": "a167786b-6c7b-464e-961b-c80e07939da9"
+    }
+  ],
+  "bookingServices": [
+    {
+      "booking_id": "e63de561-0bf0-4476-be40-24b9f617cb5e",
+      "service_id": "15dab8e7-1465-4461-a9df-28798195b97a",
+      "quantity": 1,
+      "price_at_booking": 1299
+    },
+    {
+      "booking_id": "8e542704-f41e-4191-bf1c-56b3dc337ab2",
+      "service_id": "074e6b61-ab44-4948-a365-ad0ef50e92e9",
+      "quantity": 1,
+      "price_at_booking": 699
+    },
+    {
+      "booking_id": "c5bc5d10-c4f3-4813-b889-dc5c62adc9b9",
+      "service_id": "916bc5fc-12b4-4a1e-aac1-c9003d9ad1ca",
+      "quantity": 1,
+      "price_at_booking": 499
+    },
+    {
+      "booking_id": "6f61b74c-24d9-4f22-9896-6966dd6f3c7e",
+      "service_id": "15dab8e7-1465-4461-a9df-28798195b97a",
+      "quantity": 1,
+      "price_at_booking": 1299
+    },
+    {
+      "booking_id": "6f61b74c-24d9-4f22-9896-6966dd6f3c7e",
+      "service_id": "074e6b61-ab44-4948-a365-ad0ef50e92e9",
+      "quantity": 1,
+      "price_at_booking": 699
+    },
+    {
+      "booking_id": "faa244a5-c1e0-43ea-ab3a-be1b1f5b02e0",
+      "service_id": "6f1c5ae3-d507-4b07-80f6-db26c7a1ef3c",
+      "quantity": 1,
+      "price_at_booking": 899
+    }
+  ],
+  "jobAssignments": [
+    {
+      "assignment_id": "a8c0aac4-18c5-4412-aaa4-fd40dcda6ac4",
+      "service_id": "15dab8e7-1465-4461-a9df-28798195b97a",
+      "scheduled_date": "2026-03-29",
+      "hour_start": "09:00",
+      "hour_end": "10:30",
+      "status": "COMPLETED",
+      "assignment_score": 5,
+      "notes": null,
+      "assigned_at": "2026-03-29T03:23:22Z",
+      "created_at": "2026-03-29T03:23:22Z",
+      "updated_at": "2026-03-29T06:18:22Z",
+      "booking_id": "e63de561-0bf0-4476-be40-24b9f617cb5e",
+      "sp_id": "89b3386b-aea4-4602-a2f8-1199b5c14303"
+    },
+    {
+      "assignment_id": "0a12cd88-8155-4d70-babe-2a16287c6135",
+      "service_id": "074e6b61-ab44-4948-a365-ad0ef50e92e9",
+      "scheduled_date": "2026-04-02",
+      "hour_start": "09:00",
+      "hour_end": "10:15",
+      "status": "COMPLETED",
+      "assignment_score": 5,
+      "notes": null,
+      "assigned_at": "2026-04-01T16:36:00Z",
+      "created_at": "2026-04-01T16:36:00Z",
+      "updated_at": "2026-04-02T10:40:00Z",
+      "booking_id": "8e542704-f41e-4191-bf1c-56b3dc337ab2",
+      "sp_id": "02ded170-f08e-4870-8877-83566238dad9"
+    },
+    {
+      "assignment_id": "eb427e61-a426-4349-9661-d134e086e748",
+      "service_id": "916bc5fc-12b4-4a1e-aac1-c9003d9ad1ca",
+      "scheduled_date": "2026-04-03",
+      "hour_start": "12:00",
+      "hour_end": "14:00",
+      "status": "COMPLETED",
+      "assignment_score": 4,
+      "notes": null,
+      "assigned_at": "2026-04-02T08:15:00Z",
+      "created_at": "2026-04-02T08:15:00Z",
+      "updated_at": "2026-04-03T14:20:00Z",
+      "booking_id": "c5bc5d10-c4f3-4813-b889-dc5c62adc9b9",
+      "sp_id": "89b3386b-aea4-4602-a2f8-1199b5c14303"
+    },
+    {
+      "assignment_id": "59868967-1b89-431c-9a84-730c2486108b",
+      "service_id": "15dab8e7-1465-4461-a9df-28798195b97a",
+      "scheduled_date": "2026-04-07",
+      "hour_start": "09:00",
+      "hour_end": "10:30",
+      "status": "COMPLETED",
+      "assignment_score": 4,
+      "notes": null,
+      "assigned_at": "2026-04-05T11:05:00Z",
+      "created_at": "2026-04-05T11:05:00Z",
+      "updated_at": "2026-04-07T10:35:00Z",
+      "booking_id": "6f61b74c-24d9-4f22-9896-6966dd6f3c7e",
+      "sp_id": "89b3386b-aea4-4602-a2f8-1199b5c14303"
+    },
+    {
+      "assignment_id": "bb07d99f-f9f9-4172-8163-8dcba50fc89e",
+      "service_id": "074e6b61-ab44-4948-a365-ad0ef50e92e9",
+      "scheduled_date": "2026-04-07",
+      "hour_start": "11:00",
+      "hour_end": "12:15",
+      "status": "COMPLETED",
+      "assignment_score": 5,
+      "notes": null,
+      "assigned_at": "2026-04-05T11:05:00Z",
+      "created_at": "2026-04-05T11:05:00Z",
+      "updated_at": "2026-04-07T12:30:00Z",
+      "booking_id": "6f61b74c-24d9-4f22-9896-6966dd6f3c7e",
+      "sp_id": "02ded170-f08e-4870-8877-83566238dad9"
+    }
+  ],
+  "transactions": [
+    {
+      "transaction_id": "2cd37dfe-8337-4e6d-ba8c-fb531a063cc8",
+      "payment_gateway_ref": "PGR20260329001",
+      "payment_method": "UPI",
+      "idempotency_key": "idem-bkg001-001",
+      "payment_status": "SUCCESS",
+      "amount": 1299,
+      "currency": "INR",
+      "refund_amount": 0,
+      "refund_reason": null,
+      "transaction_at": "2026-03-29T03:20:22Z",
+      "verified_at": "2026-03-29T03:21:00Z",
+      "booking_id": "e63de561-0bf0-4476-be40-24b9f617cb5e"
+    },
+    {
+      "transaction_id": "7b767dc2-0c29-40c3-a835-6b804d52bcdd",
+      "payment_gateway_ref": "PGR20260401001",
+      "payment_method": "CARD",
+      "idempotency_key": "idem-bkg002-001",
+      "payment_status": "SUCCESS",
+      "amount": 699,
+      "currency": "INR",
+      "refund_amount": 0,
+      "refund_reason": null,
+      "transaction_at": "2026-04-01T16:34:00Z",
+      "verified_at": "2026-04-01T16:34:20Z",
+      "booking_id": "8e542704-f41e-4191-bf1c-56b3dc337ab2"
+    },
+    {
+      "transaction_id": "fdc53ef7-ffb4-4d9e-809b-335be8826a8a",
+      "payment_gateway_ref": "PGR20260402001",
+      "payment_method": "NETBANKING",
+      "idempotency_key": "idem-bkg003-001",
+      "payment_status": "SUCCESS",
+      "amount": 499,
+      "currency": "INR",
+      "refund_amount": 0,
+      "refund_reason": null,
+      "transaction_at": "2026-04-02T08:11:30Z",
+      "verified_at": "2026-04-02T08:11:45Z",
+      "booking_id": "c5bc5d10-c4f3-4813-b889-dc5c62adc9b9"
+    },
+    {
+      "transaction_id": "f8bc54b1-6110-463c-b22d-231a2934aff3",
+      "payment_gateway_ref": "PGR20260405001",
+      "payment_method": "UPI",
+      "idempotency_key": "idem-bkg004-001",
+      "payment_status": "SUCCESS",
+      "amount": 1998,
+      "currency": "INR",
+      "refund_amount": 0,
+      "refund_reason": null,
+      "transaction_at": "2026-04-05T11:02:00Z",
+      "verified_at": "2026-04-05T11:02:30Z",
+      "booking_id": "6f61b74c-24d9-4f22-9896-6966dd6f3c7e"
+    }
+  ],
+  "revenueLedger": [
+    {
+      "ledger_id": "39397d91-46b8-4323-a0a7-2e4f3e93dbf3",
+      "payout_status": "DISBURSED",
+      "provider_amount": 1013.22,
+      "um_amount": 103.92,
+      "cm_amount": 51.96,
+      "platform_amount": 129.9,
+      "created_at": "2026-03-29T03:22:00Z",
+      "paid_at": "2026-03-29T06:20:00Z",
+      "booking_id": "e63de561-0bf0-4476-be40-24b9f617cb5e",
+      "sp_id": "89b3386b-aea4-4602-a2f8-1199b5c14303",
+      "um_id": "d86b4722-006e-45f8-8a14-303896f61528",
+      "cm_id": "895cfdc6-a51b-41f4-8a19-e14be2941c22"
+    },
+    {
+      "ledger_id": "bd3d5bdd-7cb7-441e-8742-17b0ccde70bc",
+      "payout_status": "DISBURSED",
+      "provider_amount": 545.22,
+      "um_amount": 55.92,
+      "cm_amount": 27.96,
+      "platform_amount": 69.9,
+      "created_at": "2026-04-01T16:35:00Z",
+      "paid_at": "2026-04-02T10:45:00Z",
+      "booking_id": "8e542704-f41e-4191-bf1c-56b3dc337ab2",
+      "sp_id": "02ded170-f08e-4870-8877-83566238dad9",
+      "um_id": "07c96683-e3cd-4670-9e91-72dca1b4c4da",
+      "cm_id": "895cfdc6-a51b-41f4-8a19-e14be2941c22"
+    },
+    {
+      "ledger_id": "849fa1b3-fc95-4429-9f68-cb6c16489ff2",
+      "payout_status": "DISBURSED",
+      "provider_amount": 389.22,
+      "um_amount": 39.92,
+      "cm_amount": 19.96,
+      "platform_amount": 49.9,
+      "created_at": "2026-04-02T08:12:00Z",
+      "paid_at": "2026-04-03T14:30:00Z",
+      "booking_id": "c5bc5d10-c4f3-4813-b889-dc5c62adc9b9",
+      "sp_id": "89b3386b-aea4-4602-a2f8-1199b5c14303",
+      "um_id": "d86b4722-006e-45f8-8a14-303896f61528",
+      "cm_id": "895cfdc6-a51b-41f4-8a19-e14be2941c22"
+    },
+    {
+      "ledger_id": "4e8a1d43-8444-4d74-963d-25c5a1363269",
+      "payout_status": "DISBURSED",
+      "provider_amount": 1013.22,
+      "um_amount": 103.92,
+      "cm_amount": 51.96,
+      "platform_amount": 129.9,
+      "created_at": "2026-04-05T11:03:00Z",
+      "paid_at": "2026-04-07T10:40:00Z",
+      "booking_id": "6f61b74c-24d9-4f22-9896-6966dd6f3c7e",
+      "sp_id": "89b3386b-aea4-4602-a2f8-1199b5c14303",
+      "um_id": "d86b4722-006e-45f8-8a14-303896f61528",
+      "cm_id": "895cfdc6-a51b-41f4-8a19-e14be2941c22"
+    },
+    {
+      "ledger_id": "f0e7c5a3-8c76-4ec6-a4e3-de5fae1d592c",
+      "payout_status": "DISBURSED",
+      "provider_amount": 545.22,
+      "um_amount": 55.92,
+      "cm_amount": 27.96,
+      "platform_amount": 69.9,
+      "created_at": "2026-04-05T11:03:00Z",
+      "paid_at": "2026-04-07T12:35:00Z",
+      "booking_id": "6f61b74c-24d9-4f22-9896-6966dd6f3c7e",
+      "sp_id": "02ded170-f08e-4870-8877-83566238dad9",
+      "um_id": "07c96683-e3cd-4670-9e91-72dca1b4c4da",
+      "cm_id": "895cfdc6-a51b-41f4-8a19-e14be2941c22"
+    }
+  ],
+  "reviews": [
+    {
+      "review_id": "189aa46e-3b44-4b64-b692-4dfbbee1aaa3",
+      "rating": 5,
+      "comment": "Quick diagnosis and clean AC repair. Very professional.",
+      "created_at": "2026-03-29T06:25:00Z",
+      "booking_id": "e63de561-0bf0-4476-be40-24b9f617cb5e",
+      "service_id": "15dab8e7-1465-4461-a9df-28798195b97a",
+      "customer_id": "1e541f38-cc88-4668-9495-bb41dea2aa76",
+      "sp_id": "89b3386b-aea4-4602-a2f8-1199b5c14303"
+    },
+    {
+      "review_id": "76fb438b-71de-4177-84aa-ff9c201d5c6e",
+      "rating": 5,
+      "comment": "Leak issue resolved fully, no rework needed.",
+      "created_at": "2026-04-02T10:50:00Z",
+      "booking_id": "8e542704-f41e-4191-bf1c-56b3dc337ab2",
+      "service_id": "074e6b61-ab44-4948-a365-ad0ef50e92e9",
+      "customer_id": "ea92e879-8322-4578-9db8-6cc4e2f481cf",
+      "sp_id": "02ded170-f08e-4870-8877-83566238dad9"
+    },
+    {
+      "review_id": "9cdb99c6-7c52-4117-a7f5-eb83a64c6e27",
+      "rating": 4,
+      "comment": "Service quality was good and on-time completion.",
+      "created_at": "2026-04-03T14:35:00Z",
+      "booking_id": "c5bc5d10-c4f3-4813-b889-dc5c62adc9b9",
+      "service_id": "916bc5fc-12b4-4a1e-aac1-c9003d9ad1ca",
+      "customer_id": "df3791f4-9e12-468e-9c7d-9b5e26d03f1c",
+      "sp_id": "89b3386b-aea4-4602-a2f8-1199b5c14303"
+    },
+    {
+      "review_id": "70cef585-d474-4132-b4ca-f6272c4a24a4",
+      "rating": 4,
+      "comment": "AC is running well, arrived on time.",
+      "created_at": "2026-04-07T13:00:00Z",
+      "booking_id": "6f61b74c-24d9-4f22-9896-6966dd6f3c7e",
+      "service_id": "15dab8e7-1465-4461-a9df-28798195b97a",
+      "customer_id": "1e541f38-cc88-4668-9495-bb41dea2aa76",
+      "sp_id": "89b3386b-aea4-4602-a2f8-1199b5c14303"
+    },
+    {
+      "review_id": "9f4a555f-c25b-4980-b902-e88c9c568f33",
+      "rating": 5,
+      "comment": "Manoj was excellent, no leaks at all after the fix.",
+      "created_at": "2026-04-07T13:05:00Z",
+      "booking_id": "6f61b74c-24d9-4f22-9896-6966dd6f3c7e",
+      "service_id": "074e6b61-ab44-4948-a365-ad0ef50e92e9",
+      "customer_id": "1e541f38-cc88-4668-9495-bb41dea2aa76",
+      "sp_id": "02ded170-f08e-4870-8877-83566238dad9"
+    }
+  ],
+  "platformSettings": [
+    {
+      "setting_id": "1b696d81-da5f-47d3-bb12-bfa9fff59db6",
+      "key": "max_booking_window_days",
+      "value": "30",
+      "description": "Max days ahead a customer can schedule",
+      "updated_at": "2026-05-03T20:54:22.037Z",
+      "updated_by": "7de6c1ad-a059-462a-af39-dbaea975c3cf"
+    },
+    {
+      "setting_id": "17158a70-974c-4dfa-8aa8-dd1d4327db5a",
+      "key": "maintenance_mode",
+      "value": "false",
+      "description": "Platform maintenance mode toggle",
+      "updated_at": "2026-05-03T20:54:22.038Z",
+      "updated_by": "7de6c1ad-a059-462a-af39-dbaea975c3cf"
+    },
+    {
+      "setting_id": "44092443-f494-4ed8-9130-2bb24d4e595e",
+      "key": "revenue_split_sp_percentage",
+      "value": "78",
+      "description": "Percentage of booking amount going to service provider",
+      "updated_at": "2026-05-03T20:54:22.038Z",
+      "updated_by": "7de6c1ad-a059-462a-af39-dbaea975c3cf"
+    },
+    {
+      "setting_id": "b88dbc9a-8bdd-4be9-9334-0b254a996831",
+      "key": "revenue_split_um_percentage",
+      "value": "8",
+      "description": "Percentage of booking amount going to unit manager",
+      "updated_at": "2026-05-03T20:54:22.038Z",
+      "updated_by": "7de6c1ad-a059-462a-af39-dbaea975c3cf"
+    },
+    {
+      "setting_id": "91ab70c4-6190-4d2e-bff7-1098251369c5",
+      "key": "revenue_split_cm_percentage",
+      "value": "4",
+      "description": "Percentage of booking amount going to collective manager",
+      "updated_at": "2026-05-03T20:54:22.038Z",
+      "updated_by": "7de6c1ad-a059-462a-af39-dbaea975c3cf"
+    },
+    {
+      "setting_id": "bc3d4398-dd49-4265-9221-b11a70b20c19",
+      "key": "instant_booking_radius_km",
+      "value": "10",
+      "description": "Max km radius for provider search on instant bookings",
+      "updated_at": "2026-05-03T20:54:22.038Z",
+      "updated_by": "7de6c1ad-a059-462a-af39-dbaea975c3cf"
+    }
+  ]
+}

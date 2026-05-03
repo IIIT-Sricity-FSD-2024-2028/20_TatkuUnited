@@ -94,7 +94,7 @@ export class UnitsController {
   }
 
   @Patch(':id')
-  @Roles(Role.SUPER_USER, Role.COLLECTIVE_MANAGER)
+  @Roles(Role.SUPER_USER, Role.COLLECTIVE_MANAGER, Role.UNIT_MANAGER)
   @ApiOperation({ summary: 'Update a unit' })
   @ApiResponse({ status: 200, description: 'Success' })
   @ApiResponse({ status: 404, description: 'Not found' })

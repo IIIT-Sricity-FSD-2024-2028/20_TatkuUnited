@@ -250,7 +250,7 @@
     fields.appendChild(p);
   }
 
-  window.handlePasswordChange = function () {
+  window.handlePasswordChange = async function () {
     var currentPwd = document.getElementById("pwd-current")
       ? document.getElementById("pwd-current").value
       : "";
@@ -276,7 +276,7 @@
       return;
     }
 
-    var res = Auth.changePassword(currentPwd, newPwd);
+    var res = await Auth.changePassword(currentPwd, newPwd);
     if (res.success) {
       showToast("Password updated successfully ✓", "success");
       window.closePwdModalBtn();
