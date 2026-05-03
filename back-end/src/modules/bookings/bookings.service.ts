@@ -114,8 +114,10 @@ export class BookingsService {
       );
     }
     const services = this.bookingsRepo.findServicesByBooking(bookingId);
-    return { ...booking, services };
+    const assignments = this.jobAssignmentsService.findByBooking(bookingId);
+    return { ...booking, services, assignments };
   }
+
 
   // ── Cancel ─────────────────────────────────────────────
 

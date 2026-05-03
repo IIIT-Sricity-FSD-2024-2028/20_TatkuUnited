@@ -231,7 +231,7 @@
             window.location.hash,
         );
         window.location.href =
-          "/html/auth_pages/login.html?next=" + next;
+          "/front-end/html/auth_pages/login.html?next=" + next;
       });
     });
   }
