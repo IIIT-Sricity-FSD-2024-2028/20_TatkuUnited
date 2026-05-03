@@ -14,7 +14,6 @@ if (Auth.isLoggedIn()) {
   const form = document.getElementById("login-form");
   const emailInput = document.getElementById("email");
   const passwordInput = document.getElementById("password");
-  const roleInput = document.getElementById("role");
   const toggleBtn = document.getElementById("toggle-password");
   const toggleIcon = document.getElementById("toggle-icon");
   const errorEl = document.getElementById("login-error");
@@ -65,12 +64,6 @@ if (Auth.isLoggedIn()) {
 
   applyRegisterRestrictionState();
 
-  try {
-    const storedRole = sessionStorage.getItem("tu_login_role_hint") || "";
-    if (roleInput && storedRole) {
-      roleInput.value = storedRole;
-    }
-  } catch (_) {}
 
   const urlError = new URLSearchParams(window.location.search).get("error");
   if (urlError === "provider_suspended") {
@@ -96,14 +89,7 @@ if (Auth.isLoggedIn()) {
     setLoading(true);
 
     try {
-      const roleHint = roleInput ? roleInput.value : "";
-      try {
-        if (roleInput && roleInput.value) {
-          sessionStorage.setItem("tu_login_role_hint", roleInput.value);
-        }
-      } catch (_) {}
-      const trimmedRole = roleHint ? roleHint.trim() : "";
-      const result = await Auth.login(email, password, trimmedRole || undefined);
+      const result = await Auth.login(email, password);
       setLoading(false);
 
       if (result.success) {
