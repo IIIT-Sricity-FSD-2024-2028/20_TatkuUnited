@@ -31,7 +31,7 @@ export class ProviderUnavailabilityRepository {
   create(dto: CreateProviderUnavailabilityDto): ProviderUnavailability {
     const record: ProviderUnavailability = {
       unavailability_id: randomUUID(),
-      date: null,
+      date: dto.date,
       hour_start: dto.start_time,
       hour_end: dto.end_time,
       reason: dto.reason || '',
@@ -47,6 +47,7 @@ export class ProviderUnavailabilityRepository {
     const record = this.findById(id);
     
     if (dto.provider_id !== undefined) record.sp_id = dto.provider_id;
+    if (dto.date !== undefined) record.date = dto.date;
     if (dto.start_time !== undefined) record.hour_start = dto.start_time;
     if (dto.end_time !== undefined) record.hour_end = dto.end_time;
     if (dto.reason !== undefined) record.reason = dto.reason;

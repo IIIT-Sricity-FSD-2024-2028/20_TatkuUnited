@@ -3,6 +3,7 @@ let events = {};
 const blockedDays = new Set([]);
 // Unavailability slots stored per day: { '2026-04-02': [{from:'09:00',to:'11:00'}], ... }
 let unavailability = {};
+let currentProviderId = null;
 
 let currentYear = new Date().getFullYear();
 let currentMonth = new Date().getMonth();
@@ -27,6 +28,13 @@ function pad(n) {
 }
 function dateKey(y, m, d) {
   return `${y}-${pad(m + 1)}-${pad(d)}`;
+}
+function todayKey() {
+  const now = new Date();
+  return dateKey(now.getFullYear(), now.getMonth(), now.getDate());
+}
+function isPastDateKey(key) {
+  return key < todayKey();
 }
 function toMin(t) {
   const [h, mm] = t.split(":").map(Number);
@@ -75,7 +83,9 @@ function renderCalendar() {
     if (cell.month === "current") {
       const key = dateKey(currentYear, currentMonth, cell.day);
       const isToday = isCurMon && cell.day === today.getDate();
+      const isPast = isPastDateKey(key);
       if (isToday) div.classList.add("today");
+      if (isPast) div.classList.add("past");
 
       let html = `<div class="cal-date">${cell.day}</div>`;
       if (isToday) html += `<span class="today-label">TODAY</span>`;
@@ -97,7 +107,9 @@ function renderCalendar() {
       }
 
       div.innerHTML = html;
-      div.addEventListener("click", () => openSlotModal(cell.day));
+      if (!isPast) {
+        div.addEventListener("click", () => openSlotModal(cell.day));
+      }
     } else {
       div.classList.add("other-month");
       div.innerHTML = `<div class="cal-date">${cell.day}</div>`;
@@ -185,6 +197,12 @@ let modalDay = null;
 function openSlotModal(day) {
   modalDay = day;
   const key = dateKey(currentYear, currentMonth, day);
+  if (isPastDateKey(key)) {
+    if (window.Api && Api.showToast) {
+      Api.showToast("Past dates cannot be marked unavailable.", "warn", 3000);
+    }
+    return;
+  }
   const dateStr = new Date(currentYear, currentMonth, day).toLocaleDateString(
     "en-GB",
     { weekday: "long", day: "numeric", month: "long", year: "numeric" },
@@ -469,8 +487,13 @@ function validateRange() {
 }
 
 function addUnavailRange() {
-  if (!validateRange()) return;
   const key = dateKey(currentYear, currentMonth, modalDay);
+  if (isPastDateKey(key)) {
+    const errEl = document.getElementById("range-error");
+    if (errEl) errEl.textContent = "Past dates cannot be marked unavailable.";
+    return;
+  }
+  if (!validateRange()) return;
   const fromEl = document.getElementById("range-from");
   const toEl = document.getElementById("range-to");
   if (!fromEl || !toEl) return;
@@ -541,6 +564,18 @@ function onFullDayChange() {
 
   if (!chk || !track || !wrap || !errEl) return;
 
+  if (isPastDateKey(key)) {
+    errEl.textContent = "Past dates cannot be marked unavailable.";
+    chk.checked = false;
+    track.classList.remove("on");
+    wrap.style.opacity = "";
+    wrap.style.pointerEvents = "";
+    delete unavailability[key];
+    syncUnavailability();
+    renderUnavailList(key);
+    return;
+  }
+
   // Check if there are any jobs on this day
   if (chk.checked && dayEvs.length > 0) {
     // There are jobs - show error and uncheck
@@ -585,9 +620,75 @@ function closeSlotModal(e) {
   if (e.target === document.getElementById("slot-modal")) closeSlotModalBtn();
 }
 
-function saveSchedule() {
-  closeSlotModalBtn();
-  renderCalendar();
+async function saveSchedule() {
+  if (!currentProviderId) return;
+
+  Object.keys(unavailability).forEach((date) => {
+    if (isPastDateKey(date)) delete unavailability[date];
+  });
+
+  const saveBtn = document.querySelector(".btn-save");
+  if (saveBtn) {
+    saveBtn.disabled = true;
+    saveBtn.textContent = "Saving...";
+  }
+
+  try {
+    const existing =
+      (await Api.get("/provider-unavailability/provider/" + currentProviderId, {
+        silent: true,
+      })) || [];
+
+    await Promise.all(
+      existing.map((slot) =>
+        Api.del("/provider-unavailability/" + slot.unavailability_id, {
+          silent: true,
+        }),
+      ),
+    );
+
+    const creates = [];
+    Object.entries(unavailability).forEach(([date, slots]) => {
+      slots.forEach((slot) => {
+        creates.push(
+          Api.post(
+            "/provider-unavailability",
+            {
+              provider_id: currentProviderId,
+              date,
+              start_time: slot.from,
+              end_time: slot.to,
+              reason: "Provider blocked time",
+            },
+            { silent: true },
+          ),
+        );
+      });
+    });
+
+    await Promise.all(creates);
+
+    closeSlotModalBtn();
+    renderCalendar();
+    if (window.Api && Api.showToast) {
+      Api.showToast("Unavailability saved.", "success", 2500);
+    }
+  } catch (err) {
+    if (window.Api && Api.showToast) {
+      Api.showToast(
+        err && err.message
+          ? err.message
+          : "Could not save unavailability. Please try again.",
+        "error",
+        5000,
+      );
+    }
+  } finally {
+    if (saveBtn) {
+      saveBtn.disabled = false;
+      saveBtn.textContent = "Save";
+    }
+  }
 }
 
 function syncUnavailability() {
@@ -599,9 +700,13 @@ function openManageBlocks() {
 }
 
 (async () => {
-  const session = Auth.requireSession(["provider"]);
+  let session = Auth.requireSession(["provider"]);
   if (!session) return;
+  if (Auth.syncSessionFromServer) {
+    session = (await Auth.syncSessionFromServer()) || session;
+  }
   const spId = session.id;
+  currentProviderId = spId;
 
   // Load provider profile
   let provider = null;
@@ -621,9 +726,10 @@ function openManageBlocks() {
 
   // Load unavailability
   try {
-    const uvList = await Api.get("/provider-unavailability/" + spId, { silent: true }) || [];
+    const uvList = await Api.get("/provider-unavailability/provider/" + spId, { silent: true }) || [];
     unavailability = {};
     uvList.forEach((uv) => {
+      if (!uv.date) return;
       if (!unavailability[uv.date]) unavailability[uv.date] = [];
       unavailability[uv.date].push({ from: uv.hour_start, to: uv.hour_end });
     });
@@ -654,7 +760,7 @@ function openManageBlocks() {
 
   // Set provider info in topbar
   if (provider) {
-    document.querySelectorAll(".user-chip span").forEach((el) => (el.textContent = provider.name || "Provider"));
+    document.querySelectorAll(".user-chip span").forEach((el) => (el.textContent = session.name || "Provider"));
     if (provider.pfp_url) {
       document.querySelectorAll(".user-avatar").forEach((el) => {
         el.innerHTML = `<img src="${provider.pfp_url}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;

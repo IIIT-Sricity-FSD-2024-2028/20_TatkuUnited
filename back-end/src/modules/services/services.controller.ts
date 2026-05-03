@@ -23,6 +23,7 @@ import { UpdateServiceFaqDto } from './dto/update-service-faq.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
+import { Public } from '../../common/decorators/public.decorator';
 import { Role } from '../../common/enums/role.enum';
 import { ApiRoleHeader } from '../../common/decorators/api-role-header.decorator';
 
@@ -39,7 +40,7 @@ export class ServicesController {
   // ══════════════════════════════════════════════════════════
 
   @Get()
-  @Roles(Role.SUPER_USER, Role.COLLECTIVE_MANAGER, Role.UNIT_MANAGER, Role.SERVICE_PROVIDER, Role.CUSTOMER)
+  @Public()
   @ApiOperation({ summary: 'Get all services' })
   @ApiResponse({ status: 200, description: 'List of all services' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
@@ -48,7 +49,7 @@ export class ServicesController {
   }
 
   @Get('available')
-  @Roles(Role.SUPER_USER, Role.COLLECTIVE_MANAGER, Role.UNIT_MANAGER, Role.SERVICE_PROVIDER, Role.CUSTOMER)
+  @Public()
   @ApiOperation({ summary: 'Get all available services (is_available = true)' })
   @ApiResponse({ status: 200, description: 'List of available services' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
@@ -57,7 +58,7 @@ export class ServicesController {
   }
 
   @Get('category/:categoryId')
-  @Roles(Role.SUPER_USER, Role.COLLECTIVE_MANAGER, Role.UNIT_MANAGER, Role.SERVICE_PROVIDER, Role.CUSTOMER)
+  @Public()
   @ApiOperation({ summary: 'Get services by category ID' })
   @ApiResponse({ status: 200, description: 'List of services in the category' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
@@ -70,7 +71,7 @@ export class ServicesController {
   // ══════════════════════════════════════════════════════════
 
   @Get(':id/skills')
-  @Roles(Role.SUPER_USER, Role.COLLECTIVE_MANAGER, Role.UNIT_MANAGER, Role.SERVICE_PROVIDER, Role.CUSTOMER)
+  @Public()
   @ApiOperation({ summary: 'Get skills linked to a service' })
   @ApiResponse({ status: 200, description: 'List of skill links for the service' })
   @ApiResponse({ status: 404, description: 'Service not found' })
@@ -104,7 +105,7 @@ export class ServicesController {
   // ══════════════════════════════════════════════════════════
 
   @Get(':id/content')
-  @Roles(Role.SUPER_USER, Role.COLLECTIVE_MANAGER, Role.UNIT_MANAGER, Role.SERVICE_PROVIDER, Role.CUSTOMER)
+  @Public()
   @ApiOperation({ summary: 'Get content (how it works, coverage) for a service' })
   @ApiResponse({ status: 200, description: 'Service content returned (or null if none)' })
   @ApiResponse({ status: 404, description: 'Service not found' })
@@ -127,7 +128,7 @@ export class ServicesController {
   // ══════════════════════════════════════════════════════════
 
   @Get(':id/faqs')
-  @Roles(Role.SUPER_USER, Role.COLLECTIVE_MANAGER, Role.UNIT_MANAGER, Role.SERVICE_PROVIDER, Role.CUSTOMER)
+  @Public()
   @ApiOperation({ summary: 'Get FAQs for a service' })
   @ApiResponse({ status: 200, description: 'List of FAQs for the service' })
   @ApiResponse({ status: 404, description: 'Service not found' })
@@ -170,7 +171,7 @@ export class ServicesController {
   // ══════════════════════════════════════════════════════════
 
   @Get(':id')
-  @Roles(Role.SUPER_USER, Role.COLLECTIVE_MANAGER, Role.UNIT_MANAGER, Role.SERVICE_PROVIDER, Role.CUSTOMER)
+  @Public()
   @ApiOperation({ summary: 'Get service by ID' })
   @ApiResponse({ status: 200, description: 'Service found' })
   @ApiResponse({ status: 404, description: 'Service not found' })

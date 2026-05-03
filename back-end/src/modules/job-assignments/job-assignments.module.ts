@@ -7,7 +7,11 @@ import { DatabaseModule } from '../../common/database/database.module';
 import { RevenueLedgerModule } from '../revenue-ledger/revenue-ledger.module';
 
 @Module({
-  imports: [forwardRef(() => BookingsModule), DatabaseModule, RevenueLedgerModule],
+  imports: [
+    forwardRef(() => BookingsModule),
+    DatabaseModule,
+    RevenueLedgerModule,
+  ],
   controllers: [JobAssignmentsController],
   providers: [JobAssignmentsService, JobAssignmentsRepository],
   exports: [JobAssignmentsService],

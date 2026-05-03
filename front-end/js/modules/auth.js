@@ -39,6 +39,7 @@ window.Auth = (() => {
   function sessionWithAliases(session) {
     if (!session) return null;
     const role = toUiRole(session.role);
+    const isProvider = role === "provider";
     return {
       ...session,
       role,
@@ -46,9 +47,9 @@ window.Auth = (() => {
       unitId: session.unitId || session.unit_id || null,
       customerId: session.customerId || session.customer_id || null,
       service_provider_id:
-        session.service_provider_id || (role === "service_provider" ? session.id : null),
+        session.service_provider_id || (isProvider ? session.id : null),
       provider_id:
-        session.provider_id || (role === "service_provider" ? session.id : null),
+        session.provider_id || (isProvider ? session.id : null),
     };
   }
 
