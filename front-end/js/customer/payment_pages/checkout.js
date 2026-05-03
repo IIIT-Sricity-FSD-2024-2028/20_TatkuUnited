@@ -163,7 +163,9 @@ confirmBtn.addEventListener("click", async () => {
     // 3. Triggers auto-assignment
     // 4. Creates revenue ledger entries
     // 5. Clears the cart
-    const result = await Api.post("/bookings/checkout");
+    const result = await Api.post("/bookings/checkout", {
+      payment_method: selectedPayment,
+    });
 
     // Store checkout meta for payment success page
     try {

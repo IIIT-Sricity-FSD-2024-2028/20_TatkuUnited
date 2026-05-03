@@ -104,7 +104,7 @@ export class ServiceProvidersController {
   }
 
   @Post()
-  @Roles(Role.SUPER_USER, Role.COLLECTIVE_MANAGER)
+  @Roles(Role.SUPER_USER, Role.COLLECTIVE_MANAGER, Role.UNIT_MANAGER)
   @ApiOperation({ summary: 'Create a new service provider' })
   @ApiResponse({ status: 201, description: 'Created successfully' })
   @ApiResponse({ status: 403, description: 'Forbidden' })

@@ -125,6 +125,24 @@ export class JobAssignmentsController {
     return this.jaService.markComplete(id, dto);
   }
 
+  @Patch(':id/in-progress')
+  @Roles(Role.SERVICE_PROVIDER)
+  @ApiOperation({ summary: 'Mark assignment as in-progress' })
+  @ApiResponse({ status: 200, description: 'Assignment marked in-progress' })
+  @ApiResponse({ status: 400, description: 'Invalid status transition' })
+  @ApiResponse({ status: 404, description: 'Assignment not found' })
+  @ApiResponse({ status: 403, description: 'Forbidden - service_provider only' })
+  markInProgress(
+    @Param('id') id: string,
+    @Request() req: { user: JwtPayload },
+  ) {
+    const assignment = this.jaService.findOne(id);
+    if (assignment.sp_id !== req.user.sub) {
+      throw new ForbiddenException('Providers can only update their own assignments');
+    }
+    return this.jaService.markInProgress(id);
+  }
+
   @Get()
   @Roles(Role.SUPER_USER, Role.COLLECTIVE_MANAGER, Role.UNIT_MANAGER)
   @ApiOperation({ summary: 'Get all job assignments (scoped for managers)' })

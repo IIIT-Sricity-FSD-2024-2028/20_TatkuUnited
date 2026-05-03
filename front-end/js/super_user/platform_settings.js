@@ -87,8 +87,18 @@ document.addEventListener("DOMContentLoaded", async () => {
     };
 
     try {
-      const savedSettings = await Api.put("/platform-settings", settings);
-      renderLastUpdated(savedSettings || settings);
+      // Backend expects PUT /platform-settings/:key for each setting
+      const entries = Object.entries(settings);
+      let lastSaved = null;
+      for (const [key, value] of entries) {
+        if (key === 'updatedAt' || key === 'updatedBy') continue;
+        lastSaved = await Api.put("/platform-settings/" + key, {
+          value: String(value),
+          description: key,
+          updated_by: updatedBy,
+        });
+      }
+      renderLastUpdated(lastSaved || settings);
 
       // Visual feedback
       saveBtn.textContent = "✓ Saved!";

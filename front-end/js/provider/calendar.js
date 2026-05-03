@@ -611,17 +611,16 @@ function openManageBlocks() {
   let rawJobs = [];
   rawJobs  = await Api.get("/job-assignments/provider/" + spId);
 
-  // Load working hours
+  // Load working hours from provider object
   try {
-    const wh = await Api.get("/provider-working-hours/" + spId, { silent: true });
-    if (wh && wh.hour_start && wh.hour_end) {
-      _cachedWorkHours = { start: wh.hour_start, end: wh.hour_end };
+    if (provider && provider.hour_start && provider.hour_end) {
+      _cachedWorkHours = { start: provider.hour_start, end: provider.hour_end };
     }
   } catch (_) {}
 
   // Load unavailability
   try {
-    const uvList = await Api.get("/provider-unavailability/" + spId, { silent: true }) || [];
+    const uvList = await Api.get("/provider-unavailability/provider/" + spId, { silent: true }) || [];
     unavailability = {};
     uvList.forEach((uv) => {
       if (!unavailability[uv.date]) unavailability[uv.date] = [];

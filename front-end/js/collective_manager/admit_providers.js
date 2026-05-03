@@ -67,8 +67,16 @@ async function renderAdmissions() {
   admissionList.innerHTML = ''; skillList.innerHTML = '';
   let allSkills=[], allProviderSkills=[], allProvidersTable=[];
   allSkills  = await Api.get("/skills");
-  allProviderSkills  = await Api.get("/provider-skills");
+  // No list-all route for provider-skills; fetch per provider
   allProvidersTable  = await Api.get("/service-providers");
+  for (const provider of allProvidersTable) {
+    const pid = provider.service_provider_id || provider.sp_id;
+    if (!pid) continue;
+    try {
+      const ps = await Api.get("/provider-skills/provider/" + pid, { silent: true }) || [];
+      allProviderSkills.push(...ps);
+    } catch (_) {}
+  }
 
   const skillRequests = [];
   allProviderSkills.forEach(ps => {
@@ -82,7 +90,7 @@ async function renderAdmissions() {
   if (!skillRequests.length) { skillList.innerHTML = '<div class="admissions-empty">No pending skill verifications.</div>'; }
   else { skillRequests.forEach((req,idx) => {
     const card = buildAdmissionCard(req,idx,'skill', async (card) => {
-      try { await Api.patch("/provider-skills/"+req.provider_id+"/"+req.skill_id,{verification_status:"Verified"}); showToast(`✓ Verified ${req.skill} for ${req.name}`); card.remove();
+      try { await Api.patch("/provider-skills/verify/"+req.provider_id,{skill_id:req.skill_id,verification_status:"Verified"}); showToast(`✓ Verified ${req.skill} for ${req.name}`); card.remove();
         const rem = skillList.querySelectorAll('.applicant-card').length; if (verificationsMetric) verificationsMetric.textContent = String(rem);
         if (!rem) skillList.innerHTML = '<div class="admissions-empty">No pending skill verifications.</div>';
       } catch(e){ showToast("Failed to verify skill."); }
@@ -114,7 +122,7 @@ window.assignUnit = async (providerId, btn) => {
   if (!unitId) return showToast('Please select a unit');
   btn.disabled = true;
   try {
-    await Api.patch("/service-providers/"+providerId+"/approve",{unit_id:unitId});
+    await Api.patch("/service-providers/"+providerId,{unit_id:unitId});
     showToast('✓ Provider approved and assigned successfully');
     btn.closest('.applicant-card').remove();
     const admissionList = document.getElementById('admissionRequestsList');
