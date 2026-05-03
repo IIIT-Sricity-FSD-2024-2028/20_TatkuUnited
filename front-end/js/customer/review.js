@@ -20,6 +20,8 @@ async function updateCartBadge() {
 }
 
 let currentRating = 4;
+let currentBooking = null;
+let currentAssignment = null;
 
 function applyRatingToUi(value) {
   const safe = Math.max(1, Math.min(5, Number(value) || 4));
@@ -161,9 +163,16 @@ async function submitReview() {
     return;
   }
 
+  if (!currentBooking || !currentAssignment) {
+    showToast("Booking data is still loading. Please wait.", "info");
+    return;
+  }
+
   try {
     await Api.post("/reviews", {
       booking_id: bookingId,
+      service_id: currentAssignment.service_id,
+      sp_id: currentAssignment.sp_id,
       rating: currentRating,
       comment: reviewText,
     });
@@ -202,22 +211,14 @@ async function submitReview() {
     try {
       const booking = await Api.get("/bookings/" + bookingId);
       if (booking) {
-        // Try to get provider name from assignments
-        let providerName = null;
-        try {
-          const assignments = await Api.get(
-            "/job-assignments/booking/" + bookingId,
-            { silent: true },
-          );
-          if (assignments && assignments.length > 0) {
-            const latest = assignments.sort((a, b) => {
-              const at = new Date(a.updated_at || a.assigned_at || a.created_at || 0).getTime();
-              const bt = new Date(b.updated_at || b.assigned_at || b.created_at || 0).getTime();
-              return bt - at;
-            })[0];
-            providerName = latest.sp_name || null;
-          }
-        } catch (_) {}
+        currentBooking = booking;
+        
+        // Find the most appropriate assignment to review (COMPLETED one)
+        const assignments = booking.assignments || [];
+        const completed = assignments.find(a => a.status === 'COMPLETED') || assignments[0];
+        currentAssignment = completed;
+
+        const providerName = completed ? completed.sp_name : "Tatku Provider";
 
         applyBookingContextUi(booking, providerName);
         await hydrateExistingReview(bookingId);

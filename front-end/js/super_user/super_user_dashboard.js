@@ -1,4 +1,4 @@
-/* super_user_dashboard.js — API-backed */
+/* super_user_dashboard.js — Simplified for Revenue Breakdown Only */
 
 (async () => {
   /* ── 1. Auth gate ── */
@@ -6,100 +6,13 @@
   if (!session) return;
 
   /* ── 2. Pull from API ── */
-  let allCustomers = [];
-  let allProviders = [];
-  let allCMs = [];
-  let allUMs = [];
-  let allAssignments = [];
   let allTransactions = [];
-  let allServices = [];
-  let allCategories = [];
   let allLedger = [];
-  let allEvents = [];
-  let allActions = [];
 
-  allCustomers  = await Api.get("/customers");
-  allProviders  = await Api.get("/service-providers");
-  allCMs  = await Api.get("/collective-managers");
-  allUMs  = await Api.get("/unit-managers");
-  allAssignments  = await Api.get("/job-assignments");
-  allTransactions  = await Api.get("/transactions");
-  allServices  = await Api.get("/services");
-  allCategories  = await Api.get("/categories");
-  allLedger  = await Api.get("/revenue-ledger");
+  allTransactions = await Api.get("/transactions");
+  allLedger = await Api.get("/revenue-ledger");
 
-  /* ── 3. Transform platform events (static for now) ── */
-  function transformEvents(events) {
-    return events
-      .slice(0, 4)
-      .map((e) => ({
-        time: new Date(e.timestamp || e.created_at || Date.now()).toLocaleTimeString("en-IN", {
-          hour: "2-digit",
-          minute: "2-digit",
-        }),
-        type: e.event_type === "security" ? "security" : e.event_type === "system" ? "system" : e.event_type === "user" ? "user" : "action",
-        typeLabel: (e.event_type || "action").toUpperCase(),
-        desc: e.title || e.description || "",
-      }));
-  }
-
-  /* ── 4. Transform super user actions ── */
-  function transformActions(actions) {
-    return actions.map((a) => {
-      const typeToColor = {
-        account_suspension: "blue",
-        settings_update: "yellow",
-        login: "gray",
-      };
-      return {
-        dot: typeToColor[a.action_type] || "blue",
-        title: a.title,
-        desc: a.description,
-        time: a.time_display,
-      };
-    });
-  }
-
-  /* ── 5. Transform services and categories to get top-rated ── */
-  function getTopRatedServices(limit = 5) {
-    return allServices
-      .filter((s) => s.is_available)
-      .sort((a, b) => (b.average_rating || 0) - (a.average_rating || 0))
-      .slice(0, limit);
-  }
-
-  function getTopRatedCategories(limit = 5) {
-    return allCategories
-      .filter((c) => c.is_available)
-      .sort((a, b) => (b.average_rating || 0) - (a.average_rating || 0))
-      .slice(0, limit);
-  }
-
-  const EVENTS = transformEvents(allEvents);
-  const SUPER_USER_ACTIONS = transformActions(allActions);
-  const TOP_SERVICES = getTopRatedServices();
-  const TOP_CATEGORIES = getTopRatedCategories();
-
-  /* ── 6. Render ── */
-  function renderKPIs() {
-    const activeCustomers = allCustomers.filter((c) => c.is_active !== false).length;
-    const activeProviders = allProviders.filter((p) => p.is_active || p.account_status === "active").length;
-    const activeCMs = allCMs.filter((m) => m.is_active).length;
-    const activeUMs = allUMs.filter((m) => m.is_active).length;
-
-    const activeUsers = activeCustomers + activeProviders + activeCMs + activeUMs + 1; // +1 for current SU
-
-    const failedAssignments = allAssignments.filter(
-      (a) => a.status === "CANCELLED" || a.status === "FAILED",
-    ).length;
-
-    const activeEl = document.getElementById("activeUsersValue");
-    const failedEl = document.getElementById("failedAssignmentsValue");
-
-    if (activeEl) activeEl.textContent = activeUsers;
-    if (failedEl) failedEl.textContent = failedAssignments;
-  }
-
+  /* ── 3. Render Revenue ── */
   function renderRevenue() {
     const roleOrder = [
       { role: "provider", label: "Providers (78%)" },
@@ -128,25 +41,10 @@
       }
     });
 
-    const totalDistributed = roleOrder.reduce(
-      (sum, roleMeta) => sum + revenueByRole[roleMeta.role].amount, 0,
-    );
-
-    const distributionRate = totalGMV > 0 ? Math.min((totalDistributed / totalGMV) * 100, 100) : 0;
-
     const formatInr = (value) => `₹${Math.round(value).toLocaleString("en-IN")}`;
-
-    const revEl = document.getElementById("totalRevenueValue");
-    if (revEl) revEl.textContent = formatInr(totalGMV);
 
     const gmvEl = document.getElementById("revenueGmvValue");
     if (gmvEl) gmvEl.textContent = formatInr(totalGMV);
-
-    const distEl = document.getElementById("revenueDistributedValue");
-    if (distEl) distEl.textContent = formatInr(totalDistributed);
-
-    const rateEl = document.getElementById("revenueDistributionRate");
-    if (rateEl) rateEl.textContent = `${distributionRate.toFixed(1)}%`;
 
     const barsEl = document.getElementById("revenue-breakdown-bars");
     if (barsEl) {
@@ -172,159 +70,8 @@
         })
         .join("");
     }
-
-    const tbody = document.getElementById("revenue-tbody");
-    if (tbody) {
-      const rows = roleOrder
-        .map((roleMeta) => {
-          const amount = revenueByRole[roleMeta.role].amount;
-          return `
-            <tr>
-              <td><strong>${roleMeta.label}</strong></td>
-              <td class="revenue-table-amount revenue-amount">${formatInr(amount)}</td>
-            </tr>
-          `;
-        })
-        .join("");
-
-      tbody.innerHTML = rows + `
-        <tr class="revenue-total-row">
-          <td><strong>Total GMV</strong></td>
-          <td class="revenue-table-amount revenue-amount">${formatInr(totalGMV)}</td>
-        </tr>
-      `;
-    }
   }
 
-  function renderEvents() {
-    const tbody = document.getElementById("events-tbody");
-    if (!tbody) return;
-
-    if (EVENTS.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; padding: 24px; color:var(--text-faint); font-size: 13px;">No recent system events.</td></tr>`;
-      return;
-    }
-
-    tbody.innerHTML = EVENTS.map(
-      (e) => `
-      <tr>
-        <td class="ev-time">${e.time}</td>
-        <td><span class="ev-type-badge ev-type-badge--${e.type}">${e.typeLabel}</span></td>
-        <td>${e.desc}</td>
-      </tr>
-    `,
-    ).join("");
-  }
-
-  function renderSuperUserActions() {
-    const el = document.getElementById("super_user-action-list");
-    if (!el) return;
-
-    if (SUPER_USER_ACTIONS.length === 0) {
-      el.innerHTML =
-        '<div style="padding: 20px; text-align: center; color: var(--text-faint); font-size: 13px;">No recent specialized actions.</div>';
-      return;
-    }
-
-    el.innerHTML = SUPER_USER_ACTIONS.map(
-      (a) => `
-      <div class="aa-item">
-        <div class="aa-dot aa-dot--${a.dot}"></div>
-        <div>
-          <div class="aa-title">${a.title}</div>
-          <div class="aa-desc">${a.desc}</div>
-          <div class="aa-time">${a.time}</div>
-        </div>
-      </div>
-    `,
-    ).join("");
-  }
-
-  function renderTopServices() {
-    const el = document.getElementById("top-services-list");
-    if (!el) return;
-
-    if (TOP_SERVICES.length === 0) {
-      el.innerHTML = `<div class="empty-state">No services yet</div>`;
-    } else {
-      el.innerHTML = TOP_SERVICES.map((svc) => {
-        const rating =
-          typeof svc.average_rating === "number" && (svc.rating_count || 0) > 0
-            ? svc.average_rating
-            : null;
-        const ratingText = typeof rating === "number" ? rating.toFixed(1) : "N/A";
-        return `
-          <div class="top-item">
-            <div class="top-item-info">
-              <div class="top-item-name">${svc.service_name}</div>
-              <div class="top-item-meta">${svc.base_price ? "₹" + svc.base_price : "Price TBA"}</div>
-            </div>
-            <div class="top-item-rating">
-              <div class="rating-value">${ratingText}${typeof rating === "number" ? " ⭐" : ""}</div>
-              <div class="rating-count">${svc.rating_count || 0} ratings</div>
-            </div>
-          </div>
-        `;
-      }).join("");
-    }
-  }
-
-  function renderTopCategories() {
-    const el = document.getElementById("top-categories-list");
-    if (!el) return;
-
-    if (TOP_CATEGORIES.length === 0) {
-      el.innerHTML = `<div class="empty-state">No categories yet</div>`;
-    } else {
-      el.innerHTML = TOP_CATEGORIES.map((cat) => {
-        const rating =
-          typeof cat.average_rating === "number" && (cat.rating_count || 0) > 0
-            ? cat.average_rating
-            : null;
-        const ratingText = typeof rating === "number" ? rating.toFixed(1) : "N/A";
-        return `
-          <div class="top-item">
-            <div class="top-item-info">
-              <div class="top-item-name">${cat.category_name}</div>
-              <div class="top-item-meta">${cat.icon || ""} ${cat.description || ""}</div>
-            </div>
-            <div class="top-item-rating">
-              <div class="rating-value">${ratingText}${typeof rating === "number" ? " ⭐" : ""}</div>
-              <div class="rating-count">${cat.rating_count || 0} ratings</div>
-            </div>
-          </div>
-        `;
-      }).join("");
-    }
-  }
-
-  /* ── 7. Initialize ── */
-  function setupDownloadLog() {
-    const btn = document.querySelector(".download-log-btn");
-    if (btn) {
-      btn.addEventListener("click", () => {
-        if (SUPER_USER_ACTIONS.length === 0) {
-          alert("No recent actions to download.");
-          return;
-        }
-        const dataStr =
-          "data:text/json;charset=utf-8," +
-          encodeURIComponent(JSON.stringify(SUPER_USER_ACTIONS, null, 2));
-        const anchor = document.createElement("a");
-        anchor.setAttribute("href", dataStr);
-        anchor.setAttribute("download", "action_log.json");
-        document.body.appendChild(anchor);
-        anchor.click();
-        anchor.remove();
-      });
-    }
-  }
-
-  renderKPIs();
+  /* ── 4. Initialize ── */
   renderRevenue();
-  renderEvents();
-  renderSuperUserActions();
-  renderTopServices();
-  renderTopCategories();
-  setupDownloadLog();
 })();

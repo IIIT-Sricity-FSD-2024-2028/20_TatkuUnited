@@ -13,7 +13,12 @@ async function _loadCache() {
     ["/skills", "skills"], ["/job-assignments", "assignments"]
   ];
   await Promise.all(endpoints.map(async ([url, key]) => {
-    _cache[key]  = await Api.get(url);
+    try {
+      _cache[key]  = await Api.get(url);
+    } catch (err) {
+      console.warn("Failed to load " + url + ":", err);
+      _cache[key] = [];
+    }
   }));
 }
 
@@ -47,8 +52,9 @@ async function _loadCache() {
     editingCollectiveId: null,
     editCmId: null,
     collectivePage: 1,
-    COLLECTIVE_PAGE_SIZE: 4,
+    COLLECTIVE_PAGE_SIZE: 6,
     collectiveManager: "All Managers",
+    expandedUnitIds: [], // Track which units are expanded
   };
 
   var el = {
@@ -60,17 +66,10 @@ async function _loadCache() {
     managerFilter: document.getElementById("manager-filter"),
     collectiveManagerFilter: document.getElementById("collective-manager-filter"),
     collectivesGrid: document.getElementById("collectives-grid"),
-    providersTbody: document.getElementById("providers-tbody"),
-    providerTitle: document.getElementById("provider-section-title"),
-    providerSubtitle: document.getElementById("provider-section-subtitle"),
-    tableInfo: document.getElementById("table-info"),
-    prevPageBtn: document.getElementById("providers-prev-page"),
-    nextPageBtn: document.getElementById("providers-next-page"),
     collectivesPrevPageBtn: document.getElementById("collectives-prev-page"),
     collectivesNextPageBtn: document.getElementById("collectives-next-page"),
     collectivesTableInfo: document.getElementById("collectives-table-info"),
     collectivesPages: document.getElementById("collectives-pages"),
-    exportBtn: document.getElementById("btn-export-providers"),
     collectiveModal: document.getElementById("collective-modal"),
     collectiveModalClose: document.getElementById("collective-modal-close"),
     collectiveCancelBtn: document.getElementById("collective-cancel-btn"),
@@ -859,151 +858,163 @@ async function _loadCache() {
     }
   }
 
+  function toggleUnitExpansion(unitId) {
+    var idx = state.expandedUnitIds.indexOf(unitId);
+    if (idx === -1) {
+      state.expandedUnitIds.push(unitId);
+    } else {
+      state.expandedUnitIds.splice(idx, 1);
+    }
+    renderCollectives();
+  }
+
   function renderCollectives() {
     var filteredData = getFilteredCollectivesData();
-    ensureSelectedUnitExists(filteredData);
-
+    
     var total = filteredData.length;
     var maxPage = Math.max(1, Math.ceil(total / state.COLLECTIVE_PAGE_SIZE));
     if (state.collectivePage > maxPage) state.collectivePage = maxPage;
 
     var start = (state.collectivePage - 1) * state.COLLECTIVE_PAGE_SIZE;
-    var pageData = filteredData.slice(
-      start,
-      start + state.COLLECTIVE_PAGE_SIZE,
-    );
+    var pageData = filteredData.slice(start, start + state.COLLECTIVE_PAGE_SIZE);
 
     if (!total) {
-      el.collectivesGrid.innerHTML =
-        '<div class="collective-card"><div class="collective-header"><div class="collective-info"><div class="collective-name">No collectives found</div><div class="collective-meta">Try changing filters or create a new collective.</div></div></div></div>';
-      el.collectivesTableInfo.textContent = "Showing 0-0 of 0 collectives";
+      el.collectivesGrid.innerHTML = `
+        <div class="collective-card" style="grid-column: 1/-1; padding: 48px; text-align: center;">
+          <h2 style="font-family: var(--font-title); font-size: 24px; margin-bottom: 8px;">No collectives found</h2>
+          <p style="color: var(--p-text-sub);">Try adjusting your filters or search query.</p>
+        </div>
+      `;
+      el.collectivesTableInfo.textContent = "Showing 0 of 0 collectives";
       el.collectivesPrevPageBtn.disabled = true;
       el.collectivesNextPageBtn.disabled = true;
       el.collectivesPages.innerHTML = "";
-      renderProviders();
       return;
     }
 
-    el.collectivesGrid.innerHTML = pageData
-      .map(function (entry) {
-        var collective = entry.collective;
-        var iconClass =
-          entry.idx % 2 === 0
-            ? "collective-icon--teal"
-            : "collective-icon--orange";
-        var statusText = collective.is_active ? "Active" : "Inactive";
-        var activeSince = collective.created_at
-          ? new Date(collective.created_at).getFullYear()
-          : "-";
-        var sectorText =
-          entry.sectorNames && entry.sectorNames.length
-            ? entry.sectorNames.join(", ")
-            : "Unmapped";
+    var providerSkillsLookup = getProviderSkillsLookup(_cache.providerSkills, _cache.skills);
 
-        var unitsHtml = entry.units.length
-          ? entry.units
-            .map(function (unit) {
-              var manager = entry.managerByUnit[unit.unit_id];
-              var managerName =
-                manager && manager.name ? manager.name : "Unassigned";
-              var providersCount = entry.providersByUnit[unit.unit_id] || 0;
-              var selectedClass =
-                state.selectedUnitId === unit.unit_id ? " selected-unit" : "";
+    el.collectivesGrid.innerHTML = pageData.map(function (entry) {
+      var collective = entry.collective;
+      var iconClass = entry.idx % 3 === 0 ? "collective-icon--teal" : (entry.idx % 3 === 1 ? "collective-icon--orange" : "collective-icon--blue");
+      var statusClass = collective.is_active ? "status-available" : "status-offline";
+      var statusText = collective.is_active ? "Active" : "Inactive";
+      
+      var unitsHtml = entry.units.length ? entry.units.map(function (unit) {
+        var manager = entry.managerByUnit[unit.unit_id];
+        var managerName = manager && manager.name ? manager.name : "Unassigned";
+        var isExpanded = state.expandedUnitIds.indexOf(unit.unit_id) !== -1;
+        var providers = _cache.providers.filter(p => p.unit_id === unit.unit_id);
+        
+        var providersHtml = providers.length ? providers.map(p => {
+          var status = getProviderStatus(p, _cache.assignments, []);
+          var initials = getInitials(p.name);
+          return `
+            <tr>
+              <td>
+                <div class="prov-cell">
+                  <div class="prov-avatar">${escapeHtml(initials)}</div>
+                  <div>
+                    <span class="prov-name">${escapeHtml(p.name)}</span>
+                    <span style="font-size: 10px; color: var(--p-text-muted);">ID: ${escapeHtml(p.service_provider_id)}</span>
+                  </div>
+                </div>
+              </td>
+              <td>${escapeHtml(providerSkillsLookup[p.service_provider_id]?.[0] || deriveSkillFromUnitName(unit.unit_name))}</td>
+              <td><div class="rating-cell" style="gap: 2px;">${starHTML(p.rating)}</div></td>
+              <td><span class="prov-status-pill status-${status.css}">${status.label}</span></td>
+              <td>
+                <div style="display: flex; gap: 4px;">
+                  <button class="icon-btn icon-btn--small" title="Reassign" data-action="reassign-provider" data-provider-id="${escapeHtml(p.service_provider_id)}">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 3h5v5M4 20L21 3M21 16v5h-5M15 15l6 6M4 4l5 5"></path></svg>
+                  </button>
+                  <button class="icon-btn icon-btn--small" title="Remove" data-action="remove-provider" data-provider-id="${escapeHtml(p.service_provider_id)}" style="color: var(--p-danger);">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          `;
+        }).join('') : '<tr><td colspan="5" style="padding: 16px; text-align: center; color: var(--p-text-muted);">No providers in this unit.</td></tr>';
 
-              return (
-                '<div class="unit-row' +
-                selectedClass +
-                '">' +
-                '<span class="unit-arrow">›</span>' +
-                '<span class="unit-name">' +
-                escapeHtml(unit.unit_name) +
-                " (" +
-                escapeHtml(unit.unit_id) +
-                ")</span>" +
-                '<span class="unit-providers">' +
-                '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="7" r="4"></circle><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"></path></svg>' +
-                providersCount +
-                " Providers</span>" +
-                '<span class="unit-mgr">' +
-                '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"></rect><path d="M16 3H8"></path></svg>' +
-                "Mgr: " +
-                escapeHtml(managerName) +
-                "</span>" +
-                '<a href="#" class="view-providers-link" data-action="view-providers" data-unit-id="' +
-                escapeHtml(unit.unit_id) +
-                '" data-collective-id="' +
-                escapeHtml(collective.collective_id) +
-                '">View<br>Providers</a>' +
-                '<button class="edit-btn" type="button" data-action="edit-unit" data-unit-id="' +
-                escapeHtml(unit.unit_id) +
-                '">' +
-                '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>' +
-                "</button>" +
-                "</div>"
-              );
-            })
-            .join("")
-          : '<div class="unit-row"><span class="unit-name">No units in this collective.</span></div>';
+        return `
+          <div class="unit-container ${isExpanded ? 'expanded' : ''}" data-unit-id="${escapeHtml(unit.unit_id)}">
+            <div class="unit-row" data-action="toggle-unit">
+              <svg class="unit-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+              <span class="unit-name">${escapeHtml(unit.unit_name)} <span style="font-weight: 400; color: var(--p-text-muted); font-size: 12px;">(${escapeHtml(unit.unit_id)})</span></span>
+              <div class="unit-badges">
+                <span class="badge badge-providers">${providers.length} Providers</span>
+                <span class="badge badge-manager">${escapeHtml(managerName)}</span>
+              </div>
+              <div class="unit-actions">
+                <button class="icon-btn" data-action="edit-unit" data-unit-id="${escapeHtml(unit.unit_id)}">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                </button>
+              </div>
+            </div>
+            <div class="embedded-providers">
+              <table class="providers-mini-table">
+                <thead>
+                  <tr>
+                    <th>Provider</th>
+                    <th>Skill</th>
+                    <th>Rating</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>${providersHtml}</tbody>
+              </table>
+            </div>
+          </div>
+        `;
+      }).join("") : '<div style="padding: 24px; text-align: center; color: var(--p-text-muted);">No units available.</div>';
 
-        var cmName = entry.collectiveManager
-          ? entry.collectiveManager.name
-          : "Unassigned";
+      var cmName = entry.collectiveManager ? entry.collectiveManager.name : "Unassigned";
+      var sectorTags = entry.sectorNames.map(s => `<span style="background: #f1f5f9; padding: 2px 8px; border-radius: 4px; font-size: 11px;">${escapeHtml(s)}</span>`).join(' ');
 
-        return (
-          '<div class="collective-card">' +
-          '<div class="collective-header">' +
-          '<div class="collective-icon ' +
-          iconClass +
-          '">' +
-          '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"></rect><path d="M16 3H8"></path><path d="M12 3v4"></path></svg>' +
-          "</div>" +
-          '<div class="collective-info">' +
-          '<div class="collective-name">' +
-          escapeHtml(collective.collective_name) +
-          " (" +
-          escapeHtml(collective.collective_id) +
-          ")</div>" +
-          '<div class="collective-meta">' +
-          escapeHtml(sectorText) +
-          " • " +
-          escapeHtml(statusText) +
-          " since " +
-          escapeHtml(activeSince) +
-          "<br>CM: <strong>" +
-          escapeHtml(cmName) +
-          "</strong> " +
-          '<button type="button" class="btn-secondary" style="margin-left:8px; padding: 2px 8px; font-size: 11px; height: auto; min-height: 20px;" data-action="edit-collective" data-collective-id="' +
-          escapeHtml(collective.collective_id) +
-          '">Edit</button>' +
-          "</div>" +
-          "</div>" +
-          '<div class="collective-stats">' +
-          '<div class="cstat"><span class="cstat-num cstat-num--blue">' +
-          entry.units.length +
-          '</span><span class="cstat-label">TOTAL<br>UNITS</span></div>' +
-          '<div class="cstat"><span class="cstat-num cstat-num--orange">' +
-          entry.providerCount +
-          '</span><span class="cstat-label">PROVIDERS</span></div>' +
-          "</div>" +
-          "</div>" +
-          '<div class="unit-list">' +
-          unitsHtml +
-          "</div>" +
-          "</div>"
-        );
-      })
-      .join("");
+      return `
+        <div class="collective-card">
+          <div class="collective-header">
+            <div class="collective-icon ${iconClass}">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+            </div>
+            <div class="collective-info">
+              <div class="collective-name">${escapeHtml(collective.collective_name)}</div>
+              <div class="collective-meta">
+                <span><svg class="svg-mini" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg> ${sectorTags}</span>
+                <span>•</span>
+                <span class="prov-status-pill ${statusClass}">${statusText}</span>
+              </div>
+              <div style="margin-top: 8px; font-size: 13px; font-weight: 500; color: var(--p-text-sub);">
+                CM: ${escapeHtml(cmName)}
+                <button type="button" class="icon-btn icon-btn--small" data-action="edit-collective" data-collective-id="${escapeHtml(collective.collective_id)}">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                </button>
+              </div>
+            </div>
+            <div class="collective-stats">
+              <div class="cstat">
+                <span class="cstat-num" style="color: var(--p-accent);">${entry.units.length}</span>
+                <span class="cstat-label">Units</span>
+              </div>
+              <div class="cstat">
+                <span class="cstat-num" style="color: var(--p-warning);">${entry.providerCount}</span>
+                <span class="cstat-label">Providers</span>
+              </div>
+            </div>
+          </div>
+          <div class="unit-list">
+            <div style="padding: 8px 16px; font-size: 11px; font-weight: 700; color: var(--p-text-muted); text-transform: uppercase; letter-spacing: 0.05em;">Units & Providers</div>
+            ${unitsHtml}
+          </div>
+        </div>
+      `;
+    }).join("");
 
     var shownStart = total ? start + 1 : 0;
     var shownEnd = Math.min(start + state.COLLECTIVE_PAGE_SIZE, total);
-    el.collectivesTableInfo.textContent =
-      "Showing " +
-      shownStart +
-      "-" +
-      shownEnd +
-      " of " +
-      total +
-      " collectives";
+    el.collectivesTableInfo.textContent = `Showing ${shownStart}-${shownEnd} of ${total} collectives`;
 
     el.collectivesPrevPageBtn.disabled = state.collectivePage <= 1;
     el.collectivesNextPageBtn.disabled = state.collectivePage >= maxPage;
@@ -1013,190 +1024,20 @@ async function _loadCache() {
     if (maxPage > 1) {
       for (var p = 1; p <= maxPage; p++) {
         var activeClass = p === state.collectivePage ? " active" : "";
-        pagesHtml +=
-          '<button class="page-num' +
-          activeClass +
-          '" data-page="' +
-          p +
-          '">' +
-          p +
-          "</button>";
+        pagesHtml += `<button class="page-num ${activeClass}" data-page="${p}">${p}</button>`;
       }
     }
     el.collectivesPages.innerHTML = pagesHtml;
-
-    renderProviders();
   }
 
   function starHTML(rating) {
     var numeric = Number(rating);
-    if (isNaN(numeric) || numeric <= 0) {
-      return '<span class="rating-num">N/A</span>';
-    }
-    var full = Math.round(numeric);
+    if (isNaN(numeric) || numeric <= 0) return '<span style="color: var(--p-text-muted);">Unrated</span>';
     var stars = "";
-    for (var i = 0; i < 5; i += 1) {
-      stars +=
-        '<span class="star" style="color:' +
-        (i < full ? "#f59e0b" : "#d1d5db") +
-        '">★</span>';
+    for (var i = 1; i <= 5; i++) {
+      stars += `<span class="rating-star">${i <= Math.round(numeric) ? '★' : '☆'}</span>`;
     }
-    return stars + '<span class="rating-num">' + numeric.toFixed(1) + "</span>";
-  }
-
-  function getSelectedUnit() {
-    var units = _cache.units;
-    for (var i = 0; i < units.length; i += 1) {
-      if (units[i].unit_id === state.selectedUnitId) return units[i];
-    }
-    return null;
-  }
-
-  function getUnitProviderRows() {
-    var tables = getTables();
-    var selectedUnit = getSelectedUnit();
-    if (!selectedUnit) return [];
-
-    var providerSkillsLookup = getProviderSkillsLookup(
-      tables.providerSkills,
-      tables.skills,
-    );
-
-    var rows = tables.providers
-      .filter(function (p) {
-        return p.unit_id === selectedUnit.unit_id;
-      })
-      .map(function (p, idx) {
-        var providerSkill = providerSkillsLookup[p.service_provider_id];
-        var skill =
-          providerSkill && providerSkill.length
-            ? providerSkill[0]
-            : deriveSkillFromUnitName(selectedUnit.unit_name);
-        var status = getProviderStatus(
-          p,
-          tables.assignments,
-          [],
-        );
-
-        return {
-          index: idx,
-          provider: p,
-          skill: skill,
-          status: status,
-          actionType: p.is_active ? "reassign" : "assign",
-        };
-      });
-
-    return rows;
-  }
-
-  function renderProviders() {
-    var selectedUnit = getSelectedUnit();
-    if (!selectedUnit) {
-      el.providerTitle.textContent = "Provider Management";
-      el.providerSubtitle.textContent =
-        "Select a unit to manage provider assignments.";
-      el.providersTbody.innerHTML =
-        '<tr><td colspan="5" style="text-align:center;color:#6b7280;">No unit selected.</td></tr>';
-      el.tableInfo.textContent = "Showing 0 of 0 providers";
-      return;
-    }
-
-    var rows = getUnitProviderRows();
-    var total = rows.length;
-    var maxPage = Math.max(1, Math.ceil(total / PAGE_SIZE));
-    if (state.providerPage > maxPage) state.providerPage = maxPage;
-
-    var start = (state.providerPage - 1) * PAGE_SIZE;
-    var pageRows = rows.slice(start, start + PAGE_SIZE);
-
-    el.providerTitle.textContent =
-      "Provider Management: " +
-      selectedUnit.unit_name +
-      " (" +
-      selectedUnit.unit_id +
-      ")";
-    el.providerSubtitle.textContent =
-      "Manage individual provider assignments for this unit.";
-
-    if (!pageRows.length) {
-      el.providersTbody.innerHTML =
-        '<tr><td colspan="5" style="text-align:center;color:#6b7280;">No providers assigned to this unit.</td></tr>';
-    } else {
-      el.providersTbody.innerHTML = pageRows
-        .map(function (row) {
-          var p = row.provider;
-          var initials = getInitials(p.name);
-          var avatarBg = row.index % 2 === 0 ? "#eff6ff" : "#f0fdf4";
-          var avatarColor = row.index % 2 === 0 ? "#2563eb" : "#15803d";
-          var buttonHtml =
-            row.actionType === "reassign"
-              ? '<button class="reassign-btn" type="button" data-action="reassign-provider" data-provider-id="' +
-              escapeHtml(p.service_provider_id) +
-              '">Reassign</button>'
-              : '<button class="assign-btn" type="button" data-action="assign-provider" data-provider-id="' +
-              escapeHtml(p.service_provider_id) +
-              '">Assign Provider</button>';
-
-          return (
-            "<tr>" +
-            "<td>" +
-            '<div class="prov-cell">' +
-            '<div class="prov-avatar" style="background:' +
-            avatarBg +
-            ";color:" +
-            avatarColor +
-            '">' +
-            escapeHtml(initials) +
-            "</div>" +
-            "<div>" +
-            '<div class="prov-name">' +
-            escapeHtml(p.name) +
-            "</div>" +
-            '<div class="prov-id">ID: ' +
-            escapeHtml(p.service_provider_id) +
-            "</div>" +
-            "</div>" +
-            "</div>" +
-            "</td>" +
-            "<td>" +
-            escapeHtml(row.skill) +
-            "</td>" +
-            '<td><div class="rating-cell">' +
-            starHTML(p.rating) +
-            "</div></td>" +
-            '<td><span class="prov-status prov-status--' +
-            escapeHtml(row.status.css) +
-            '">' +
-            escapeHtml(row.status.label) +
-            "</span></td>" +
-            "<td>" +
-            '<div class="action-row">' +
-            '<button class="remove-link" type="button" data-action="remove-provider" data-provider-id="' +
-            escapeHtml(p.service_provider_id) +
-            '">Remove Provider</button>' +
-            buttonHtml +
-            "</div>" +
-            "</td>" +
-            "</tr>"
-          );
-        })
-        .join("");
-    }
-
-    var shownStart = total ? start + 1 : 0;
-    var shownEnd = Math.min(start + PAGE_SIZE, total);
-    el.tableInfo.textContent =
-      "Showing " +
-      shownStart +
-      "-" +
-      shownEnd +
-      " of " +
-      total +
-      " providers in this unit";
-
-    el.prevPageBtn.disabled = state.providerPage <= 1;
-    el.nextPageBtn.disabled = state.providerPage >= maxPage;
+    return stars;
   }
 
   function validateCollectiveForm() {
@@ -1765,51 +1606,6 @@ async function _loadCache() {
     notify("Provider assigned to selected unit.");
   }
 
-  function exportProviderList() {
-    var selectedUnit = getSelectedUnit();
-    if (!selectedUnit) {
-      notify("Select a unit first.");
-      return;
-    }
-
-    var rows = getUnitProviderRows();
-    if (!rows.length) {
-      notify("No providers to export for this unit.");
-      return;
-    }
-
-    var csv = ["provider_id,provider_name,email,phone,skill,status"];
-    rows.forEach(function (row) {
-      var p = row.provider;
-      csv.push(
-        [
-          p.service_provider_id,
-          p.name,
-          p.email,
-          p.phone,
-          row.skill,
-          row.status.label,
-        ]
-          .map(function (val) {
-            return (
-              '"' + String(val == null ? "" : val).replace(/\"/g, '""') + '"'
-            );
-          })
-          .join(","),
-      );
-    });
-
-    var blob = new Blob([csv.join("\n")], { type: "text/csv;charset=utf-8;" });
-    var url = URL.createObjectURL(blob);
-    var link = document.createElement("a");
-    link.href = url;
-    link.download = selectedUnit.unit_id + "_providers.csv";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-  }
-
   function bindEvents() {
     if (el.logoutBtn) {
       el.logoutBtn.addEventListener("click", function (event) {
@@ -1913,21 +1709,29 @@ async function _loadCache() {
       if (!actionEl) return;
 
       var action = actionEl.getAttribute("data-action");
-      if (action === "view-providers") {
-        event.preventDefault();
-        state.selectedUnitId = actionEl.getAttribute("data-unit-id");
-        state.selectedCollectiveId =
-          actionEl.getAttribute("data-collective-id");
-        state.providerPage = 1;
-        renderCollectives();
+      if (action === "toggle-unit") {
+        var container = target.closest(".unit-container");
+        if (container) toggleUnitExpansion(container.getAttribute("data-unit-id"));
       }
       if (action === "edit-unit") {
         event.preventDefault();
+        event.stopPropagation();
         openEditUnitModal(actionEl.getAttribute("data-unit-id"));
       }
       if (action === "edit-collective") {
         event.preventDefault();
+        event.stopPropagation();
         openEditCollectiveModal(actionEl.getAttribute("data-collective-id"));
+      }
+      
+      var providerId = actionEl.getAttribute("data-provider-id");
+      if (action === "remove-provider") {
+        event.stopPropagation();
+        removeProvider(providerId);
+      }
+      if (action === "reassign-provider") {
+        event.stopPropagation();
+        reassignProvider(providerId);
       }
     });
 
@@ -2004,58 +1808,39 @@ async function _loadCache() {
       });
     }
 
-    el.providersTbody.addEventListener("click", function (event) {
-      var actionEl = event.target.closest("[data-action]");
-      if (!actionEl) return;
-      var action = actionEl.getAttribute("data-action");
-      var providerId = actionEl.getAttribute("data-provider-id");
+    if (el.collectivesPrevPageBtn) {
+      el.collectivesPrevPageBtn.addEventListener("click", function () {
+        if (state.collectivePage <= 1) return;
+        state.collectivePage -= 1;
+        renderCollectives();
+      });
+    }
 
-      if (action === "remove-provider") removeProvider(providerId);
-      if (action === "reassign-provider") reassignProvider(providerId);
-      if (action === "assign-provider") assignProvider(providerId);
-    });
+    if (el.collectivesNextPageBtn) {
+      el.collectivesNextPageBtn.addEventListener("click", function () {
+        var total = getFilteredCollectivesData().length;
+        var maxPage = Math.max(1, Math.ceil(total / state.COLLECTIVE_PAGE_SIZE));
+        if (state.collectivePage >= maxPage) return;
+        state.collectivePage += 1;
+        renderCollectives();
+      });
+    }
 
-    el.prevPageBtn.addEventListener("click", function () {
-      if (state.providerPage <= 1) return;
-      state.providerPage -= 1;
-      renderProviders();
-    });
-
-    el.nextPageBtn.addEventListener("click", function () {
-      var total = getUnitProviderRows().length;
-      var maxPage = Math.max(1, Math.ceil(total / PAGE_SIZE));
-      if (state.providerPage >= maxPage) return;
-      state.providerPage += 1;
-      renderProviders();
-    });
-
-    el.collectivesPrevPageBtn.addEventListener("click", function () {
-      if (state.collectivePage <= 1) return;
-      state.collectivePage -= 1;
-      renderCollectives();
-    });
-
-    el.collectivesNextPageBtn.addEventListener("click", function () {
-      var total = getFilteredCollectivesData().length;
-      var maxPage = Math.max(1, Math.ceil(total / state.COLLECTIVE_PAGE_SIZE));
-      if (state.collectivePage >= maxPage) return;
-      state.collectivePage += 1;
-      renderCollectives();
-    });
-
-    el.collectivesPages.addEventListener("click", function (event) {
-      var target = event.target;
-      if (target.classList.contains("page-num")) {
-        var page = parseInt(target.getAttribute("data-page"), 10);
-        if (!isNaN(page) && page !== state.collectivePage) {
-          state.collectivePage = page;
-          renderCollectives();
+    if (el.collectivesPages) {
+      el.collectivesPages.addEventListener("click", function (event) {
+        var target = event.target;
+        if (target.classList.contains("page-num")) {
+          var page = parseInt(target.getAttribute("data-page"), 10);
+          if (!isNaN(page) && page !== state.collectivePage) {
+            state.collectivePage = page;
+            renderCollectives();
+          }
         }
-      }
-    });
+      });
+    }
 
     if (el.exportBtn) {
-      el.exportBtn.addEventListener("click", exportProviderList);
+      // export functionality for embedded lists is TBD or removed for now
     }
   }
 

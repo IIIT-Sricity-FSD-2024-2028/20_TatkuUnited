@@ -262,7 +262,7 @@
         <div class="collectives-grid" id="collectives-grid"></div>
 
         <!-- Collectives Pagination -->
-        <div class="table-footer" style="margin-bottom: 2rem; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 1rem 1.5rem;">
+        <div class="table-footer">
           <span class="table-info" id="collectives-table-info">Showing 0-0 of 0 collectives</span>
           <div class="pagination" id="collectives-pagination-container">
             <button class="page-arrow" id="collectives-prev-page" type="button">
@@ -279,63 +279,7 @@
           </div>
         </div>
 
-        <!-- Provider Management Table -->
-        <div class="section-card">
-          <div class="section-card-header">
-            <div>
-              <h2 class="section-title">
-                <span id="provider-section-title">Provider Management</span>
-              </h2>
-              <p class="section-subtitle">
-                <span id="provider-section-subtitle"
-                  >Select a unit to manage provider assignments.</span
-                >
-              </p>
-            </div>
-            <button class="btn-secondary" id="btn-export-providers">
-              Export List
-            </button>
-          </div>
-          <table class="providers-table">
-            <thead>
-              <tr>
-                <th>PROVIDER NAME</th>
-                <th>SKILL</th>
-                <th>RATING</th>
-                <th>STATUS</th>
-                <th>ACTIONS</th>
-              </tr>
-            </thead>
-            <tbody id="providers-tbody"></tbody>
-          </table>
-          <div class="table-footer">
-            <span class="table-info" id="table-info"
-              >Showing 0 of 0 providers</span
-            >
-            <div class="pagination">
-              <button class="page-arrow" id="providers-prev-page" type="button">
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                >
-                  <polyline points="15 18 9 12 15 6" />
-                </svg>
-              </button>
-              <button class="page-arrow" id="providers-next-page" type="button">
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                >
-                  <polyline points="9 18 15 12 9 6" />
-                </svg>
-              </button>
-            </div>
-          </div>
-        </div>
+        <!-- Provider Management Table - REMOVED, now embedded in cards -->
       </main>
     </div>
 

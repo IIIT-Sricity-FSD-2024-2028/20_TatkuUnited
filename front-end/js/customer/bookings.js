@@ -464,38 +464,14 @@ async function loadBookings() {
     return;
   }
 
-  // Load assignments for each booking
-  const assignmentByBooking = new Map();
-  for (const booking of allBookings) {
-    try {
-      const assignments = await Api.get(
-        "/job-assignments/booking/" + booking.booking_id,
-        { silent: true },
-      );
-      if (assignments && assignments.length > 0) {
-        const latest = assignments.sort((a, b) => {
-          const at = new Date(a.updated_at || a.assigned_at || a.created_at || 0).getTime();
-          const bt = new Date(b.updated_at || b.assigned_at || b.created_at || 0).getTime();
-          return bt - at;
-        })[0];
-        assignmentByBooking.set(booking.booking_id, latest);
-      }
-    } catch (_) {
-      // ok
-    }
-  }
+  // Assignments and names are now enriched by the backend
 
   bookings = allBookings
     .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
     .map((b) => {
       const dateObj = new Date(b.scheduled_at);
-      const assignment = assignmentByBooking.get(b.booking_id) || null;
       const bookingStatus = (b.status || "PENDING").toUpperCase();
-      const normalizedBookingStatus =
-        bookingStatus === "CONFIRMED" ? "ASSIGNED" : bookingStatus;
-      const rawStatus = assignment
-        ? String(assignment.status || normalizedBookingStatus).toUpperCase()
-        : normalizedBookingStatus;
+      const rawStatus = bookingStatus;
 
       const statusMap = {
         PENDING: { label: "Pending", css: "pending", badge: "badge-pending" },
@@ -530,12 +506,8 @@ async function loadBookings() {
         actions = ["invoice", "review", "rebook"];
       else if (rawStatus === "CANCELLED") actions = ["rebook"];
 
-      let providerName = "Awaiting assignment";
-      let providerPhone = null;
-      if (assignment && assignment.sp_id) {
-        providerName = assignment.sp_name || "Tatku Provider";
-        providerPhone = assignment.sp_phone || null;
-      }
+      let providerName = b.sp_name || "Awaiting assignment";
+      let providerPhone = b.sp_phone || null;
 
       const providerTimelineSub =
         rawStatus === "CANCELLED"

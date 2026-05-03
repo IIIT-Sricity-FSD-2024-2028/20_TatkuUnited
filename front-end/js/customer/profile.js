@@ -148,10 +148,13 @@ function renderAddresses() {
 async function saveAddressesToApi() {
   const session = Auth.getSession();
   if (session) {
+    const payload = { saved_addresses: addresses };
+    // Sync the first address as the primary 'address' field
+    if (addresses.length > 0 && addresses[0].text && addresses[0].text !== "Address pending setup") {
+      payload.address = addresses[0].text;
+    }
     try {
-      await Api.patch("/customers/" + session.id, {
-        saved_addresses: addresses,
-      }, { silent: true });
+      await Api.patch("/customers/" + session.id, payload, { silent: true });
     } catch (_) {}
   }
 }
@@ -476,9 +479,19 @@ function confirmLogout() {
     me = await Api.get("/customers/" + session.id, { silent: true }) || {};
   } catch (_) {}
 
-  addresses = me.saved_addresses || [
-    { id: 1, tag: "Home", text: me.address || "Address pending setup" },
-  ];
+  const primaryAddress = me.address || "";
+  const saved = me.saved_addresses || [];
+  
+  // Ensure primary address is in the list if it exists and not already there
+  if (primaryAddress && !saved.some(a => a.text === primaryAddress)) {
+    addresses = [{ id: 1, tag: "Home", text: primaryAddress }, ...saved];
+  } else {
+    addresses = saved.length > 0 ? saved : (primaryAddress ? [{ id: 1, tag: "Home", text: primaryAddress }] : []);
+  }
+
+  if (addresses.length === 0) {
+    addresses = [{ id: 1, tag: "Home", text: "Address pending setup" }];
+  }
   payments = me.saved_payments || [
     {
       id: "p1",

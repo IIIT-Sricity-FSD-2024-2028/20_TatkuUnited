@@ -143,6 +143,13 @@ paymentOptions.forEach((option) => {
 confirmBtn.addEventListener("click", async () => {
   if (!selectedPayment) return;
 
+  const addrLine1 = document.getElementById("addrLine1").textContent;
+  if (!addrLine1 || addrLine1.includes("not available") || addrLine1.trim() === "") {
+    showCheckoutToast("⚠️ Please add a delivery address first.");
+    document.getElementById("addressSection").scrollIntoView({ behavior: "smooth" });
+    return;
+  }
+
   if (selectedPayment === "cash") {
     showCheckoutToast(
       "Cash payment is no longer supported. Choose a digital payment method.",
@@ -253,6 +260,13 @@ document.getElementById("successModal").addEventListener("click", (e) => {
 
       setAddressCardUI(name, phone, addressParts.line1, addressParts.line2);
       setAddressFormUI(name, phone, addressParts.line1, addressParts.line2);
+
+      if (!resolvedAddress) {
+        showCheckoutToast("📍 Please add a delivery address to continue.");
+        addressForm.classList.add("visible");
+        addressCard.style.opacity = ".5";
+        changeAddrBtn.style.display = "none";
+      }
     }
   } catch (_) {
     // Address load failed — not critical

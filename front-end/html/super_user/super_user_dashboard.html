@@ -195,66 +195,11 @@
 
       <!-- CONTENT -->
       <main class="content">
-        <div class="content-left">
+        <div class="content-full">
           <!-- Page Title -->
           <div class="page-header">
-            <h1>System Status Overview</h1>
-            <p>Real-time operational health and key metrics.</p>
-          </div>
-
-          <div class="status-cards">
-            <div class="status-card status-card--active">
-              <div class="sc-icon sc-icon--blue">
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                >
-                  <circle cx="12" cy="12" r="10" />
-                  <circle cx="12" cy="10" r="3" />
-                  <path d="M7 20.662V19a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v1.662" />
-                </svg>
-              </div>
-              <div class="sc-label">PLATFORM</div>
-              <div class="sc-title">Active Users</div>
-              <div class="sc-value" id="activeUsersValue">0</div>
-            </div>
-            <div class="status-card">
-              <div class="sc-icon sc-icon--orange">
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                >
-                  <path
-                    d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"
-                  />
-                  <line x1="12" y1="9" x2="12" y2="13" />
-                  <line x1="12" y1="17" x2="12.01" y2="17" />
-                </svg>
-              </div>
-              <div class="sc-label">OPERATIONS</div>
-              <div class="sc-title">Failed Assignments</div>
-              <div class="sc-value" id="failedAssignmentsValue">0</div>
-            </div>
-            <div class="status-card">
-              <div class="sc-icon sc-icon--green">
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                >
-                  <line x1="12" y1="1" x2="12" y2="23" />
-                  <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
-                </svg>
-              </div>
-              <div class="sc-label">FINANCE</div>
-              <div class="sc-title">Total Revenue</div>
-              <div class="sc-value" id="totalRevenueValue">₹0</div>
-            </div>
+            <h1>Platform Revenue Analysis</h1>
+            <p>Comprehensive breakdown of collective revenue distribution.</p>
           </div>
 
           <!-- Collective Revenue Breakdown -->
@@ -276,61 +221,14 @@
                 <span class="revenue-kpi-label">Total GMV</span>
                 <span class="revenue-kpi-value" id="revenueGmvValue">₹0</span>
               </div>
-
             </div>
 
             <div
               class="revenue-breakdown-bars"
               id="revenue-breakdown-bars"
             ></div>
-
-
-          </div>
-
-          <!-- Recent System Events -->
-          <div class="section-card">
-            <div class="section-card-header">
-              <h2 class="section-title">Recent System Events</h2>
-              <a href="#" class="link-btn">View All Logs</a>
-            </div>
-            <table class="events-table">
-              <thead>
-                <tr>
-                  <th>TIME</th>
-                  <th>TYPE</th>
-                  <th>EVENT DESCRIPTION</th>
-                </tr>
-              </thead>
-              <tbody id="events-tbody"></tbody>
-            </table>
           </div>
         </div>
-
-        <!-- RIGHT SIDEBAR -->
-        <aside class="right-panel">
-          <!-- Recent Super User Actions -->
-          <div class="right-card">
-            <div class="right-card-header">
-              <div class="right-card-title">
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                >
-                  <circle cx="12" cy="12" r="10" />
-                  <polyline points="12 6 12 12 16 14" />
-                </svg>
-                Recent Super User Actions
-              </div>
-            </div>
-            <div
-              class="super_user-action-list"
-              id="super_user-action-list"
-            ></div>
-            <button class="download-log-btn">Download Action Log</button>
-          </div>
-        </aside>
       </main>
     </div>
 
