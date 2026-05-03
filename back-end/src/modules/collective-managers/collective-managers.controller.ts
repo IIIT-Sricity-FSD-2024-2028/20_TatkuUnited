@@ -39,12 +39,19 @@ export class CollectiveManagersController {
   ) {}
 
   @Get()
-  @Roles(Role.SUPER_USER)
+  @Roles(Role.SUPER_USER, Role.COLLECTIVE_MANAGER)
   @ApiOperation({ summary: 'Get all collective managers' })
   @ApiResponse({ status: 200, description: 'Success' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
-  findAll() {
+  findAll(@Request() req: { user: JwtPayload }) {
+    if (req.user.role === Role.COLLECTIVE_MANAGER) {
+      const manager = this.accessScope.getCollectiveManager(req.user.sub);
+      return this.collectiveManagersService
+        .findAll()
+        .filter((cm) => cm.collective_id === manager.collective_id);
+    }
     return this.collectiveManagersService.findAll();
+
   }
 
   @Get('collective/:collective_id')

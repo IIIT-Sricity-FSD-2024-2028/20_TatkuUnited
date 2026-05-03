@@ -26,6 +26,7 @@ import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { Role } from '../../common/enums/role.enum';
 import { JwtPayload } from '../auth/interfaces/jwt-payload.interface';
+import { AccessScopeService } from '../../common/access/access-scope.service';
 import {
   ApiActorIdHeader,
   ApiRoleHeader,
@@ -38,7 +39,11 @@ import {
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('transactions')
 export class TransactionsController {
-  constructor(private readonly transactionsService: TransactionsService) {}
+  constructor(
+    private readonly transactionsService: TransactionsService,
+    private readonly accessScope: AccessScopeService,
+  ) {}
+
 
   // ─────────────────────────── POST /transactions ──────────────────────────
 
@@ -59,12 +64,24 @@ export class TransactionsController {
   // ─────────────────────────── GET /transactions ───────────────────────────
 
   @Get()
-  @Roles(Role.SUPER_USER)
-  @ApiOperation({ summary: 'List all transactions — super_user only' })
+  @Roles(Role.SUPER_USER, Role.COLLECTIVE_MANAGER, Role.UNIT_MANAGER)
+  @ApiOperation({ summary: 'List all transactions (scoped for managers)' })
   @ApiResponse({ status: 200, description: 'Array of transactions' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
-  findAll() {
+  findAll(@Request() req: { user: JwtPayload }) {
+    if (req.user.role === Role.COLLECTIVE_MANAGER || req.user.role === Role.UNIT_MANAGER) {
+      return this.transactionsService.findAll().filter((txn) => {
+        const booking = this.transactionsService.findBooking(txn.booking_id);
+        try {
+          this.accessScope.assertSectorAccess(req.user, booking.sector_id);
+          return true;
+        } catch (e) {
+          return false;
+        }
+      });
+    }
     return this.transactionsService.findAll();
+
   }
 
   // ──────────── GET /transactions/booking/:bookingId ───────────────────────

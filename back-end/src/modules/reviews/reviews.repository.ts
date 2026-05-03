@@ -31,6 +31,10 @@ export class ReviewsRepository {
     return this.db.reviews.filter((row) => row.customer_id === customerId);
   }
 
+  findByService(serviceId: string): Review[] {
+    return this.db.reviews.filter((row) => row.service_id === serviceId);
+  }
+
   create(dto: CreateReviewDto, customerId: string): Review {
     const review: Review = {
       review_id: this.db.genId(),

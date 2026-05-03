@@ -126,11 +126,19 @@ export class JobAssignmentsController {
   }
 
   @Get()
-  @Roles(Role.SUPER_USER, Role.UNIT_MANAGER)
-  @ApiOperation({ summary: 'Get all job assignments' })
+  @Roles(Role.SUPER_USER, Role.COLLECTIVE_MANAGER, Role.UNIT_MANAGER)
+  @ApiOperation({ summary: 'Get all job assignments (scoped for managers)' })
   @ApiResponse({ status: 200, description: 'All assignments returned' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
   findAll(@Request() req: { user: JwtPayload }) {
+    if (req.user.role === Role.COLLECTIVE_MANAGER) {
+      const manager = this.accessScope.getCollectiveManager(req.user.sub);
+      return this.jaService.findAll().filter((assignment) => {
+        const provider = this.accessScope.getProvider(assignment.sp_id);
+        const unit = this.accessScope.getUnit(provider.unit_id);
+        return unit.collective_id === manager.collective_id;
+      });
+    }
     if (req.user.role === Role.UNIT_MANAGER) {
       const manager = this.accessScope.getUnitManager(req.user.sub);
       return this.jaService.findAll().filter((assignment) => {

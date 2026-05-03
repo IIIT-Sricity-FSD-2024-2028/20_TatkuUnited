@@ -91,6 +91,15 @@ export class ReviewsController {
     return this.reviewsService.findByCustomer(customerId, req.user);
   }
 
+  @Get('service/:serviceId')
+  @Roles(Role.SUPER_USER, Role.COLLECTIVE_MANAGER, Role.UNIT_MANAGER, Role.SERVICE_PROVIDER, Role.CUSTOMER)
+  @ApiOperation({ summary: 'List reviews for a service' })
+  @ApiResponse({ status: 200, description: 'Service reviews returned' })
+  @ApiResponse({ status: 403, description: 'Forbidden' })
+  findByService(@Param('serviceId') serviceId: string) {
+    return this.reviewsService.findByService(serviceId);
+  }
+
   @Get(':id')
   @Roles(Role.SUPER_USER, Role.COLLECTIVE_MANAGER, Role.UNIT_MANAGER, Role.SERVICE_PROVIDER, Role.CUSTOMER)
   @ApiOperation({ summary: 'Get review by ID' })

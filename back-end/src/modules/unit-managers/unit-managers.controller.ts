@@ -39,12 +39,20 @@ export class UnitManagersController {
   ) {}
 
   @Get()
-  @Roles(Role.SUPER_USER)
+  @Roles(Role.SUPER_USER, Role.COLLECTIVE_MANAGER)
   @ApiOperation({ summary: 'Get all unit managers' })
   @ApiResponse({ status: 200, description: 'Success' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
-  findAll() {
+  findAll(@Request() req: { user: JwtPayload }) {
+    if (req.user.role === Role.COLLECTIVE_MANAGER) {
+      const manager = this.accessScope.getCollectiveManager(req.user.sub);
+      return this.unitManagersService.findAll().filter((um) => {
+        const unit = this.accessScope.getUnit(um.unit_id);
+        return unit.collective_id === manager.collective_id;
+      });
+    }
     return this.unitManagersService.findAll();
+
   }
 
   @Get('unit/:unit_id')

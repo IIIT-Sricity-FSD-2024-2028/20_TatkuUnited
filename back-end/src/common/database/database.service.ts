@@ -399,6 +399,33 @@ export class DatabaseService {
       created_at: '2025-11-20T00:00:00Z',
       collective_id: this.collectives[0].collective_id,
     },
+    {
+      unit_id: this.genId(), // units[2] – Carpentry
+      unit_name: 'Carpentry & Furniture Services',
+      rating: 0,
+      rating_count: 0,
+      is_active: true,
+      created_at: '2026-01-10T00:00:00Z',
+      collective_id: this.collectives[0].collective_id,
+    },
+    {
+      unit_id: this.genId(), // units[3] – Pest Control
+      unit_name: 'Pest Control & Sanitization',
+      rating: 0,
+      rating_count: 0,
+      is_active: true,
+      created_at: '2026-01-15T00:00:00Z',
+      collective_id: this.collectives[0].collective_id,
+    },
+    {
+      unit_id: this.genId(), // units[4] – Cleaning
+      unit_name: 'Home Cleaning Services',
+      rating: 0,
+      rating_count: 0,
+      is_active: true,
+      created_at: '2026-02-01T00:00:00Z',
+      collective_id: this.collectives[0].collective_id,
+    },
   ];
 
   superUsers: SuperUser[] = [
@@ -450,6 +477,39 @@ export class DatabaseService {
       created_at: '2024-12-05T00:00:00Z',
       updated_at: '2026-04-09T00:00:00Z',
       unit_id: this.units[1].unit_id,
+    },
+    {
+      um_id: this.genId(), // unitManagers[2] – manages units[2]
+      name: 'Anita Desai',
+      email: 'anita.d@unit.com',
+      password_hash: this.storePassword('Password@123'),
+      phone: '9944332211',
+      is_active: true,
+      created_at: '2026-01-10T00:00:00Z',
+      updated_at: '2026-04-10T00:00:00Z',
+      unit_id: this.units[2].unit_id,
+    },
+    {
+      um_id: this.genId(), // unitManagers[3] – manages units[3]
+      name: 'Rahul Sharma',
+      email: 'rahul.s@unit.com',
+      password_hash: this.storePassword('Password@123'),
+      phone: '9955667788',
+      is_active: true,
+      created_at: '2026-01-15T00:00:00Z',
+      updated_at: '2026-04-10T00:00:00Z',
+      unit_id: this.units[3].unit_id,
+    },
+    {
+      um_id: this.genId(), // unitManagers[4] – manages units[4]
+      name: 'Meera Reddy',
+      email: 'meera.r@unit.com',
+      password_hash: this.storePassword('Password@123'),
+      phone: '9966778899',
+      is_active: true,
+      created_at: '2026-02-01T00:00:00Z',
+      updated_at: '2026-04-10T00:00:00Z',
+      unit_id: this.units[4].unit_id,
     },
   ];
 
@@ -521,6 +581,90 @@ export class DatabaseService {
       unit_id: this.units[0].unit_id,
       home_sector_id: this.sectors[2].sector_id,
     },
+    {
+      sp_id: this.genId(), // serviceProviders[3] – Vikram Singh, Carpentry unit
+      name: 'Vikram Singh',
+      email: 'vikram.s@mail.com',
+      password_hash: this.storePassword('Password@123'),
+      phone: '9844556677',
+      dob: '1985-06-20',
+      address: '45 Adyar, Chennai',
+      gender: 'Male',
+      rating: 0,
+      rating_count: 0,
+      is_active: true,
+      account_status: 'active',
+      deactivation_requested: false,
+      hour_start: '09:00',
+      hour_end: '18:00',
+      created_at: '2026-01-10T09:00:00Z',
+      updated_at: '2026-04-10T10:00:00Z',
+      unit_id: this.units[2].unit_id,
+      home_sector_id: this.sectors[0].sector_id,
+    },
+    {
+      sp_id: this.genId(), // serviceProviders[4] – Saritha Reddy, Carpentry unit
+      name: 'Saritha Reddy',
+      email: 'saritha.r@mail.com',
+      password_hash: this.storePassword('Password@123'),
+      phone: '9844339900',
+      dob: '1992-08-15',
+      address: '12 T. Nagar, Chennai',
+      gender: 'Female',
+      rating: 0,
+      rating_count: 0,
+      is_active: true,
+      account_status: 'active',
+      deactivation_requested: false,
+      hour_start: '10:00',
+      hour_end: '19:00',
+      created_at: '2026-01-12T09:00:00Z',
+      updated_at: '2026-04-10T11:00:00Z',
+      unit_id: this.units[2].unit_id,
+      home_sector_id: this.sectors[1].sector_id,
+    },
+    {
+      sp_id: this.genId(), // serviceProviders[5] – Amit Verma, Pest Control unit
+      name: 'Amit Verma',
+      email: 'amit.v@mail.com',
+      password_hash: this.storePassword('Password@123'),
+      phone: '9822334455',
+      dob: '1989-12-05',
+      address: '88 OMR, Chennai',
+      gender: 'Male',
+      rating: 0,
+      rating_count: 0,
+      is_active: true,
+      account_status: 'active',
+      deactivation_requested: false,
+      hour_start: '08:00',
+      hour_end: '18:00',
+      created_at: '2026-01-15T08:00:00Z',
+      updated_at: '2026-04-10T09:00:00Z',
+      unit_id: this.units[3].unit_id,
+      home_sector_id: this.sectors[2].sector_id,
+    },
+    {
+      sp_id: this.genId(), // serviceProviders[6] – Anjali Sharma, Cleaning unit
+      name: 'Anjali Sharma',
+      email: 'anjali.s@mail.com',
+      password_hash: this.storePassword('Password@123'),
+      phone: '9811223344',
+      dob: '1995-03-25',
+      address: '55 ECR, Chennai',
+      gender: 'Female',
+      rating: 0,
+      rating_count: 0,
+      is_active: true,
+      account_status: 'active',
+      deactivation_requested: false,
+      hour_start: '08:00',
+      hour_end: '17:00',
+      created_at: '2026-02-01T08:00:00Z',
+      updated_at: '2026-04-10T10:00:00Z',
+      unit_id: this.units[4].unit_id,
+      home_sector_id: this.sectors[0].sector_id,
+    },
   ];
 
   providerUnavailability: ProviderUnavailability[] = [
@@ -567,6 +711,21 @@ export class DatabaseService {
       skill_name: 'AC Repair',
       description: 'Diagnostics and repair for split and window AC units',
     },
+    {
+      skill_id: this.genId(), // skills[4] – Carpentry
+      skill_name: 'Carpentry',
+      description: 'General woodwork, furniture repair and installation',
+    },
+    {
+      skill_id: this.genId(), // skills[5] – Furniture Assembly
+      skill_name: 'Furniture Assembly',
+      description: 'Assembling flat-pack and complex furniture units',
+    },
+    {
+      skill_id: this.genId(), // skills[6] – Pest Control
+      skill_name: 'Pest Control',
+      description: 'Chemical and non-chemical pest management services',
+    },
   ];
 
   providerSkills: ProviderSkill[] = [
@@ -599,6 +758,36 @@ export class DatabaseService {
       skill_id: this.skills[2].skill_id, // Priya → Cleaning
       verification_status: 'Verified',
       verified_at: '2026-03-28T12:00:00Z',
+    },
+    {
+      sp_id: this.serviceProviders[3].sp_id,
+      skill_id: this.skills[4].skill_id, // Vikram → Carpentry
+      verification_status: 'Verified',
+      verified_at: '2026-04-10T10:00:00Z',
+    },
+    {
+      sp_id: this.serviceProviders[3].sp_id,
+      skill_id: this.skills[5].skill_id, // Vikram → Furniture Assembly
+      verification_status: 'Verified',
+      verified_at: '2026-04-10T10:05:00Z',
+    },
+    {
+      sp_id: this.serviceProviders[4].sp_id,
+      skill_id: this.skills[5].skill_id, // Saritha → Furniture Assembly
+      verification_status: 'Verified',
+      verified_at: '2026-04-10T11:00:00Z',
+    },
+    {
+      sp_id: this.serviceProviders[5].sp_id,
+      skill_id: this.skills[6].skill_id, // Amit → Pest Control
+      verification_status: 'Verified',
+      verified_at: '2026-04-10T09:00:00Z',
+    },
+    {
+      sp_id: this.serviceProviders[6].sp_id,
+      skill_id: this.skills[2].skill_id, // Anjali → Cleaning
+      verification_status: 'Verified',
+      verified_at: '2026-04-10T10:00:00Z',
     },
   ];
 
@@ -682,6 +871,26 @@ export class DatabaseService {
       rating_count: 2,
       is_available: true,
     },
+    {
+      category_id: this.genId(), // categories[3] – Carpentry & Furniture
+      category_name: 'Carpentry & Furniture',
+      description: 'Woodwork, repairs, and furniture assembly',
+      icon: '🪵',
+      image_url: 'https://placehold.co/400x200/8B4513/white?text=Carpentry',
+      average_rating: 0,
+      rating_count: 0,
+      is_available: true,
+    },
+    {
+      category_id: this.genId(), // categories[4] – Pest Control
+      category_name: 'Pest Control',
+      description: 'Safe and effective pest management',
+      icon: '🐜',
+      image_url: 'https://placehold.co/400x200/EB5757/white?text=Pest+Control',
+      average_rating: 0,
+      rating_count: 0,
+      is_available: true,
+    },
   ];
 
   services: Service[] = [
@@ -737,6 +946,42 @@ export class DatabaseService {
       is_available: true,
       category_id: this.categories[2].category_id,
     },
+    {
+      service_id: this.genId(), // services[4] – Bed Assembly
+      service_name: 'Bed Assembly',
+      description: 'Expert assembly of all types of beds.',
+      image_url: 'https://placehold.co/400x200/8B4513/white?text=Bed+Assembly',
+      base_price: 999,
+      estimated_duration_min: 120,
+      average_rating: 0,
+      rating_count: 0,
+      is_available: true,
+      category_id: this.categories[3].category_id,
+    },
+    {
+      service_id: this.genId(), // services[5] – Door Lock Repair
+      service_name: 'Door Lock Repair',
+      description: 'Repair and replacement of door locks and handles.',
+      image_url: 'https://placehold.co/400x200/8B4513/white?text=Lock+Repair',
+      base_price: 499,
+      estimated_duration_min: 60,
+      average_rating: 0,
+      rating_count: 0,
+      is_available: true,
+      category_id: this.categories[3].category_id,
+    },
+    {
+      service_id: this.genId(), // services[6] – General Pest Control
+      service_name: 'General Pest Control',
+      description: 'Treatment for cockroaches, ants, and other common pests.',
+      image_url: 'https://placehold.co/400x200/EB5757/white?text=Pest+Control',
+      base_price: 1599,
+      estimated_duration_min: 90,
+      average_rating: 0,
+      rating_count: 0,
+      is_available: true,
+      category_id: this.categories[4].category_id,
+    },
   ];
 
   serviceSkills: ServiceSkill[] = [
@@ -760,6 +1005,18 @@ export class DatabaseService {
       service_id: this.services[3].service_id,
       skill_id: this.skills[0].skill_id,
     }, // Leak Fix → Plumbing
+    {
+      service_id: this.services[4].service_id,
+      skill_id: this.skills[5].skill_id,
+    }, // Bed Assembly → Furniture Assembly
+    {
+      service_id: this.services[5].service_id,
+      skill_id: this.skills[4].skill_id,
+    }, // Door Lock Repair → Carpentry
+    {
+      service_id: this.services[6].service_id,
+      skill_id: this.skills[6].skill_id,
+    }, // General Pest Control → Pest Control
   ];
 
   serviceContent: ServiceContent[] = [
@@ -859,6 +1116,63 @@ export class DatabaseService {
       ],
       what_is_not_covered: ['Full pipeline relaying', 'Civil wall repair'],
     },
+    {
+      service_id: this.services[4].service_id,
+      how_it_works: [
+        {
+          step_title: 'Unpacking',
+          step_description: 'Professional unpacks the furniture components.',
+        },
+        {
+          step_title: 'Assembly',
+          step_description: 'Bed frame and components are assembled as per manual.',
+        },
+        {
+          step_title: 'Stability check',
+          step_description: 'Final check for stability and alignment.',
+        },
+      ],
+      what_is_covered: ['Frame assembly', 'Headboard attachment'],
+      what_is_not_covered: ['Mattress cleaning', 'Moving heavy furniture'],
+    },
+    {
+      service_id: this.services[5].service_id,
+      how_it_works: [
+        {
+          step_title: 'Inspection',
+          step_description: 'Technician checks the faulty lock mechanism.',
+        },
+        {
+          step_title: 'Repair/Replace',
+          step_description: 'Internal components are repaired or the lock is replaced.',
+        },
+        {
+          step_title: 'Testing',
+          step_description: 'Smooth operation of the lock is verified.',
+        },
+      ],
+      what_is_covered: ['Lock mechanism repair', 'Handle tightening'],
+      what_is_not_covered: ['New lock hardware cost', 'Door repainting'],
+    },
+    {
+      service_id: this.services[6].service_id,
+      how_it_works: [
+        {
+          step_title: 'Inspection',
+          step_description: 'Expert identifies pest hideouts and entry points.',
+        },
+        {
+          step_title: 'Treatment',
+          step_description: 'Targeted gel or spray treatment is applied.',
+        },
+        {
+          step_title: 'Advice',
+          step_description: 'Post-treatment precautions and prevention tips.',
+        },
+      ],
+      what_is_covered: ['Cockroach gel treatment', 'Ant spray treatment'],
+      what_is_not_covered: ['Termite treatment', 'Bed bug treatment'],
+    },
   ];
 
   serviceFaqs: ServiceFaq[] = [
@@ -889,6 +1203,27 @@ export class DatabaseService {
       answer: 'Only exposed and accessible leak points are covered.',
       display_order: 1,
       service_id: this.services[3].service_id,
+    },
+    {
+      faq_id: this.genId(),
+      question: 'How long does bed assembly take?',
+      answer: 'Typically 1.5 to 2 hours depending on complexity.',
+      display_order: 1,
+      service_id: this.services[4].service_id,
+    },
+    {
+      faq_id: this.genId(),
+      question: 'Do you provide the new lock?',
+      answer: 'No, hardware cost is separate. We can help buy it if needed.',
+      display_order: 1,
+      service_id: this.services[5].service_id,
+    },
+    {
+      faq_id: this.genId(),
+      question: 'Is the pest control safe for kids?',
+      answer: 'Yes, we use government-approved safe chemicals.',
+      display_order: 1,
+      service_id: this.services[6].service_id,
     },
   ];
 

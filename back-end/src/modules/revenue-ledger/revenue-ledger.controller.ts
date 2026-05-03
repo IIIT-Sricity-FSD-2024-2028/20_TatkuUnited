@@ -25,6 +25,7 @@ import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { Role } from '../../common/enums/role.enum';
 import { JwtPayload } from '../auth/interfaces/jwt-payload.interface';
+import { AccessScopeService } from '../../common/access/access-scope.service';
 import {
   ApiActorIdHeader,
   ApiRoleHeader,
@@ -37,7 +38,11 @@ import {
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('revenue-ledger')
 export class RevenueLedgerController {
-  constructor(private readonly revenueLedgerService: RevenueLedgerService) {}
+  constructor(
+    private readonly revenueLedgerService: RevenueLedgerService,
+    private readonly accessScope: AccessScopeService,
+  ) {}
+
 
   // ── GET /revenue-ledger/summary/platform ────────────────────────────────
 
@@ -137,12 +142,21 @@ export class RevenueLedgerController {
   // ── GET /revenue-ledger ─────────────────────────────────────────────────
 
   @Get()
-  @Roles(Role.SUPER_USER)
-  @ApiOperation({ summary: 'List all ledger entries — super_user only' })
+  @Roles(Role.SUPER_USER, Role.COLLECTIVE_MANAGER, Role.UNIT_MANAGER)
+  @ApiOperation({ summary: 'List all ledger entries (scoped for managers)' })
   @ApiResponse({ status: 200, description: 'Array of RevenueLedger rows' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
-  findAll() {
+  findAll(@Request() req: { user: JwtPayload }) {
+    if (req.user.role === Role.COLLECTIVE_MANAGER) {
+      const manager = this.accessScope.getCollectiveManager(req.user.sub);
+      return this.revenueLedgerService.findAll().filter((row) => row.cm_id === manager.cm_id);
+    }
+    if (req.user.role === Role.UNIT_MANAGER) {
+      const manager = this.accessScope.getUnitManager(req.user.sub);
+      return this.revenueLedgerService.findAll().filter((row) => row.um_id === manager.um_id);
+    }
     return this.revenueLedgerService.findAll();
+
   }
 
   // ── DELETE /revenue-ledger/:id ──────────────────────────────────────────

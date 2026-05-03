@@ -41,12 +41,24 @@ export class ServiceProvidersController {
   ) {}
 
   @Get()
-  @Roles(Role.SUPER_USER)
-  @ApiOperation({ summary: 'Get all service providers' })
-  @ApiResponse({ status: 200, description: 'Success' })
+  @Roles(Role.SUPER_USER, Role.COLLECTIVE_MANAGER, Role.UNIT_MANAGER)
+  @ApiOperation({ summary: 'Get all service providers (scoped for managers)' })
+  @ApiResponse({ status: 200, description: 'Success - returns list of providers' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
-  findAll() {
+  findAll(@Request() req: { user: JwtPayload }) {
+    if (req.user.role === Role.COLLECTIVE_MANAGER) {
+      const manager = this.accessScope.getCollectiveManager(req.user.sub);
+      return this.serviceProvidersService.findAll().filter((sp) => {
+        const unit = this.accessScope.getUnit(sp.unit_id);
+        return unit.collective_id === manager.collective_id;
+      });
+    }
+    if (req.user.role === Role.UNIT_MANAGER) {
+      const manager = this.accessScope.getUnitManager(req.user.sub);
+      return this.serviceProvidersService.findByUnit(manager.unit_id);
+    }
     return this.serviceProvidersService.findAll();
+
   }
 
   @Get('unit/:unit_id')

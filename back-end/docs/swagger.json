@@ -777,7 +777,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success"
+            "description": "Success - returns list of providers"
           },
           "403": {
             "description": "Forbidden"
@@ -788,7 +788,7 @@
             "bearer": []
           }
         ],
-        "summary": "Get all service providers",
+        "summary": "Get all service providers (scoped for managers)",
         "tags": [
           "service-providers"
         ]
@@ -4529,7 +4529,7 @@
             "bearer": []
           }
         ],
-        "summary": "Get all job assignments",
+        "summary": "Get all job assignments (scoped for managers)",
         "tags": [
           "job-assignments"
         ]
@@ -5023,7 +5023,7 @@
             "bearer": []
           }
         ],
-        "summary": "List all ledger entries — super_user only",
+        "summary": "List all ledger entries (scoped for managers)",
         "tags": [
           "Revenue Ledger"
         ]
@@ -5382,7 +5382,7 @@
             "bearer": []
           }
         ],
-        "summary": "List all transactions — super_user only",
+        "summary": "List all transactions (scoped for managers)",
         "tags": [
           "Transactions"
         ]
@@ -5880,6 +5880,47 @@
           }
         ],
         "summary": "List reviews written by a customer",
+        "tags": [
+          "reviews"
+        ]
+      }
+    },
+    "/reviews/service/{serviceId}": {
+      "get": {
+        "operationId": "ReviewsController_findByService",
+        "parameters": [
+          {
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "serviceId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Service reviews returned"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List reviews for a service",
         "tags": [
           "reviews"
         ]

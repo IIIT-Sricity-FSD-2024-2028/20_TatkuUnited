@@ -93,6 +93,11 @@ export class ReviewsService {
     return this.repo.findByCustomer(customerId);
   }
 
+  findByService(serviceId: string): Review[] {
+    // Service reviews are public to all authenticated users
+    return this.repo.findByService(serviceId);
+  }
+
   update(id: string, dto: UpdateReviewDto, user: JwtPayload): Review {
     const existing = this.repo.findById(id);
     if (user.role === Role.CUSTOMER && existing.customer_id !== user.sub) {

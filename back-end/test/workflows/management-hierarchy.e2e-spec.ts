@@ -65,11 +65,31 @@ describe('Management Hierarchy Workflow (e2e)', () => {
     expect(Array.isArray(response.body)).toBe(true);
   });
 
-  it('super user should be able to view all providers', async () => {
+  it('collective manager should be able to view their providers', async () => {
     const response = await request(app.getHttpServer())
       .get('/service-providers')
-      .set('Authorization', `Bearer ${superUserToken}`)
-      .set('x-role', Role.SUPER_USER)
+      .set('Authorization', `Bearer ${cmToken}`)
+      .set('x-role', Role.COLLECTIVE_MANAGER)
+      .expect(200);
+      
+    expect(Array.isArray(response.body)).toBe(true);
+  });
+
+  it('unit manager should be able to view their providers', async () => {
+    const response = await request(app.getHttpServer())
+      .get('/service-providers')
+      .set('Authorization', `Bearer ${umToken}`)
+      .set('x-role', Role.UNIT_MANAGER)
+      .expect(200);
+      
+    expect(Array.isArray(response.body)).toBe(true);
+  });
+
+  it('unit manager should be able to view their transactions', async () => {
+    const response = await request(app.getHttpServer())
+      .get('/transactions')
+      .set('Authorization', `Bearer ${umToken}`)
+      .set('x-role', Role.UNIT_MANAGER)
       .expect(200);
       
     expect(Array.isArray(response.body)).toBe(true);
