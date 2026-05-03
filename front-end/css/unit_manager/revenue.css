@@ -29,7 +29,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--text-primar
 .nav-item.active { background: var(--blue-light); color: var(--blue); font-weight: 600; }
 
 .main { margin-left: var(--sidebar-width); flex: 1; display: flex; flex-direction: column; min-height: 100vh; }
-.topbar { height: var(--topbar-h); background: var(--surface); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 28px; position: sticky; top: 0; z-index: 90; }
+.topbar { height: var(--topbar-h); background: var(--surface); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: flex-end; padding: 0 28px; position: sticky; top: 0; z-index: 90; }
 .search-wrap { display: flex; align-items: center; gap: 10px; background: var(--bg); border: 1px solid var(--border); border-radius: 40px; padding: 8px 16px; width: 340px; }
 .search-wrap svg { width: 16px; height: 16px; color: var(--grey); flex-shrink: 0; }
 .search-wrap input { border: none; background: transparent; outline: none; font-size: 13.5px; color: var(--text-primary); width: 100%; }

@@ -607,6 +607,7 @@ document.getElementById("btnExportPDF").addEventListener("click", function () {
 (async () => {
   const session = Auth.requireSession(["unit_manager"]);
   if (!session) return;
+  Auth.syncUserAvatar();
 
   await loadRevenueData(session);
   renderStatCards();

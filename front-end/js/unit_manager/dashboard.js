@@ -608,6 +608,7 @@ function showBookingsModal() {
 (async () => {
   const session = Auth.requireSession(["unit_manager"]);
   if (!session) return;
+  Auth.syncUserAvatar();
 
   await loadDashboardData(session);
   renderStatCards(false);

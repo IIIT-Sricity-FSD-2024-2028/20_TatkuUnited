@@ -185,6 +185,7 @@
   (async () => {
     session = Auth.requireSession(["unit_manager"]);
     if (!session) return;
+    Auth.syncUserAvatar();
     
     providerId = getQueryParam("id");
     if (!providerId) {

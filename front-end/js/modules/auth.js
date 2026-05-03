@@ -300,6 +300,28 @@ window.Auth = (() => {
     return sessionStorage.getItem(STORAGE_KEYS.registeredRole) || "";
   }
 
+  function syncUserAvatar() {
+    const session = getSession();
+    if (!session || !session.name) return;
+
+    const initials = session.name
+      .trim()
+      .split(/\s+/)
+      .map((w) => w[0])
+      .join("")
+      .slice(0, 2)
+      .toUpperCase() || "TU";
+
+    const avatars = document.querySelectorAll(".user-avatar");
+    avatars.forEach((av) => {
+      av.textContent = initials;
+      // Optional: Set a consistent color based on name
+      const palette = ["#3b82f6", "#0d9488", "#7c3aed", "#d97706", "#dc2626", "#16a34a"];
+      const colorIndex = session.name.charCodeAt(0) % palette.length;
+      av.style.backgroundColor = palette[colorIndex];
+    });
+  }
+
   function clearRegisteredRole() {
     sessionStorage.removeItem(STORAGE_KEYS.registeredRole);
   }
@@ -320,6 +342,7 @@ window.Auth = (() => {
     updateProfilePicture,
     updateSession,
     syncSessionFromServer,
+    syncUserAvatar,
     getToken,
     getRegisteredRole,
     clearRegisteredRole,

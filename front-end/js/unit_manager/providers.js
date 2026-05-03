@@ -373,6 +373,7 @@
   (async function () {
     session = Auth.requireSession(["unit_manager"]);
     if (!session) return;
+    Auth.syncUserAvatar();
     await loadProvidersFromApi();
     renderTable();
   })();

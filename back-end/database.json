@@ -116,12 +116,12 @@
       "name": "Karan Mehta",
       "email": "karan.m@unit.com",
       "password_hash": "scrypt:0e7129922fc8f95cf5d3b07e25784af5:417636cee3b87a6acf175ef0b55ccf60085527c8ad7985c11fde091446f4ac0d506e91f6103349e1c9f09e7d41b78621cb7ed7213cf09b4c4cf2107117e8dcba",
-      "phone": "9955443321",
+      "phone": "9876543210",
       "is_active": true,
       "created_at": "2024-11-09T00:00:00Z",
-      "updated_at": "2026-05-03T21:05:02.959Z",
+      "updated_at": "2026-05-03T23:12:18.674Z",
       "unit_id": "de90b05c-9dc0-4e6c-b2f8-8f42914783fa",
-      "dob": "1995-05-05"
+      "dob": "0056-05-04"
     },
     {
       "um_id": "07c96683-e3cd-4670-9e91-72dca1b4c4da",
