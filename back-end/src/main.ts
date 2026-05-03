@@ -34,7 +34,7 @@ async function bootstrap() {
   const config = new DocumentBuilder()
     .setTitle('TatkuUnited API')
     .setDescription(
-      'Service platform API — Part 4: Payments, Finance, Platform Settings',
+      'Service platform API',
     )
     .setVersion('1.0')
     .addBearerAuth(
