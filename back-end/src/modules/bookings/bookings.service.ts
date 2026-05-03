@@ -8,6 +8,9 @@ import {
 import { BookingsRepository } from './bookings.repository';
 import { CartRepository } from '../cart/cart.repository';
 import { JobAssignmentsService } from '../job-assignments/job-assignments.service';
+import { TransactionsService } from '../transactions/transactions.service';
+import { CheckoutBookingDto } from './dto/checkout-booking.dto';
+import { Role } from '../../common/enums/role.enum';
 import {
   DatabaseService,
   Booking,
@@ -20,13 +23,14 @@ export class BookingsService {
     private readonly bookingsRepo: BookingsRepository,
     private readonly cartRepo: CartRepository,
     private readonly db: DatabaseService,
+    private readonly transactionsService: TransactionsService,
     @Inject(forwardRef(() => JobAssignmentsService))
     private readonly jobAssignmentsService: JobAssignmentsService,
   ) {}
 
   // ── Checkout ───────────────────────────────────────────
 
-  checkout(customerId: string) {
+  checkout(customerId: string, dto: CheckoutBookingDto = {}) {
     // 1. Find cart
     const cart = this.cartRepo.findCartByCustomer(customerId);
     if (!cart) {
@@ -59,6 +63,11 @@ export class BookingsService {
 
     // 5. Create BookingService rows
     const bookingServices: BookingService[] = [];
+    const amount = cartItems.reduce(
+      (sum, item) => sum + item.price_snapshot * item.quantity,
+      0,
+    );
+
     for (const item of cartItems) {
       const bs = this.bookingsRepo.addBookingService({
         booking_id: booking.booking_id,
@@ -69,15 +78,52 @@ export class BookingsService {
       bookingServices.push(bs);
     }
 
-    // 6. Auto-assign providers
+    // 6. Create transaction for the checked-out booking
+    const paymentMethod = this.normalizePaymentMethod(dto.payment_method);
+    const transaction = this.transactionsService.create(
+      {
+        booking_id: booking.booking_id,
+        payment_gateway_ref:
+          dto.payment_gateway_ref || `PGR-${booking.booking_id}`,
+        payment_method: paymentMethod,
+        idempotency_key:
+          dto.idempotency_key || `idem-checkout-${booking.booking_id}`,
+        payment_status: 'SUCCESS',
+        amount,
+        refund_amount: 0,
+        verified_at: this.db.now(),
+      },
+      {
+        sub: customerId,
+        email: customer?.email || '',
+        role: Role.CUSTOMER,
+        name: customer?.full_name || '',
+      },
+    );
+
+    // 7. Auto-assign providers
     const assignmentResult = this.jobAssignmentsService.autoAssign(
       booking.booking_id,
     );
 
-    // 7. Clear cart items (keep cart shell)
+    // 8. Clear cart items (keep cart shell)
     this.cartRepo.clearCartItems(cart.cart_id);
 
-    return { ...booking, services: bookingServices, assignments: assignmentResult.assignments };
+    return {
+      ...booking,
+      services: bookingServices,
+      transaction,
+      assignments: assignmentResult.assignments,
+    };
+  }
+
+  private normalizePaymentMethod(method?: string): 'UPI' | 'CARD' | 'NETBANK' | 'WALLET' {
+    const normalized = String(method || 'CARD').trim().toUpperCase();
+    if (normalized === 'UPI') return 'UPI';
+    if (normalized === 'CARD') return 'CARD';
+    if (normalized === 'NETBANK' || normalized === 'NETBANKING') return 'NETBANK';
+    if (normalized === 'WALLET') return 'WALLET';
+    return 'CARD';
   }
 
   // ── Queries ────────────────────────────────────────────

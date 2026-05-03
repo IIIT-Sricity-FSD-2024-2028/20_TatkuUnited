@@ -66,7 +66,7 @@ async function saveWorkHours() {
 
   if (_spId) {
     try {
-      await Api.post("/provider-working-hours/" + _spId, {
+      await Api.patch("/service-providers/working-hours/" + _spId, {
         hour_start: start,
         hour_end: end,
       });
@@ -513,7 +513,8 @@ function updateDeactivationUI(status) {
 
   // Work hours
   try {
-    const wh = await Api.get("/provider-working-hours/" + _spId, { silent: true });
+    // Working hours are stored on the provider object itself
+    const wh = await Api.get("/service-providers/" + _spId, { silent: true });
     if (wh && wh.hour_start) {
       const whStartEl = document.getElementById("work-start");
       const whEndEl = document.getElementById("work-end");

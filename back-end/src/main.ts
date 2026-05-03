@@ -1,17 +1,35 @@
 import { NestFactory } from '@nestjs/core';
+import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import * as path from 'path';
 import * as fs from 'fs';
 import { Role } from './common/enums/role.enum';
+import { SpIdAliasInterceptor } from './common/interceptors/sp-id-alias.interceptor';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+  // Allow any localhost port during development
   app.enableCors({
-    origin: ['http://localhost:8000', 'http://0.0.0.0:8000'],
+    origin: (origin, callback) => {
+      if (!origin || /^https?:\/\/(localhost|127\.0\.0\.1|0\.0\.0\.0)(:\d+)?$/.test(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error('CORS blocked: ' + origin));
+      }
+    },
     credentials: true,
   });
+
+  // Enable global validation so DTO decorators actually enforce constraints
+  app.useGlobalPipes(new ValidationPipe({
+    whitelist: true,
+    transform: true,
+  }));
+
+  // Add service_provider_id alias to all responses containing sp_id
+  app.useGlobalInterceptors(new SpIdAliasInterceptor());
 
   const config = new DocumentBuilder()
     .setTitle('TatkuUnited API')

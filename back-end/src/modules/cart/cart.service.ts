@@ -41,7 +41,20 @@ export class CartService {
 
   getCartWithItems(customerId: string) {
     const cart = this.getOrCreateCart(customerId);
-    const items = this.cartRepo.findItemsByCart(cart.cart_id);
+    const rawItems = this.cartRepo.findItemsByCart(cart.cart_id);
+    // Enrich items with service name for frontend display
+    const items = rawItems.map((item) => {
+      const service = this.db.services.find(
+        (s) => s.service_id === item.service_id,
+      );
+      return {
+        ...item,
+        service_name: service?.service_name || 'Service',
+        service: service?.service_name || 'Service',
+        price: item.price_snapshot,
+        location: cart.service_address || '',
+      };
+    });
     return { ...cart, items };
   }
 

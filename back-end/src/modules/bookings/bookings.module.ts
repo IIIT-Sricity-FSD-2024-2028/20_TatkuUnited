@@ -5,9 +5,15 @@ import { BookingsRepository } from './bookings.repository';
 import { CartModule } from '../cart/cart.module';
 import { DatabaseModule } from '../../common/database/database.module';
 import { JobAssignmentsModule } from '../job-assignments/job-assignments.module';
+import { TransactionsModule } from '../transactions/transactions.module';
 
 @Module({
-  imports: [CartModule, DatabaseModule, forwardRef(() => JobAssignmentsModule)],
+  imports: [
+    CartModule,
+    DatabaseModule,
+    forwardRef(() => JobAssignmentsModule),
+    TransactionsModule,
+  ],
   controllers: [BookingsController],
   providers: [BookingsService, BookingsRepository],
   exports: [BookingsService, BookingsRepository],

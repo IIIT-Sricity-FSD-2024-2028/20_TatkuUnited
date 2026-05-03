@@ -262,6 +262,33 @@ export class JobAssignmentsService {
 
     return this.jaRepo.findById(assignmentId) ? this.enrichAssignment(this.jaRepo.findById(assignmentId)) : null;
   }
+  // ── Mark in-progress ───────────────────────────────────
+
+  markInProgress(assignmentId: string) {
+    const assignment = this.jaRepo.findById(assignmentId);
+    if (!assignment) {
+      throw new NotFoundException(`Assignment "${assignmentId}" not found`);
+    }
+
+    if (assignment.status === 'IN_PROGRESS') {
+      throw new BadRequestException('Assignment is already in progress');
+    }
+    if (assignment.status === 'COMPLETED') {
+      throw new BadRequestException('Cannot revert a completed assignment to in-progress');
+    }
+
+    this.jaRepo.update(assignmentId, { status: 'IN_PROGRESS' });
+    assignment.status = 'IN_PROGRESS';
+    assignment.updated_at = this.db.now();
+
+    // Also update booking status if it's still ASSIGNED
+    const booking = this.bookingsRepo.findById(assignment.booking_id);
+    if (booking && booking.status === 'ASSIGNED') {
+      this.bookingsRepo.update(assignment.booking_id, { status: 'IN_PROGRESS' });
+    }
+
+    return this.jaRepo.findById(assignmentId);
+  }
 
   // ── Queries ────────────────────────────────────────────
 

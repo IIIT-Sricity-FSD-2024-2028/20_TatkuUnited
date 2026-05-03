@@ -3808,6 +3808,16 @@
             }
           }
         ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CheckoutBookingDto"
+              }
+            }
+          }
+        },
         "responses": {
           "201": {
             "description": "Booking created from cart items"
@@ -4502,6 +4512,53 @@
         ]
       }
     },
+    "/job-assignments/{id}/in-progress": {
+      "patch": {
+        "operationId": "JobAssignmentsController_markInProgress",
+        "parameters": [
+          {
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Assignment marked in-progress"
+          },
+          "400": {
+            "description": "Invalid status transition"
+          },
+          "403": {
+            "description": "Forbidden - service_provider only"
+          },
+          "404": {
+            "description": "Assignment not found"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Mark assignment as in-progress",
+        "tags": [
+          "job-assignments"
+        ]
+      }
+    },
     "/job-assignments": {
       "get": {
         "operationId": "JobAssignmentsController_findAll",
@@ -4576,6 +4633,398 @@
         "summary": "Get assignment by ID",
         "tags": [
           "job-assignments"
+        ]
+      }
+    },
+    "/transactions": {
+      "post": {
+        "operationId": "TransactionsController_create",
+        "parameters": [
+          {
+            "name": "x-id",
+            "in": "header",
+            "description": "Caller user ID (UUID)",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateTransactionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Transaction created"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "409": {
+            "description": "Duplicate idempotency key or booking already has a transaction"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create a transaction at checkout — customer only",
+        "tags": [
+          "Transactions"
+        ]
+      },
+      "get": {
+        "operationId": "TransactionsController_findAll",
+        "parameters": [
+          {
+            "name": "x-id",
+            "in": "header",
+            "description": "Caller user ID (UUID)",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Array of transactions"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List all transactions (scoped for managers)",
+        "tags": [
+          "Transactions"
+        ]
+      }
+    },
+    "/transactions/booking/{bookingId}": {
+      "get": {
+        "operationId": "TransactionsController_findByBooking",
+        "parameters": [
+          {
+            "name": "x-id",
+            "in": "header",
+            "description": "Caller user ID (UUID)",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "bookingId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Transaction found"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get transaction by booking ID — customer or super_user",
+        "tags": [
+          "Transactions"
+        ]
+      }
+    },
+    "/transactions/{id}": {
+      "get": {
+        "operationId": "TransactionsController_findOne",
+        "parameters": [
+          {
+            "name": "x-id",
+            "in": "header",
+            "description": "Caller user ID (UUID)",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "transaction_id UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Transaction found"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get transaction by ID — super_user or unit_manager",
+        "tags": [
+          "Transactions"
+        ]
+      },
+      "patch": {
+        "operationId": "TransactionsController_update",
+        "parameters": [
+          {
+            "name": "x-id",
+            "in": "header",
+            "description": "Caller user ID (UUID)",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "transaction_id UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateTransactionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Transaction updated"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update transaction status (webhook) — super_user only",
+        "tags": [
+          "Transactions"
+        ]
+      },
+      "delete": {
+        "operationId": "TransactionsController_remove",
+        "parameters": [
+          {
+            "name": "x-id",
+            "in": "header",
+            "description": "Caller user ID (UUID)",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "transaction_id UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Transaction voided"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Void a transaction (soft — sets status to FAILED) — super_user",
+        "tags": [
+          "Transactions"
+        ]
+      }
+    },
+    "/transactions/{id}/refund": {
+      "post": {
+        "operationId": "TransactionsController_refund",
+        "parameters": [
+          {
+            "name": "x-id",
+            "in": "header",
+            "description": "Caller user ID (UUID)",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-role",
+            "in": "header",
+            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "transaction_id UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "reason": {
+                    "type": "string",
+                    "example": "Service not rendered"
+                  }
+                },
+                "required": [
+                  "reason"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Refund applied; linked booking cancelled"
+          },
+          "400": {
+            "description": "Already refunded or not in SUCCESS state"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Transaction not found"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Refund a SUCCESS transaction — super_user only",
+        "tags": [
+          "Transactions"
         ]
       }
     },
@@ -5290,398 +5739,6 @@
         "summary": "Delete a setting by UUID — super_user only",
         "tags": [
           "Platform Settings"
-        ]
-      }
-    },
-    "/transactions": {
-      "post": {
-        "operationId": "TransactionsController_create",
-        "parameters": [
-          {
-            "name": "x-id",
-            "in": "header",
-            "description": "Caller user ID (UUID)",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "x-role",
-            "in": "header",
-            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateTransactionDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "Transaction created"
-          },
-          "403": {
-            "description": "Forbidden"
-          },
-          "409": {
-            "description": "Duplicate idempotency key or booking already has a transaction"
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Create a transaction at checkout — customer only",
-        "tags": [
-          "Transactions"
-        ]
-      },
-      "get": {
-        "operationId": "TransactionsController_findAll",
-        "parameters": [
-          {
-            "name": "x-id",
-            "in": "header",
-            "description": "Caller user ID (UUID)",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "x-role",
-            "in": "header",
-            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Array of transactions"
-          },
-          "403": {
-            "description": "Forbidden"
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "List all transactions (scoped for managers)",
-        "tags": [
-          "Transactions"
-        ]
-      }
-    },
-    "/transactions/booking/{bookingId}": {
-      "get": {
-        "operationId": "TransactionsController_findByBooking",
-        "parameters": [
-          {
-            "name": "x-id",
-            "in": "header",
-            "description": "Caller user ID (UUID)",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "x-role",
-            "in": "header",
-            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "bookingId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Transaction found"
-          },
-          "403": {
-            "description": "Forbidden"
-          },
-          "404": {
-            "description": "Not found"
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Get transaction by booking ID — customer or super_user",
-        "tags": [
-          "Transactions"
-        ]
-      }
-    },
-    "/transactions/{id}": {
-      "get": {
-        "operationId": "TransactionsController_findOne",
-        "parameters": [
-          {
-            "name": "x-id",
-            "in": "header",
-            "description": "Caller user ID (UUID)",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "x-role",
-            "in": "header",
-            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "description": "transaction_id UUID",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Transaction found"
-          },
-          "403": {
-            "description": "Forbidden"
-          },
-          "404": {
-            "description": "Not found"
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Get transaction by ID — super_user or unit_manager",
-        "tags": [
-          "Transactions"
-        ]
-      },
-      "patch": {
-        "operationId": "TransactionsController_update",
-        "parameters": [
-          {
-            "name": "x-id",
-            "in": "header",
-            "description": "Caller user ID (UUID)",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "x-role",
-            "in": "header",
-            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "description": "transaction_id UUID",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateTransactionDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Transaction updated"
-          },
-          "403": {
-            "description": "Forbidden"
-          },
-          "404": {
-            "description": "Not found"
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Update transaction status (webhook) — super_user only",
-        "tags": [
-          "Transactions"
-        ]
-      },
-      "delete": {
-        "operationId": "TransactionsController_remove",
-        "parameters": [
-          {
-            "name": "x-id",
-            "in": "header",
-            "description": "Caller user ID (UUID)",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "x-role",
-            "in": "header",
-            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "description": "transaction_id UUID",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Transaction voided"
-          },
-          "403": {
-            "description": "Forbidden"
-          },
-          "404": {
-            "description": "Not found"
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Void a transaction (soft — sets status to FAILED) — super_user",
-        "tags": [
-          "Transactions"
-        ]
-      }
-    },
-    "/transactions/{id}/refund": {
-      "post": {
-        "operationId": "TransactionsController_refund",
-        "parameters": [
-          {
-            "name": "x-id",
-            "in": "header",
-            "description": "Caller user ID (UUID)",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "x-role",
-            "in": "header",
-            "description": "Caller role: super_user | collective_manager | unit_manager | service_provider | customer",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "description": "transaction_id UUID",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "properties": {
-                  "reason": {
-                    "type": "string",
-                    "example": "Service not rendered"
-                  }
-                },
-                "required": [
-                  "reason"
-                ]
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Refund applied; linked booking cancelled"
-          },
-          "400": {
-            "description": "Already refunded or not in SUCCESS state"
-          },
-          "403": {
-            "description": "Forbidden"
-          },
-          "404": {
-            "description": "Transaction not found"
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Refund a SUCCESS transaction — super_user only",
-        "tags": [
-          "Transactions"
         ]
       }
     },
@@ -7066,6 +7123,36 @@
           }
         }
       },
+      "CheckoutBookingDto": {
+        "type": "object",
+        "properties": {
+          "payment_method": {
+            "type": "string",
+            "description": "Payment method selected by the customer",
+            "enum": [
+              "UPI",
+              "CARD",
+              "NETBANK",
+              "WALLET",
+              "upi",
+              "card",
+              "netbank",
+              "wallet"
+            ],
+            "example": "UPI"
+          },
+          "payment_gateway_ref": {
+            "type": "string",
+            "description": "Client or gateway payment reference, if already available",
+            "example": "PGR20260503001"
+          },
+          "idempotency_key": {
+            "type": "string",
+            "description": "Client idempotency key, if already generated by the UI/payment layer",
+            "example": "idem-checkout-20260503-001"
+          }
+        }
+      },
       "AddCartItemDto": {
         "type": "object",
         "properties": {
@@ -7128,127 +7215,6 @@
             "type": "string",
             "description": "Optional completion notes",
             "example": "Work completed satisfactorily"
-          }
-        }
-      },
-      "CreateRevenueLedgerDto": {
-        "type": "object",
-        "properties": {
-          "booking_id": {
-            "type": "string",
-            "example": "b123-uuid",
-            "description": "Associated booking ID"
-          },
-          "sp_id": {
-            "type": "string",
-            "example": "sp123-uuid",
-            "description": "Service Provider ID"
-          },
-          "um_id": {
-            "type": "string",
-            "example": "um123-uuid",
-            "description": "Unit Manager ID"
-          },
-          "cm_id": {
-            "type": "string",
-            "example": "cm123-uuid",
-            "description": "Collective Manager ID"
-          },
-          "provider_amount": {
-            "type": "number",
-            "example": 1013.22,
-            "description": "Provider amount"
-          },
-          "um_amount": {
-            "type": "number",
-            "example": 103.92,
-            "description": "Unit Manager amount"
-          },
-          "cm_amount": {
-            "type": "number",
-            "example": 51.96,
-            "description": "Collective Manager amount"
-          },
-          "platform_amount": {
-            "type": "number",
-            "example": 129.9,
-            "description": "Platform amount"
-          },
-          "payout_status": {
-            "type": "string",
-            "example": "PENDING",
-            "enum": [
-              "PENDING",
-              "DISBURSED",
-              "FAILED",
-              "HELD"
-            ],
-            "description": "Payout status"
-          }
-        },
-        "required": [
-          "booking_id",
-          "sp_id",
-          "um_id",
-          "cm_id",
-          "provider_amount",
-          "um_amount",
-          "cm_amount",
-          "platform_amount"
-        ]
-      },
-      "CreatePlatformSettingDto": {
-        "type": "object",
-        "properties": {
-          "key": {
-            "type": "string",
-            "example": "max_booking_window_days",
-            "description": "Unique configuration key"
-          },
-          "value": {
-            "type": "string",
-            "example": "30",
-            "description": "Configuration value (always stored as string)"
-          },
-          "description": {
-            "type": "string",
-            "example": "Max days ahead a customer can schedule",
-            "description": "Human-readable description of the setting"
-          },
-          "updated_by": {
-            "type": "string",
-            "example": "uuid-v4-super-user-id",
-            "description": "super_user_id of the caller (from x-id header)"
-          }
-        },
-        "required": [
-          "key",
-          "value",
-          "updated_by"
-        ]
-      },
-      "UpdatePlatformSettingDto": {
-        "type": "object",
-        "properties": {
-          "key": {
-            "type": "string",
-            "example": "max_booking_window_days",
-            "description": "Unique configuration key"
-          },
-          "value": {
-            "type": "string",
-            "example": "30",
-            "description": "Configuration value (always stored as string)"
-          },
-          "description": {
-            "type": "string",
-            "example": "Max days ahead a customer can schedule",
-            "description": "Human-readable description of the setting"
-          },
-          "updated_by": {
-            "type": "string",
-            "example": "uuid-v4-super-user-id",
-            "description": "super_user_id of the caller (from x-id header)"
           }
         }
       },
@@ -7381,6 +7347,127 @@
             "type": "string",
             "example": "2026-04-01T16:34:20Z",
             "description": "Timestamp when gateway verified the payment"
+          }
+        }
+      },
+      "CreateRevenueLedgerDto": {
+        "type": "object",
+        "properties": {
+          "booking_id": {
+            "type": "string",
+            "example": "b123-uuid",
+            "description": "Associated booking ID"
+          },
+          "sp_id": {
+            "type": "string",
+            "example": "sp123-uuid",
+            "description": "Service Provider ID"
+          },
+          "um_id": {
+            "type": "string",
+            "example": "um123-uuid",
+            "description": "Unit Manager ID"
+          },
+          "cm_id": {
+            "type": "string",
+            "example": "cm123-uuid",
+            "description": "Collective Manager ID"
+          },
+          "provider_amount": {
+            "type": "number",
+            "example": 1013.22,
+            "description": "Provider amount"
+          },
+          "um_amount": {
+            "type": "number",
+            "example": 103.92,
+            "description": "Unit Manager amount"
+          },
+          "cm_amount": {
+            "type": "number",
+            "example": 51.96,
+            "description": "Collective Manager amount"
+          },
+          "platform_amount": {
+            "type": "number",
+            "example": 129.9,
+            "description": "Platform amount"
+          },
+          "payout_status": {
+            "type": "string",
+            "example": "PENDING",
+            "enum": [
+              "PENDING",
+              "DISBURSED",
+              "FAILED",
+              "HELD"
+            ],
+            "description": "Payout status"
+          }
+        },
+        "required": [
+          "booking_id",
+          "sp_id",
+          "um_id",
+          "cm_id",
+          "provider_amount",
+          "um_amount",
+          "cm_amount",
+          "platform_amount"
+        ]
+      },
+      "CreatePlatformSettingDto": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string",
+            "example": "max_booking_window_days",
+            "description": "Unique configuration key"
+          },
+          "value": {
+            "type": "string",
+            "example": "30",
+            "description": "Configuration value (always stored as string)"
+          },
+          "description": {
+            "type": "string",
+            "example": "Max days ahead a customer can schedule",
+            "description": "Human-readable description of the setting"
+          },
+          "updated_by": {
+            "type": "string",
+            "example": "uuid-v4-super-user-id",
+            "description": "super_user_id of the caller (from x-id header)"
+          }
+        },
+        "required": [
+          "key",
+          "value",
+          "updated_by"
+        ]
+      },
+      "UpdatePlatformSettingDto": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string",
+            "example": "max_booking_window_days",
+            "description": "Unique configuration key"
+          },
+          "value": {
+            "type": "string",
+            "example": "30",
+            "description": "Configuration value (always stored as string)"
+          },
+          "description": {
+            "type": "string",
+            "example": "Max days ahead a customer can schedule",
+            "description": "Human-readable description of the setting"
+          },
+          "updated_by": {
+            "type": "string",
+            "example": "uuid-v4-super-user-id",
+            "description": "super_user_id of the caller (from x-id header)"
           }
         }
       },

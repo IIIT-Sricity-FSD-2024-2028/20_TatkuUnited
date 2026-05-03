@@ -187,6 +187,16 @@ async function updateStatus(id, newStatus) {
     }
   }
 
+  if (newStatus === "inprogress") {
+    try {
+      await Api.patch("/job-assignments/" + id + "/in-progress", {});
+      Api.showToast("Job marked as in progress!", "success");
+    } catch (err) {
+      console.error("[jobs] In-progress failed:", err);
+      return;
+    }
+  }
+
   if (newStatus === "completed") {
     try {
       await Api.patch("/job-assignments/" + id + "/complete", {

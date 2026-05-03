@@ -57,7 +57,7 @@ window.CRUD = (() => {
       cancelLabel: "Cancel",
       onConfirm: async () => {
         try {
-          await Api.delete("/" + tableName + "/" + id);
+          await Api.del("/" + tableName + "/" + id);
           if (typeof onConfirm === "function") onConfirm();
           showToast("Record deleted successfully.", "success");
         } catch (err) {

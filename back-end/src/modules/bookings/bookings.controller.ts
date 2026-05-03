@@ -1,5 +1,6 @@
 import {
   Controller,
+  Body,
   ForbiddenException,
   Get,
   Post,
@@ -22,6 +23,7 @@ import { Role } from '../../common/enums/role.enum';
 import { JwtPayload } from '../auth/interfaces/jwt-payload.interface';
 import { AccessScopeService } from '../../common/access/access-scope.service';
 import { ApiRoleHeader } from '../../common/decorators/api-role-header.decorator';
+import { CheckoutBookingDto } from './dto/checkout-booking.dto';
 
 @ApiTags('bookings')
 @ApiBearerAuth('bearer')
@@ -42,8 +44,8 @@ export class BookingsController {
   @ApiResponse({ status: 201, description: 'Booking created from cart items' })
   @ApiResponse({ status: 400, description: 'Cart empty or not found' })
   @ApiResponse({ status: 403, description: 'Forbidden - customer only' })
-  checkout(@Request() req) {
-    return this.bookingsService.checkout(req.user.sub);
+  checkout(@Request() req, @Body() dto: CheckoutBookingDto = {}) {
+    return this.bookingsService.checkout(req.user.sub, dto);
   }
 
   @Get('my')
