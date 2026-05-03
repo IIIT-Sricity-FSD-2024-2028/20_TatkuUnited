@@ -101,9 +101,9 @@ window.CRUD = (() => {
 
   async function checkDeleteCollective(collectiveId) {
     let units=[], providers=[], jobs=[];
-    try { units = await Api.get("/units", { silent: true }) || []; } catch(_){}
-    try { providers = await Api.get("/service-providers", { silent: true }) || []; } catch(_){}
-    try { jobs = await Api.get("/job-assignments", { silent: true }) || []; } catch(_){}
+    units  = await Api.get("/units");
+    providers  = await Api.get("/service-providers");
+    jobs  = await Api.get("/job-assignments");
 
     const childUnits = units.filter(u => u.collective_id === collectiveId);
     const unitIds = childUnits.map(u => u.unit_id);
@@ -119,8 +119,8 @@ window.CRUD = (() => {
 
   async function checkDeleteUnit(unitId) {
     let providers=[], jobs=[];
-    try { providers = await Api.get("/service-providers", { silent: true }) || []; } catch(_){}
-    try { jobs = await Api.get("/job-assignments", { silent: true }) || []; } catch(_){}
+    providers  = await Api.get("/service-providers");
+    jobs  = await Api.get("/job-assignments");
 
     const childProviders = providers.filter(p => p.unit_id === unitId);
     const providerIds = childProviders.map(p => p.service_provider_id);
@@ -134,7 +134,7 @@ window.CRUD = (() => {
 
   async function checkDeleteProvider(providerId) {
     let jobs=[];
-    try { jobs = await Api.get("/job-assignments", { silent: true }) || []; } catch(_){}
+    jobs  = await Api.get("/job-assignments");
     const activeJobs = jobs.filter(j => j.service_provider_id === providerId && ACTIVE_JOB_STATUSES.includes(j.status));
 
     if (activeJobs.length > 0) {
@@ -145,7 +145,7 @@ window.CRUD = (() => {
 
   async function checkDeleteCategory(categoryId) {
     let services=[];
-    try { services = await Api.get("/services", { silent: true }) || []; } catch(_){}
+    services  = await Api.get("/services");
     const linked = services.filter(s => s.category_id === categoryId);
 
     if (linked.length > 0) {
@@ -156,7 +156,7 @@ window.CRUD = (() => {
 
   async function checkDeleteCustomer(customerId) {
     let bookings=[];
-    try { bookings = await Api.get("/bookings", { silent: true }) || []; } catch(_){}
+    bookings  = await Api.get("/bookings");
     const activeBookings = bookings.filter(b => b.customer_id === customerId && ACTIVE_BOOKING_STATUSES.includes(b.status));
 
     if (activeBookings.length > 0) {

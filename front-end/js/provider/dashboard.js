@@ -170,15 +170,11 @@ function renderProviderRatings() {
 
   // Fetch provider profile
   let provider = null;
-  try {
-    provider = await Api.get("/service-providers/" + spId, { silent: true });
-  } catch (_) {}
+  provider  = await Api.get("/service-providers/" + spId);
 
   // Fetch job assignments
   let rawJobs = [];
-  try {
-    rawJobs = await Api.get("/job-assignments/provider/" + spId, { silent: true }) || [];
-  } catch (_) {}
+  rawJobs  = await Api.get("/job-assignments/provider/" + spId);
 
   // Map raw assignments to the shape the UI expects
   jobs = rawJobs.map((ja) => {
@@ -212,9 +208,7 @@ function renderProviderRatings() {
 
   // Build earn stats from revenue ledger
   let ledger = [];
-  try {
-    ledger = await Api.get("/revenue-ledger/provider/" + spId, { silent: true }) || [];
-  } catch (_) {}
+  ledger  = await Api.get("/revenue-ledger/provider/" + spId);
 
   const totalEarned = ledger.reduce((s, r) => s + (r.provider_amount || 0), 0);
   const pending = ledger.filter((r) => r.payout_status === "PENDING").reduce((s, r) => s + (r.provider_amount || 0), 0);

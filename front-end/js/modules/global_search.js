@@ -6,9 +6,9 @@
 
   async function loadSearchData() {
     if (_providers !== null) return; // already loaded
-    try { _providers = await Api.get('/service-providers', { silent: true }) || []; } catch(_) { _providers = []; }
-    try { _units = await Api.get('/units', { silent: true }) || []; } catch(_) { _units = []; }
-    try { _managers = await Api.get('/unit-managers', { silent: true }) || []; } catch(_) { _managers = []; }
+    _providers  = await Api.get('/service-providers');
+    _units  = await Api.get('/units');
+    _managers  = await Api.get('/unit-managers');
   }
 
   function initGlobalSearch() {

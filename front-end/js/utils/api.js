@@ -20,7 +20,6 @@ window.Api = (() => {
   // ── Configuration ─────────────────────────────────────────────────────────
   const BASE_URL =
     window.API_BASE_URL ||
-    localStorage.getItem("tu_api_base_url") ||
     "http://localhost:10000";
 
   // UI role → backend role mapping (mirrors Auth.toApiRole)
@@ -161,6 +160,76 @@ window.Api = (() => {
 
   // ── ApiError class ────────────────────────────────────────────────────────
 
+  
+  let _overlayShown = false;
+  function showServerUnreachableOverlay() {
+    if (_overlayShown) return;
+    _overlayShown = true;
+    
+    const overlay = document.createElement('div');
+    Object.assign(overlay.style, {
+      position: 'fixed',
+      top: '0',
+      left: '0',
+      width: '100%',
+      height: '100%',
+      backgroundColor: 'rgba(10, 15, 26, 0.95)',
+      backdropFilter: 'blur(10px)',
+      zIndex: '999999',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      fontFamily: '\'DM Sans\', system-ui, sans-serif',
+      color: '#f8fafc',
+      textAlign: 'center',
+      padding: '20px'
+    });
+
+    const icon = document.createElement('div');
+    icon.innerHTML = '<svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>';
+    icon.style.marginBottom = '24px';
+
+    const title = document.createElement('h1');
+    title.textContent = 'API Unavailable';
+    title.style.fontSize = '32px';
+    title.style.fontWeight = '700';
+    title.style.marginBottom = '16px';
+    title.style.margin = '0 0 16px 0';
+
+    const message = document.createElement('p');
+    message.textContent = 'The server is unreachable or offline. Please check your connection or try again later.';
+    message.style.fontSize = '16px';
+    message.style.color = '#94a3b8';
+    message.style.maxWidth = '400px';
+    message.style.lineHeight = '1.5';
+    message.style.margin = '0 0 32px 0';
+
+    const retryBtn = document.createElement('button');
+    retryBtn.textContent = 'Retry Connection';
+    Object.assign(retryBtn.style, {
+      padding: '12px 24px',
+      backgroundColor: '#2563eb',
+      color: '#fff',
+      border: 'none',
+      borderRadius: '8px',
+      fontSize: '16px',
+      fontWeight: '600',
+      cursor: 'pointer',
+      transition: 'background-color 0.2s'
+    });
+    retryBtn.onmouseover = () => retryBtn.style.backgroundColor = '#1d4ed8';
+    retryBtn.onmouseout = () => retryBtn.style.backgroundColor = '#2563eb';
+    retryBtn.onclick = () => window.location.reload();
+
+    overlay.appendChild(icon);
+    overlay.appendChild(title);
+    overlay.appendChild(message);
+    overlay.appendChild(retryBtn);
+
+    document.body.appendChild(overlay);
+  }
+
   class ApiError extends Error {
     constructor(status, statusText, body) {
       const message = ApiError._extractMessage(body, status, statusText);
@@ -244,6 +313,7 @@ window.Api = (() => {
     } catch (networkErr) {
       const msg = "Network error — please check your connection and make sure the API server is running.";
       if (!options.silent) showToast(msg, "error", 6000);
+      showServerUnreachableOverlay();
       throw new ApiError(0, "NetworkError", { message: msg });
     }
 
@@ -279,9 +349,7 @@ window.Api = (() => {
         if (window.Auth && Auth.logout) {
           setTimeout(() => {
             // Clear without making the /auth/logout API call (token is already invalid)
-            localStorage.removeItem("tu_auth_token");
             sessionStorage.removeItem("tu_auth_token");
-            localStorage.removeItem("tu_auth_session");
             sessionStorage.removeItem("tu_auth_session");
             window.location.replace("/html/auth_pages/login.html");
           }, 1500);

@@ -442,9 +442,7 @@
     if (!session) return;
 
     // Load UM profile from API
-    try {
-      um = await Api.get("/unit-managers/" + session.id, { silent: true });
-    } catch (_) { um = null; }
+    um  = await Api.get("/unit-managers/" + session.id);
     if (!um) return;
 
     // Load unit info

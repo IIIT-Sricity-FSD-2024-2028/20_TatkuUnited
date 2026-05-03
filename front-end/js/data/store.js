@@ -97,8 +97,6 @@
   };
 
   const PLATFORM_SETTINGS_KEY = "fsd_platform_settings";
-  const AUTH_SESSION_KEY = "tu_auth_session";
-  const AUTH_TOKEN_KEY = "tu_auth_token";
   const DEFAULT_PLATFORM_SETTINGS = {
     maintenanceMode: false,
     accountSuspension: false,
@@ -154,33 +152,13 @@
     };
   }
 
-  function getPlatformSettingsFromStorage() {
-    try {
-      var raw = localStorage.getItem(PLATFORM_SETTINGS_KEY);
-      if (!raw) return null;
-      return normalizePlatformSettings(JSON.parse(raw));
-    } catch (e) {
-      return null;
-    }
-  }
-
   function readAuthSession() {
     try {
-      var raw =
-        sessionStorage.getItem(AUTH_SESSION_KEY) ||
-        localStorage.getItem(AUTH_SESSION_KEY);
-      if (!raw) return null;
-      return JSON.parse(raw);
-    } catch (e) {
-      return null;
-    }
-  }
-
-  function clearAuthStorage() {
-    sessionStorage.removeItem(AUTH_SESSION_KEY);
-    localStorage.removeItem(AUTH_SESSION_KEY);
-    sessionStorage.removeItem(AUTH_TOKEN_KEY);
-    localStorage.removeItem(AUTH_TOKEN_KEY);
+      if (window.Auth && Auth.getSession) {
+        return Auth.getSession();
+      }
+    } catch (_) {}
+    return null;
   }
 
   // ── Bootstrap AppStore on window ─────────────────────────────────────────────
@@ -191,37 +169,10 @@
   AppStore.data = null;
 
   // ── AppStore.save ─────────────────────────────────────────────────────────────
-  AppStore.save = function () {
-    try {
-      localStorage.setItem("fsd_store_v2", JSON.stringify(AppStore.data));
-      localStorage.setItem("fsd_store_saved_at", new Date().toISOString());
-      // Remove legacy session copy to avoid cross-tab confusion.
-      sessionStorage.removeItem("fsd_store_v2");
-      sessionStorage.removeItem("fsd_store_saved_at");
-    } catch (err) {
-      console.error("[AppStore] save() failed:", err);
-    }
-  };
+  AppStore.save = function () {};
 
   // ── AppStore.restore ──────────────────────────────────────────────────────────
   AppStore.restore = function () {
-    // Primary source: localStorage (shared across tabs).
-    // Fallback source: legacy sessionStorage copy from older builds.
-    try {
-      var raw = localStorage.getItem("fsd_store_v2");
-      if (!raw) {
-        raw = sessionStorage.getItem("fsd_store_v2");
-      }
-      if (raw) {
-        AppStore.data = JSON.parse(raw);
-        // Ensure future reads come from localStorage.
-        localStorage.setItem("fsd_store_v2", JSON.stringify(AppStore.data));
-        return true;
-      }
-    } catch (err) {
-      console.error("[AppStore] restore() failed to parse localStorage:", err);
-    }
-    // Nothing in localStorage — signal that a fresh fetch is needed.
     return false;
   };
 
@@ -245,9 +196,6 @@
       return normalizePlatformSettings(AppStore.data.platform_settings);
     }
 
-    var fromStorage = getPlatformSettingsFromStorage();
-    if (fromStorage) return fromStorage;
-
     return normalizePlatformSettings(DEFAULT_PLATFORM_SETTINGS);
   };
 
@@ -257,12 +205,6 @@
     if (AppStore.data) {
       AppStore.data.platform_settings = normalized;
       AppStore.save();
-    }
-
-    try {
-      localStorage.setItem(PLATFORM_SETTINGS_KEY, JSON.stringify(normalized));
-    } catch (err) {
-      console.error("[AppStore] savePlatformSettings() failed:", err);
     }
 
     return normalized;
@@ -827,26 +769,11 @@
     }
   }
 
-  if (AppStore.restore()) {
-    // Same session — data already loaded from sessionStorage
-    _postReadyAudit();
-    _resolve();
-  } else {
-    // Mock bootstrap is intentionally disabled.
-    // Data should come from API-driven flows and persisted AppStore state.
-    AppStore.data = JSON.parse(JSON.stringify(EMPTY_DATA));
-    AppStore.save();
-    _postReadyAudit();
-    _resolve();
-  }
+  AppStore.data = JSON.parse(JSON.stringify(EMPTY_DATA));
+  _postReadyAudit();
+  _resolve();
 
   // ── Unified Session State (added for provider UI persistence) ──────────────
-  function getProviderSessionId() {
-    var parsed = readAuthSession();
-    if (parsed && parsed.role === "provider" && parsed.id) return parsed.id;
-    return null;
-  }
-
   function mapUiStatusToAssignmentStatus(status) {
     var map = {
       assigned: "ASSIGNED",
@@ -1048,351 +975,14 @@
   }
 
   window.initData = function () {
-    return new Promise(function (resolve) {
-      var expectedId = null;
-      var shouldBlockForMaintenance = false;
-      var shouldBlockProvider = false;
-      var hasProviderSession = false;
-      try {
-        var platformSettings = AppStore.getPlatformSettings
-          ? AppStore.getPlatformSettings()
-          : getPlatformSettingsFromStorage();
-        shouldBlockForMaintenance = !!(
-          platformSettings && platformSettings.maintenanceMode
-        );
-
-        var p = readAuthSession();
-        if (p) {
-          if (p.role === "provider" && p.id) {
-            hasProviderSession = true;
-            expectedId = p.id;
-            shouldBlockProvider = !!(
-              platformSettings && platformSettings.accountSuspension
-            );
-          }
-        }
-      } catch (e) {}
-
-      if (!hasProviderSession) {
-        window.location.replace("/html/auth_pages/login.html");
-        resolve();
-        return;
-      }
-
-      if (shouldBlockForMaintenance) {
-        clearAuthStorage();
-        window.location.replace(
-          "/html/landing_page.html?maintenance=1",
-        );
-        resolve();
-        return;
-      }
-
-      if (shouldBlockProvider) {
-        clearAuthStorage();
-        window.location.replace(
-          "/html/auth_pages/login.html?error=provider_suspended",
-        );
-        resolve();
-        return;
-      }
-
-      var existing =
-        localStorage.getItem("fsd_ui_state") ||
-        sessionStorage.getItem("fsd_ui_state");
-      if (existing) {
-        var parsedExisting = JSON.parse(existing);
-        if (
-          parsedExisting.provider &&
-          parsedExisting.provider.service_provider_id === expectedId
-        ) {
-          resolve();
-          return;
-        }
-      }
-      AppStore.ready.then(function () {
-        var providerId = expectedId;
-
-        var jobs = [];
-        var allJA = AppStore.getTable("job_assignments") || [];
-        var allBK = AppStore.getTable("bookings") || [];
-        var allCUS = AppStore.getTable("customers") || [];
-        var allSVC = AppStore.getTable("services") || [];
-        var allCAT = AppStore.getTable("categories") || [];
-        var allBS = AppStore.getTable("booking_services") || [];
-
-        var allSP = AppStore.getTable("service_providers") || [];
-        var allWH = AppStore.getTable("provider_working_hours") || [];
-        var allUV = AppStore.getTable("provider_unavailability") || [];
-
-        var allSkills = AppStore.getTable("skills") || [];
-        var allProviderSkills = AppStore.getTable("provider_skills") || [];
-
-        var providerProfile =
-          allSP.find(function (sp) {
-            return sp.service_provider_id === providerId;
-          }) || {};
-
-        providerProfile.skills = [];
-        providerProfile.account_status =
-          providerProfile.account_status ||
-          (providerProfile.is_active ? "active" : "inactive");
-        providerProfile.deactivation_requested =
-          providerProfile.deactivation_requested || false;
-        var mySkills = allProviderSkills.filter(function (ps) {
-          return ps.service_provider_id === providerId;
-        });
-        mySkills.forEach(function (ps) {
-          var skillObj = allSkills.find((s) => s.skill_id === ps.skill_id);
-          if (skillObj) {
-            providerProfile.skills.push(skillObj.skill_name);
-          }
-        });
-
-        var providerWH = allWH.filter(function (wh) {
-          return wh.service_provider_id === providerId && wh.is_working;
-        });
-        var workStart =
-          providerWH.length > 0 ? providerWH[0].hour_start : "08:00";
-        var workEnd = providerWH.length > 0 ? providerWH[0].hour_end : "18:00";
-
-        var unavailMap = {};
-        allUV.forEach(function (uv) {
-          if (uv.service_provider_id === providerId) {
-            if (!unavailMap[uv.date]) unavailMap[uv.date] = [];
-            unavailMap[uv.date].push({ from: uv.hour_start, to: uv.hour_end });
-          }
-        });
-
-        allJA.forEach(function (ja) {
-          if (ja.service_provider_id === providerId) {
-            var bkg = allBK.find((b) => b.booking_id === ja.booking_id) || {};
-            var cus =
-              allCUS.find((c) => c.customer_id === bkg.customer_id) || {};
-
-            var bsList = allBS.filter((bs) => bs.booking_id === bkg.booking_id);
-            var serviceName = "General Service";
-            var catName = "General";
-            if (bsList.length > 0) {
-              var svc = allSVC.find(
-                (s) => s.service_id === bsList[0].service_id,
-              );
-              if (svc) {
-                serviceName = svc.service_name;
-                var cat = allCAT.find((c) => c.category_id === svc.category_id);
-                if (cat) catName = cat.category_name;
-              }
-            }
-
-            var statusMap = {
-              ASSIGNED: "assigned",
-              IN_PROGRESS: "inprogress",
-              COMPLETED: "completed",
-              CANCELLED: "cancelled",
-              PENDING: "pending",
-            };
-            var uiStatus = statusMap[ja.status] || "assigned";
-            var labelMap = {
-              assigned: "Assigned",
-              inprogress: "In Progress",
-              completed: "Completed",
-              pending: "Pending Confirmation",
-              cancelled: "Cancelled",
-            };
-
-            var totalPrice = 0;
-            if (bsList && bsList.length > 0) {
-              totalPrice = bsList.reduce(function (acc, bs) {
-                return acc + (bs.price_at_booking || 0);
-              }, 0);
-            }
-
-            jobs.push({
-              id: ja.assignment_id,
-              booking_id: ja.booking_id,
-              service: serviceName,
-              category: catName,
-              customer: cus.full_name || cus.name || "Unknown User",
-              address: bkg.service_address || "Unknown Address",
-              phone: cus.phone || "9876543210",
-              date: ja.scheduled_date,
-              time: ja.hour_start + " - " + ja.hour_end,
-              startTime: ja.hour_start,
-              endTime: ja.hour_end,
-              status: uiStatus,
-              statusLabel: labelMap[uiStatus],
-              description:
-                ja.notes || "Complete service according to standards.",
-              price: totalPrice,
-            });
-          }
-        });
-
-        jobs.sort(function (a, b) {
-          if (a.date !== b.date) return a.date > b.date ? 1 : -1;
-          return a.startTime > b.startTime ? 1 : -1;
-        });
-
-        var totalCompletedCount = jobs.filter(function (j) {
-          return j.status === "completed";
-        }).length;
-        var totalCompletedSum = jobs
-          .filter(function (j) {
-            return j.status === "completed";
-          })
-          .reduce(function (acc, j) {
-            return acc + (j.price || 0);
-          }, 0);
-        var totalPendingSum = jobs
-          .filter(function (j) {
-            return (
-              j.status === "inprogress" ||
-              j.status === "assigned" ||
-              j.status === "pending"
-            );
-          })
-          .reduce(function (acc, j) {
-            return acc + (j.price || 0);
-          }, 0);
-        var avgTicket =
-          totalCompletedCount > 0
-            ? Math.round(totalCompletedSum / totalCompletedCount)
-            : 0;
-
-        var state = {
-          provider: providerProfile,
-          workingHours: { start: workStart, end: workEnd },
-          jobs: jobs,
-          unavailability: unavailMap,
-          stats: [
-            { label: "Completed Jobs", value: totalCompletedCount },
-            {
-              label: "Avg. Ticket",
-              value: "₹" + avgTicket.toLocaleString("en-IN"),
-            },
-            {
-              label: "Pending Payout",
-              value: "₹" + totalPendingSum.toLocaleString("en-IN"),
-            },
-            {
-              label: "Cancelled",
-              value: jobs.filter(function (j) {
-                return j.status === "cancelled";
-              }).length,
-            },
-          ],
-          notifications: [
-            {
-              id: 101,
-              type: "job",
-              category: "Jobs",
-              unread: true,
-              title: "New Job Assigned",
-              time: "2 hours ago",
-              desc: "You have been assigned a new service request. Please check your schedule.",
-              actions: [
-                {
-                  label: "View Job Details",
-                  cls: "btn-primary-action",
-                  href: "assigned-jobs.html",
-                },
-                { label: "Dismiss", cls: "btn-dismiss", action: "dismiss" },
-              ],
-            },
-            {
-              id: 102,
-              type: "payment",
-              category: "Payments",
-              unread: true,
-              title: "Payment Processing",
-              time: "5 hours ago",
-              desc: "Your latest payout has been initiated and will reflect shortly.",
-              actions: [
-                {
-                  label: "View Earnings",
-                  cls: "btn-outline-action",
-                  href: "earnings.html",
-                },
-              ],
-            },
-            {
-              id: 103,
-              type: "account",
-              category: "Account",
-              unread: false,
-              title: "Identity Verification Required",
-              time: "Yesterday",
-              desc: "Please upload the renewed document to avoid service interruption.",
-              actions: [
-                {
-                  label: "Update Profile",
-                  cls: "btn-orange-action",
-                  href: "profile.html",
-                },
-              ],
-            },
-          ],
-        };
-
-        // Inject dynamic provider notifications from AssignmentEngine
-        if (
-          window.AssignmentEngine &&
-          typeof AssignmentEngine.getProviderNotifications === "function"
-        ) {
-          var dynamicNotifs =
-            AssignmentEngine.getProviderNotifications(providerId);
-          if (dynamicNotifs && dynamicNotifs.length > 0) {
-            dynamicNotifs.forEach(function (dn) {
-              // Only inject if not already present by id
-              var exists = state.notifications.some(function (n) {
-                return n.id === dn.id;
-              });
-              if (!exists) {
-                state.notifications.unshift(dn);
-              }
-            });
-          }
-        }
-
-        localStorage.setItem("fsd_ui_state", JSON.stringify(state));
-        // Remove legacy session copy to avoid stale reads in current tab.
-        sessionStorage.removeItem("fsd_ui_state");
-        resolve();
-      });
-    });
+    return Promise.resolve();
   };
 
   window.getData = function () {
-    var raw =
-      localStorage.getItem("fsd_ui_state") ||
-      sessionStorage.getItem("fsd_ui_state");
-    return raw ? JSON.parse(raw) : null;
+    return null;
   };
 
-  window.setData = function (data) {
-    localStorage.setItem("fsd_ui_state", JSON.stringify(data));
-    // Remove legacy session copy to keep a single source of truth.
-    sessionStorage.removeItem("fsd_ui_state");
-
-    var syncAndSave = function () {
-      try {
-        syncProviderStateToAppStore(data);
-        AppStore.save();
-      } catch (err) {
-        console.error("[AppStore] Provider sync failed:", err);
-      }
-    };
-
-    if (AppStore && AppStore.data) {
-      syncAndSave();
-    } else if (
-      AppStore &&
-      AppStore.ready &&
-      typeof AppStore.ready.then === "function"
-    ) {
-      AppStore.ready.then(syncAndSave);
-    }
-  };
+  window.setData = function () {};
 
   function resolveCustomerId(customerId) {
     if (customerId) return customerId;
@@ -1418,105 +1008,21 @@
     return AppStore.data.customer_state;
   }
 
-  function readLegacyCart() {
-    try {
-      return JSON.parse(localStorage.getItem("tu_cart") || "[]");
-    } catch (e) {
-      return [];
-    }
-  }
-
-  function readLegacyCheckoutMeta() {
-    var bookingId = localStorage.getItem("tu_last_booking_id");
-    var paymentMethod = localStorage.getItem("tu_last_payment_method");
-    var total = localStorage.getItem("tu_last_total");
-    if (!bookingId && !paymentMethod && !total) return null;
-    return {
-      last_booking_id: bookingId || null,
-      last_payment_method: paymentMethod || null,
-      last_total: total || null,
-    };
-  }
-
-  function clearLegacyCheckoutMeta() {
-    localStorage.removeItem("tu_last_booking_id");
-    localStorage.removeItem("tu_last_payment_method");
-    localStorage.removeItem("tu_last_total");
-  }
-
   window.CustomerState = {
-    getCart: function (customerId) {
-      var resolvedId = resolveCustomerId(customerId);
-      if (!resolvedId) return [];
-
-      if (!AppStore || !AppStore.data) {
-        return readLegacyCart();
-      }
-
-      var state = ensureCustomerState();
-      var existing = state.carts[resolvedId];
-      if (Array.isArray(existing)) {
-        return existing;
-      }
-
-      var legacyCart = readLegacyCart();
-      if (legacyCart.length > 0) {
-        state.carts[resolvedId] = legacyCart;
-        AppStore.save();
-        localStorage.removeItem("tu_cart");
-        return legacyCart;
-      }
-
+    getCart: function () {
       return [];
     },
-
-    setCart: function (customerId, cart) {
-      var resolvedId = resolveCustomerId(customerId);
-      if (!resolvedId || !AppStore || !AppStore.data) return false;
-      var state = ensureCustomerState();
-      state.carts[resolvedId] = Array.isArray(cart) ? cart : [];
-      AppStore.save();
-      localStorage.removeItem("tu_cart");
-      return true;
+    setCart: function () {
+      return false;
     },
-
-    clearCart: function (customerId) {
-      return this.setCart(customerId, []);
+    clearCart: function () {
+      return false;
     },
-
-    getCheckoutMeta: function (customerId) {
-      var resolvedId = resolveCustomerId(customerId);
-      if (!resolvedId) return null;
-
-      if (!AppStore || !AppStore.data) {
-        return readLegacyCheckoutMeta();
-      }
-
-      var state = ensureCustomerState();
-      var existing = state.checkout_meta[resolvedId] || null;
-      if (existing) {
-        return existing;
-      }
-
-      var legacyMeta = readLegacyCheckoutMeta();
-      if (legacyMeta) {
-        state.checkout_meta[resolvedId] = legacyMeta;
-        AppStore.save();
-        clearLegacyCheckoutMeta();
-        return legacyMeta;
-      }
-
+    getCheckoutMeta: function () {
       return null;
     },
-
-    setCheckoutMeta: function (customerId, meta) {
-      var resolvedId = resolveCustomerId(customerId);
-      if (!resolvedId || !AppStore || !AppStore.data) return false;
-      var state = ensureCustomerState();
-      state.checkout_meta[resolvedId] = Object.assign({}, meta || {});
-      AppStore.save();
-      clearLegacyCheckoutMeta();
-      return true;
+    setCheckoutMeta: function () {
+      return false;
     },
   };
 })();

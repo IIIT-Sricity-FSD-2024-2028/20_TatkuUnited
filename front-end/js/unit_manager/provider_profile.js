@@ -39,9 +39,7 @@
 
   async function loadProviderDetails() {
     // Fetch provider
-    try {
-      providerData = await Api.get("/service-providers/" + providerId, { silent: true });
-    } catch (_) {}
+    providerData  = await Api.get("/service-providers/" + providerId);
 
     if (!providerData) {
       document.querySelector(".content").innerHTML = "<h3>Provider not found.</h3>";
@@ -102,15 +100,11 @@
 
     // Job History — fetch from API
     var myAssignments = [];
-    try {
-      myAssignments = await Api.get("/job-assignments/provider/" + providerId, { silent: true }) || [];
-    } catch (_) {}
+    myAssignments  = await Api.get("/job-assignments/provider/" + providerId);
 
     // Revenue ledger for this provider
     var ledger = [];
-    try {
-      ledger = await Api.get("/revenue-ledger/provider/" + providerId, { silent: true }) || [];
-    } catch (_) {}
+    ledger  = await Api.get("/revenue-ledger/provider/" + providerId);
 
     var historyBody = document.getElementById("history-body");
     historyBody.innerHTML = "";

@@ -18,15 +18,15 @@
   let allEvents = [];
   let allActions = [];
 
-  try { allCustomers = await Api.get("/customers", { silent: true }) || []; } catch (_) {}
-  try { allProviders = await Api.get("/service-providers", { silent: true }) || []; } catch (_) {}
-  try { allCMs = await Api.get("/collective-managers", { silent: true }) || []; } catch (_) {}
-  try { allUMs = await Api.get("/unit-managers", { silent: true }) || []; } catch (_) {}
-  try { allAssignments = await Api.get("/job-assignments", { silent: true }) || []; } catch (_) {}
-  try { allTransactions = await Api.get("/transactions", { silent: true }) || []; } catch (_) {}
-  try { allServices = await Api.get("/services", { silent: true }) || []; } catch (_) {}
-  try { allCategories = await Api.get("/categories", { silent: true }) || []; } catch (_) {}
-  try { allLedger = await Api.get("/revenue-ledger", { silent: true }) || []; } catch (_) {}
+  allCustomers  = await Api.get("/customers");
+  allProviders  = await Api.get("/service-providers");
+  allCMs  = await Api.get("/collective-managers");
+  allUMs  = await Api.get("/unit-managers");
+  allAssignments  = await Api.get("/job-assignments");
+  allTransactions  = await Api.get("/transactions");
+  allServices  = await Api.get("/services");
+  allCategories  = await Api.get("/categories");
+  allLedger  = await Api.get("/revenue-ledger");
 
   /* ── 3. Transform platform events (static for now) ── */
   function transformEvents(events) {

@@ -6,16 +6,12 @@
 
   const collectiveId = session.collectiveId;
 
-  // Retrieve CM's notification state from local storage or initialize
-  const NOTIF_STATE_KEY = "cm_notifications_state_" + session.id;
-  let notifState = JSON.parse(localStorage.getItem(NOTIF_STATE_KEY)) || {
+  let notifState = {
     dismissed: [],
     read: [],
   };
 
-  function saveNotifState() {
-    localStorage.setItem(NOTIF_STATE_KEY, JSON.stringify(notifState));
-  }
+  function saveNotifState() {}
 
   // Generate dynamic notifications
   let allNotifications = [];
@@ -43,12 +39,12 @@
 
   // Fetch data from API
   let allProviders = [], allBookings = [], allTransactions = [], allCollectives = [], allUnits = [], allJobAssignments = [];
-  try { allProviders = await Api.get("/service-providers", { silent: true }) || []; } catch (_) {}
-  try { allBookings = await Api.get("/bookings", { silent: true }) || []; } catch (_) {}
-  try { allTransactions = await Api.get("/transactions", { silent: true }) || []; } catch (_) {}
-  try { allCollectives = await Api.get("/collectives", { silent: true }) || []; } catch (_) {}
-  try { allUnits = await Api.get("/units", { silent: true }) || []; } catch (_) {}
-  try { allJobAssignments = await Api.get("/job-assignments", { silent: true }) || []; } catch (_) {}
+  allProviders  = await Api.get("/service-providers");
+  allBookings  = await Api.get("/bookings");
+  allTransactions  = await Api.get("/transactions");
+  allCollectives  = await Api.get("/collectives");
+  allUnits  = await Api.get("/units");
+  allJobAssignments  = await Api.get("/job-assignments");
 
   // Mapping collective -> sector_ids
   const myCollective = allCollectives.find(

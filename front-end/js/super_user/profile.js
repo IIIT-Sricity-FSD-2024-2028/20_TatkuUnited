@@ -9,7 +9,7 @@
 
   /* ── 2. Fetch data from API ── */
   let suRecord = null;
-  try { suRecord = await Api.get("/super-users/" + session.id, { silent: true }); } catch (_) {}
+  suRecord  = await Api.get("/super-users/" + session.id);
 
   let collectivesCount = 0;
   let unitsCount = 0;
@@ -25,10 +25,10 @@
   let totalUsers = 0;
   try {
     const [customers, providers, ums, cms] = await Promise.all([
-      Api.get("/customers", { silent: true }).catch(() => []),
-      Api.get("/service-providers", { silent: true }).catch(() => []),
-      Api.get("/unit-managers", { silent: true }).catch(() => []),
-      Api.get("/collective-managers", { silent: true }).catch(() => []),
+      Api.get("/customers"),
+      Api.get("/service-providers"),
+      Api.get("/unit-managers"),
+      Api.get("/collective-managers"),
     ]);
     totalUsers = (customers || []).length + (providers || []).length +
                  (ums || []).length + (cms || []).length + 1;

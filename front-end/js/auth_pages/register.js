@@ -307,10 +307,12 @@
       });
 
       if (selectedRole === "service_provider") {
-        sessionStorage.setItem(
-          "tu_register_notice",
-          "Your provider registration request was submitted. You can sign in after collective manager approval.",
-        );
+        try {
+          sessionStorage.setItem(
+            "tu_register_notice",
+            "Your provider registration request was submitted. You can sign in after collective manager approval.",
+          );
+        } catch (_) {}
       }
 
       window.location.href = "register-success.html";

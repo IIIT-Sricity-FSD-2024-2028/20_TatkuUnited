@@ -94,7 +94,19 @@
     var faqs = [];
     try { categories = await Api.get("/categories") || []; } catch (_) {}
     try { services = await Api.get("/services/available") || []; } catch (_) {}
-    try { faqs = await Api.get("/service-faqs", { silent: true }) || []; } catch (_) {}
+    if (services.length) {
+      var faqsRequests = services.map(function (svc) {
+        return Api.get("/services/" + svc.service_id + "/faqs", { silent: true })
+          .then(function (res) { return res || []; })
+          .catch(function () { return []; });
+      });
+      try {
+        var allFaqs = await Promise.all(faqsRequests);
+        faqs = [].concat.apply([], allFaqs);
+      } catch (_) {
+        faqs = [];
+      }
+    }
     return {
       categories: categories,
       services: services,

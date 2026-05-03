@@ -190,12 +190,12 @@ function updateSummaryCards() {
   currentSession = session;
 
   let allUnits = [];
-  try { allUnits = await Api.get("/units", { silent: true }) || []; } catch (_) {}
+  allUnits  = await Api.get("/units");
   allUnits = allUnits.filter(u => u.collective_id === session.collectiveId);
 
-  try { _allProviders = await Api.get("/service-providers", { silent: true }) || []; } catch (_) {}
-  try { _allManagers = await Api.get("/unit-managers", { silent: true }) || []; } catch (_) {}
-  try { _allAssignments = await Api.get("/job-assignments", { silent: true }) || []; } catch (_) {}
+  _allProviders  = await Api.get("/service-providers");
+  _allManagers  = await Api.get("/unit-managers");
+  _allAssignments  = await Api.get("/job-assignments");
 
   const managerMap = Object.fromEntries(_allManagers.map(m => [m.unit_id, m.name]));
   const providersByUnit = {};

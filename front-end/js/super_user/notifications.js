@@ -7,7 +7,7 @@
 
   /* ── 2. Pull notifications from API (fallback to empty) ── */
   let allNotifications = [];
-  try { allNotifications = await Api.get("/notifications/super-user", { silent: true }) || []; } catch (_) {}
+  allNotifications  = await Api.get("/notifications/super-user");
 
   /* ── 3. Transform notifications ── */
   function transformNotifications(notifList) {

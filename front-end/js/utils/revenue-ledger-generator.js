@@ -30,7 +30,7 @@ const RevenueManager = {
     };
     const data = {};
     await Promise.all(Object.entries(endpoints).map(async ([key, url]) => {
-      try { data[key] = await Api.get(url, { silent: true }) || []; } catch (_) { data[key] = []; }
+      data[key]  = await Api.get(url);
     }));
     return data;
   },

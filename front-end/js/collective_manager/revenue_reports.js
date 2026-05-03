@@ -7,14 +7,14 @@ let unitRevenueMap = {};
 (async () => {
   session = Auth.requireSession(["collective_manager"]); if (!session) return;
   collectiveId = session.collectiveId;
-  try { allUnits = await Api.get("/units",{silent:true})||[]; } catch(_){ allUnits=[]; }
-  try { allProviders = await Api.get("/service-providers",{silent:true})||[]; } catch(_){ allProviders=[]; }
-  try { allAssignments = await Api.get("/job-assignments",{silent:true})||[]; } catch(_){ allAssignments=[]; }
-  try { allBookings = await Api.get("/bookings",{silent:true})||[]; } catch(_){ allBookings=[]; }
-  try { allTransactions = await Api.get("/transactions",{silent:true})||[]; } catch(_){ allTransactions=[]; }
-  try { allLedger = await Api.get("/revenue-ledger",{silent:true})||[]; } catch(_){ allLedger=[]; }
-  try { allServices = await Api.get("/services",{silent:true})||[]; } catch(_){ allServices=[]; }
-  try { allCategories = await Api.get("/categories",{silent:true})||[]; } catch(_){ allCategories=[]; }
+  allUnits  = await Api.get("/units");
+  allProviders  = await Api.get("/service-providers");
+  allAssignments  = await Api.get("/job-assignments");
+  allBookings  = await Api.get("/bookings");
+  allTransactions  = await Api.get("/transactions");
+  allLedger  = await Api.get("/revenue-ledger");
+  allServices  = await Api.get("/services");
+  allCategories  = await Api.get("/categories");
   allBookingServices = [];
 
   myUnits = allUnits.filter(u => u.collective_id === collectiveId);

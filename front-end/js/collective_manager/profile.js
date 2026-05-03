@@ -6,11 +6,11 @@ let _session = null, _cm = null, _collective = null, _myUnits = [];
   const cmId = _session.id, collectiveId = _session.collectiveId;
 
   let allCMs=[], allCollectives=[], allUnits=[], allProviders=[], allSectors=[];
-  try { allCMs = await Api.get("/collective-managers",{silent:true})||[]; } catch(_){}
-  try { allCollectives = await Api.get("/collectives",{silent:true})||[]; } catch(_){}
-  try { allUnits = await Api.get("/units",{silent:true})||[]; } catch(_){}
-  try { allProviders = await Api.get("/service-providers",{silent:true})||[]; } catch(_){}
-  try { allSectors = await Api.get("/sectors",{silent:true})||[]; } catch(_){}
+  allCMs  = await Api.get("/collective-managers");
+  allCollectives  = await Api.get("/collectives");
+  allUnits  = await Api.get("/units");
+  allProviders  = await Api.get("/service-providers");
+  allSectors  = await Api.get("/sectors");
 
   _cm = allCMs.find(c => c.cm_id === cmId) || null;
   _collective = allCollectives.find(c => c.collective_id === collectiveId) || null;

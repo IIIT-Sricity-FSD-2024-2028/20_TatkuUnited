@@ -66,9 +66,9 @@ async function renderAdmissions() {
   const verificationsMetric = document.getElementById('metric-verifications-count');
   admissionList.innerHTML = ''; skillList.innerHTML = '';
   let allSkills=[], allProviderSkills=[], allProvidersTable=[];
-  try { allSkills = await Api.get("/skills",{silent:true})||[]; } catch(_){}
-  try { allProviderSkills = await Api.get("/provider-skills",{silent:true})||[]; } catch(_){}
-  try { allProvidersTable = await Api.get("/service-providers",{silent:true})||[]; } catch(_){}
+  allSkills  = await Api.get("/skills");
+  allProviderSkills  = await Api.get("/provider-skills");
+  allProvidersTable  = await Api.get("/service-providers");
 
   const skillRequests = [];
   allProviderSkills.forEach(ps => {

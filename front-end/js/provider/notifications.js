@@ -182,15 +182,7 @@ function updateNotifDot() {
   dot.style.display = unread > 0 ? "inline-block" : "none";
 }
 
-function saveNotifications() {
-  if (window.getData && window.setData) {
-    const data = window.getData();
-    if (data) {
-      data.notifications = notifications;
-      window.setData(data);
-    }
-  }
-}
+function saveNotifications() {}
 
 function loadMore() {
   const filtered =
@@ -201,34 +193,29 @@ function loadMore() {
   renderNotifs();
 }
 
-function init() {
-  if (window.initData) {
-    window.initData().then(() => {
-      const data = window.getData();
-      if (!data) return;
+async function init() {
+  const session = Auth.requireSession(["provider", "service_provider"]);
+  if (!session) return;
 
-      if (data.provider) {
-        document
-          .querySelectorAll(".user-chip span")
-          .forEach((el) => (el.textContent = data.provider.name || "Provider"));
-        if (data.provider.pfp_url) {
-          document.querySelectorAll(".user-avatar").forEach((el) => {
-            el.innerHTML = `<img src="${data.provider.pfp_url}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
-          });
-        }
+  try {
+    const me = await Api.get("/service-providers/" + session.id, { silent: true });
+    if (me) {
+      document
+        .querySelectorAll(".user-chip span")
+        .forEach((el) => (el.textContent = me.name || session.name || "Provider"));
+      if (me.pfp_url) {
+        document.querySelectorAll(".user-avatar").forEach((el) => {
+          el.innerHTML = `<img src="${me.pfp_url}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
+        });
       }
+    }
+  } catch (_) {}
 
-      notifications = data.notifications || [];
-      visibleCount = PAGE_SIZE;
-      renderTabs();
-      renderNotifs();
-      updateNotifDot();
-    });
-  } else {
-    renderTabs();
-    renderNotifs();
-    updateNotifDot();
-  }
+  notifications = [];
+  visibleCount = PAGE_SIZE;
+  renderTabs();
+  renderNotifs();
+  updateNotifDot();
 }
 
 window.handleNotifAction = handleNotifAction;

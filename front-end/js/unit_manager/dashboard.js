@@ -62,18 +62,18 @@ async function loadDashboardData(session) {
 
   // Fetch providers for this unit
   let allProviders = [];
-  try { allProviders = await Api.get("/service-providers", { silent: true }) || []; } catch (_) {}
+  allProviders  = await Api.get("/service-providers");
   const unitProviders = allProviders.filter((p) => p.unit_id === unitId);
   const unitProviderIds = new Set(unitProviders.map((p) => p.service_provider_id));
 
   // Fetch job assignments
   let allAssignments = [];
-  try { allAssignments = await Api.get("/job-assignments", { silent: true }) || []; } catch (_) {}
+  allAssignments  = await Api.get("/job-assignments");
   const unitAssignments = allAssignments.filter((a) => unitProviderIds.has(a.service_provider_id));
 
   // Fetch skills
   let allSkills = [];
-  try { allSkills = await Api.get("/skills", { silent: true }) || []; } catch (_) {}
+  allSkills  = await Api.get("/skills");
   const skillMap = {};
   allSkills.forEach((s) => { skillMap[s.skill_id] = s.skill_name; });
 
@@ -94,11 +94,11 @@ async function loadDashboardData(session) {
 
   // Fetch revenue ledger for this unit manager
   let ledger = [];
-  try { ledger = await Api.get("/revenue-ledger/um/" + umId, { silent: true }) || []; } catch (_) {}
+  ledger  = await Api.get("/revenue-ledger/unit-manager/" + umId);
 
   // Fetch transactions
   let allTxns = [];
-  try { allTxns = await Api.get("/transactions", { silent: true }) || []; } catch (_) {}
+  allTxns  = await Api.get("/transactions");
 
   const unitBookingIds = new Set(unitAssignments.map((a) => a.booking_id));
   TRANSACTIONS = allTxns
@@ -112,7 +112,7 @@ async function loadDashboardData(session) {
 
   // Fetch bookings
   let allBookings = [];
-  try { allBookings = await Api.get("/bookings", { silent: true }) || []; } catch (_) {}
+  allBookings  = await Api.get("/bookings");
 
   BOOKINGS = allBookings
     .filter((b) => unitBookingIds.has(b.booking_id))

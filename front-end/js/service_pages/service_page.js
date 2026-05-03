@@ -109,10 +109,10 @@
     for (var i = 1; i <= 5; i += 1) {
       html.push(
         '<svg viewBox="0 0 20 20" fill="' +
-          (i <= rounded ? "#f5a623" : "#e5e7eb") +
-          '">' +
-          '<path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z" />' +
-          "</svg>",
+        (i <= rounded ? "#f5a623" : "#e5e7eb") +
+        '">' +
+        '<path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z" />' +
+        "</svg>",
       );
     }
     return html.join("");
@@ -190,7 +190,9 @@
 
   function buildReviewData(data, serviceId) {
     var reviews = [];
-    var apiReviews = data._reviews || [];
+    var apiReviews = (data._reviews || []).filter(function (review) {
+      return review && review.service_id === serviceId;
+    });
 
     apiReviews.forEach(function (review) {
       var rating = Number(review.rating);
@@ -647,40 +649,41 @@
   }
 
   async function loadData() {
-    var services = [];
-    try { services = await Api.get("/services/available") || []; } catch (_) {}
-    var serviceId = getQueryParam("serviceId") || (services[0] && services[0].service_id);
+    var requestedId = getQueryParam("serviceId");
+    var service = null;
     var faqs = [];
     var content = null;
     var reviews = [];
-    if (serviceId) {
-      try { faqs = await Api.get("/service-faqs/service/" + serviceId, { silent: true }) || []; } catch (_) {}
-      try { content = await Api.get("/service-content/service/" + serviceId, { silent: true }); } catch (_) {}
-      try { reviews = await Api.get("/reviews/service/" + serviceId, { silent: true }) || []; } catch (_) {}
+
+    try {
+      if (requestedId) {
+        service = await Api.get("/services/" + requestedId);
+      } else {
+        var available = await Api.get("/services/available") || [];
+        service = available[0] || null;
+      }
+
+      if (service) {
+        var sid = service.service_id;
+        faqs = await Api.get("/services/" + sid + "/faqs") || [];
+        content = await Api.get("/services/" + sid + "/content") || null;
+        reviews = await Api.get("/reviews/service/" + sid) || [];
+      }
+    } catch (err) {
+      console.error("[loadData] Error fetching service data:", err);
     }
+
     return {
-      services: services,
-      service_faqs: faqs,
-      _serviceContent: content,
-      _reviews: reviews,
+      service: service,
+      faqs: faqs,
+      content: content,
+      reviews: reviews,
     };
   }
 
   async function initDynamicContent() {
     var data = await loadData();
-    var availableServices = (data.services || []).filter(function (service) {
-      return service.is_available;
-    });
-
-    if (!availableServices.length) {
-      return;
-    }
-
-    var requestedServiceId = getQueryParam("serviceId");
-    var serviceId = requestedServiceId || availableServices[0].service_id;
-    var service = availableServices.find(function (item) {
-      return item.service_id === serviceId;
-    });
+    var service = data.service;
 
     if (!service) {
       var svcTitleMissing = document.querySelector(".svc-title");
@@ -717,16 +720,12 @@
       return;
     }
 
-    var faqs = (data.service_faqs || [])
-      .filter(function (faq) {
-        return faq.service_id === service.service_id;
-      })
-      .sort(function (a, b) {
-        return (a.display_order || 999) - (b.display_order || 999);
-      });
+    var faqs = (data.faqs || []).sort(function (a, b) {
+      return (a.display_order || 999) - (b.display_order || 999);
+    });
 
-    var serviceContent = getServiceContent(data, service.service_id) || {};
-    var reviews = buildReviewData(data, service.service_id);
+    var serviceContent = data.content || {};
+    var reviews = buildReviewData({ _reviews: data.reviews }, service.service_id);
     var ratingMeta = getServiceRatingMeta(service, reviews);
     var avgRating = ratingMeta.average;
 
@@ -779,10 +778,10 @@
 
     if (svcBullets) {
       svcBullets.innerHTML = [
-        "<li>" + service.description + "</li>",
+        "<li>" + (service.description || "No description available.") + "</li>",
         "<li>Estimated duration: " +
-          formatDuration(service.estimated_duration_min) +
-          ".</li>",
+        formatDuration(service.estimated_duration_min) +
+        ".</li>",
         "<li>Transparent pricing with trained professionals and quality checks.</li>",
       ].join("");
     }
@@ -798,7 +797,7 @@
       }
     }
     if (heroImage) {
-      heroImage.src = service.image_url;
+      heroImage.src = service.image_url || "https://placehold.co/1200x800?text=" + encodeURIComponent(service.service_name);
       heroImage.alt = service.service_name;
     }
     if (stickyPrice) {

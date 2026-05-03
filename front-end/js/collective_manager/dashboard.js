@@ -11,16 +11,16 @@
   let allUnits = [], allProviders = [], allAssignments = [], allTransactions = [], allBookings = [];
   let collective = null, allSectors = [];
 
-  try { allUnits = await Api.get("/units", { silent: true }) || []; } catch (_) {}
-  try { allProviders = await Api.get("/service-providers", { silent: true }) || []; } catch (_) {}
-  try { allAssignments = await Api.get("/job-assignments", { silent: true }) || []; } catch (_) {}
-  try { allTransactions = await Api.get("/transactions", { silent: true }) || []; } catch (_) {}
-  try { allBookings = await Api.get("/bookings", { silent: true }) || []; } catch (_) {}
+  allUnits  = await Api.get("/units");
+  allProviders  = await Api.get("/service-providers");
+  allAssignments  = await Api.get("/job-assignments");
+  allTransactions  = await Api.get("/transactions");
+  allBookings  = await Api.get("/bookings");
   try {
     const collectives = await Api.get("/collectives", { silent: true }) || [];
     collective = collectives.find(c => c.collective_id === collectiveId) || null;
   } catch (_) {}
-  try { allSectors = await Api.get("/sectors", { silent: true }) || []; } catch (_) {}
+  allSectors  = await Api.get("/sectors");
 
   /* ── 3. Scope data to this collective ── */
   const myUnits       = allUnits.filter(u => u.collective_id === collectiveId);

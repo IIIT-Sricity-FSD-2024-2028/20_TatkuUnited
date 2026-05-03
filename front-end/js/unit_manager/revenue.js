@@ -60,11 +60,11 @@ async function loadRevenueData(session) {
 
   // Fetch revenue ledger entries for this unit manager
   let unitLedgerEntries = [];
-  try { unitLedgerEntries = await Api.get("/revenue-ledger/um/" + umId, { silent: true }) || []; } catch (_) {}
+  unitLedgerEntries  = await Api.get("/revenue-ledger/unit-manager/" + umId);
 
   // Fetch transactions
   let allTxns = [];
-  try { allTxns = await Api.get("/transactions", { silent: true }) || []; } catch (_) {}
+  allTxns  = await Api.get("/transactions");
 
   const txnById = new Map(allTxns.map((t) => [t.transaction_id, t]));
 

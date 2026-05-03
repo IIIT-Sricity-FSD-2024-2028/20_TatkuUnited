@@ -6,8 +6,8 @@
 window.AssignmentEngine = (() => {
   "use strict";
 
-  const CUSTOMER_NOTIFS_PREFIX = "fsd_customer_notifs_";
-  const PROVIDER_NOTIFS_PREFIX = "fsd_provider_notifs_";
+  const CUSTOMER_NOTIFS_PREFIX = null;
+  const PROVIDER_NOTIFS_PREFIX = null;
   const FALLBACK_RATING = 4.73;
 
   /* =========================================================================
@@ -142,30 +142,7 @@ window.AssignmentEngine = (() => {
         provider_id: bestProvider.service_provider_id,
       });
 
-      // Create customer notification (localStorage-based)
-      _addCustomerNotification(booking.customer_id, {
-        id: Date.now(),
-        type: "assignment",
-        bookingId: bookingId,
-        providerId: bestProvider.service_provider_id,
-        serviceName: booking.service_name || "Service",
-        title: "A service provider has been assigned to your request.",
-        message: bestProvider.name + " has been assigned to your " + (booking.service_name || "service") + " booking.",
-        createdAt: nowIso,
-        dismissed: false,
-      });
-
-      // Create provider notification (localStorage-based)
-      _addProviderNotification(bestProvider.service_provider_id, {
-        id: Date.now() + 1, type: "job", category: "Jobs", unread: true,
-        title: "You have been assigned a new job.",
-        time: "Just now",
-        desc: "You have been assigned to " + (booking.service_name || "a service") + " booking. Please check your schedule.",
-        bookingId: bookingId, assignmentId: assignmentId, createdAt: nowIso,
-        actions: [{ label: "View Job Details", cls: "btn-primary-action", href: "assigned-jobs.html" }, { label: "Dismiss", cls: "btn-dismiss", action: "dismiss" }],
-      });
-
-      _invalidateProviderState(bestProvider.service_provider_id);
+      // Notifications now handled by backend + UI polling.
 
       return { success: true, providerId: bestProvider.service_provider_id, assignmentId: assignmentId };
     } catch (err) {
@@ -175,61 +152,28 @@ window.AssignmentEngine = (() => {
   }
 
   /* =========================================================================
-     CUSTOMER NOTIFICATIONS (localStorage)
+     CUSTOMER NOTIFICATIONS
      ========================================================================= */
-  function _addCustomerNotification(customerId, notification) {
-    if (!customerId) return;
-    const key = CUSTOMER_NOTIFS_PREFIX + customerId;
-    let notifs = [];
-    try { notifs = JSON.parse(localStorage.getItem(key) || "[]"); } catch (_) { notifs = []; }
-    notifs.unshift(notification);
-    localStorage.setItem(key, JSON.stringify(notifs));
+  function _addCustomerNotification() {}
+
+  function getCustomerNotifications() {
+    return [];
   }
 
-  function getCustomerNotifications(customerId) {
-    if (!customerId) return [];
-    const key = CUSTOMER_NOTIFS_PREFIX + customerId;
-    try { return JSON.parse(localStorage.getItem(key) || "[]").filter(n => !n.dismissed); } catch (_) { return []; }
-  }
-
-  function dismissCustomerNotification(customerId, notifId) {
-    if (!customerId) return;
-    const key = CUSTOMER_NOTIFS_PREFIX + customerId;
-    try { let notifs = JSON.parse(localStorage.getItem(key) || "[]"); notifs = notifs.map(n => { if (n.id === notifId) n.dismissed = true; return n; }); localStorage.setItem(key, JSON.stringify(notifs)); } catch (_) {}
-  }
+  function dismissCustomerNotification() {}
 
   /* =========================================================================
-     PROVIDER NOTIFICATIONS (localStorage)
+     PROVIDER NOTIFICATIONS
      ========================================================================= */
-  function _addProviderNotification(providerId, notification) {
-    if (!providerId) return;
-    const key = PROVIDER_NOTIFS_PREFIX + providerId;
-    let notifs = [];
-    try { notifs = JSON.parse(localStorage.getItem(key) || "[]"); } catch (_) { notifs = []; }
-    notifs.unshift(notification);
-    localStorage.setItem(key, JSON.stringify(notifs));
+  function _addProviderNotification() {}
+
+  function getProviderNotifications() {
+    return [];
   }
 
-  function getProviderNotifications(providerId) {
-    if (!providerId) return [];
-    const key = PROVIDER_NOTIFS_PREFIX + providerId;
-    try { return JSON.parse(localStorage.getItem(key) || "[]"); } catch (_) { return []; }
-  }
+  function clearProviderNotifications() {}
 
-  function clearProviderNotifications(providerId) {
-    if (!providerId) return;
-    localStorage.removeItem(PROVIDER_NOTIFS_PREFIX + providerId);
-  }
-
-  function _invalidateProviderState(providerId) {
-    try {
-      const existing = localStorage.getItem("fsd_ui_state");
-      if (existing) {
-        const parsed = JSON.parse(existing);
-        if (parsed.provider && parsed.provider.service_provider_id === providerId) localStorage.removeItem("fsd_ui_state");
-      }
-    } catch (_) {}
-  }
+  function _invalidateProviderState() {}
 
   /* =========================================================================
      PROVIDER PROFILE FOR POPUP
@@ -290,16 +234,7 @@ window.AssignmentEngine = (() => {
       const customer = customers.find(c => c.customer_id === booking.customer_id);
       const customerName = customer ? (customer.full_name || customer.name || "A customer") : "A customer";
 
-      // Send provider notification
-      _addProviderNotification(providerId, {
-        id: Date.now(), type: "job", category: "Jobs", unread: true,
-        title: "A job has been cancelled by the customer.", time: "Just now",
-        desc: customerName + " has cancelled their " + (booking.service_name || "service") + " booking (#" + bookingId + ").",
-        bookingId: bookingId, createdAt: nowIso,
-        actions: [{ label: "View Jobs", cls: "btn-primary-action", href: "assigned-jobs.html" }, { label: "Dismiss", cls: "btn-dismiss", action: "dismiss" }],
-      });
-
-      _invalidateProviderState(providerId);
+      // Notifications now handled by backend + UI polling.
     } catch (err) {
       console.warn("[AssignmentEngine] cancelAssignment failed:", err);
     }

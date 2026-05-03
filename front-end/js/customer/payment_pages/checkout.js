@@ -166,14 +166,16 @@ confirmBtn.addEventListener("click", async () => {
     const result = await Api.post("/bookings/checkout");
 
     // Store checkout meta for payment success page
-    sessionStorage.setItem(
-      "tu_checkout_result",
-      JSON.stringify({
-        booking_id: result.booking_id || result.id,
-        payment_method: selectedPayment,
-        total: document.querySelector(".total-amount")?.textContent || "₹0",
-      }),
-    );
+    try {
+      sessionStorage.setItem(
+        "tu_checkout_result",
+        JSON.stringify({
+          booking_id: result.booking_id || result.id,
+          payment_method: selectedPayment,
+          total: document.querySelector(".total-amount")?.textContent || "₹0",
+        }),
+      );
+    } catch (_) {}
 
     window.location.href = "payment_success.html";
   } catch (err) {

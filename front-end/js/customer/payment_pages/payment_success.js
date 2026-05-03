@@ -26,10 +26,12 @@ let progress = 0;
 let verifyInterval = null;
 
 function getCheckoutMeta() {
-  const session = Auth.getSession();
-  const customerId = session && session.role === "customer" ? session.id : null;
-  if (!customerId || !window.CustomerState) return null;
-  return CustomerState.getCheckoutMeta(customerId);
+  try {
+    const raw = sessionStorage.getItem("tu_checkout_result");
+    return raw ? JSON.parse(raw) : null;
+  } catch (_) {
+    return null;
+  }
 }
 
 function formatCurrency(value) {
@@ -63,15 +65,15 @@ async function getReceiptContext() {
 
   const meta = getCheckoutMeta() || {};
   let bookings = [];
-  try { bookings = await Api.get("/bookings/my", { silent: true }) || []; } catch (_) {}
+  bookings  = await Api.get("/bookings/my");
   const sortedBookings = bookings
     .filter((booking) => booking.customer_id === customerId)
     .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
   let booking = null;
-  if (meta.last_booking_id) {
+  if (meta.booking_id) {
     booking =
-      bookings.find((item) => item.booking_id === meta.last_booking_id) || null;
+      bookings.find((item) => item.booking_id === meta.booking_id) || null;
   }
   if (!booking) {
     booking = sortedBookings[0] || null;
@@ -88,8 +90,8 @@ async function getReceiptContext() {
   return {
     bookingId: booking.booking_id,
     serviceName: booking.service_name || "Home Services Booking",
-    totalAmount: meta.last_total || formatCurrency(booking.price || 0),
-    paymentMethod: formatPaymentMethod(meta.last_payment_method),
+    totalAmount: meta.total || formatCurrency(booking.price || 0),
+    paymentMethod: formatPaymentMethod(meta.payment_method),
     transactionDate,
     status: "PAID",
   };

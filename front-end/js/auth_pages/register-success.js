@@ -5,7 +5,7 @@
      This JS handles any dynamic behaviours. */
 
   /* Show a quick welcome message based on stored role (if available) */
-  var role = sessionStorage.getItem('registeredRole') || '';
+  var role = sessionStorage.getItem('tu_registered_role') || '';
   if (role) {
     var roleLabels = {
       customer: 'Customer',

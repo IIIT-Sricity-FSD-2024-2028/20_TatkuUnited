@@ -196,7 +196,7 @@ async function submitReview() {
   const bookingId = params.get("bookingId");
 
   if (bookingId) {
-    sessionStorage.setItem("review_booking_id", bookingId);
+    try { sessionStorage.setItem("review_booking_id", bookingId); } catch (_) {}
 
     // Load booking details from API
     try {

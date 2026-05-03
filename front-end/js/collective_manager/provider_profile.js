@@ -15,17 +15,17 @@
 
   // 1. Fetch Data from API
   let provider = null;
-  try { provider = await Api.get("/service-providers/" + providerId, { silent: true }); } catch (_) {}
+  provider  = await Api.get("/service-providers/" + providerId);
   if (!provider) { showError(); return; }
 
   let allUnits = [], allCollectives = [], allSectors = [], allProviderSkills = [], allSkills = [], allJobs = [];
-  try { allUnits = await Api.get("/units", { silent: true }) || []; } catch (_) {}
-  try { allCollectives = await Api.get("/collectives", { silent: true }) || []; } catch (_) {}
-  try { allSectors = await Api.get("/sectors", { silent: true }) || []; } catch (_) {}
-  try { allProviderSkills = await Api.get("/provider-skills/" + providerId, { silent: true }) || []; } catch (_) {}
+  allUnits  = await Api.get("/units");
+  allCollectives  = await Api.get("/collectives");
+  allSectors  = await Api.get("/sectors");
+  allProviderSkills  = await Api.get("/provider-skills/" + providerId);
   if (!Array.isArray(allProviderSkills)) allProviderSkills = [];
-  try { allSkills = await Api.get("/skills", { silent: true }) || []; } catch (_) {}
-  try { allJobs = await Api.get("/job-assignments/provider/" + providerId, { silent: true }) || []; } catch (_) {}
+  allSkills  = await Api.get("/skills");
+  allJobs  = await Api.get("/job-assignments/provider/" + providerId);
 
   const unit = allUnits.find(u => u.unit_id === provider.unit_id);
   const collective = unit ? allCollectives.find(c => c.collective_id === unit.collective_id) : null;

@@ -107,11 +107,8 @@ async function saveSection(section) {
 
         // Keep auth session aliases in sync for immediate UI updates.
         const activeSession = Auth.getSession();
-        if (activeSession) {
-          activeSession.name = nameVal;
-          activeSession.email = emailVal;
-          sessionStorage.setItem("tu_auth_session", JSON.stringify(activeSession));
-          localStorage.setItem("tu_auth_session", JSON.stringify(activeSession));
+        if (activeSession && Auth.updateSession) {
+          Auth.updateSession({ name: nameVal, email: emailVal });
         }
       } catch (err) {
         console.error("[profile] Save failed:", err);

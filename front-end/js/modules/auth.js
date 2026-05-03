@@ -6,7 +6,6 @@
 window.Auth = (() => {
   const API_BASE_URL =
     window.AUTH_API_BASE_URL ||
-    localStorage.getItem("tu_api_base_url") ||
     "http://localhost:10000";
 
   const STORAGE_KEYS = {
@@ -54,31 +53,22 @@ window.Auth = (() => {
   }
 
   function saveAuthState(token, session) {
-    localStorage.setItem(STORAGE_KEYS.token, token);
     sessionStorage.setItem(STORAGE_KEYS.token, token);
-    localStorage.setItem(STORAGE_KEYS.session, JSON.stringify(session));
     sessionStorage.setItem(STORAGE_KEYS.session, JSON.stringify(session));
   }
 
   function clearAuthState() {
-    localStorage.removeItem(STORAGE_KEYS.token);
     sessionStorage.removeItem(STORAGE_KEYS.token);
-    localStorage.removeItem(STORAGE_KEYS.session);
     sessionStorage.removeItem(STORAGE_KEYS.session);
   }
 
   function getToken() {
-    return (
-      sessionStorage.getItem(STORAGE_KEYS.token) ||
-      localStorage.getItem(STORAGE_KEYS.token)
-    );
+    return sessionStorage.getItem(STORAGE_KEYS.token);
   }
 
   function getSession() {
     try {
-      const raw =
-        sessionStorage.getItem(STORAGE_KEYS.session) ||
-        localStorage.getItem(STORAGE_KEYS.session);
+      const raw = sessionStorage.getItem(STORAGE_KEYS.session);
       if (!raw) return null;
       return sessionWithAliases(JSON.parse(raw));
     } catch (_) {
@@ -122,7 +112,7 @@ window.Auth = (() => {
   }
 
   async function login(email, password, roleHint) {
-    const role = toApiRole(roleHint || localStorage.getItem(STORAGE_KEYS.roleHint) || "");
+    const role = toApiRole(roleHint || sessionStorage.getItem(STORAGE_KEYS.roleHint) || "");
     const payload = { email: (email || "").trim().toLowerCase(), password };
     if (role) payload.role = role;
 
@@ -148,7 +138,9 @@ window.Auth = (() => {
     });
 
     saveAuthState(data.access_token, session);
-    localStorage.setItem(STORAGE_KEYS.roleHint, session.role);
+    try {
+      sessionStorage.removeItem(STORAGE_KEYS.roleHint);
+    } catch (_) {}
 
     return { success: true, session };
   }
@@ -168,8 +160,9 @@ window.Auth = (() => {
       body: JSON.stringify(body),
     });
 
-    localStorage.setItem(STORAGE_KEYS.registeredRole, body.role);
-    sessionStorage.setItem(STORAGE_KEYS.registeredRole, body.role);
+    try {
+      sessionStorage.setItem(STORAGE_KEYS.registeredRole, body.role);
+    } catch (_) {}
 
     return data;
   }
@@ -208,6 +201,15 @@ window.Auth = (() => {
     const updated = { ...session, pfp_url: imageDataUrl };
     saveAuthState(getToken() || "", updated);
     return { success: true, pfp_url: imageDataUrl };
+  }
+
+  function updateSession(sessionUpdates) {
+    const token = getToken() || "";
+    if (!token) return false;
+    const current = getSession() || {};
+    const merged = sessionWithAliases({ ...current, ...sessionUpdates });
+    saveAuthState(token, merged);
+    return true;
   }
 
   async function syncSessionFromServer() {
@@ -294,16 +296,11 @@ window.Auth = (() => {
   }
 
   function getRegisteredRole() {
-    return (
-      sessionStorage.getItem(STORAGE_KEYS.registeredRole) ||
-      localStorage.getItem(STORAGE_KEYS.registeredRole) ||
-      ""
-    );
+    return sessionStorage.getItem(STORAGE_KEYS.registeredRole) || "";
   }
 
   function clearRegisteredRole() {
     sessionStorage.removeItem(STORAGE_KEYS.registeredRole);
-    localStorage.removeItem(STORAGE_KEYS.registeredRole);
   }
 
   return {
@@ -320,6 +317,7 @@ window.Auth = (() => {
     getCurrentUser,
     changePassword,
     updateProfilePicture,
+    updateSession,
     syncSessionFromServer,
     getToken,
     getRegisteredRole,

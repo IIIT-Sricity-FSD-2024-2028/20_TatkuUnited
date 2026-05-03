@@ -12,11 +12,11 @@
   let allUnitManagers = [];
   let allSuperUsers = [];
 
-  try { allCustomers = await Api.get("/customers", { silent: true }) || []; } catch (_) {}
-  try { allProviders = await Api.get("/service-providers", { silent: true }) || []; } catch (_) {}
-  try { allCollectiveManagers = await Api.get("/collective-managers", { silent: true }) || []; } catch (_) {}
-  try { allUnitManagers = await Api.get("/unit-managers", { silent: true }) || []; } catch (_) {}
-  try { allSuperUsers = await Api.get("/super-users", { silent: true }) || []; } catch (_) {}
+  allCustomers  = await Api.get("/customers");
+  allProviders  = await Api.get("/service-providers");
+  allCollectiveManagers  = await Api.get("/collective-managers");
+  allUnitManagers  = await Api.get("/unit-managers");
+  allSuperUsers  = await Api.get("/super-users");
 
   function formatDate(value) {
     if (!value) return "-";

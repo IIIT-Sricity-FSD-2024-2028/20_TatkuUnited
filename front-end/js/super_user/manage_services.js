@@ -341,7 +341,7 @@
       // Load content from API
       (async () => {
         try {
-          const content = await Api.get("/service-content/service/" + svc.serviceId, { silent: true });
+          const content = await Api.get("/services/" + svc.serviceId + "/content", { silent: true });
           if (content) {
             const howItWorksText = (content.how_it_works || [])
               .map((step) => `${step.step_title} | ${step.step_description}`)
@@ -498,12 +498,12 @@
       try {
         if (editingId) {
           await Api.patch("/services/" + editingId, payload);
-          await Api.put("/service-content/service/" + editingId, parsedContent);
+          await Api.put("/services/" + editingId + "/content", parsedContent);
           showToast(`✓ "${name}" updated successfully`);
         } else {
           const created = await Api.post("/services", payload);
           if (created && created.service_id) {
-            await Api.put("/service-content/service/" + created.service_id, parsedContent);
+            await Api.put("/services/" + created.service_id + "/content", parsedContent);
           }
           showToast(`✓ "${name}" added to service catalog`);
         }

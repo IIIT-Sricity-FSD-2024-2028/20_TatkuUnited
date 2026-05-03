@@ -10,14 +10,7 @@ document.addEventListener("DOMContentLoaded", () => {
       )
     ) {
       // Delete database and this tab's session
-      localStorage.removeItem("fsd_store");
-      localStorage.removeItem("fsd_store_v2");
-      sessionStorage.removeItem("fsd_store_v2");
-      localStorage.removeItem("fsd_ui_state");
-      sessionStorage.removeItem("fsd_ui_state");
-      localStorage.removeItem("tu_auth_session");
       sessionStorage.removeItem("tu_auth_session");
-      localStorage.removeItem("tu_auth_token");
       sessionStorage.removeItem("tu_auth_token");
 
       // Display success

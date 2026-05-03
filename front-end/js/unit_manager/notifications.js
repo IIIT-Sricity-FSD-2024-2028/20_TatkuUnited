@@ -1,6 +1,6 @@
 /**
  * notifications.js — Unit Manager: Notifications — API-backed
- * Per-user state persisted in localStorage.
+ * Per-user state persisted in memory.
  */
 
 (function () {
@@ -15,22 +15,14 @@
   // Cached API data
   var _providers = [], _bookings = [], _customers = [], _assignments = [], _transactions = [], _skills = [], _providerSkills = [];
 
-  var STATE_KEY_PREFIX = "um_notif_state_";
-
   function ensureState() {
-    try {
-      var saved = localStorage.getItem(STATE_KEY_PREFIX + session.id);
-      if (saved) { state = JSON.parse(saved); }
-    } catch (_) {}
     if (!state || typeof state !== "object") state = { dismissed: [], read: [], overrides: {} };
     if (!Array.isArray(state.dismissed)) state.dismissed = [];
     if (!Array.isArray(state.read)) state.read = [];
     if (!state.overrides) state.overrides = {};
   }
 
-  function saveState() {
-    try { localStorage.setItem(STATE_KEY_PREFIX + session.id, JSON.stringify(state)); } catch (_) {}
-  }
+  function saveState() {}
 
   function toast(msg, type) {
     var old = document.getElementById("nfToast"); if (old) old.remove();
@@ -206,13 +198,13 @@
     if (!session) return;
 
     // Fetch all data from API
-    try { _providers = await Api.get("/service-providers", { silent: true }) || []; } catch (_) {}
-    try { _bookings = await Api.get("/bookings", { silent: true }) || []; } catch (_) {}
-    try { _customers = await Api.get("/customers", { silent: true }) || []; } catch (_) {}
-    try { _assignments = await Api.get("/job-assignments", { silent: true }) || []; } catch (_) {}
-    try { _transactions = await Api.get("/transactions", { silent: true }) || []; } catch (_) {}
-    try { _skills = await Api.get("/skills", { silent: true }) || []; } catch (_) {}
-    try { _providerSkills = await Api.get("/provider-skills", { silent: true }) || []; } catch (_) {}
+    _providers  = await Api.get("/service-providers");
+    _bookings  = await Api.get("/bookings");
+    _customers  = await Api.get("/customers");
+    _assignments  = await Api.get("/job-assignments");
+    _transactions  = await Api.get("/transactions");
+    _skills  = await Api.get("/skills");
+    _providerSkills  = await Api.get("/provider-skills");
 
     injectStyles();
     ensureState();

@@ -5,13 +5,29 @@
    ============================================================================= */
 
 /* ── Step 1: Clear session immediately when logout page loads ── */
-/* Session is already cleared by the time this page loads (Auth.logout()
-   removes tu_auth_session + tu_auth_token before redirecting here).
-   "Login Again" just navigates to the login page cleanly. */
+/* If a user clicked a direct link to logout.html without triggering Auth.logout() first,
+   we need to ensure the session is wiped here and tell the backend to invalidate the token. */
+if (window.Auth && window.Auth.getToken && window.Auth.getToken()) {
+  const token = window.Auth.getToken();
+  
+  // Clear frontend state immediately
+  sessionStorage.removeItem("tu_auth_token");
+  sessionStorage.removeItem("tu_auth_session");
+  localStorage.removeItem("tu_auth_token");
+  localStorage.removeItem("tu_auth_session");
+  
+  // Best-effort call to backend to invalidate token
+  if (window.Api) {
+    window.Api.post("/auth/logout", {}, { 
+      silent: true, 
+      headers: { Authorization: `Bearer ${token}` } 
+    }).catch(() => {});
+  }
+}
+
 document.getElementById("login-again").addEventListener("click", () => {
   window.location.href = "/html/auth_pages/login.html";
 });
-// Session cleared on logout.
 
 /* ── Step 2: Auto-redirect countdown (optional UI) ── */
 const redirectNote = document.getElementById("redirect-note");

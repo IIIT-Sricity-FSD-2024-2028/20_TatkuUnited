@@ -605,11 +605,11 @@ function openManageBlocks() {
 
   // Load provider profile
   let provider = null;
-  try { provider = await Api.get("/service-providers/" + spId, { silent: true }); } catch (_) {}
+  provider  = await Api.get("/service-providers/" + spId);
 
   // Load job assignments
   let rawJobs = [];
-  try { rawJobs = await Api.get("/job-assignments/provider/" + spId, { silent: true }) || []; } catch (_) {}
+  rawJobs  = await Api.get("/job-assignments/provider/" + spId);
 
   // Load working hours
   try {

@@ -13,7 +13,7 @@ async function _loadCache() {
     ["/skills", "skills"], ["/job-assignments", "assignments"]
   ];
   await Promise.all(endpoints.map(async ([url, key]) => {
-    try { _cache[key] = await Api.get(url, { silent: true }) || []; } catch (_) {}
+    _cache[key]  = await Api.get(url);
   }));
 }
 
@@ -1681,7 +1681,7 @@ async function _loadCache() {
     };
   }
 
-  function submitCreateUnit() {
+  async function submitCreateUnit() {
     var result = validateUnitForm();
     if (!result) return;
 
