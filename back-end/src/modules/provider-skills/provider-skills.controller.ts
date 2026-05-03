@@ -35,6 +35,26 @@ export class ProviderSkillsController {
     private readonly accessScope: AccessScopeService,
   ) {}
 
+  @Get()
+  @Roles(Role.SUPER_USER, Role.COLLECTIVE_MANAGER, Role.UNIT_MANAGER)
+  @ApiOperation({ summary: 'Get all provider skills (scoped for managers)' })
+  @ApiResponse({ status: 200, description: 'Success' })
+  @ApiResponse({ status: 403, description: 'Forbidden' })
+  findAll(@Request() req: { user: JwtPayload }) {
+    const rows = this.providerSkillsService.findAll();
+    if (req.user.role === Role.COLLECTIVE_MANAGER || req.user.role === Role.UNIT_MANAGER) {
+      return rows.filter((row) => {
+        try {
+          this.accessScope.assertProviderAccess(req.user, row.sp_id);
+          return true;
+        } catch {
+          return false;
+        }
+      });
+    }
+    return rows;
+  }
+
   @Get('provider/:provider_id')
   @Roles(Role.SUPER_USER, Role.COLLECTIVE_MANAGER, Role.UNIT_MANAGER, Role.SERVICE_PROVIDER, Role.CUSTOMER)
   @ApiOperation({ summary: 'Get provider skills by provider ID' })

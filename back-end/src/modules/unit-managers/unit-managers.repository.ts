@@ -36,7 +36,7 @@ export class UnitManagersRepository {
       password_hash: this.databaseService.storePassword(dto.password),
       phone: dto.phone,
       is_active: dto.is_active,
-      unit_id: dto.unit_id,
+      unit_id: dto.unit_id || '',
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     };

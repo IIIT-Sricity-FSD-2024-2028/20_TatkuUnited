@@ -36,7 +36,7 @@ export class CollectiveManagersRepository {
       password_hash: this.databaseService.storePassword(dto.password),
       phone: dto.phone,
       is_active: dto.is_active,
-      collective_id: dto.collective_id,
+      collective_id: dto.collective_id || '',
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     };

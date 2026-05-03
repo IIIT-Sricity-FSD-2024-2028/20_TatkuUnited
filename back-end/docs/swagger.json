@@ -2877,6 +2877,66 @@
         ]
       }
     },
+    "/provider-skills": {
+      "get": {
+        "operationId": "ProviderSkillsController_findAll",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "x-role": []
+          },
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get all provider skills (scoped for managers)",
+        "tags": [
+          "provider-skills"
+        ]
+      },
+      "post": {
+        "operationId": "ProviderSkillsController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateProviderSkillDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created successfully"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "x-role": []
+          },
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Assign skill to provider",
+        "tags": [
+          "provider-skills"
+        ]
+      }
+    },
     "/provider-skills/provider/{provider_id}": {
       "get": {
         "operationId": "ProviderSkillsController_findByProvider",
@@ -2942,42 +3002,6 @@
           }
         ],
         "summary": "Get providers by skill ID",
-        "tags": [
-          "provider-skills"
-        ]
-      }
-    },
-    "/provider-skills": {
-      "post": {
-        "operationId": "ProviderSkillsController_create",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateProviderSkillDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "Created successfully"
-          },
-          "403": {
-            "description": "Forbidden"
-          }
-        },
-        "security": [
-          {
-            "x-role": []
-          },
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Assign skill to provider",
         "tags": [
           "provider-skills"
         ]
@@ -5509,7 +5533,6 @@
           "password",
           "name",
           "phone",
-          "collective_id",
           "is_active"
         ]
       },
@@ -5575,7 +5598,6 @@
           "password",
           "name",
           "phone",
-          "unit_id",
           "is_active"
         ]
       },
@@ -5836,6 +5858,16 @@
           "is_active": {
             "type": "boolean",
             "example": true
+          },
+          "sector_ids": {
+            "example": [
+              "sector-uuid-1",
+              "sector-uuid-2"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         },
         "required": [
@@ -5853,6 +5885,16 @@
           "is_active": {
             "type": "boolean",
             "example": true
+          },
+          "sector_ids": {
+            "example": [
+              "sector-uuid-1",
+              "sector-uuid-2"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         }
       },
@@ -5894,8 +5936,7 @@
           "state",
           "region",
           "density_tier",
-          "is_active",
-          "collective_id"
+          "is_active"
         ]
       },
       "UpdateSectorDto": {

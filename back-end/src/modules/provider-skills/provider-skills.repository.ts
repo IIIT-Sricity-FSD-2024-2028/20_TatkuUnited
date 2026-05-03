@@ -6,6 +6,10 @@ import { CreateProviderSkillDto } from './dto/create-provider-skill.dto';
 export class ProviderSkillsRepository {
   constructor(private readonly databaseService: DatabaseService) {}
 
+  findAll(): ProviderSkill[] {
+    return this.databaseService.providerSkills;
+  }
+
   findByProvider(providerId: string): ProviderSkill[] {
     return this.databaseService.providerSkills.filter(
       (row) => row.sp_id === providerId,

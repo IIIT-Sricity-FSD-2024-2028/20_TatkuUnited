@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsBoolean, IsNotEmpty, IsString } from 'class-validator';
+import { IsArray, IsBoolean, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class CreateCollectiveDto {
   @ApiProperty({ example: 'South Chennai Collective' })
@@ -10,4 +10,10 @@ export class CreateCollectiveDto {
   @ApiProperty({ example: true })
   @IsBoolean()
   is_active: boolean;
+
+  @ApiProperty({ example: ['sector-uuid-1', 'sector-uuid-2'], required: false })
+  @IsArray()
+  @IsString({ each: true })
+  @IsOptional()
+  sector_ids?: string[];
 }

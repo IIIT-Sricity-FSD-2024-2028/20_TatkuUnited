@@ -138,7 +138,37 @@ export class BookingsService {
   }
 
   findByCustomer(customerId: string) {
-    return this.bookingsRepo.findByCustomer(customerId);
+    const bookings = this.bookingsRepo.findByCustomer(customerId);
+    return bookings.map((b) => {
+      const services = this.bookingsRepo.findServicesByBooking(b.booking_id);
+      const assignments = this.jobAssignmentsService.findByBooking(b.booking_id);
+
+      // Add a primary service name for display
+      let service_name = 'Home Service';
+      let price = 0;
+      if (services.length > 0) {
+        const s = this.db.services.find(
+          (x) => x.service_id === services[0].service_id,
+        );
+        service_name = s?.service_name || 'Home Service';
+        price = services.reduce((sum, s) => sum + s.price_at_booking, 0);
+      }
+
+      // Add provider name if assigned
+      let sp_name = 'Awaiting assignment';
+      if (assignments.length > 0) {
+        const latest = assignments.sort(
+          (a, b) =>
+            new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime(),
+        )[0];
+        const provider = this.db.serviceProviders.find(
+          (p) => p.sp_id === latest.sp_id,
+        );
+        sp_name = provider?.name || 'Awaiting assignment';
+      }
+
+      return { ...b, service_name, sp_name, price };
+    });
   }
 
   findByProvider(providerId: string) {
@@ -160,13 +190,37 @@ export class BookingsService {
   findOne(bookingId: string) {
     const booking = this.bookingsRepo.findById(bookingId);
     if (!booking) {
-      throw new NotFoundException(
-        `Booking with id "${bookingId}" not found`,
-      );
+      throw new NotFoundException(`Booking with id "${bookingId}" not found`);
     }
-    const services = this.bookingsRepo.findServicesByBooking(bookingId);
-    const assignments = this.jobAssignmentsService.findByBooking(bookingId);
-    return { ...booking, services, assignments };
+
+    const services = this.bookingsRepo
+      .findServicesByBooking(bookingId)
+      .map((bs) => {
+        const s = this.db.services.find((x) => x.service_id === bs.service_id);
+        return { ...bs, service_name: s?.service_name || 'Unknown Service' };
+      });
+
+    const assignments = this.jobAssignmentsService
+      .findByBooking(bookingId)
+      .map((ja) => {
+        const provider = this.db.serviceProviders.find(
+          (p) => p.sp_id === ja.sp_id,
+        );
+        const s = this.db.services.find((x) => x.service_id === ja.service_id);
+        return {
+          ...ja,
+          sp_name: provider?.name || 'Tatku Provider',
+          sp_phone: provider?.phone || null,
+          service_name: s?.service_name || 'Home Service',
+        };
+      });
+
+    // Determine a primary service name for the booking
+    const service_name =
+      services.length > 0 ? services[0].service_name : 'Home Service';
+    const price = services.reduce((sum, s) => sum + s.price_at_booking, 0);
+
+    return { ...booking, service_name, price, services, assignments };
   }
 
 

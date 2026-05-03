@@ -36,7 +36,7 @@ export class SectorsRepository {
       region: dto.region,
       density_tier: dto.density_tier,
       is_active: dto.is_active,
-      collective_id: dto.collective_id,
+      collective_id: dto.collective_id || '',
     };
     this.databaseService.sectors.push(sector);
     return sector;

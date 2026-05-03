@@ -6,6 +6,10 @@ import { CreateProviderSkillDto } from './dto/create-provider-skill.dto';
 export class ProviderSkillsService {
   constructor(private readonly providerSkillsRepository: ProviderSkillsRepository) {}
 
+  findAll() {
+    return this.providerSkillsRepository.findAll();
+  }
+
   findByProvider(providerId: string) {
     return this.providerSkillsRepository.findByProvider(providerId);
   }
