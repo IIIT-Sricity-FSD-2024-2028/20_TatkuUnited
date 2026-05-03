@@ -29,6 +29,20 @@
         ]
       }
     },
+    "/landing-data": {
+      "get": {
+        "operationId": "AppController_getLandingData",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "App"
+        ]
+      }
+    },
     "/super-users": {
       "get": {
         "operationId": "SuperUsersController_findAll",

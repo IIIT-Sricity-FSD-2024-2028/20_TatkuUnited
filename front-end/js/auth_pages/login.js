@@ -26,7 +26,7 @@ if (Auth.isLoggedIn()) {
     try {
       const nextUrl = new URL(rawNext, window.location.origin);
       const isSameOrigin = nextUrl.origin === window.location.origin;
-      const isAppPath = nextUrl.pathname.startsWith("/front-end/html/");
+      const isAppPath = nextUrl.pathname.startsWith("/html/");
       if (!isSameOrigin || !isAppPath) return null;
 
       return nextUrl.pathname + nextUrl.search + nextUrl.hash;

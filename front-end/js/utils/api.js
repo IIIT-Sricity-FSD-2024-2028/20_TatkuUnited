@@ -224,6 +224,7 @@ window.Api = (() => {
     const fetchInit = {
       method: method.toUpperCase(),
       headers: headers,
+      credentials: "include",
     };
 
     // Attach body for non-GET methods
@@ -282,7 +283,7 @@ window.Api = (() => {
             sessionStorage.removeItem("tu_auth_token");
             localStorage.removeItem("tu_auth_session");
             sessionStorage.removeItem("tu_auth_session");
-            window.location.replace("/front-end/html/auth_pages/login.html");
+            window.location.replace("/html/auth_pages/login.html");
           }, 1500);
         }
         throw err;

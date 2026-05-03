@@ -1,7 +1,7 @@
 /* ── MAINTENANCE MODE ── */
 let _landingData = {};
-async function getPlatformSettings() {
-  try { return await Api.get("/platform-settings", { silent: true }); } catch (_) { return null; }
+function getPlatformSettings() {
+  return _landingData.platform_settings || [];
 }
 
 function setMaintenanceLinkState(active) {
@@ -27,8 +27,9 @@ function setMaintenanceLinkState(active) {
 }
 
 async function renderMaintenanceBanner() {
-  const settings = await getPlatformSettings();
-  const active = !!(settings && settings.maintenanceMode);
+  const settings = getPlatformSettings();
+  const maintenanceSetting = Array.isArray(settings) ? settings.find(s => s.key === 'maintenance_mode') : null;
+  const active = maintenanceSetting ? maintenanceSetting.value === 'true' : false;
   const fromQuery =
     new URLSearchParams(window.location.search).get("maintenance") === "1";
 
@@ -770,10 +771,10 @@ function renderDynamicServices() {
 }
 
 (async () => {
-  const endpoints = { bookings: '/bookings', customers: '/customers', service_providers: '/service-providers', categories: '/categories', job_assignments: '/job-assignments', booking_services: '/booking-services', services: '/services' };
-  await Promise.all(Object.entries(endpoints).map(async ([key, url]) => {
-    try { _landingData[key] = await Api.get(url, { silent: true }) || []; } catch (_) { _landingData[key] = []; }
-  }));
+  try {
+    const res = await Api.get('/landing-data', { silent: true });
+    if (res) _landingData = res;
+  } catch (_) {}
   renderLandingContent();
   renderMaintenanceBanner();
   renderDynamicServices();

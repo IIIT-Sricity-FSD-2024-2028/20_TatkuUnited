@@ -67,7 +67,7 @@ async function addToCart() {
     const next = encodeURIComponent(
       window.location.pathname + window.location.search + window.location.hash,
     );
-    window.location.href = "/front-end/html/auth_pages/login.html?next=" + next;
+    window.location.href = "/html/auth_pages/login.html?next=" + next;
     return;
   }
 

@@ -8,9 +8,8 @@ import { Role } from './common/enums/role.enum';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  const frontendOrigin = process.env.FRONTEND_ORIGIN || 'http://localhost:3000';
   app.enableCors({
-    origin: frontendOrigin,
+    origin: ['http://localhost:8080', 'http://127.0.0.1:8080', 'http://localhost:3000'],
     credentials: true,
   });
 

@@ -9,7 +9,7 @@
    removes tu_auth_session + tu_auth_token before redirecting here).
    "Login Again" just navigates to the login page cleanly. */
 document.getElementById("login-again").addEventListener("click", () => {
-  window.location.href = "/front-end/html/auth_pages/login.html";
+  window.location.href = "/html/auth_pages/login.html";
 });
 // Session cleared on logout.
 

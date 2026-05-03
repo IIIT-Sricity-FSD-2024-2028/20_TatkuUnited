@@ -1074,7 +1074,7 @@
       } catch (e) {}
 
       if (!hasProviderSession) {
-        window.location.replace("/front-end/html/auth_pages/login.html");
+        window.location.replace("/html/auth_pages/login.html");
         resolve();
         return;
       }
@@ -1082,7 +1082,7 @@
       if (shouldBlockForMaintenance) {
         clearAuthStorage();
         window.location.replace(
-          "/front-end/html/landing_page.html?maintenance=1",
+          "/html/landing_page.html?maintenance=1",
         );
         resolve();
         return;
@@ -1091,7 +1091,7 @@
       if (shouldBlockProvider) {
         clearAuthStorage();
         window.location.replace(
-          "/front-end/html/auth_pages/login.html?error=provider_suspended",
+          "/html/auth_pages/login.html?error=provider_suspended",
         );
         resolve();
         return;

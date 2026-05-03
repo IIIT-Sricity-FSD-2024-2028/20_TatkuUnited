@@ -14,4 +14,9 @@ export class AppController {
   getHealth(): { status: string; timestamp: string } {
     return this.appService.getHealth();
   }
+
+  @Get('landing-data')
+  getLandingData() {
+    return this.appService.getLandingData();
+  }
 }
