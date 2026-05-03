@@ -73,9 +73,9 @@ export class JobAssignmentsService {
         (s) => s.sector_id === booking.sector_id,
       );
 
-      // c. Filter by sector and unit's collective (same geography)
+      // c. Filter by unit's collective (same geography)
+      // We allow providers from ANY sector in the same collective to ensure availability
       let candidates = qualifiedProviderIds.filter((sp) => {
-        if (sp.home_sector_id !== booking.sector_id) return false;
         if (!bookingSector) return false;
         const unit = this.db.units.find((u) => u.unit_id === sp.unit_id);
         return !!unit && unit.collective_id === bookingSector.collective_id;
@@ -152,7 +152,8 @@ export class JobAssignmentsService {
             Math.min(1, (ratingValue - 1) / 4),
           );
 
-          const proximityNorm = 1;
+          // Proximity bonus: higher score if in the same sector
+          const proximityNorm = sp.home_sector_id === booking.sector_id ? 1.0 : 0.6;
 
           const isNewProvider = sp.rating_count < 5;
 
@@ -173,8 +174,8 @@ export class JobAssignmentsService {
           }
 
           const score = isNewProvider
-            ? skillScore
-            : skillScore * w1 + ratingNorm * w2 + proximityNorm * w3;
+            ? skillScore * proximityNorm
+            : (skillScore * w1 + ratingNorm * w2 + proximityNorm * w3);
 
           return { provider: sp, score };
         })
@@ -185,7 +186,7 @@ export class JobAssignmentsService {
 
       if (!bestProvider) {
         throw new BadRequestException(
-          `No qualified provider found for service "${bs.service_id}"`,
+          `No qualified provider found for service "${service?.service_name || bs.service_id}" at the scheduled time in your area.`,
         );
       }
 
@@ -209,7 +210,7 @@ export class JobAssignmentsService {
 
       this.revenueLedger.createPendingFromAssignment(assignment);
 
-      assignments.push(assignment);
+      assignments.push(this.enrichAssignment(assignment));
     }
 
     // 4. Update booking status to ASSIGNED
@@ -220,6 +221,7 @@ export class JobAssignmentsService {
       status: 'ASSIGNED',
       assignments,
     };
+
   }
 
   // ── Mark complete ──────────────────────────────────────
@@ -258,7 +260,7 @@ export class JobAssignmentsService {
       this.bookingsRepo.update(assignment.booking_id, { status: 'COMPLETED' });
     }
 
-    return this.jaRepo.findById(assignmentId);
+    return this.jaRepo.findById(assignmentId) ? this.enrichAssignment(this.jaRepo.findById(assignmentId)) : null;
   }
   // ── Mark in-progress ───────────────────────────────────
 
@@ -291,11 +293,11 @@ export class JobAssignmentsService {
   // ── Queries ────────────────────────────────────────────
 
   findAll() {
-    return this.jaRepo.findAll();
+    return this.jaRepo.findAll().map((ja) => this.enrichAssignment(ja));
   }
 
   findByBooking(bookingId: string) {
-    return this.jaRepo.findByBooking(bookingId);
+    return this.jaRepo.findByBooking(bookingId).map((ja) => this.enrichAssignment(ja));
   }
 
   findBooking(bookingId: string) {
@@ -307,7 +309,7 @@ export class JobAssignmentsService {
   }
 
   findByProvider(spId: string) {
-    return this.jaRepo.findByProvider(spId);
+    return this.jaRepo.findByProvider(spId).map((ja) => this.enrichAssignment(ja));
   }
 
   findOne(assignmentId: string) {
@@ -315,8 +317,21 @@ export class JobAssignmentsService {
     if (!ja) {
       throw new NotFoundException(`Assignment "${assignmentId}" not found`);
     }
-    return ja;
+    return this.enrichAssignment(ja);
   }
+
+  private enrichAssignment(ja: any) {
+    if (!ja) return ja;
+    const provider = this.db.serviceProviders.find((sp) => sp.sp_id === ja.sp_id);
+    const service = this.db.services.find((s) => s.service_id === ja.service_id);
+    return {
+      ...ja,
+      sp_name: provider?.name || 'Tatku Provider',
+      sp_phone: provider?.phone || null,
+      service_name: service?.service_name || 'Home Service',
+    };
+  }
+
 
   private toMinutes(time: string): number {
     const [h, m] = time.split(':').map((v) => parseInt(v, 10));

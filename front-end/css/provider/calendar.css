@@ -98,6 +98,14 @@ svg { display: block; fill: none; stroke: currentColor; stroke-width: 1.75; stro
 .cal-cell:hover { background: #f8faff; }
 .cal-cell.other-month { background: var(--surface-2); }
 .cal-cell.other-month .cal-date { color: var(--text-3); }
+.cal-cell.past {
+  background: #f8fafc;
+  color: var(--text-3);
+  cursor: not-allowed;
+}
+.cal-cell.past:hover { background: #f8fafc; }
+.cal-cell.past .cal-date { color: var(--text-3); }
+.cal-cell.past .cal-unavail-badge { opacity: .65; }
 .cal-cell.blocked { background: #f0f4f8; }
 .cal-cell.today { background: var(--primary-light); }
 .cal-cell.today .cal-date { background: var(--primary); color: #fff; }

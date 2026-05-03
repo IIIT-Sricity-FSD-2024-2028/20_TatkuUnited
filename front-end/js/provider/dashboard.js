@@ -29,11 +29,20 @@ function formatDateDisplay(dStr) {
 
 function renderTimeline() {
   const grid = document.getElementById("timeline-grid");
-  const upcoming = jobs.slice(0, 4);
+  const todayStr = new Date().toISOString().split("T")[0];
+  const upcoming = jobs
+    .filter((j) => j.date === todayStr && !["completed", "cancelled"].includes(j.status))
+    .slice(0, 4);
+
+  if (upcoming.length === 0) {
+    grid.innerHTML = `<div style="color:var(--text-2); padding:20px; font-style:italic; font-size:14px;">No active jobs scheduled for today.</div>`;
+    return;
+  }
+
   grid.innerHTML = upcoming
     .map(
       (j, i) => `
-    <div class="tl-card ${i === 0 && j.status !== "completed" ? "next-job" : ""}" style="animation-delay:${i * 0.07}s">
+    <div class="tl-card ${i === 0 ? "next-job" : ""}" style="animation-delay:${i * 0.07}s">
       <div class="tl-time">
         <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
         ${j.time || "TBD"}
@@ -53,7 +62,14 @@ function renderTimeline() {
 
 function renderJobsTable() {
   const tbody = document.getElementById("jobs-tbody");
-  const recent = jobs.slice(0, 5);
+  const activeJobs = jobs.filter((j) => !["completed", "cancelled"].includes(j.status));
+  const recent = activeJobs.slice(0, 5);
+
+  if (recent.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:var(--text-2);padding:20px;">No active assignments.</td></tr>`;
+    return;
+  }
+
   tbody.innerHTML = recent
     .map(
       (j) => `
@@ -207,11 +223,25 @@ function renderProviderRatings() {
   });
 
   // Build earn stats from revenue ledger
-  let ledger = [];
-  ledger  = await Api.get("/revenue-ledger/provider/" + spId);
+  let ledgerRes = null;
+  try {
+    ledgerRes = await Api.get("/revenue-ledger/provider/" + spId);
+  } catch (err) {
+    console.error(err);
+  }
 
-  const totalEarned = ledger.reduce((s, r) => s + (r.provider_amount || 0), 0);
-  const pending = ledger.filter((r) => r.payout_status === "PENDING").reduce((s, r) => s + (r.provider_amount || 0), 0);
+  let weeklyEarned = 0;
+  if (ledgerRes && ledgerRes.rows) {
+    const oneWeekAgo = new Date();
+    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+    weeklyEarned = ledgerRes.rows
+      .filter((r) => r.payout_status === "DISBURSED" || r.payout_status === "PAID")
+      .filter((r) => new Date(r.paid_at || r.created_at) >= oneWeekAgo)
+      .reduce((sum, r) => sum + (r.provider_amount || 0), 0);
+  }
+
+  const totalEarned = ledgerRes ? (ledgerRes.disbursed || 0) : 0;
+  const pending = ledgerRes ? (ledgerRes.pending || 0) : 0;
   const completedJobs = jobs.filter((j) => j.status === "completed").length;
 
   earnStats = [
@@ -226,7 +256,7 @@ function renderProviderRatings() {
 
   // Provider info
   if (provider) {
-    document.querySelectorAll(".user-chip span").forEach((el) => (el.textContent = provider.name || "Provider"));
+    document.querySelectorAll(".user-chip span").forEach((el) => (el.textContent = session.name || "Provider"));
     if (provider.pfp_url) {
       document.querySelectorAll(".user-avatar").forEach((el) => {
         el.innerHTML = `<img src="${provider.pfp_url}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
@@ -242,7 +272,7 @@ function renderProviderRatings() {
 
   const earnAmtEl = document.querySelector(".earn-amount");
   if (earnAmtEl) {
-    earnAmtEl.textContent = "₹" + totalEarned.toLocaleString("en-IN");
+    earnAmtEl.textContent = "₹" + weeklyEarned.toLocaleString("en-IN");
   }
 
   renderTimeline();

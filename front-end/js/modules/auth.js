@@ -16,12 +16,12 @@ window.Auth = (() => {
   };
 
   const ROLE_DASHBOARDS = {
-    super_user: "/html/super_user/super_user_dashboard.html",
-    collective_manager: "/html/collective_manager/dashboard.html",
-    unit_manager: "/html/unit_manager/dashboard.html",
-    provider: "/html/provider/dashboard.html",
-    service_provider: "/html/provider/dashboard.html",
-    customer: "/html/customer/home.html",
+    super_user: "/front-end/html/super_user/super_user_dashboard.html",
+    collective_manager: "/front-end/html/collective_manager/dashboard.html",
+    unit_manager: "/front-end/html/unit_manager/dashboard.html",
+    provider: "/front-end/html/provider/dashboard.html",
+    service_provider: "/front-end/html/provider/dashboard.html",
+    customer: "/front-end/html/customer/home.html",
   };
 
   function toApiRole(role) {
@@ -39,6 +39,7 @@ window.Auth = (() => {
   function sessionWithAliases(session) {
     if (!session) return null;
     const role = toUiRole(session.role);
+    const isProvider = role === "provider";
     return {
       ...session,
       role,
@@ -46,9 +47,9 @@ window.Auth = (() => {
       unitId: session.unitId || session.unit_id || null,
       customerId: session.customerId || session.customer_id || null,
       service_provider_id:
-        session.service_provider_id || (role === "service_provider" ? session.id : null),
+        session.service_provider_id || (isProvider ? session.id : null),
       provider_id:
-        session.provider_id || (role === "service_provider" ? session.id : null),
+        session.provider_id || (isProvider ? session.id : null),
     };
   }
 
@@ -78,8 +79,8 @@ window.Auth = (() => {
 
   function getRedirectUrl() {
     const session = getSession();
-    if (!session) return "/html/auth_pages/login.html";
-    return ROLE_DASHBOARDS[session.role] || "/html/auth_pages/login.html";
+    if (!session) return "/front-end/html/auth_pages/login.html";
+    return ROLE_DASHBOARDS[session.role] || "/front-end/html/auth_pages/login.html";
   }
 
   async function apiRequest(path, options) {
@@ -246,7 +247,7 @@ window.Auth = (() => {
   function requireSession(allowedRoles) {
     const session = getSession();
     if (!session) {
-      window.location.replace("/html/auth_pages/login.html");
+      window.location.replace("/front-end/html/auth_pages/login.html");
       return null;
     }
 
@@ -288,7 +289,7 @@ window.Auth = (() => {
       // ignore network failures during logout
     }
     clearAuthState();
-    window.location.replace("/html/auth_pages/logout.html");
+    window.location.replace("/front-end/html/auth_pages/logout.html");
   }
 
   function requestLogout() {

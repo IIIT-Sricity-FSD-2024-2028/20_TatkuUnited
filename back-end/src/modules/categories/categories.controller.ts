@@ -18,6 +18,7 @@ import { UpdateCategoryDto } from './dto/update-category.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
+import { Public } from '../../common/decorators/public.decorator';
 import { Role } from '../../common/enums/role.enum';
 import { ApiRoleHeader } from '../../common/decorators/api-role-header.decorator';
 
@@ -30,7 +31,7 @@ export class CategoriesController {
   constructor(private readonly categoriesService: CategoriesService) {}
 
   @Get()
-  @Roles(Role.SUPER_USER, Role.COLLECTIVE_MANAGER, Role.UNIT_MANAGER, Role.SERVICE_PROVIDER, Role.CUSTOMER)
+  @Public()
   @ApiOperation({ summary: 'Get all categories' })
   @ApiResponse({ status: 200, description: 'List of all categories' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
@@ -39,7 +40,7 @@ export class CategoriesController {
   }
 
   @Get(':id')
-  @Roles(Role.SUPER_USER, Role.COLLECTIVE_MANAGER, Role.UNIT_MANAGER, Role.SERVICE_PROVIDER, Role.CUSTOMER)
+  @Public()
   @ApiOperation({ summary: 'Get category by ID' })
   @ApiResponse({ status: 200, description: 'Category found' })
   @ApiResponse({ status: 404, description: 'Category not found' })

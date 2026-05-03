@@ -17,6 +17,7 @@ import {
 } from '@nestjs/swagger';
 import { ApiRoleHeader } from '../../common/decorators/api-role-header.decorator';
 import { Roles } from '../../common/decorators/roles.decorator';
+import { Public } from '../../common/decorators/public.decorator';
 import { Role } from '../../common/enums/role.enum';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
@@ -92,7 +93,7 @@ export class ReviewsController {
   }
 
   @Get('service/:serviceId')
-  @Roles(Role.SUPER_USER, Role.COLLECTIVE_MANAGER, Role.UNIT_MANAGER, Role.SERVICE_PROVIDER, Role.CUSTOMER)
+  @Public()
   @ApiOperation({ summary: 'List reviews for a service' })
   @ApiResponse({ status: 200, description: 'Service reviews returned' })
   @ApiResponse({ status: 403, description: 'Forbidden' })

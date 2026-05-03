@@ -9,28 +9,28 @@ window.RoleRenderer = (() => {
     /* ─── Nav link definitions per role ─── */
     const NAV_LINKS = {
         superuser: [
-            { label: "Dashboard", href: "/html/super_user/super_user_dashboard.html", icon: "🏠" },
-            { label: "User Management", href: "/html/super_user/user_management.html", icon: "👥" },
+            { label: "Dashboard", href: "/front-end/html/super_user/super_user_dashboard.html", icon: "🏠" },
+            { label: "User Management", href: "/front-end/html/super_user/user_management.html", icon: "👥" },
         ],
         collective_manager: [
-            { label: "Dashboard", href: "/html/collective_manager/collective_dashboard.html", icon: "🏠" },
-            { label: "Collective Management", href: "/html/collective_manager/collective_manage.html", icon: "🏢" },
+            { label: "Dashboard", href: "/front-end/html/collective_manager/collective_dashboard.html", icon: "🏠" },
+            { label: "Collective Management", href: "/front-end/html/collective_manager/collective_manage.html", icon: "🏢" },
         ],
         unit_manager: [
-            { label: "Dashboard", href: "/html/unit_manager/unit_dashboard.html", icon: "🏠" },
-            { label: "Provider Management", href: "/html/unit_manager/unit_providers.html", icon: "🔧" },
-            { label: "Booking Management", href: "/html/unit_manager/unit_bookings.html", icon: "📋" },
+            { label: "Dashboard", href: "/front-end/html/unit_manager/unit_dashboard.html", icon: "🏠" },
+            { label: "Provider Management", href: "/front-end/html/unit_manager/unit_providers.html", icon: "🔧" },
+            { label: "Booking Management", href: "/front-end/html/unit_manager/unit_bookings.html", icon: "📋" },
         ],
         provider: [
-            { label: "Dashboard", href: "/html/provider/provider_dashboard.html", icon: "🏠" },
-            { label: "My Schedule", href: "/html/provider/provider_schedule.html", icon: "📅" },
-            { label: "My Profile", href: "/html/provider/provider_profile.html", icon: "👤" },
+            { label: "Dashboard", href: "/front-end/html/provider/provider_dashboard.html", icon: "🏠" },
+            { label: "My Schedule", href: "/front-end/html/provider/provider_schedule.html", icon: "📅" },
+            { label: "My Profile", href: "/front-end/html/provider/provider_profile.html", icon: "👤" },
         ],
         customer: [
-            { label: "Dashboard", href: "/html/customer/customer_dashboard.html", icon: "🏠" },
-            { label: "Browse Services", href: "/html/customer/customer_services.html", icon: "🔍" },
-            { label: "My Bookings", href: "/html/customer/customer_bookings.html", icon: "📋" },
-            { label: "My Profile", href: "/html/customer/customer_profile.html", icon: "👤" },
+            { label: "Dashboard", href: "/front-end/html/customer/customer_dashboard.html", icon: "🏠" },
+            { label: "Browse Services", href: "/front-end/html/customer/customer_services.html", icon: "🔍" },
+            { label: "My Bookings", href: "/front-end/html/customer/customer_bookings.html", icon: "📋" },
+            { label: "My Profile", href: "/front-end/html/customer/customer_profile.html", icon: "👤" },
         ],
     };
 

@@ -351,7 +351,7 @@ window.Api = (() => {
             // Clear without making the /auth/logout API call (token is already invalid)
             sessionStorage.removeItem("tu_auth_token");
             sessionStorage.removeItem("tu_auth_session");
-            window.location.replace("/html/auth_pages/login.html");
+            window.location.replace("/front-end/html/auth_pages/login.html");
           }, 1500);
         }
         throw err;

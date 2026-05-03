@@ -159,18 +159,11 @@ export class BookingsService {
         `Booking with id "${bookingId}" not found`,
       );
     }
-    const rawServices = this.bookingsRepo.findServicesByBooking(bookingId);
-    const services = rawServices.map((bs) => {
-      const svc = this.db.services.find((s) => s.service_id === bs.service_id);
-      return {
-        ...bs,
-        service_name: svc?.service_name || 'Service',
-        service: svc?.service_name || 'Service',
-        price: bs.price_at_booking,
-      };
-    });
-    return { ...booking, services };
+    const services = this.bookingsRepo.findServicesByBooking(bookingId);
+    const assignments = this.jobAssignmentsService.findByBooking(bookingId);
+    return { ...booking, services, assignments };
   }
+
 
   // ── Cancel ─────────────────────────────────────────────
 
