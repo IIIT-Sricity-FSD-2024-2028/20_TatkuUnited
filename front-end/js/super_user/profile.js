@@ -209,7 +209,7 @@
 
     const rawPhone = dataSrc.phone || "";
     if (phoneEl) phoneEl.value = String(rawPhone).replace(/\D/g, "").slice(-10);
-    if (idEl) idEl.value = dataSrc.id || "";
+    if (idEl) idEl.value = dataSrc.super_user_id || dataSrc.id || "";
 
     const avatarEl = document.getElementById("profile-avatar");
     if (avatarEl && dataSrc.pfp_url) {

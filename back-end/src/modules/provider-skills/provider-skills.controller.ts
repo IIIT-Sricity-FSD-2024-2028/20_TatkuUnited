@@ -134,4 +134,22 @@ export class ProviderSkillsController {
     }
     return this.providerSkillsService.verifySkill(providerId, dto.skill_id);
   }
+
+  @Patch('reject/:id')
+  @Roles(Role.SUPER_USER, Role.COLLECTIVE_MANAGER)
+  @ApiOperation({ summary: 'Reject provider skill verification request' })
+  
+  @ApiResponse({ status: 200, description: 'Skill request rejected and removed' })
+  @ApiResponse({ status: 404, description: 'Not found' })
+  @ApiResponse({ status: 403, description: 'Forbidden' })
+  rejectSkill(
+    @Param('id') providerId: string,
+    @Body() dto: VerifyProviderSkillDto,
+    @Request() req: { user: JwtPayload },
+  ) {
+    if (req.user.role === Role.COLLECTIVE_MANAGER) {
+      this.accessScope.assertProviderAccess(req.user, providerId);
+    }
+    return this.providerSkillsService.rejectSkill(providerId, dto.skill_id);
+  }
 }

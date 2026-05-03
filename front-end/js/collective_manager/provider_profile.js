@@ -22,7 +22,7 @@
   allUnits  = await Api.get("/units");
   allCollectives  = await Api.get("/collectives");
   allSectors  = await Api.get("/sectors");
-  allProviderSkills  = await Api.get("/provider-skills/" + providerId);
+  allProviderSkills  = await Api.get("/provider-skills/provider/" + providerId);
   if (!Array.isArray(allProviderSkills)) allProviderSkills = [];
   allSkills  = await Api.get("/skills");
   allJobs  = await Api.get("/job-assignments/provider/" + providerId);

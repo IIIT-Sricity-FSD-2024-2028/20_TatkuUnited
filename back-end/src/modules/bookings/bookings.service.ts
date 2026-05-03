@@ -17,6 +17,8 @@ import {
   BookingService,
 } from '../../common/database/database.service';
 
+import { PlatformSettingsService } from '../platform-settings/platform-settings.service';
+
 @Injectable()
 export class BookingsService {
   constructor(
@@ -24,6 +26,7 @@ export class BookingsService {
     private readonly cartRepo: CartRepository,
     private readonly db: DatabaseService,
     private readonly transactionsService: TransactionsService,
+    private readonly platformSettings: PlatformSettingsService,
     @Inject(forwardRef(() => JobAssignmentsService))
     private readonly jobAssignmentsService: JobAssignmentsService,
   ) {}
@@ -42,6 +45,15 @@ export class BookingsService {
     if (cartItems.length === 0) {
       throw new BadRequestException('Cart is empty. Add items first.');
     }
+    
+    // 2.3. Check for Instant Booking setting
+    const hasInstant = cartItems.some(item => item.booking_type === 'INSTANT');
+    if (hasInstant) {
+      const isInstantAllowed = this.platformSettings.getBooleanSetting('instant_booking', true);
+      if (!isInstantAllowed) {
+        throw new BadRequestException('Instant booking is currently disabled by the platform.');
+      }
+    }
 
     // 2.5. Check if address is present
     if (!cart.service_address || cart.service_address.trim() === '') {
@@ -54,72 +66,75 @@ export class BookingsService {
     );
     const sectorId = customer?.home_sector_id || '';
 
-    // 4. Create booking
-    const booking = this.bookingsRepo.create({
-      booking_type: cart.booking_type,
-      service_address: cart.service_address,
-      scheduled_at: cart.scheduled_at || this.db.now(),
-      status: 'PENDING',
-      failure_reason: null,
-      is_active: true,
-      customer_id: customerId,
-      sector_id: sectorId,
-    });
-
-    // 5. Create BookingService rows
-    const bookingServices: BookingService[] = [];
-    const amount = cartItems.reduce(
-      (sum, item) => sum + item.price_snapshot * item.quantity,
-      0,
-    );
+    // 4. Create one booking per cart item (each service is an independent booking)
+    const paymentMethod = this.normalizePaymentMethod(dto.payment_method);
+    const createdBookings: any[] = [];
 
     for (const item of cartItems) {
+      const itemAmount = item.price_snapshot * item.quantity;
+
+      // Create individual booking
+      const booking = this.bookingsRepo.create({
+        service_address: cart.service_address,
+        status: 'PENDING',
+        failure_reason: null,
+        is_active: true,
+        customer_id: customerId,
+        sector_id: sectorId,
+      });
+
+      // Create single BookingService row
       const bs = this.bookingsRepo.addBookingService({
         booking_id: booking.booking_id,
         service_id: item.service_id,
         quantity: item.quantity,
         price_at_booking: item.price_snapshot,
+        booking_type: item.booking_type,
+        scheduled_at: item.scheduled_at || null,
       });
-      bookingServices.push(bs);
+
+      // Create transaction for this booking
+      const transaction = this.transactionsService.create(
+        {
+          booking_id: booking.booking_id,
+          payment_gateway_ref:
+            dto.payment_gateway_ref || `PGR-${booking.booking_id}`,
+          payment_method: paymentMethod,
+          idempotency_key:
+            dto.idempotency_key || `idem-checkout-${booking.booking_id}`,
+          payment_status: 'SUCCESS',
+          amount: itemAmount,
+          refund_amount: 0,
+          verified_at: this.db.now(),
+        },
+        {
+          sub: customerId,
+          email: customer?.email || '',
+          role: Role.CUSTOMER,
+          name: customer?.full_name || '',
+        },
+      );
+
+      // Auto-assign provider for this booking
+      const assignmentResult = this.jobAssignmentsService.autoAssign(
+        booking.booking_id,
+      );
+
+      createdBookings.push({
+        ...booking,
+        services: [bs],
+        transaction,
+        assignments: assignmentResult.assignments,
+      });
     }
 
-    // 6. Create transaction for the checked-out booking
-    const paymentMethod = this.normalizePaymentMethod(dto.payment_method);
-    const transaction = this.transactionsService.create(
-      {
-        booking_id: booking.booking_id,
-        payment_gateway_ref:
-          dto.payment_gateway_ref || `PGR-${booking.booking_id}`,
-        payment_method: paymentMethod,
-        idempotency_key:
-          dto.idempotency_key || `idem-checkout-${booking.booking_id}`,
-        payment_status: 'SUCCESS',
-        amount,
-        refund_amount: 0,
-        verified_at: this.db.now(),
-      },
-      {
-        sub: customerId,
-        email: customer?.email || '',
-        role: Role.CUSTOMER,
-        name: customer?.full_name || '',
-      },
-    );
-
-    // 7. Auto-assign providers
-    const assignmentResult = this.jobAssignmentsService.autoAssign(
-      booking.booking_id,
-    );
-
-    // 8. Clear cart items (keep cart shell)
+    // 5. Clear cart items (keep cart shell)
     this.cartRepo.clearCartItems(cart.cart_id);
 
-    return {
-      ...booking,
-      services: bookingServices,
-      transaction,
-      assignments: assignmentResult.assignments,
-    };
+    // Return the first booking for backwards-compatibility, but include all
+    return createdBookings.length === 1
+      ? createdBookings[0]
+      : { bookings: createdBookings, count: createdBookings.length };
   }
 
   private normalizePaymentMethod(method?: string): 'UPI' | 'CARD' | 'NETBANK' | 'WALLET' {
@@ -138,37 +153,63 @@ export class BookingsService {
   }
 
   findByCustomer(customerId: string) {
-    const bookings = this.bookingsRepo.findByCustomer(customerId);
-    return bookings.map((b) => {
+    const rawBookings = this.bookingsRepo.findByCustomer(customerId);
+    const result: any[] = [];
+
+    for (const b of rawBookings) {
       const services = this.bookingsRepo.findServicesByBooking(b.booking_id);
       const assignments = this.jobAssignmentsService.findByBooking(b.booking_id);
 
-      // Add a primary service name for display
-      let service_name = 'Home Service';
-      let price = 0;
-      if (services.length > 0) {
-        const s = this.db.services.find(
-          (x) => x.service_id === services[0].service_id,
-        );
-        service_name = s?.service_name || 'Home Service';
-        price = services.reduce((sum, s) => sum + s.price_at_booking, 0);
+      if (services.length === 0) {
+        // No service lines — return the booking shell as-is
+        result.push({
+          ...b,
+          service_name: 'Home Service',
+          sp_name: 'Awaiting assignment',
+          sp_phone: null,
+          price: 0,
+          scheduled_at: b.created_at,
+        });
+        continue;
       }
 
-      // Add provider name if assigned
-      let sp_name = 'Awaiting assignment';
-      if (assignments.length > 0) {
-        const latest = assignments.sort(
-          (a, b) =>
-            new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime(),
-        )[0];
-        const provider = this.db.serviceProviders.find(
-          (p) => p.sp_id === latest.sp_id,
+      // Flatten: one result row per service line in the booking
+      for (const bs of services) {
+        const svc = this.db.services.find(
+          (x) => x.service_id === bs.service_id,
         );
-        sp_name = provider?.name || 'Awaiting assignment';
-      }
 
-      return { ...b, service_name, sp_name, price };
-    });
+        // Find the assignment for THIS specific service in this booking
+        const assignment = assignments.find(
+          (a) => a.service_id === bs.service_id,
+        );
+
+        let sp_name = 'Awaiting assignment';
+        let sp_phone: string | null = null;
+        if (assignment) {
+          const provider = this.db.serviceProviders.find(
+            (p) => p.sp_id === assignment.sp_id,
+          );
+          sp_name = provider?.name || 'Awaiting assignment';
+          sp_phone = provider?.phone || null;
+        }
+
+        result.push({
+          ...b,
+          // Use a composite ID so each service line is uniquely identifiable
+          booking_id: services.length > 1
+            ? `${b.booking_id}__${bs.service_id}`
+            : b.booking_id,
+          service_name: svc?.service_name || 'Home Service',
+          sp_name,
+          sp_phone,
+          price: bs.price_at_booking * bs.quantity,
+          scheduled_at: bs.scheduled_at || b.created_at,
+        });
+      }
+    }
+
+    return result;
   }
 
   findByProvider(providerId: string) {
@@ -242,6 +283,15 @@ export class BookingsService {
       is_active: false,
       failure_reason: 'Customer cancelled',
     });
+
+    // Also cancel all active job assignments for this booking
+    const assignments = this.db.jobAssignments.filter(
+      (ja) => ja.booking_id === bookingId && ja.status !== 'COMPLETED',
+    );
+    for (const ja of assignments) {
+      ja.status = 'CANCELLED';
+      ja.updated_at = this.db.now();
+    }
 
     return updated;
   }

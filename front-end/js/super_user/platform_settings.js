@@ -7,13 +7,13 @@ document.addEventListener("DOMContentLoaded", async () => {
   if (!session) return;
 
   const settingFieldMap = {
-    maintenanceMode: "maintenance-mode",
-    accountSuspension: "account-suspension",
-    ratingThreshold: "rating-threshold",
-    instantBooking: "instant-booking",
-    maxAdvance: "max-advance",
-    minNotice: "min-notice",
-    cancelWindow: "cancel-window",
+    maintenance_mode: "maintenance-mode",
+    account_suspension: "account-suspension",
+    rating_threshold: "rating-threshold",
+    instant_booking: "instant-booking",
+    max_booking_window_days: "max-advance",
+    min_notice_hours: "min-notice",
+    cancellation_window_hours: "cancel-window",
   };
 
   const defaultsFromUI = () => {
@@ -30,10 +30,23 @@ document.addEventListener("DOMContentLoaded", async () => {
     Object.entries(settingFieldMap).forEach(([key, id]) => {
       const el = document.getElementById(id);
       if (!el || settings[key] === undefined || settings[key] === null) return;
+      
+      let val = settings[key];
+
       if (el.type === "checkbox") {
-        el.checked = !!settings[key];
+        // Handle boolean strings from backend
+        el.checked = val === true || val === "true";
+      } else if (el.tagName === "SELECT") {
+        // Find option by value or text
+        const options = Array.from(el.options);
+        const match = options.find(o => o.value === val || o.textContent.trim() === val);
+        if (match) {
+          el.value = match.value;
+        } else {
+          el.value = val;
+        }
       } else {
-        el.value = settings[key];
+        el.value = val;
       }
     });
   };
@@ -45,14 +58,17 @@ document.addEventListener("DOMContentLoaded", async () => {
   const renderLastUpdated = (settings) => {
     if (!lastUpdatedEl) return;
 
-    if (!settings?.updatedAt && !settings?.updated_at) {
+    // Check if settings is the array or a single object
+    const lastRow = Array.isArray(settings) ? settings[settings.length - 1] : settings;
+
+    if (!lastRow?.updated_at && !lastRow?.updatedAt) {
       lastUpdatedEl.textContent = "Last updated: Never";
       return;
     }
 
-    const dt = new Date(settings.updatedAt || settings.updated_at);
+    const dt = new Date(lastRow.updated_at || lastRow.updatedAt);
     const when = Number.isNaN(dt.getTime())
-      ? settings.updatedAt || settings.updated_at
+      ? lastRow.updated_at || lastRow.updatedAt
       : dt.toLocaleString("en-IN", {
           day: "2-digit",
           month: "short",
@@ -60,7 +76,7 @@ document.addEventListener("DOMContentLoaded", async () => {
           hour: "2-digit",
           minute: "2-digit",
         });
-    const by = settings.updatedBy || settings.updated_by || "Super User";
+    const by = lastRow.updated_by || lastRow.updatedBy || "Super User";
     lastUpdatedEl.textContent = `Last updated: ${when} by ${by}`;
   };
 
@@ -68,8 +84,21 @@ document.addEventListener("DOMContentLoaded", async () => {
   let initialSettings = defaultsFromUI();
   try {
     const apiSettings = await Api.get("/platform-settings");
-    if (apiSettings) {
-      initialSettings = { ...initialSettings, ...apiSettings };
+    if (Array.isArray(apiSettings)) {
+      // Transform array of {key, value} to object {key: value}
+      const settingsObj = {};
+      apiSettings.forEach(s => {
+        settingsObj[s.key] = s.value;
+      });
+      // Also preserve update info from the most recent setting
+      const latest = [...apiSettings].sort((a, b) => 
+        new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
+      )[0];
+      if (latest) {
+        settingsObj.updated_at = latest.updated_at;
+        settingsObj.updated_by = latest.updated_by;
+      }
+      initialSettings = { ...initialSettings, ...settingsObj };
     }
   } catch (_) {
     // Use defaults from UI
@@ -80,21 +109,15 @@ document.addEventListener("DOMContentLoaded", async () => {
   saveBtn.addEventListener("click", async () => {
     const updatedBy = session?.id || "00000000-0000-0000-0000-000000000000";
 
-    const settings = {
-      ...defaultsFromUI(),
-      updatedAt: new Date().toISOString(),
-      updatedBy,
-    };
+    const uiSettings = defaultsFromUI();
+    const settingsToSave = Object.entries(uiSettings);
 
     try {
-      // Backend expects PUT /platform-settings/:key for each setting
-      const entries = Object.entries(settings);
       let lastSaved = null;
-      for (const [key, value] of entries) {
-        if (key === 'updatedAt' || key === 'updatedBy') continue;
+      for (const [key, value] of settingsToSave) {
         lastSaved = await Api.put("/platform-settings/" + key, {
           value: String(value),
-          description: key,
+          description: `Platform setting: ${key}`,
           updated_by: updatedBy,
         });
       }

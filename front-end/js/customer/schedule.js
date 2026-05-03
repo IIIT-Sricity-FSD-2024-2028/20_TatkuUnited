@@ -71,6 +71,9 @@ async function addToCart() {
     return;
   }
 
+  let bookingType = "INSTANT";
+  let scheduledAtStr = null;
+
   if (currentMode === "scheduled") {
     const dateVal = document.getElementById("sched-date").value;
     const timeVal = document.getElementById("sched-time").value;
@@ -85,27 +88,13 @@ async function addToCart() {
       showToast("Invalid scheduled date/time.", "error");
       return;
     }
-
-    // Update cart meta with scheduled time
-    try {
-      await Api.patch("/cart", {
-        booking_type: "SCHEDULED",
-        scheduled_at: scheduledAt.toISOString(),
-      }, { silent: true });
-    } catch (_) {}
-  } else {
-    // Instant booking
-    try {
-      await Api.patch("/cart", {
-        booking_type: "INSTANT",
-      }, { silent: true });
-    } catch (_) {}
+    
+    bookingType = "SCHEDULED";
+    scheduledAtStr = scheduledAt.toISOString();
   }
 
   // Add item to cart via API
-  // We need the service_id — look it up by name if needed
   try {
-    // First try to find service by name to get its ID
     const services = await Api.get("/services/available", { silent: true });
     const queryName = (serviceName || "").trim().toLowerCase();
     const service = (services || []).find(
@@ -116,14 +105,14 @@ async function addToCart() {
       await Api.post("/cart/items", {
         service_id: service.service_id,
         quantity: 1,
+        booking_type: bookingType,
+        scheduled_at: scheduledAtStr
       });
     } else {
-      // Fallback: add with just the service name (backend may handle lookup)
       showToast("Service not found in catalog. Please try from the services page.", "error");
       return;
     }
 
-    // Redirect directly to cart
     window.location.href = "cart.html";
   } catch (err) {
     console.error("[schedule] Add to cart failed:", err);
