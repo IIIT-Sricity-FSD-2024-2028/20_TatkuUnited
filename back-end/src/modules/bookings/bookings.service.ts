@@ -43,6 +43,11 @@ export class BookingsService {
       throw new BadRequestException('Cart is empty. Add items first.');
     }
 
+    // 2.5. Check if address is present
+    if (!cart.service_address || cart.service_address.trim() === '') {
+      throw new BadRequestException('Service address is required for checkout.');
+    }
+
     // 3. Look up customer's sector
     const customer = this.db.customers.find(
       (c) => c.customer_id === customerId,

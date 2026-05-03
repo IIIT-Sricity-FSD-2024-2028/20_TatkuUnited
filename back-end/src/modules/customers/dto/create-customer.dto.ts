@@ -26,4 +26,21 @@ export class CreateCustomerDto {
   @ApiProperty({ example: true })
   @IsBoolean()
   is_active: boolean;
+
+  @ApiProperty({ example: '123 Main St, Chennai' })
+  @IsString()
+  @IsOptional()
+  address?: string;
+
+  @ApiProperty({ example: 'sector-uuid' })
+  @IsString()
+  @IsOptional()
+  home_sector_id?: string;
+
+  @ApiProperty({
+    example: [{ id: 1, tag: 'Home', text: '123 Main St' }],
+    required: false,
+  })
+  @IsOptional()
+  saved_addresses?: any[];
 }

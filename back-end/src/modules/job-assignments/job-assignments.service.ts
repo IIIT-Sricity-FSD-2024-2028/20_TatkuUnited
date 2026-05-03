@@ -185,8 +185,13 @@ export class JobAssignmentsService {
       const bestProvider = best?.provider;
 
       if (!bestProvider) {
+        const anyQualifiedForSkill = qualifiedProviderIds.length > 0;
+        const timeMessage = anyQualifiedForSkill 
+          ? " (Note: some providers are qualified but may be off-duty or fully booked at this time)"
+          : "";
+          
         throw new BadRequestException(
-          `No qualified provider found for service "${service?.service_name || bs.service_id}" at the scheduled time in your area.`,
+          `No qualified provider found for service "${service?.service_name || bs.service_id}" at the scheduled time in your area.${timeMessage}`,
         );
       }
 

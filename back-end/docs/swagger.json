@@ -5747,6 +5747,27 @@
           "is_active": {
             "type": "boolean",
             "example": true
+          },
+          "address": {
+            "type": "string",
+            "example": "123 Main St, Chennai"
+          },
+          "home_sector_id": {
+            "type": "string",
+            "example": "sector-uuid"
+          },
+          "saved_addresses": {
+            "example": [
+              {
+                "id": 1,
+                "tag": "Home",
+                "text": "123 Main St"
+              }
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         },
         "required": [
@@ -5754,7 +5775,9 @@
           "name",
           "password",
           "phone",
-          "is_active"
+          "is_active",
+          "address",
+          "home_sector_id"
         ]
       },
       "UpdateCustomerDto": {
@@ -5779,6 +5802,27 @@
           "is_active": {
             "type": "boolean",
             "example": true
+          },
+          "address": {
+            "type": "string",
+            "example": "123 Main St, Chennai"
+          },
+          "home_sector_id": {
+            "type": "string",
+            "example": "sector-uuid"
+          },
+          "saved_addresses": {
+            "example": [
+              {
+                "id": 1,
+                "tag": "Home",
+                "text": "123 Main St"
+              }
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         }
       },

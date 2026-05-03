@@ -63,6 +63,11 @@ export class CustomersRepository {
     if (dto.email !== undefined) customer.email = dto.email;
     if (dto.phone !== undefined) customer.phone = dto.phone;
     if (dto.is_active !== undefined) customer.is_active = dto.is_active;
+    if (dto.address !== undefined) customer.address = dto.address;
+    if (dto.home_sector_id !== undefined) customer.home_sector_id = dto.home_sector_id;
+    if ((dto as any).saved_addresses !== undefined) {
+      (customer as any).saved_addresses = (dto as any).saved_addresses;
+    }
     
     return customer;
   }
