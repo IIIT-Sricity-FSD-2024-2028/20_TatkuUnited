@@ -41,48 +41,50 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     const email = payload.email?.trim().toLowerCase();
     if (!email) return null;
 
-    if (payload.role === Role.SUPER_USER) {
+    const normalizedRole = payload.role?.toLowerCase() as Role;
+
+    if (normalizedRole === Role.SUPER_USER) {
       const user = this.databaseService.superUsers.find(
         (row) => row.email.toLowerCase() === email && row.is_active,
       );
       return user
-        ? { id: user.super_user_id, role: payload.role, name: user.name, email: user.email }
+        ? { id: user.super_user_id, role: normalizedRole, name: user.name, email: user.email }
         : null;
     }
 
-    if (payload.role === Role.COLLECTIVE_MANAGER) {
+    if (normalizedRole === Role.COLLECTIVE_MANAGER) {
       const user = this.databaseService.collectiveManagers.find(
         (row) => row.email.toLowerCase() === email && row.is_active,
       );
       return user
-        ? { id: user.cm_id, role: payload.role, name: user.name, email: user.email }
+        ? { id: user.cm_id, role: normalizedRole, name: user.name, email: user.email }
         : null;
     }
 
-    if (payload.role === Role.UNIT_MANAGER) {
+    if (normalizedRole === Role.UNIT_MANAGER) {
       const user = this.databaseService.unitManagers.find(
         (row) => row.email.toLowerCase() === email && row.is_active,
       );
       return user
-        ? { id: user.um_id, role: payload.role, name: user.name, email: user.email }
+        ? { id: user.um_id, role: normalizedRole, name: user.name, email: user.email }
         : null;
     }
 
-    if (payload.role === Role.SERVICE_PROVIDER) {
+    if (normalizedRole === Role.SERVICE_PROVIDER) {
       const user = this.databaseService.serviceProviders.find(
         (row) => row.email.toLowerCase() === email && row.is_active,
       );
       return user
-        ? { id: user.sp_id, role: payload.role, name: user.name, email: user.email }
+        ? { id: user.sp_id, role: normalizedRole, name: user.name, email: user.email }
         : null;
     }
 
-    if (payload.role === Role.CUSTOMER) {
+    if (normalizedRole === Role.CUSTOMER) {
       const user = this.databaseService.customers.find(
         (row) => row.email.toLowerCase() === email && row.is_active,
       );
       return user
-        ? { id: user.customer_id, role: payload.role, name: user.full_name, email: user.email }
+        ? { id: user.customer_id, role: normalizedRole, name: user.full_name, email: user.email }
         : null;
     }
 

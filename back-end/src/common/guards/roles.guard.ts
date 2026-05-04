@@ -52,28 +52,15 @@ export class RolesGuard implements CanActivate {
       context.getHandler(),
       context.getClass(),
     ]);
-    if (!requiredRoles) return true;
+    if (!roles) return true;
 
     const roleFromJwt = user?.role;
 
-    if (
-      roleFromHeader &&
-      !Object.values(Role).includes(roleFromHeader as Role)
-    ) {
-      throw new ForbiddenException(`Invalid role: ${roleFromHeader}`);
-    }
+    const normalizedRole = role?.toLowerCase();
+    const allowedRoles = roles.map(r => String(r).toLowerCase());
 
-    if (roleFromJwt && roleFromHeader && roleFromJwt !== roleFromHeader) {
-      throw new ForbiddenException('x-role header does not match JWT role');
-    }
+    console.log("ROLE FROM JWT:", request.user?.role);
 
-    const role = roleFromJwt || roleFromHeader;
-
-    if (!role || !requiredRoles.includes(role)) {
-      throw new ForbiddenException(
-        `Required role(s): ${requiredRoles.join(', ')}`,
-      );
-    }
-    return true;
+    return allowedRoles.includes(normalizedRole);
   }
 }
