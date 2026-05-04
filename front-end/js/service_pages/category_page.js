@@ -293,7 +293,7 @@
             window.location.hash,
         );
         window.location.href =
-          "/front-end/html/auth_pages/login.html?next=" + next;
+          "/html/auth_pages/login.html?next=" + next;
       });
     });
   }

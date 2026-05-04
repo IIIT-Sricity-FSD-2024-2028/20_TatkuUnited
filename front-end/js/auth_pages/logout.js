@@ -26,7 +26,7 @@ if (window.Auth && window.Auth.getToken && window.Auth.getToken()) {
 }
 
 document.getElementById("login-again").addEventListener("click", () => {
-  window.location.href = "/front-end/html/auth_pages/login.html";
+  window.location.href = "/html/auth_pages/login.html";
 });
 
 /* ── Step 2: Auto-redirect countdown (optional UI) ── */
