@@ -25,4 +25,8 @@ export class ProviderSkillsService {
   verifySkill(providerId: string, skillId: string) {
     return this.providerSkillsRepository.verifySkill(providerId, skillId);
   }
+
+  rejectSkill(providerId: string, skillId: string) {
+    return this.providerSkillsRepository.rejectSkill(providerId, skillId);
+  }
 }

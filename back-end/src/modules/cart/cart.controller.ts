@@ -47,6 +47,7 @@ export class CartController {
   @ApiResponse({ status: 404, description: 'Service not found' })
   @ApiResponse({ status: 403, description: 'Forbidden — customer only' })
   addItem(@Request() req, @Body() dto: AddCartItemDto) {
+    console.log('Received addItem DTO:', dto);
     return this.cartService.addItem(req.user.sub, dto);
   }
 

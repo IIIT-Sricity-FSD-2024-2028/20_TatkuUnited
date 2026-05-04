@@ -308,39 +308,121 @@ function toggleAddSkill() {
   toggle.classList.toggle("open", open);
 }
 
-function requestVerifySkill() {
-  const select = document.getElementById("new-skill-select");
-  const skill = select.value;
+// ── Skills: dynamic fetch & render ──────────────────────────────────────────
+let _allSkills = [];      // from /skills
+let _providerSkills = []; // from /provider-skills/provider/{id}
 
-  if (!skill) {
+async function fetchAndRenderSkills() {
+  if (!_spId) return;
+
+  try {
+    _allSkills = await Api.get("/skills", { silent: true }) || [];
+  } catch (_) { _allSkills = []; }
+
+  try {
+    _providerSkills = await Api.get("/provider-skills/provider/" + _spId, { silent: true }) || [];
+  } catch (_) { _providerSkills = []; }
+
+  renderSkillsList();
+  populateSkillDropdown();
+}
+
+function renderSkillsList() {
+  const skillsList = document.getElementById("skills-list");
+  if (!skillsList) return;
+
+  if (_providerSkills.length === 0) {
+    skillsList.innerHTML = `<div style="color:var(--text-secondary,#94a3b8); font-size:0.85rem; padding:8px 0;">No skills registered yet.</div>`;
+    return;
+  }
+
+  skillsList.innerHTML = _providerSkills.map(ps => {
+    const skill = _allSkills.find(s => s.skill_id === ps.skill_id);
+    const skillName = skill ? skill.skill_name : ps.skill_id;
+    const isVerified = ps.verification_status === "Verified";
+
+    if (isVerified) {
+      return `
+      <div class="skill-row" data-skill="${skillName}" data-skill-id="${ps.skill_id}">
+        <span class="skill-badge">
+          <svg viewBox="0 0 24 24" width="13" height="13">
+            <polyline points="20 6 9 17 4 12" />
+          </svg>
+          ${skillName}
+        </span>
+      </div>`;
+    } else {
+      return `
+      <div class="skill-row new-skill-anim" data-skill="${skillName}" data-skill-id="${ps.skill_id}">
+        <span class="skill-badge" style="background:var(--primary-light,#eff6ff); color:var(--primary,#3b82f6); border:none;">
+          <svg viewBox="0 0 24 24" width="13" height="13">
+            <circle cx="12" cy="12" r="10"/>
+            <polyline points="12 6 12 12 16 14"/>
+          </svg>
+          ${skillName}
+          <span style="font-size:0.7rem; opacity:0.8; margin-left:4px;">(Pending Approval)</span>
+        </span>
+      </div>`;
+    }
+  }).join("");
+}
+
+function populateSkillDropdown() {
+  const select = document.getElementById("new-skill-select");
+  if (!select) return;
+
+  // Keep only the placeholder
+  select.innerHTML = `<option value="">— Choose a skill —</option>`;
+
+  // Exclude skills the provider already has (verified or pending)
+  const heldSkillIds = new Set(_providerSkills.map(ps => ps.skill_id));
+  const available = _allSkills.filter(s => !heldSkillIds.has(s.skill_id));
+
+  available.forEach(s => {
+    const opt = document.createElement("option");
+    opt.value = s.skill_id;
+    opt.textContent = s.skill_name;
+    select.appendChild(opt);
+  });
+}
+
+async function requestVerifySkill() {
+  const select = document.getElementById("new-skill-select");
+  const skillId = select.value;
+
+  if (!skillId) {
     showToast("Please choose a skill from the list first.", true);
     return;
   }
 
-  const list = document.getElementById("skills-list");
-  if (list && !document.querySelector(`.skill-row[data-skill="${skill}"]`)) {
-    const el = document.createElement("div");
-    el.className = "skill-row new-skill-anim";
-    el.setAttribute("data-skill", skill);
-    el.innerHTML = `<span class="skill-badge" style="background:var(--primary-light); color:var(--primary); border:none;"><svg viewBox="0 0 24 24" width="13" height="13"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> ${skill}</span>`;
-    list.appendChild(el);
-  }
-
   const btn = document.getElementById("btn-request-verify");
   btn.disabled = true;
-  btn.textContent = "Added ✓";
+  btn.textContent = "Submitting...";
 
-  setTimeout(() => {
+  try {
+    await Api.post("/provider-skills", {
+      service_provider_id: _spId,
+      skill_id: skillId,
+    });
+
+    btn.textContent = "Added ✓";
+    const skill = _allSkills.find(s => s.skill_id === skillId);
+    showToast(`Skill "${skill ? skill.skill_name : skillId}" requested for verification.`);
+
+    // Re-fetch and re-render skills
+    await fetchAndRenderSkills();
+
+    setTimeout(() => {
+      btn.innerHTML = `<svg viewBox="0 0 24 24" width="13" height="13"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg> Request Verification`;
+      btn.disabled = false;
+      select.value = "";
+      toggleAddSkill();
+    }, 1000);
+  } catch (err) {
+    console.error("[profile] Skill request failed:", err);
     btn.innerHTML = `<svg viewBox="0 0 24 24" width="13" height="13"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg> Request Verification`;
     btn.disabled = false;
-    select.value = "";
-    toggleAddSkill();
-
-    // Auto-save the new skill to global state
-    saveSection("professional");
-  }, 1000);
-
-  showToast(`Skill "${skill}" requested for verification.`);
+  }
 }
 
 function showPasswordModal() {
@@ -477,25 +559,9 @@ function updateDeactivationUI(status) {
   if (serviceCatEl) serviceCatEl.value = sp.service_category || "Home Cleaning";
   if (experienceEl) experienceEl.value = sp.experience || "8";
 
-  // Skills
-  const skillsList = document.getElementById("skills-list");
-  if (skillsList && sp.skills) {
-    const skillsArr = Array.isArray(sp.skills) ? sp.skills : [];
-    skillsList.innerHTML = skillsArr
-      .map(
-        (skill) => `
-      <div class="skill-row" data-skill="${skill}">
-        <span class="skill-badge">
-          <svg viewBox="0 0 24 24" width="13" height="13">
-            <polyline points="20 6 9 17 4 12" />
-          </svg>
-          ${skill}
-        </span>
-      </div>
-    `,
-      )
-      .join("");
-  }
+  // Skills – fetch from provider-skills API
+  await fetchAndRenderSkills();
+
 
   // Files
   if (sp.resumeFiles && sp.resumeFiles.length > 0) {

@@ -48,9 +48,22 @@ export class JobAssignmentsService {
       );
       const durationMin = service?.estimated_duration_min || 60;
 
-      const scheduledAt = booking.scheduled_at || this.db.now();
-      const scheduledDate = scheduledAt.split('T')[0] || '';
-      const scheduledTime = scheduledAt.split('T')[1]?.slice(0, 5) || '';
+      const scheduledAtStr = bs.scheduled_at || this.db.now();
+      let scheduledDate: string;
+      let scheduledTime: string;
+
+      if (scheduledAtStr.endsWith('Z')) {
+        // Convert UTC string to IST by adding 5.5 hours
+        const utcDate = new Date(scheduledAtStr);
+        const istDate = new Date(utcDate.getTime() + 5.5 * 60 * 60 * 1000);
+        const istIso = istDate.toISOString();
+        scheduledDate = istIso.split('T')[0];
+        scheduledTime = istIso.split('T')[1].slice(0, 5);
+      } else {
+        // String is already IST (from our new db.now() or local input)
+        scheduledDate = scheduledAtStr.split('T')[0];
+        scheduledTime = scheduledAtStr.split('T')[1]?.slice(0, 5) || '';
+      }
 
       // b. Find providers who have ALL required skills (verified)
       const qualifiedProviderIds = this.db.serviceProviders
@@ -329,11 +342,21 @@ export class JobAssignmentsService {
     if (!ja) return ja;
     const provider = this.db.serviceProviders.find((sp) => sp.sp_id === ja.sp_id);
     const service = this.db.services.find((s) => s.service_id === ja.service_id);
+    const booking = this.db.bookings.find((b) => b.booking_id === ja.booking_id);
+    const bookingService = this.db.bookingServices.find(bs => bs.booking_id === ja.booking_id && bs.service_id === ja.service_id);
+    const customer = booking
+      ? this.db.customers.find((c) => c.customer_id === booking.customer_id)
+      : null;
     return {
       ...ja,
       sp_name: provider?.name || 'Tatku Provider',
       sp_phone: provider?.phone || null,
       service_name: service?.service_name || 'Home Service',
+      customer_name: customer?.full_name || 'Customer',
+      customer_phone: customer?.phone || null,
+      service_address: booking?.service_address || null,
+      scheduled_at: bookingService?.scheduled_at || ja.assigned_at,
+      estimated_duration_min: service?.estimated_duration_min || 60,
     };
   }
 

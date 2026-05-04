@@ -81,19 +81,25 @@ async function renderAdmissions() {
   const skillRequests = [];
   allProviderSkills.forEach(ps => {
     if (!ps.verification_status || ps.verification_status.toLowerCase() !== 'pending') return;
-    const provider = allProvidersTable.find(p => p.service_provider_id === ps.service_provider_id);
+    const provider = allProvidersTable.find(p => (p.service_provider_id || p.sp_id) === (ps.sp_id || ps.service_provider_id));
     if (!provider || !provider.unit_id || !myUnits.some(u => u.unit_id === provider.unit_id)) return;
     const skill = allSkills.find(s => s.skill_id === ps.skill_id); if (!skill) return;
-    skillRequests.push({ initials:getInitials(provider.name), name:provider.name, skill:skill.skill_name, phone:provider.phone, email:provider.email, location:provider.address, documents:{resume:false,cert:false}, provider_id:provider.service_provider_id, skill_id:ps.skill_id });
+    const pid = provider.service_provider_id || provider.sp_id;
+    skillRequests.push({ initials:getInitials(provider.name), name:provider.name, skill:skill.skill_name, phone:provider.phone, email:provider.email, location:provider.address, documents:{resume:false,cert:false}, provider_id:pid, skill_id:ps.skill_id });
   });
   if (verificationsMetric) verificationsMetric.textContent = String(skillRequests.length);
   if (!skillRequests.length) { skillList.innerHTML = '<div class="admissions-empty">No pending skill verifications.</div>'; }
   else { skillRequests.forEach((req,idx) => {
     const card = buildAdmissionCard(req,idx,'skill', async (card) => {
-      try { await Api.patch("/provider-skills/verify/"+req.provider_id,{skill_id:req.skill_id,verification_status:"Verified"}); showToast(`✓ Verified ${req.skill} for ${req.name}`); card.remove();
+      try { await Api.patch("/provider-skills/verify/"+req.provider_id,{skill_id:req.skill_id}); showToast(`✓ Verified ${req.skill} for ${req.name}`); card.remove();
         const rem = skillList.querySelectorAll('.applicant-card').length; if (verificationsMetric) verificationsMetric.textContent = String(rem);
         if (!rem) skillList.innerHTML = '<div class="admissions-empty">No pending skill verifications.</div>';
       } catch(e){ showToast("Failed to verify skill."); }
+    }, async (card) => {
+      try { await Api.patch("/provider-skills/reject/"+req.provider_id,{skill_id:req.skill_id}); showToast(`✗ Rejected ${req.skill} for ${req.name}`); card.remove();
+        const rem = skillList.querySelectorAll('.applicant-card').length; if (verificationsMetric) verificationsMetric.textContent = String(rem);
+        if (!rem) skillList.innerHTML = '<div class="admissions-empty">No pending skill verifications.</div>';
+      } catch(e){ showToast("Failed to reject skill."); }
     }); skillList.appendChild(card);
   }); }
 
@@ -109,10 +115,12 @@ async function renderAdmissions() {
   }); }
 }
 
-function buildAdmissionCard(req,idx,type,onVerify) {
+function buildAdmissionCard(req,idx,type,onVerify,onReject) {
   const card = document.createElement('div'); card.className = 'applicant-card';
-  card.innerHTML = `<div class="applicant-avatar" style="background:${colors[idx%colors.length]}">${req.initials}</div><div class="applicant-main"><div class="applicant-name">${req.name}</div><div class="skill-tags"><span class="skill-tag">${req.skill}</span></div></div><div class="applicant-actions"><button class="btn-verify">Verify</button><button class="btn-view">View</button></div>`;
+  const rejectBtn = onReject ? `<button class="btn-reject" style="background:#fee2e2;color:#dc2626;border:1px solid #fca5a5;padding:6px 14px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;">Reject</button>` : '';
+  card.innerHTML = `<div class="applicant-avatar" style="background:${colors[idx%colors.length]}">${req.initials}</div><div class="applicant-main"><div class="applicant-name">${req.name}</div><div class="skill-tags"><span class="skill-tag">${req.skill}</span></div></div><div class="applicant-actions">${rejectBtn}<button class="btn-verify">Verify</button><button class="btn-view">View</button></div>`;
   card.querySelector('.btn-verify').onclick = () => onVerify(card);
+  if (onReject && card.querySelector('.btn-reject')) card.querySelector('.btn-reject').onclick = () => onReject(card);
   card.querySelector('.btn-view').onclick = () => openDetailsModal(req, colors[idx%colors.length]);
   return card;
 }

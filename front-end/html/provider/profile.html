@@ -176,30 +176,7 @@
 
               <!-- Current skills (read-only, removal requires approval) -->
               <div class="skills-list" id="skills-list">
-                <div class="skill-row" data-skill="Deep Cleaning">
-                  <span class="skill-badge">
-                    <svg viewBox="0 0 24 24" width="13" height="13">
-                      <polyline points="20 6 9 17 4 12" />
-                    </svg>
-                    Deep Cleaning
-                  </span>
-                </div>
-                <div class="skill-row" data-skill="Sanitization">
-                  <span class="skill-badge">
-                    <svg viewBox="0 0 24 24" width="13" height="13">
-                      <polyline points="20 6 9 17 4 12" />
-                    </svg>
-                    Sanitization
-                  </span>
-                </div>
-                <div class="skill-row" data-skill="Pest Control">
-                  <span class="skill-badge">
-                    <svg viewBox="0 0 24 24" width="13" height="13">
-                      <polyline points="20 6 9 17 4 12" />
-                    </svg>
-                    Pest Control
-                  </span>
-                </div>
+                <!-- Skills populated dynamically from API -->
               </div>
               <!-- Add New Skill panel -->
               <button
@@ -224,13 +201,7 @@
                     </svg>
                     <select id="new-skill-select" class="skill-select">
                       <option value="">— Choose a skill —</option>
-                      <option value="Plumbing">Plumbing</option>
-                      <option value="HVAC">HVAC</option>
-                      <option value="Electrical">Electrical</option>
-                      <option value="Painting">Painting</option>
-                      <option value="Carpentry">Carpentry</option>
-                      <option value="Cleaning">Cleaning</option>
-                      <option value="Landscaping">Landscaping</option>
+                      <!-- Options populated dynamically from API -->
                     </select>
                   </div>
                   <button
@@ -497,6 +468,6 @@
     <script src="../../js/data/store.js?v=3"></script>
     <script src="../../js/modules/auth.js"></script>
     <script src="../../js/utils/api.js"></script>
-    <script src="../../js/provider/profile.js?v=2"></script>
+    <script src="../../js/provider/profile.js?v=3"></script>
   </body>
 </html>

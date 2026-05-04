@@ -38,13 +38,15 @@
   }
 
   // Fetch data from API
-  let allProviders = [], allBookings = [], allTransactions = [], allCollectives = [], allUnits = [], allJobAssignments = [];
+  let allProviders = [], allBookings = [], allTransactions = [], allCollectives = [], allUnits = [], allJobAssignments = [], allProviderSkills = [], allSkills = [];
   allProviders  = await Api.get("/service-providers");
   allBookings  = await Api.get("/bookings");
   allTransactions  = await Api.get("/transactions");
   allCollectives  = await Api.get("/collectives");
   allUnits  = await Api.get("/units");
   allJobAssignments  = await Api.get("/job-assignments");
+  try { allProviderSkills = await Api.get("/provider-skills") || []; } catch (_) { allProviderSkills = []; }
+  try { allSkills = await Api.get("/skills") || []; } catch (_) { allSkills = []; }
 
   // Mapping collective -> sector_ids
   const myCollective = allCollectives.find(
@@ -143,6 +145,32 @@
       icon: `<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`,
       actions: [
         { label: "Open Unit", cls: "primary", href: "manage_units.html" },
+      ],
+    });
+  });
+
+  // ── Skill Verification Requests ──
+  const pendingSkills = allProviderSkills.filter(ps => ps.verification_status === "Pending");
+  pendingSkills.forEach((ps) => {
+    const provider = allProviders.find(p => p.sp_id === ps.sp_id);
+    const skill = allSkills.find(s => s.skill_id === ps.skill_id);
+    if (!provider) return;
+    // Only show for providers in CM's collective
+    if (!myUnitIds.has(provider.unit_id)) return;
+
+    allNotifications.push({
+      id: genId(),
+      category: "provider",
+      read: false,
+      color: "blue",
+      title: "Skill Verification Request",
+      desc: `${provider.name} has requested verification for skill: "${skill ? skill.skill_name : ps.skill_id}". Please review their credentials and approve or reject.`,
+      time: "Pending",
+      icon: `<svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>`,
+      _skillAction: { sp_id: ps.sp_id, skill_id: ps.skill_id },
+      actions: [
+        { label: "Approve", cls: "primary", skillVerify: true },
+        { label: "Reject", cls: "danger", skillReject: true },
       ],
     });
   });
@@ -274,7 +302,7 @@
           </div>
           <div class="notif-desc">${n.desc}</div>
           <div class="notif-meta">${n.time} &bull; ${n.category.toUpperCase()}</div>
-          ${n.actions && n.actions.length ? `<div class="notif-actions">${n.actions.map((a) => `<button class="nbtn ${a.cls}" data-action-id="${n.id}" data-action-label="${a.label}" data-action-href="${a.href || ""}">${a.label}</button>`).join("")}</div>` : ""}
+          ${n.actions && n.actions.length ? `<div class="notif-actions">${n.actions.map((a) => `<button class="nbtn ${a.cls}" data-action-id="${n.id}" data-action-label="${a.label}" data-action-href="${a.href || ""}" data-skill-verify="${a.skillVerify || false}" data-skill-reject="${a.skillReject || false}">${a.label}</button>`).join("")}</div>` : ""}
         </div>
         <button class="notif-dismiss" data-dismiss-id="${n.id}" title="Dismiss">×</button>
       </div>
@@ -284,10 +312,33 @@
 
     // Attach Action interactions
     list.querySelectorAll(".nbtn").forEach((btn) => {
-      btn.addEventListener("click", (e) => {
+      btn.addEventListener("click", async (e) => {
         const id = parseInt(e.currentTarget.getAttribute("data-action-id"));
         const label = e.currentTarget.getAttribute("data-action-label") || "";
         const href = e.currentTarget.getAttribute("data-action-href");
+        const isSkillVerify = e.currentTarget.getAttribute("data-skill-verify") === "true";
+        const isSkillReject = e.currentTarget.getAttribute("data-skill-reject") === "true";
+
+        if (isSkillVerify || isSkillReject) {
+          const notif = notifications.find(x => x.id === id);
+          if (notif && notif._skillAction) {
+            const { sp_id, skill_id } = notif._skillAction;
+            try {
+              if (isSkillVerify) {
+                await Api.patch("/provider-skills/verify/" + sp_id, { skill_id });
+                showToast("Skill verification approved ✓", "success");
+              } else {
+                await Api.patch("/provider-skills/reject/" + sp_id, { skill_id });
+                showToast("Skill verification rejected", "warning");
+              }
+              dismiss(id);
+            } catch (err) {
+              showToast("Failed to process skill verification: " + (err.message || ""), "error");
+            }
+          }
+          return;
+        }
+
         handleAction(id, label, href);
         if (href) window.location.href = href;
       });

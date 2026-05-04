@@ -136,8 +136,6 @@ export interface Customer {
 // Once the customer pays, the cart row is deleted. No is_checked_out flag needed.
 export interface Cart {
   cart_id: string;
-  booking_type: 'INSTANT' | 'SCHEDULED';
-  scheduled_at: string | null;
   service_address: string;
   created_at: string;
   updated_at: string;
@@ -151,6 +149,8 @@ export interface CartItem {
   added_at: string;
   cart_id: string;
   service_id: string;
+  booking_type: 'INSTANT' | 'SCHEDULED';
+  scheduled_at: string | null;
 }
 
 export interface Category {
@@ -199,9 +199,7 @@ export interface ServiceFaq {
 
 export interface Booking {
   booking_id: string;
-  booking_type: 'INSTANT' | 'SCHEDULED';
   service_address: string;
-  scheduled_at: string;
   status: string;
   failure_reason: string | null;
   is_active: boolean;
@@ -216,6 +214,8 @@ export interface BookingService {
   service_id: string;
   quantity: number;
   price_at_booking: number;
+  booking_type: 'INSTANT' | 'SCHEDULED';
+  scheduled_at: string | null;
 }
 
 // Each line item in a booking gets its own assignment and its own provider.
@@ -615,8 +615,8 @@ export class DatabaseService implements OnModuleInit {
       is_active: true,
       account_status: 'active',
       deactivation_requested: false,
-      hour_start: '07:00',
-      hour_end: '23:00',
+      hour_start: '00:00',
+      hour_end: '23:59',
       created_at: '2024-10-31T08:00:00Z',
       updated_at: '2026-04-10T11:30:00Z',
       unit_id: this.units[0].unit_id,
@@ -638,8 +638,8 @@ export class DatabaseService implements OnModuleInit {
       is_active: true,
       account_status: 'active',
       deactivation_requested: false,
-      hour_start: '07:00',
-      hour_end: '23:00',
+      hour_start: '00:00',
+      hour_end: '23:59',
       created_at: '2024-11-22T08:00:00Z',
       updated_at: '2026-04-10T09:20:00Z',
       unit_id: this.units[1].unit_id,
@@ -659,8 +659,8 @@ export class DatabaseService implements OnModuleInit {
       is_active: true,
       account_status: 'active',
       deactivation_requested: false,
-      hour_start: '07:00',
-      hour_end: '23:00',
+      hour_start: '00:00',
+      hour_end: '23:59',
       created_at: '2025-01-06T08:00:00Z',
       updated_at: '2026-04-01T10:00:00Z',
       unit_id: this.units[0].unit_id,
@@ -680,8 +680,8 @@ export class DatabaseService implements OnModuleInit {
       is_active: true,
       account_status: 'active',
       deactivation_requested: false,
-      hour_start: '07:00',
-      hour_end: '23:00',
+      hour_start: '00:00',
+      hour_end: '23:59',
       created_at: '2026-01-10T09:00:00Z',
       updated_at: '2026-04-10T10:00:00Z',
       unit_id: this.units[2].unit_id,
@@ -701,8 +701,8 @@ export class DatabaseService implements OnModuleInit {
       is_active: true,
       account_status: 'active',
       deactivation_requested: false,
-      hour_start: '07:00',
-      hour_end: '23:00',
+      hour_start: '00:00',
+      hour_end: '23:59',
       created_at: '2026-01-12T09:00:00Z',
       updated_at: '2026-04-10T11:00:00Z',
       unit_id: this.units[2].unit_id,
@@ -722,8 +722,8 @@ export class DatabaseService implements OnModuleInit {
       is_active: true,
       account_status: 'active',
       deactivation_requested: false,
-      hour_start: '07:00',
-      hour_end: '23:00',
+      hour_start: '00:00',
+      hour_end: '23:59',
       created_at: '2026-01-15T08:00:00Z',
       updated_at: '2026-04-10T09:00:00Z',
       unit_id: this.units[3].unit_id,
@@ -743,10 +743,178 @@ export class DatabaseService implements OnModuleInit {
       is_active: true,
       account_status: 'active',
       deactivation_requested: false,
-      hour_start: '07:00',
-      hour_end: '23:00',
+      hour_start: '00:00',
+      hour_end: '23:59',
       created_at: '2026-02-01T08:00:00Z',
       updated_at: '2026-04-10T10:00:00Z',
+      unit_id: this.units[4].unit_id,
+      home_sector_id: this.sectors[0].sector_id,
+    },
+    {
+      sp_id: this.genId(),
+      name: 'Sanjay Dutt',
+      email: 'sanjay.d@mail.com',
+      password_hash: this.storePassword('Password@123'),
+      phone: '9840011223',
+      dob: '1987-05-20',
+      address: '10 Marina Way, Chennai',
+      gender: 'Male',
+      rating: 0,
+      rating_count: 0,
+      is_active: true,
+      account_status: 'active',
+      deactivation_requested: false,
+      hour_start: '00:00',
+      hour_end: '23:59',
+      created_at: '2026-04-15T09:00:00Z',
+      updated_at: '2026-04-15T09:00:00Z',
+      unit_id: this.units[1].unit_id,
+      home_sector_id: this.sectors[0].sector_id,
+    },
+    {
+      sp_id: this.genId(),
+      name: 'Arun Vijay',
+      email: 'arun.v@mail.com',
+      password_hash: this.storePassword('Password@123'),
+      phone: '9840033445',
+      dob: '1991-09-12',
+      address: '44 Anna Nagar West, Chennai',
+      gender: 'Male',
+      rating: 0,
+      rating_count: 0,
+      is_active: true,
+      account_status: 'active',
+      deactivation_requested: false,
+      hour_start: '00:00',
+      hour_end: '23:59',
+      created_at: '2026-04-15T10:00:00Z',
+      updated_at: '2026-04-15T10:00:00Z',
+      unit_id: this.units[0].unit_id,
+      home_sector_id: this.sectors[1].sector_id,
+    },
+    {
+      sp_id: this.genId(),
+      name: 'Kavita Rao',
+      email: 'kavita.r@mail.com',
+      password_hash: this.storePassword('Password@123'),
+      phone: '9840055667',
+      dob: '1993-11-05',
+      address: '25 Anna Nagar East, Chennai',
+      gender: 'Female',
+      rating: 0,
+      rating_count: 0,
+      is_active: true,
+      account_status: 'active',
+      deactivation_requested: false,
+      hour_start: '00:00',
+      hour_end: '23:59',
+      created_at: '2026-04-15T11:00:00Z',
+      updated_at: '2026-04-15T11:00:00Z',
+      unit_id: this.units[3].unit_id,
+      home_sector_id: this.sectors[1].sector_id,
+    },
+    {
+      sp_id: this.genId(),
+      name: 'Rajesh Khanna',
+      email: 'rajesh.k@mail.com',
+      password_hash: this.storePassword('Password@123'),
+      phone: '9840077889',
+      dob: '1985-03-15',
+      address: '90 Velachery, Chennai',
+      gender: 'Male',
+      rating: 0,
+      rating_count: 0,
+      is_active: true,
+      account_status: 'active',
+      deactivation_requested: false,
+      hour_start: '00:00',
+      hour_end: '23:59',
+      created_at: '2026-04-15T12:00:00Z',
+      updated_at: '2026-04-15T12:00:00Z',
+      unit_id: this.units[2].unit_id,
+      home_sector_id: this.sectors[2].sector_id,
+    },
+    {
+      sp_id: this.genId(),
+      name: 'Suman Gill',
+      email: 'suman.g@mail.com',
+      password_hash: this.storePassword('Password@123'),
+      phone: '9840099001',
+      dob: '1989-07-22',
+      address: '15 Perungudi, Chennai',
+      gender: 'Female',
+      rating: 0,
+      rating_count: 0,
+      is_active: true,
+      account_status: 'active',
+      deactivation_requested: false,
+      hour_start: '00:00',
+      hour_end: '23:59',
+      created_at: '2026-04-15T13:00:00Z',
+      updated_at: '2026-04-15T13:00:00Z',
+      unit_id: this.units[1].unit_id,
+      home_sector_id: this.sectors[2].sector_id,
+    },
+    {
+      sp_id: this.genId(),
+      name: 'Deepa Nair',
+      email: 'deepa.n@mail.com',
+      password_hash: this.storePassword('Password@123'),
+      phone: '9840112233',
+      dob: '1992-01-30',
+      address: '5 Anna Nagar, Chennai',
+      gender: 'Female',
+      rating: 0,
+      rating_count: 0,
+      is_active: true,
+      account_status: 'active',
+      deactivation_requested: false,
+      hour_start: '00:00',
+      hour_end: '23:59',
+      created_at: '2026-04-15T14:00:00Z',
+      updated_at: '2026-04-15T14:00:00Z',
+      unit_id: this.units[4].unit_id,
+      home_sector_id: this.sectors[1].sector_id,
+    },
+    {
+      sp_id: this.genId(),
+      name: 'Vijay Sethupathi',
+      email: 'vijay.s@mail.com',
+      password_hash: this.storePassword('Password@123'),
+      phone: '9840133445',
+      dob: '1984-01-16',
+      address: '77 Velachery, Chennai',
+      gender: 'Male',
+      rating: 0,
+      rating_count: 0,
+      is_active: true,
+      account_status: 'active',
+      deactivation_requested: false,
+      hour_start: '00:00',
+      hour_end: '23:59',
+      created_at: '2026-04-15T15:00:00Z',
+      updated_at: '2026-04-15T15:00:00Z',
+      unit_id: this.units[0].unit_id,
+      home_sector_id: this.sectors[2].sector_id,
+    },
+    {
+      sp_id: this.genId(),
+      name: 'Nayanthara K',
+      email: 'nayanthara.k@mail.com',
+      password_hash: this.storePassword('Password@123'),
+      phone: '9840155667',
+      dob: '1988-11-18',
+      address: '12 Boat Club Road, Chennai',
+      gender: 'Female',
+      rating: 0,
+      rating_count: 0,
+      is_active: true,
+      account_status: 'active',
+      deactivation_requested: false,
+      hour_start: '00:00',
+      hour_end: '23:59',
+      created_at: '2026-04-15T16:00:00Z',
+      updated_at: '2026-04-15T16:00:00Z',
       unit_id: this.units[4].unit_id,
       home_sector_id: this.sectors[0].sector_id,
     },
@@ -873,6 +1041,72 @@ export class DatabaseService implements OnModuleInit {
       skill_id: this.skills[2].skill_id, // Anjali → Cleaning
       verification_status: 'Verified',
       verified_at: '2026-04-10T10:00:00Z',
+    },
+    {
+      sp_id: this.serviceProviders[7].sp_id,
+      skill_id: this.skills[0].skill_id, // Sanjay → Plumbing
+      verification_status: 'Verified',
+      verified_at: '2026-04-15T09:30:00Z',
+    },
+    {
+      sp_id: this.serviceProviders[8].sp_id,
+      skill_id: this.skills[1].skill_id, // Arun → Electrical
+      verification_status: 'Verified',
+      verified_at: '2026-04-15T10:10:00Z',
+    },
+    {
+      sp_id: this.serviceProviders[8].sp_id,
+      skill_id: this.skills[3].skill_id, // Arun → AC Repair
+      verification_status: 'Verified',
+      verified_at: '2026-04-15T10:15:00Z',
+    },
+    {
+      sp_id: this.serviceProviders[9].sp_id,
+      skill_id: this.skills[6].skill_id, // Kavita → Pest Control
+      verification_status: 'Verified',
+      verified_at: '2026-04-15T11:30:00Z',
+    },
+    {
+      sp_id: this.serviceProviders[10].sp_id,
+      skill_id: this.skills[4].skill_id, // Rajesh → Carpentry
+      verification_status: 'Verified',
+      verified_at: '2026-04-15T12:30:00Z',
+    },
+    {
+      sp_id: this.serviceProviders[10].sp_id,
+      skill_id: this.skills[5].skill_id, // Rajesh → Furniture Assembly
+      verification_status: 'Verified',
+      verified_at: '2026-04-15T12:35:00Z',
+    },
+    {
+      sp_id: this.serviceProviders[11].sp_id,
+      skill_id: this.skills[0].skill_id, // Suman → Plumbing
+      verification_status: 'Verified',
+      verified_at: '2026-04-15T13:30:00Z',
+    },
+    {
+      sp_id: this.serviceProviders[12].sp_id,
+      skill_id: this.skills[2].skill_id, // Deepa → Cleaning
+      verification_status: 'Verified',
+      verified_at: '2026-04-15T14:30:00Z',
+    },
+    {
+      sp_id: this.serviceProviders[13].sp_id,
+      skill_id: this.skills[1].skill_id, // Vijay → Electrical
+      verification_status: 'Verified',
+      verified_at: '2026-04-15T15:10:00Z',
+    },
+    {
+      sp_id: this.serviceProviders[13].sp_id,
+      skill_id: this.skills[3].skill_id, // Vijay → AC Repair
+      verification_status: 'Verified',
+      verified_at: '2026-04-15T15:15:00Z',
+    },
+    {
+      sp_id: this.serviceProviders[14].sp_id,
+      skill_id: this.skills[2].skill_id, // Nayanthara → Cleaning
+      verification_status: 'Verified',
+      verified_at: '2026-04-15T16:30:00Z',
     },
   ];
 
@@ -1318,17 +1552,15 @@ export class DatabaseService implements OnModuleInit {
   //  booking[0]  Aditya   – INSTANT   – Split AC Repair             – COMPLETED
   //  booking[1]  Lakshmi  – SCHEDULED – Kitchen Sink Leak Fix       – COMPLETED
   //  booking[2]  Arjun    – SCHEDULED – Standard Home Clean         – COMPLETED
-  //  booking[3]  Aditya   – SCHEDULED – Split AC Repair + Leak Fix  – COMPLETED
-  //                         (multi-service booking — the key example)
-  //  booking[4]  Aditya   – SCHEDULED – Deep Home Clean             – CANCELLED
+  //  booking[3]  Aditya   – SCHEDULED – Split AC Repair             – COMPLETED
+  //  booking[4]  Aditya   – SCHEDULED – Kitchen Sink Leak Fix       – COMPLETED
+  //  booking[5]  Aditya   – SCHEDULED – Deep Home Clean             – CANCELLED
   // ─────────────────────────────────────────────────────────────────────────
 
   bookings: Booking[] = [
     {
       booking_id: this.genId(), // bookings[0]
-      booking_type: 'INSTANT',
       service_address: '14 Boat Club Road, Chennai',
-      scheduled_at: '2026-03-29T03:48:22Z',
       status: 'COMPLETED',
       failure_reason: null,
       is_active: true,
@@ -1339,9 +1571,7 @@ export class DatabaseService implements OnModuleInit {
     },
     {
       booking_id: this.genId(), // bookings[1]
-      booking_type: 'SCHEDULED',
       service_address: '33 Anna Nagar, Chennai',
-      scheduled_at: '2026-04-02T09:00:00Z',
       status: 'COMPLETED',
       failure_reason: null,
       is_active: true,
@@ -1352,9 +1582,7 @@ export class DatabaseService implements OnModuleInit {
     },
     {
       booking_id: this.genId(), // bookings[2]
-      booking_type: 'SCHEDULED',
       service_address: '77 Velachery Main Road, Chennai',
-      scheduled_at: '2026-04-03T12:00:00Z',
       status: 'COMPLETED',
       failure_reason: null,
       is_active: true,
@@ -1364,10 +1592,19 @@ export class DatabaseService implements OnModuleInit {
       sector_id: this.sectors[2].sector_id,
     },
     {
-      booking_id: this.genId(), // bookings[3] – multi-service booking
-      booking_type: 'SCHEDULED',
+      booking_id: this.genId(), // bookings[3] – Split AC Repair (was part of multi-service cart)
       service_address: '14 Boat Club Road, Chennai',
-      scheduled_at: '2026-04-07T09:00:00Z',
+      status: 'COMPLETED',
+      failure_reason: null,
+      is_active: true,
+      created_at: '2026-04-05T11:00:00Z',
+      updated_at: '2026-04-07T10:35:00Z',
+      customer_id: this.customers[0].customer_id,
+      sector_id: this.sectors[0].sector_id,
+    },
+    {
+      booking_id: this.genId(), // bookings[4] – Kitchen Sink Leak Fix (was part of multi-service cart)
+      service_address: '14 Boat Club Road, Chennai',
       status: 'COMPLETED',
       failure_reason: null,
       is_active: true,
@@ -1377,10 +1614,8 @@ export class DatabaseService implements OnModuleInit {
       sector_id: this.sectors[0].sector_id,
     },
     {
-      booking_id: this.genId(), // bookings[4] – cancelled
-      booking_type: 'SCHEDULED',
+      booking_id: this.genId(), // bookings[5] – cancelled
       service_address: '14 Boat Club Road, Chennai',
-      scheduled_at: '2026-04-10T11:00:00Z',
       status: 'CANCELLED',
       failure_reason: 'Customer cancelled before assignment',
       is_active: false,
@@ -1392,46 +1627,59 @@ export class DatabaseService implements OnModuleInit {
   ];
 
   bookingServices: BookingService[] = [
-    // booking[0] – single service
+    // booking[0] – Split AC Repair
     {
       booking_id: this.bookings[0].booking_id,
       service_id: this.services[2].service_id,
       quantity: 1,
       price_at_booking: 1299,
+      booking_type: 'INSTANT',
+      scheduled_at: '2026-03-29T03:48:22Z',
     },
-    // booking[1] – single service
+    // booking[1] – Kitchen Sink Leak Fix
     {
       booking_id: this.bookings[1].booking_id,
       service_id: this.services[3].service_id,
       quantity: 1,
       price_at_booking: 699,
+      booking_type: 'SCHEDULED',
+      scheduled_at: '2026-04-02T09:00:00Z',
     },
-    // booking[2] – single service
+    // booking[2] – Standard Home Clean
     {
       booking_id: this.bookings[2].booking_id,
       service_id: this.services[0].service_id,
       quantity: 1,
       price_at_booking: 499,
+      booking_type: 'SCHEDULED',
+      scheduled_at: '2026-04-03T12:00:00Z',
     },
-    // booking[3] – TWO services in one booking
+    // booking[3] – Split AC Repair (individual booking from same cart)
     {
       booking_id: this.bookings[3].booking_id,
-      service_id: this.services[2].service_id, // Split AC Repair
+      service_id: this.services[2].service_id,
       quantity: 1,
       price_at_booking: 1299,
+      booking_type: 'SCHEDULED',
+      scheduled_at: '2026-04-07T09:00:00Z',
     },
-    {
-      booking_id: this.bookings[3].booking_id,
-      service_id: this.services[3].service_id, // Kitchen Sink Leak Fix
-      quantity: 1,
-      price_at_booking: 699,
-    },
-    // booking[4] – cancelled, service line kept for record
+    // booking[4] – Kitchen Sink Leak Fix (individual booking from same cart)
     {
       booking_id: this.bookings[4].booking_id,
+      service_id: this.services[3].service_id,
+      quantity: 1,
+      price_at_booking: 699,
+      booking_type: 'SCHEDULED',
+      scheduled_at: '2026-04-07T09:00:00Z',
+    },
+    // booking[5] – cancelled, service line kept for record
+    {
+      booking_id: this.bookings[5].booking_id,
       service_id: this.services[1].service_id,
       quantity: 1,
       price_at_booking: 899,
+      booking_type: 'SCHEDULED',
+      scheduled_at: '2026-04-10T11:00:00Z',
     },
   ];
 
@@ -1439,9 +1687,8 @@ export class DatabaseService implements OnModuleInit {
   // JOB ASSIGNMENTS
   //
   // One assignment per service per booking (Urban Company model).
-  // booking[3] has TWO assignments — one for AC Repair (Ravi), one for
-  // Leak Fix (Manoj). They can be scheduled at different times on the same day.
-  // booking[4] was cancelled before any assignment was created.
+  // booking[3] → AC Repair (Ravi), booking[4] → Leak Fix (Manoj).
+  // booking[5] was cancelled before any assignment was created.
   // ─────────────────────────────────────────────────────────────────────────
 
   jobAssignments: JobAssignment[] = [
@@ -1506,7 +1753,7 @@ export class DatabaseService implements OnModuleInit {
       booking_id: this.bookings[3].booking_id,
       sp_id: this.serviceProviders[0].sp_id, // Ravi
     },
-    // booking[3] – Leak Fix line → Manoj (scheduled after AC job on the same day)
+    // booking[4] – Leak Fix → Manoj (scheduled after AC job on the same day)
     {
       assignment_id: this.genId(),
       service_id: this.services[3].service_id, // Kitchen Sink Leak Fix
@@ -1519,7 +1766,7 @@ export class DatabaseService implements OnModuleInit {
       assigned_at: '2026-04-05T11:05:00Z',
       created_at: '2026-04-05T11:05:00Z',
       updated_at: '2026-04-07T12:30:00Z',
-      booking_id: this.bookings[3].booking_id,
+      booking_id: this.bookings[4].booking_id,
       sp_id: this.serviceProviders[1].sp_id, // Manoj
     },
   ];
@@ -1527,9 +1774,8 @@ export class DatabaseService implements OnModuleInit {
   // ─────────────────────────────────────────────────────────────────────────
   // TRANSACTIONS
   //
-  // One transaction per booking (the customer pays for the whole cart at once).
-  // booking[3] has two services but one payment of ₹1299 + ₹699 = ₹1998.
-  // booking[4] is cancelled — no transaction (cancelled before payment).
+  // One transaction per booking. Each service gets its own booking and payment.
+  // booking[5] is cancelled — no transaction (cancelled before payment).
   // ─────────────────────────────────────────────────────────────────────────
 
   transactions: Transaction[] = [
@@ -1581,14 +1827,27 @@ export class DatabaseService implements OnModuleInit {
       payment_method: 'UPI',
       idempotency_key: 'idem-bkg004-001',
       payment_status: 'SUCCESS',
-      // booking[3]: AC Repair ₹1299 + Leak Fix ₹699 = ₹1998
-      amount: 1998,
+      amount: 1299,
       currency: 'INR',
       refund_amount: 0,
       refund_reason: null,
       transaction_at: '2026-04-05T11:02:00Z',
       verified_at: '2026-04-05T11:02:30Z',
       booking_id: this.bookings[3].booking_id,
+    },
+    {
+      transaction_id: this.genId(),
+      payment_gateway_ref: 'PGR20260405002',
+      payment_method: 'UPI',
+      idempotency_key: 'idem-bkg005-001',
+      payment_status: 'SUCCESS',
+      amount: 699,
+      currency: 'INR',
+      refund_amount: 0,
+      refund_reason: null,
+      transaction_at: '2026-04-05T11:02:00Z',
+      verified_at: '2026-04-05T11:02:30Z',
+      booking_id: this.bookings[4].booking_id,
     },
   ];
 
@@ -1618,19 +1877,19 @@ export class DatabaseService implements OnModuleInit {
   //    CM(Suresh)  4% = ₹19.96
   //    Platform   10% = ₹49.90
   //
-  //  booking[3] line-1 AC Repair ₹1299 → Ravi:
+  //  booking[3] AC Repair ₹1299 → Ravi:
   //    SP(Ravi)   78% = ₹1013.22
   //    UM(Karan)   8% = ₹103.92
   //    CM(Suresh)  4% = ₹51.96
   //    Platform   10% = ₹129.90
   //
-  //  booking[3] line-2 Leak Fix ₹699 → Manoj:
+  //  booking[4] Leak Fix ₹699 → Manoj:
   //    SP(Manoj)  78% = ₹545.22
   //    UM(Naveen)  8% = ₹55.92
   //    CM(Suresh)  4% = ₹27.96
   //    Platform   10% = ₹69.90
   //
-  //  booking[4] CANCELLED — no ledger rows.
+  //  booking[5] CANCELLED — no ledger rows.
   // ─────────────────────────────────────────────────────────────────────────
 
   revenueLedger: RevenueLedger[] = [
@@ -1695,7 +1954,7 @@ export class DatabaseService implements OnModuleInit {
       um_id: this.unitManagers[0].um_id, // Karan (AC unit)
       cm_id: this.collectiveManagers[0].cm_id, // Suresh
     },
-    // booking[3] – line 2: Leak Fix → Manoj
+    // booking[4] – Leak Fix → Manoj
     {
       ledger_id: this.genId(),
       payout_status: 'DISBURSED',
@@ -1718,10 +1977,8 @@ export class DatabaseService implements OnModuleInit {
   //
   // One review per service per booking (Urban Company model).
   // The customer gets one review prompt per completed job assignment.
-  // booking[3] produces TWO reviews — one for AC Repair, one for Leak Fix —
-  // even though both were paid in a single transaction.
   // rating = assignment_score of the corresponding JobAssignment row.
-  // booking[4] cancelled — no reviews.
+  // booking[5] cancelled — no reviews.
   // ─────────────────────────────────────────────────────────────────────────
 
   reviews: Review[] = [
@@ -1766,13 +2023,13 @@ export class DatabaseService implements OnModuleInit {
       customer_id: this.customers[0].customer_id,
       sp_id: this.serviceProviders[0].sp_id, // Ravi
     },
-    // booking[3] – review for Leak Fix line (same booking, separate review prompt)
+    // booking[4] – review for Leak Fix
     {
       review_id: this.genId(),
       rating: 5, // matches jobAssignments[4].assignment_score
       comment: 'Manoj was excellent, no leaks at all after the fix.',
       created_at: '2026-04-07T13:05:00Z',
-      booking_id: this.bookings[3].booking_id,
+      booking_id: this.bookings[4].booking_id,
       service_id: this.services[3].service_id, // Kitchen Sink Leak Fix
       customer_id: this.customers[0].customer_id,
       sp_id: this.serviceProviders[1].sp_id, // Manoj
@@ -1860,6 +2117,10 @@ export class DatabaseService implements OnModuleInit {
   }
 
   now(): string {
-    return new Date().toISOString();
+    const date = new Date();
+    // IST is UTC + 5:30
+    const istOffset = 5.5 * 60 * 60 * 1000;
+    const istDate = new Date(date.getTime() + istOffset);
+    return istDate.toISOString().replace('Z', ''); // Return as local time (no Z)
   }
 }
