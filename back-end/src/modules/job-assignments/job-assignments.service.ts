@@ -48,9 +48,22 @@ export class JobAssignmentsService {
       );
       const durationMin = service?.estimated_duration_min || 60;
 
-      const scheduledAt = bs.scheduled_at || this.db.now();
-      const scheduledDate = scheduledAt.split('T')[0] || '';
-      const scheduledTime = scheduledAt.split('T')[1]?.slice(0, 5) || '';
+      const scheduledAtStr = bs.scheduled_at || this.db.now();
+      let scheduledDate: string;
+      let scheduledTime: string;
+
+      if (scheduledAtStr.endsWith('Z')) {
+        // Convert UTC string to IST by adding 5.5 hours
+        const utcDate = new Date(scheduledAtStr);
+        const istDate = new Date(utcDate.getTime() + 5.5 * 60 * 60 * 1000);
+        const istIso = istDate.toISOString();
+        scheduledDate = istIso.split('T')[0];
+        scheduledTime = istIso.split('T')[1].slice(0, 5);
+      } else {
+        // String is already IST (from our new db.now() or local input)
+        scheduledDate = scheduledAtStr.split('T')[0];
+        scheduledTime = scheduledAtStr.split('T')[1]?.slice(0, 5) || '';
+      }
 
       // b. Find providers who have ALL required skills (verified)
       const qualifiedProviderIds = this.db.serviceProviders
