@@ -5639,6 +5639,14 @@
           "is_active": {
             "type": "boolean",
             "example": true
+          },
+          "dob": {
+            "type": "string",
+            "example": "1990-01-01"
+          },
+          "pfp_url": {
+            "type": "string",
+            "example": "data:image/png;base64,..."
           }
         },
         "required": [
@@ -5675,6 +5683,14 @@
           "is_active": {
             "type": "boolean",
             "example": true
+          },
+          "dob": {
+            "type": "string",
+            "example": "1990-01-01"
+          },
+          "pfp_url": {
+            "type": "string",
+            "example": "data:image/png;base64,..."
           }
         }
       },
@@ -6035,6 +6051,14 @@
           "collective_id": {
             "type": "string",
             "example": "uuid-of-collective"
+          },
+          "category": {
+            "type": "string",
+            "example": "Appliances"
+          },
+          "zone": {
+            "type": "string",
+            "example": "Zone A"
           }
         },
         "required": [
@@ -6057,6 +6081,14 @@
           "collective_id": {
             "type": "string",
             "example": "uuid-of-collective"
+          },
+          "category": {
+            "type": "string",
+            "example": "Appliances"
+          },
+          "zone": {
+            "type": "string",
+            "example": "Zone A"
           }
         }
       },
@@ -6684,6 +6716,11 @@
             "example": "b123-uuid",
             "description": "Associated booking ID"
           },
+          "service_id": {
+            "type": "string",
+            "example": "svc-uuid",
+            "description": "Associated service ID"
+          },
           "sp_id": {
             "type": "string",
             "example": "sp123-uuid",
@@ -6733,6 +6770,7 @@
         },
         "required": [
           "booking_id",
+          "service_id",
           "sp_id",
           "um_id",
           "cm_id",

@@ -4,8 +4,14 @@
   const session = Auth.requireSession(['collective_manager']);
   if (!session) return;
 
-  const urlParams = new URLSearchParams(window.location.search);
-  const providerId = urlParams.get('id');
+  function getParam(name) {
+    const searchParams = new URLSearchParams(window.location.search);
+    if (searchParams.has(name)) return searchParams.get(name);
+    const hashStr = window.location.hash.startsWith('#') ? window.location.hash.substring(1) : window.location.hash;
+    const hashParams = new URLSearchParams(hashStr);
+    return hashParams.get(name);
+  }
+  const providerId = getParam('id');
 
   const loader = document.getElementById('loader');
   const content = document.getElementById('providerDetails');

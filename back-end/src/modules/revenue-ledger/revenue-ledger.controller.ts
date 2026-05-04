@@ -58,7 +58,7 @@ export class RevenueLedgerController {
   // ── GET /revenue-ledger/provider/:spId ──────────────────────────────────
 
   @Get('provider/:spId')
-  @Roles(Role.SERVICE_PROVIDER, Role.SUPER_USER)
+  @Roles(Role.SERVICE_PROVIDER, Role.SUPER_USER, Role.UNIT_MANAGER, Role.COLLECTIVE_MANAGER)
   @ApiOperation({ summary: 'Provider earnings summary — SP (own) or super_user' })
   @ApiParam({ name: 'spId', description: 'sp_id UUID' })
   @ApiResponse({ status: 200, description: '{ pending, disbursed, rows }' })

@@ -57,6 +57,7 @@ export class RevenueLedgerService {
       created_at: this.db.now(),
       paid_at: null,
       booking_id: assignment.booking_id,
+      service_id: assignment.service_id,
       sp_id: assignment.sp_id,
       um_id: um.um_id,
       cm_id: cm.cm_id,
@@ -91,9 +92,7 @@ export class RevenueLedgerService {
   }
 
   getProviderEarningsScoped(spId: string, user: JwtPayload) {
-    if (user.role === Role.SERVICE_PROVIDER && user.sub !== spId) {
-      throw new NotFoundException('Provider earnings not found');
-    }
+    this.accessScope.assertProviderAccess(user, spId);
     return this.getProviderEarnings(spId);
   }
 
@@ -165,6 +164,7 @@ export class RevenueLedgerService {
       created_at: this.db.now(),
       paid_at: dto.payout_status === 'DISBURSED' ? this.db.now() : null,
       booking_id: dto.booking_id,
+      service_id: dto.service_id,
       sp_id: dto.sp_id,
       um_id: dto.um_id,
       cm_id: dto.cm_id,

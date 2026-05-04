@@ -1,5 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, OnModuleInit } from '@nestjs/common';
 import { randomBytes, randomUUID, scryptSync, timingSafeEqual } from 'crypto';
+import * as fs from 'fs';
+import * as path from 'path';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // ENTITY INTERFACES
@@ -30,6 +32,8 @@ export interface Unit {
   is_active: boolean;
   created_at: string;
   collective_id: string;
+  category?: string;
+  zone?: string;
 }
 
 export interface SuperUser {
@@ -65,6 +69,8 @@ export interface UnitManager {
   created_at: string;
   updated_at: string;
   unit_id: string;
+  dob?: string;
+  pfp_url?: string;
 }
 
 export interface ServiceProvider {
@@ -257,6 +263,7 @@ export interface RevenueLedger {
   created_at: string;
   paid_at: string | null;
   booking_id: string;
+  service_id: string;
   sp_id: string;
   um_id: string;
   cm_id: string;
@@ -338,7 +345,85 @@ export interface PlatformSetting {
 // ─────────────────────────────────────────────────────────────────────────────
 
 @Injectable()
-export class DatabaseService {
+export class DatabaseService implements OnModuleInit {
+  private readonly DB_PATH = path.join(process.cwd(), 'database.json');
+
+  onModuleInit() {
+    this.loadFromDisk();
+  }
+
+  save() {
+    console.log('DatabaseService: Attempting to save to disk...');
+    try {
+      const data = {
+        collectives: this.collectives,
+        sectors: this.sectors,
+        units: this.units,
+        superUsers: this.superUsers,
+        collectiveManagers: this.collectiveManagers,
+        unitManagers: this.unitManagers,
+        serviceProviders: this.serviceProviders,
+        providerUnavailability: this.providerUnavailability,
+        skills: this.skills,
+        providerSkills: this.providerSkills,
+        customers: this.customers,
+        carts: this.carts,
+        cartItems: this.cartItems,
+        categories: this.categories,
+        services: this.services,
+        serviceSkills: this.serviceSkills,
+        serviceContent: this.serviceContent,
+        serviceFaqs: this.serviceFaqs,
+        bookings: this.bookings,
+        bookingServices: this.bookingServices,
+        jobAssignments: this.jobAssignments,
+        transactions: this.transactions,
+        revenueLedger: this.revenueLedger,
+        reviews: this.reviews,
+        platformSettings: this.platformSettings,
+      };
+      fs.writeFileSync(this.DB_PATH, JSON.stringify(data, null, 2));
+    } catch (err) {
+      console.error('Failed to save database to disk:', err);
+    }
+  }
+
+  private loadFromDisk() {
+    try {
+      if (fs.existsSync(this.DB_PATH)) {
+        const raw = fs.readFileSync(this.DB_PATH, 'utf-8');
+        const data = JSON.parse(raw);
+        if (data.collectives) this.collectives = data.collectives;
+        if (data.sectors) this.sectors = data.sectors;
+        if (data.units) this.units = data.units;
+        if (data.superUsers) this.superUsers = data.superUsers;
+        if (data.collectiveManagers) this.collectiveManagers = data.collectiveManagers;
+        if (data.unitManagers) this.unitManagers = data.unitManagers;
+        if (data.serviceProviders) this.serviceProviders = data.serviceProviders;
+        if (data.providerUnavailability) this.providerUnavailability = data.providerUnavailability;
+        if (data.skills) this.skills = data.skills;
+        if (data.providerSkills) this.providerSkills = data.providerSkills;
+        if (data.customers) this.customers = data.customers;
+        if (data.carts) this.carts = data.carts;
+        if (data.cartItems) this.cartItems = data.cartItems;
+        if (data.categories) this.categories = data.categories;
+        if (data.services) this.services = data.services;
+        if (data.serviceSkills) this.serviceSkills = data.serviceSkills;
+        if (data.serviceContent) this.serviceContent = data.serviceContent;
+        if (data.serviceFaqs) this.serviceFaqs = data.serviceFaqs;
+        if (data.bookings) this.bookings = data.bookings;
+        if (data.bookingServices) this.bookingServices = data.bookingServices;
+        if (data.jobAssignments) this.jobAssignments = data.jobAssignments;
+        if (data.transactions) this.transactions = data.transactions;
+        if (data.revenueLedger) this.revenueLedger = data.revenueLedger;
+        if (data.reviews) this.reviews = data.reviews;
+        if (data.platformSettings) this.platformSettings = data.platformSettings;
+        console.log('Database loaded from disk.');
+      }
+    } catch (err) {
+      console.error('Failed to load database from disk:', err);
+    }
+  }
   collectives: Collective[] = [
     {
       collective_id: this.genId(),
@@ -1818,6 +1903,7 @@ export class DatabaseService {
       created_at: '2026-03-29T03:22:00Z',
       paid_at: '2026-03-29T06:20:00Z',
       booking_id: this.bookings[0].booking_id,
+      service_id: this.services[2].service_id, // AC Repair
       sp_id: this.serviceProviders[0].sp_id, // Ravi
       um_id: this.unitManagers[0].um_id, // Karan (AC unit)
       cm_id: this.collectiveManagers[0].cm_id, // Suresh
@@ -1832,6 +1918,7 @@ export class DatabaseService {
       created_at: '2026-04-01T16:35:00Z',
       paid_at: '2026-04-02T10:45:00Z',
       booking_id: this.bookings[1].booking_id,
+      service_id: this.services[3].service_id, // Leak Fix
       sp_id: this.serviceProviders[1].sp_id, // Manoj
       um_id: this.unitManagers[1].um_id, // Naveen (Plumbing unit)
       cm_id: this.collectiveManagers[0].cm_id, // Suresh
@@ -1846,6 +1933,7 @@ export class DatabaseService {
       created_at: '2026-04-02T08:12:00Z',
       paid_at: '2026-04-03T14:30:00Z',
       booking_id: this.bookings[2].booking_id,
+      service_id: this.services[0].service_id, // Home Clean
       sp_id: this.serviceProviders[0].sp_id, // Ravi
       um_id: this.unitManagers[0].um_id, // Karan (AC unit — Ravi cleans too)
       cm_id: this.collectiveManagers[0].cm_id, // Suresh
@@ -1861,6 +1949,7 @@ export class DatabaseService {
       created_at: '2026-04-05T11:03:00Z',
       paid_at: '2026-04-07T10:40:00Z',
       booking_id: this.bookings[3].booking_id,
+      service_id: this.services[2].service_id, // AC Repair
       sp_id: this.serviceProviders[0].sp_id, // Ravi
       um_id: this.unitManagers[0].um_id, // Karan (AC unit)
       cm_id: this.collectiveManagers[0].cm_id, // Suresh
@@ -1875,7 +1964,8 @@ export class DatabaseService {
       platform_amount: 69.9,
       created_at: '2026-04-05T11:03:00Z',
       paid_at: '2026-04-07T12:35:00Z',
-      booking_id: this.bookings[4].booking_id,
+      booking_id: this.bookings[3].booking_id,
+      service_id: this.services[3].service_id, // Leak Fix
       sp_id: this.serviceProviders[1].sp_id, // Manoj
       um_id: this.unitManagers[1].um_id, // Naveen (Plumbing unit)
       cm_id: this.collectiveManagers[0].cm_id, // Suresh

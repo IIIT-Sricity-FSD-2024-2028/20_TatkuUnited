@@ -39,12 +39,14 @@ export class UnitsRepository {
       collective_id: dto.collective_id,
     };
     this.databaseService.units.push(unit);
+    this.databaseService.save();
     return unit;
   }
 
   update(id: string, dto: UpdateUnitDto): Unit {
     const unit = this.findById(id);
     Object.assign(unit, dto);
+    this.databaseService.save();
     return unit;
   }
 
@@ -56,6 +58,7 @@ export class UnitsRepository {
       throw new NotFoundException(`Unit with id "${id}" not found`);
     }
     const [removed] = this.databaseService.units.splice(index, 1);
+    this.databaseService.save();
     return removed;
   }
 }

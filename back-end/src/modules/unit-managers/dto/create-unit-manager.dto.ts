@@ -31,4 +31,14 @@ export class CreateUnitManagerDto {
   @ApiProperty({ example: true })
   @IsBoolean()
   is_active: boolean;
+
+  @ApiProperty({ example: '1990-01-01', required: false })
+  @IsString()
+  @IsOptional()
+  dob?: string;
+
+  @ApiProperty({ example: 'data:image/png;base64,...', required: false })
+  @IsString()
+  @IsOptional()
+  pfp_url?: string;
 }
