@@ -55,6 +55,25 @@ export class RevenueLedgerController {
     return this.revenueLedgerService.getPlatformSummary();
   }
 
+  @Get('my')
+  @Roles(Role.SUPER_USER, Role.COLLECTIVE_MANAGER, Role.UNIT_MANAGER, Role.SERVICE_PROVIDER)
+  @ApiOperation({ summary: 'Get current user earnings' })
+  getMyEarnings(@Request() req: { user: JwtPayload }) {
+    console.log(`RevenueLedgerController: getMyEarnings for ${req.user.sub} (${req.user.role})`);
+    if (req.user.role === Role.COLLECTIVE_MANAGER) {
+      const res = this.revenueLedgerService.getCmEarningsScoped(req.user.sub, req.user);
+      console.log(`RevenueLedgerController: Found ${res.rows.length} rows for CM`);
+      return res;
+    }
+    if (req.user.role === Role.UNIT_MANAGER) {
+      return this.revenueLedgerService.getUmEarningsScoped(req.user.sub, req.user);
+    }
+    if (req.user.role === Role.SERVICE_PROVIDER) {
+      return this.revenueLedgerService.getProviderEarningsScoped(req.user.sub, req.user);
+    }
+    return this.revenueLedgerService.getPlatformSummary();
+  }
+
   // ── GET /revenue-ledger/provider/:spId ──────────────────────────────────
 
   @Get('provider/:spId')

@@ -47,11 +47,11 @@ export class RevenueLedgerService {
     const cm = this.db.collectiveManagers.find((m) => m.collective_id === unit.collective_id);
     if (!cm) throw new NotFoundException('Collective manager not found');
 
-    // 3. Compute split on price_at_booking (not booking total)
+    // 3. Compute split on price_at_booking
     const split = this.computeSplit(bsRow.price_at_booking);
 
     // 4. Push ledger row
-    return this.repo.create({
+    const row = this.repo.create({
       ledger_id: this.db.genId(),
       payout_status: 'PENDING',
       created_at: this.db.now(),
@@ -63,6 +63,9 @@ export class RevenueLedgerService {
       cm_id: cm.cm_id,
       ...split,
     });
+    
+    console.log(`RevenueLedgerService: Created pending entry ${row.ledger_id} for booking ${row.booking_id} (CM: ${row.cm_id})`);
+    return row;
   }
 
   dispatchForAssignment(assignment: JobAssignment) {

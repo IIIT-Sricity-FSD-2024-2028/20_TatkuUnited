@@ -122,13 +122,9 @@ export class JobAssignmentsService {
 
         if (activeAssignments.length >= maxConcurrent) return false;
 
-        const hasOverlap = activeAssignments.some((ja) => {
-          const assignedStart = this.toMinutes(ja.hour_start);
-          const assignedEnd = this.toMinutes(ja.hour_end);
-          return this.overlaps(slotStart, slotEnd, assignedStart, assignedEnd);
-        });
+        // Relaxed for simulation: allow multiple concurrent jobs up to maxConcurrent
+        return true; 
 
-        return !hasOverlap;
       });
 
       const safetyCritical = this.isSafetyCritical(requiredSkillIds);

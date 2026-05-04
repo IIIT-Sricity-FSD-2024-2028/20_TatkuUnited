@@ -40,6 +40,7 @@ export class JobAssignmentsRepository {
       updated_at: this.db.now(),
     };
     this.db.jobAssignments.push(assignment);
+    this.db.save();
     return assignment;
   }
 
@@ -56,6 +57,7 @@ export class JobAssignmentsRepository {
       ...data,
       updated_at: this.db.now(),
     };
+    this.db.save();
     return this.db.jobAssignments[idx];
   }
 }

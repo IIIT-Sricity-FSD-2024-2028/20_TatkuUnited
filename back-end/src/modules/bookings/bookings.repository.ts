@@ -40,6 +40,7 @@ export class BookingsRepository {
       updated_at: this.db.now(),
     };
     this.db.bookings.push(booking);
+    this.db.save();
     return booking;
   }
 
@@ -51,6 +52,7 @@ export class BookingsRepository {
       ...data,
       updated_at: this.db.now(),
     };
+    this.db.save();
     return this.db.bookings[idx];
   }
 
@@ -58,6 +60,7 @@ export class BookingsRepository {
     const idx = this.db.bookings.findIndex((b) => b.booking_id === booking_id);
     if (idx === -1) return false;
     this.db.bookings.splice(idx, 1);
+    this.db.save();
     return true;
   }
 
@@ -68,6 +71,7 @@ export class BookingsRepository {
 
   addBookingService(data: BookingService): BookingService {
     this.db.bookingServices.push(data);
+    this.db.save();
     return data;
   }
 }

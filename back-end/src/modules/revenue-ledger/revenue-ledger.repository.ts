@@ -35,6 +35,7 @@ export class RevenueLedgerRepository {
 
   create(data: RevenueLedger): RevenueLedger {
     this.db.revenueLedger.push(data);
+    this.db.save();
     return data;
   }
 
@@ -42,6 +43,7 @@ export class RevenueLedgerRepository {
     const row = this.findById(id);
     if (!row) return null;
     Object.assign(row, patch);
+    this.db.save();
     return row;
   }
   
@@ -49,6 +51,7 @@ export class RevenueLedgerRepository {
     const index = this.db.revenueLedger.findIndex((row) => row.ledger_id === id);
     if (index === -1) return null;
     const [deleted] = this.db.revenueLedger.splice(index, 1);
+    this.db.save();
     return deleted;
   }
 }

@@ -72,10 +72,10 @@ body { font-family: var(--font); background: var(--bg); color: var(--text-primar
 .line-chart-wrap, .bar-chart-wrap { width: 100%; overflow: hidden; }
 .line-chart-wrap canvas, .bar-chart-wrap canvas { width: 100% !important; height: 180px !important; }
 
-.donut-section { margin-bottom: 18px; }
-.donut-wrap { display: flex; align-items: center; justify-content: center; gap: 48px; padding: 8px 0; }
-.donut-wrap canvas { width: 200px !important; height: 200px !important; }
-.donut-legend { display: flex; flex-direction: column; gap: 10px; }
+.donut-section { margin-bottom: 18px; text-align: center; }
+.donut-wrap { display: inline-flex; align-items: center; justify-content: center; gap: 40px; padding: 12px 0; margin: 0 auto; }
+.donut-chart-box { width: 220px; height: 220px; position: relative; flex-shrink: 0; }
+.donut-legend { display: flex; flex-direction: column; gap: 10px; text-align: left; }
 .legend-item { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-secondary); }
 .legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
 

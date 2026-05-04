@@ -44,6 +44,7 @@ export class TransactionsRepository {
   /** Push a new transaction into the in-memory store. */
   create(data: Transaction): Transaction {
     this.db.transactions.push(data);
+    this.db.save();
     return data;
   }
 
@@ -52,6 +53,7 @@ export class TransactionsRepository {
     const row = this.findById(id);
     if (!row) return null;
     Object.assign(row, patch);
+    this.db.save();
     return row;
   }
 }
