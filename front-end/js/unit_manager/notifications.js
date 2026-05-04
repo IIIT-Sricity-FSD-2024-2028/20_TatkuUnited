@@ -79,7 +79,7 @@
   function buildBaseNotifications() {
     var providers = _providers.filter(function (p) { return p.unit_id === session.unitId; });
     var providersById = {};
-    providers.forEach(function (p) { providersById[p.service_provider_id] = p; });
+    providers.forEach(function (p) { providersById[p.sp_id] = p; });
 
     var bookingsById = {};
     _bookings.forEach(function (b) { bookingsById[b.booking_id] = b; });
@@ -87,9 +87,9 @@
     var customersById = {};
     _customers.forEach(function (c) { customersById[c.customer_id] = c; });
 
-    var providerIds = new Set(providers.map(function (p) { return p.service_provider_id; }));
+    var providerIds = new Set(providers.map(function (p) { return p.sp_id; }));
 
-    var assignments = _assignments.filter(function (a) { return providerIds.has(a.service_provider_id); });
+    var assignments = _assignments.filter(function (a) { return providerIds.has(a.sp_id); });
     var bookingIds = new Set(assignments.map(function (a) { return a.booking_id; }));
     var txns = _transactions.filter(function (t) { return bookingIds.has(t.booking_id); });
 
@@ -99,7 +99,7 @@
 
     var underAllocatedSkills = (function () {
       var counts = {};
-      _providerSkills.forEach(function (r) { if (!providerIds.has(r.service_provider_id)) return; counts[r.skill_id] = (counts[r.skill_id] || 0) + 1; });
+      _providerSkills.forEach(function (r) { if (!providerIds.has(r.sp_id)) return; counts[r.skill_id] = (counts[r.skill_id] || 0) + 1; });
       return _skills.filter(function (s) { return (counts[s.skill_id] || 0) < 2; }).length;
     })();
 
@@ -118,7 +118,7 @@
       .slice(0, 20)
       .map(function (a) {
         var booking = bookingsById[a.booking_id] || {};
-        var provider = providersById[a.service_provider_id] || {};
+        var provider = providersById[a.sp_id] || {};
         var customer = customersById[booking.customer_id] || {};
         var providerName = provider.name || "Assigned provider";
         var customerName = customer.full_name || customer.name || "customer";

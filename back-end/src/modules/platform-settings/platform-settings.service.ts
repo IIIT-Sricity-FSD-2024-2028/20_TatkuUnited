@@ -112,4 +112,23 @@ export class PlatformSettingsService {
     const parsed = parseFloat(row.value);
     return isNaN(parsed) ? fallback : parsed;
   }
+
+  /**
+   * Retrieve a boolean setting value with a fallback.
+   * Stored as "true" or "false" strings.
+   */
+  getBooleanSetting(key: string, fallback: boolean): boolean {
+    const row = this.repo.findByKey(key);
+    if (!row) return fallback;
+    return row.value === 'true';
+  }
+
+  /**
+   * Retrieve a string setting value with a fallback.
+   */
+  getStringSetting(key: string, fallback: string): string {
+    const row = this.repo.findByKey(key);
+    if (!row) return fallback;
+    return row.value;
+  }
 }

@@ -5,6 +5,9 @@ export class CreateRevenueLedgerDto {
   @ApiProperty({ example: 'b123-uuid', description: 'Associated booking ID' })
   @IsUUID() booking_id: string;
 
+  @ApiProperty({ example: 'svc-uuid', description: 'Associated service ID' })
+  @IsUUID() service_id: string;
+
   @ApiProperty({ example: 'sp123-uuid', description: 'Service Provider ID' })
   @IsUUID() sp_id: string;
 

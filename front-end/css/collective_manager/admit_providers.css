@@ -325,6 +325,26 @@ body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); co
 .details-overlay.open { display: flex; }
 .details-modal { background: #fff; border-radius: 16px; width: 450px; padding: 32px; position: relative; box-shadow: 0 20px 50px rgba(0,0,0,0.2); }
 .details-close { position: absolute; right: 20px; top: 20px; border: none; background: #f1f5f9; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.details-close svg { width: 16px; height: 16px; stroke: #6b7280; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; fill: none; }
+
+.details-header { display: flex; align-items: center; gap: 16px; margin-bottom: 24px; padding-bottom: 20px; border-bottom: 1px solid var(--border); }
+.details-avatar { width: 56px; height: 56px; border-radius: 50%; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 700; flex-shrink: 0; }
+.details-name { font-size: 20px; font-weight: 700; color: #111827; margin-bottom: 4px; }
+.details-skill-badge { display: inline-block; background: #eef2ff; color: #4338ca; padding: 4px 10px; border-radius: 999px; font-size: 12px; font-weight: 600; border: 1px solid #c7d2fe; }
+
+.details-section-title { font-size: 13px; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 12px; }
+.details-section-title--docs { margin-top: 24px; }
+
+.details-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.details-field { display: flex; align-items: flex-start; gap: 10px; font-size: 14px; color: #374151; word-break: break-word; }
+.details-field-full { grid-column: 1 / -1; }
+.details-field svg { width: 18px; height: 18px; fill: none; stroke: #9ca3af; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; margin-top: 2px; }
+
+.details-docs { display: flex; flex-direction: column; gap: 10px; }
+.details-doc-item { display: flex; align-items: center; gap: 10px; padding: 12px 16px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px; font-weight: 500; color: #1e293b; transition: border-color 0.15s, background 0.15s; }
+.details-doc-item:hover { border-color: #cbd5e1; background: #f1f5f9; }
+.details-doc-item svg { width: 18px; height: 18px; stroke: var(--accent); stroke-width: 2; fill: none; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
+.details-no-docs { font-size: 13px; color: #9ca3af; font-style: italic; }
 
 /* Toast */
 .toast { position: fixed; bottom: 30px; right: 30px; background: #1a1d23; color: #fff; padding: 14px 24px; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); transform: translateY(100px); opacity: 0; transition: .3s; z-index: 2000; }

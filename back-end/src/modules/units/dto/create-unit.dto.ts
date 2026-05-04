@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsBoolean, IsNotEmpty, IsString, IsUUID } from 'class-validator';
+import { IsBoolean, IsNotEmpty, IsOptional, IsString, IsUUID } from 'class-validator';
 
 export class CreateUnitDto {
   @ApiProperty({ example: 'Cleaning & Pest Control' })
@@ -15,4 +15,14 @@ export class CreateUnitDto {
   @IsUUID()
   @IsNotEmpty()
   collective_id: string;
+
+  @ApiProperty({ example: 'Appliances', required: false })
+  @IsString()
+  @IsOptional()
+  category?: string;
+
+  @ApiProperty({ example: 'Zone A', required: false })
+  @IsString()
+  @IsOptional()
+  zone?: string;
 }

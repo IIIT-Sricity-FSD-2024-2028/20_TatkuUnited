@@ -3,6 +3,7 @@
    ============================================================================= */
 
 let cartData = null; // { cart_id, customer_id, booking_type, scheduled_at, items: [] }
+let customerAddress = null;
 
 async function loadCart() {
   try {
@@ -131,10 +132,21 @@ function render() {
 
   document.getElementById("cart-items").innerHTML = items
     .map((item, idx) => {
-      const displayLocation = item.location || "Location unavailable";
+      const displayLocation = customerAddress || item.location || "Location unavailable";
       const priceDisplay = formatPrice(item.price_snapshot || item.price);
       const serviceName = item.service_name || item.service || "Service";
       const itemId = item.cart_item_id || item.id;
+      
+      let scheduleDisplay = "Instant Booking";
+      if (item.booking_type === "SCHEDULED" && item.scheduled_at) {
+        const d = new Date(item.scheduled_at);
+        scheduleDisplay = `Scheduled for ${d.toLocaleDateString("en-IN", {
+          month: "short",
+          day: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+        })}`;
+      }
 
       return `
       <div class="cart-item" style="animation-delay:${idx * 0.07}s">
@@ -148,7 +160,7 @@ function render() {
             </div>
             <div class="cart-item-meta-row">
               <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-              Qty: ${item.quantity || 1}
+              ${scheduleDisplay}
             </div>
           </div>
         </div>
@@ -206,6 +218,13 @@ function confirmBooking() {
 (async () => {
   const session = Auth.requireSession(["customer"]);
   if (!session) return;
+
+  try {
+    const me = await Api.get("/customers/" + session.id, { silent: true });
+    if (me && me.address) {
+      customerAddress = me.address;
+    }
+  } catch (_) {}
 
   await loadCart();
   render();

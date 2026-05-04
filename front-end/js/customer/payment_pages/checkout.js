@@ -266,6 +266,11 @@ document.getElementById("successModal").addEventListener("click", (e) => {
         addressForm.classList.add("visible");
         addressCard.style.opacity = ".5";
         changeAddrBtn.style.display = "none";
+      } else {
+        // Automatically ensure cart has the latest profile address before checkout
+        try {
+          Api.patch("/cart", { service_address: resolvedAddress }, { silent: true });
+        } catch (_) {}
       }
     }
   } catch (_) {

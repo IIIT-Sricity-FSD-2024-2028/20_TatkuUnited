@@ -1,12 +1,16 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsArray, IsOptional, ValidateNested } from 'class-validator';
+import { IsArray, IsOptional, ValidateNested, IsString, IsNotEmpty } from 'class-validator';
 import { Type } from 'class-transformer';
 
 class HowItWorksStep {
   @ApiProperty({ description: 'Step title', example: 'Book a slot' })
+  @IsString()
+  @IsNotEmpty()
   step_title: string;
 
   @ApiProperty({ description: 'Step description', example: 'Choose a convenient time' })
+  @IsString()
+  @IsNotEmpty()
   step_description: string;
 }
 
