@@ -34,14 +34,21 @@ function renderRankedProviders(filter = '') {
   const list = document.getElementById('rankedProvidersList'); list.innerHTML = '';
   const query = filter.toLowerCase();
   const sorted = [...myProviders].sort((a,b) => (b.rating||0) - (a.rating||0));
+  
+  // Pre-compute unit_name for filtering
+  sorted.forEach(p => {
+    const unit = myUnits.find(u => u.unit_id === p.unit_id);
+    p.unit_name = unit ? unit.unit_name : 'No Unit';
+  });
+
   const filtered = sorted.filter(p => p.name.toLowerCase().includes(query) || (p.unit_name||'').toLowerCase().includes(query));
   if (!filtered.length) { list.innerHTML = '<div style="text-align:center;padding:40px;color:#9ca3af;font-size:13px;">No matching providers found.</div>'; return; }
   filtered.forEach((p, idx) => {
     const card = document.createElement('div'); card.className = 'ranked-card'; card.style.animationDelay = (idx*0.05)+'s';
-    const unit = myUnits.find(u => u.unit_id === p.unit_id); p.unit_name = unit ? unit.unit_name : 'No Unit';
     const rating = p.rating ? p.rating.toFixed(1) : 'N/A';
-    card.innerHTML = `<div class="r-provider-info"><div class="r-avatar">${getInitials(p.name)}</div><div><div class="r-name">${p.name}</div><div class="r-meta">${p.unit_name} &bull; ${p.service_provider_id}</div></div></div><div class="r-stats"><div class="r-rating"><span class="star-icon">★</span> ${rating}</div><div class="r-jobs">${p.is_active?'Active':'Inactive'}</div></div>`;
-    card.onclick = () => window.location.href = `provider_profile.html#id=${p.service_provider_id}`;
+    const providerId = p.service_provider_id || p.sp_id;
+    card.innerHTML = `<div class="r-provider-info"><div class="r-avatar">${getInitials(p.name)}</div><div><div class="r-name">${p.name}</div><div class="r-meta">${p.unit_name} &bull; ${providerId}</div></div></div><div class="r-stats"><div class="r-rating"><span class="star-icon">★</span> ${rating}</div><div class="r-jobs">${p.is_active?'Active':'Inactive'}</div></div>`;
+    card.onclick = () => window.location.href = `provider_profile.html#id=${providerId}`;
     list.appendChild(card);
   });
 }
@@ -110,7 +117,8 @@ async function renderAdmissions() {
     const initials = getInitials(p.name);
     const options = myUnits.map(u => `<option value="${u.unit_id}">${u.unit_name}</option>`).join('');
     const card = document.createElement('div'); card.className = 'applicant-card';
-    card.innerHTML = `<div class="applicant-avatar" style="background:${colors[idx%colors.length]}">${initials}</div><div class="applicant-main"><div class="applicant-name">${p.name}</div><div class="applicant-meta" style="color:var(--accent);font-weight:600">Pending Unit Assignment</div></div><div class="applicant-actions"><select class="unit-assign-select" style="padding:6px;border-radius:6px;border:1px solid var(--border);font-size:12px;outline:none;"><option value="" disabled selected>Unit...</option>${options}</select><button class="btn-verify" onclick="assignUnit('${p.service_provider_id}',this)">Assign</button></div>`;
+    const providerId = p.service_provider_id || p.sp_id;
+    card.innerHTML = `<div class="applicant-avatar" style="background:${colors[idx%colors.length]}">${initials}</div><div class="applicant-main"><div class="applicant-name">${p.name}</div><div class="applicant-meta" style="color:var(--accent);font-weight:600">Pending Unit Assignment</div></div><div class="applicant-actions"><select class="unit-assign-select" style="padding:6px;border-radius:6px;border:1px solid var(--border);font-size:12px;outline:none;"><option value="" disabled selected>Unit...</option>${options}</select><button class="btn-verify" onclick="assignUnit('${providerId}',this)">Assign</button></div>`;
     admissionList.appendChild(card);
   }); }
 }
@@ -130,7 +138,7 @@ window.assignUnit = async (providerId, btn) => {
   if (!unitId) return showToast('Please select a unit');
   btn.disabled = true;
   try {
-    await Api.patch("/service-providers/"+providerId,{unit_id:unitId});
+    await Api.patch("/service-providers/"+providerId,{unit_id:unitId, is_active:true});
     showToast('✓ Provider approved and assigned successfully');
     btn.closest('.applicant-card').remove();
     const admissionList = document.getElementById('admissionRequestsList');

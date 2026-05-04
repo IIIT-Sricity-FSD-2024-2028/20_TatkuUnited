@@ -126,7 +126,14 @@ export class AccessScopeService {
       return;
     }
     if (user.role === Role.COLLECTIVE_MANAGER || user.role === Role.UNIT_MANAGER) {
-      this.assertUnitAccess(user, provider.unit_id);
+      if (!provider.unit_id) {
+        if (!provider.home_sector_id) {
+          throw new ForbiddenException('Provider has no unit or sector assigned');
+        }
+        this.assertSectorAccess(user, provider.home_sector_id);
+      } else {
+        this.assertUnitAccess(user, provider.unit_id);
+      }
     }
   }
 

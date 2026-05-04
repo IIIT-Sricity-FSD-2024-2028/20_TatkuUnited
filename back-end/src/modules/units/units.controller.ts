@@ -85,11 +85,15 @@ export class UnitsController {
   }
 
   @Post()
-  @Roles(Role.SUPER_USER)
+  @Roles(Role.SUPER_USER, Role.COLLECTIVE_MANAGER)
   @ApiOperation({ summary: 'Create a new unit' })
   @ApiResponse({ status: 201, description: 'Created successfully' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
-  create(@Body() dto: CreateUnitDto) {
+  create(@Body() dto: CreateUnitDto, @Request() req: { user: JwtPayload }) {
+    if (req.user.role === Role.COLLECTIVE_MANAGER) {
+      const manager = this.accessScope.getCollectiveManager(req.user.sub);
+      dto.collective_id = manager.collective_id;
+    }
     return this.unitsService.create(dto);
   }
 

@@ -39,7 +39,7 @@
   "units": [
     {
       "unit_id": "de90b05c-9dc0-4e6c-b2f8-8f42914783fa",
-      "unit_name": "Advanced Electrical Unit",
+      "unit_name": "Electrical & AC Services",
       "rating": 4.33,
       "rating_count": 3,
       "is_active": true,
@@ -82,6 +82,15 @@
       "rating_count": 0,
       "is_active": true,
       "created_at": "2026-02-01T00:00:00Z",
+      "collective_id": "b2b636cc-a295-445c-844f-eed968905d91"
+    },
+    {
+      "unit_id": "5442e303-0877-4aea-90fa-bf1880010833",
+      "unit_name": "Shricharan's unit",
+      "rating": 0,
+      "rating_count": 0,
+      "is_active": true,
+      "created_at": "2026-05-04T07:45:16.321Z",
       "collective_id": "b2b636cc-a295-445c-844f-eed968905d91"
     }
   ],
@@ -166,6 +175,17 @@
       "created_at": "2026-02-01T00:00:00Z",
       "updated_at": "2026-04-10T00:00:00Z",
       "unit_id": "b4304bcb-eff4-4797-ad52-f7427c133a23"
+    },
+    {
+      "um_id": "c26e6d63-c6c1-48c6-bf18-3566d7b5f043",
+      "name": "Shri charan",
+      "email": "vasudevmmmm@gmail.com",
+      "password_hash": "scrypt:61cbf77005450932cdea5b2a1f3d1db1:303f56dcef9080b3f248eb8aa0b0039911a6c1a27721b5520f83ae02c3a1e40f14daf57fcdf900e5c917fa6bbcaf0bd5f81ab2d4f591972b31cc8dc2df17cff9",
+      "phone": "+911234567890",
+      "is_active": true,
+      "unit_id": "5442e303-0877-4aea-90fa-bf1880010833",
+      "created_at": "2026-05-04T07:39:38.145Z",
+      "updated_at": "2026-05-04T07:45:16.326Z"
     }
   ],
   "serviceProviders": [

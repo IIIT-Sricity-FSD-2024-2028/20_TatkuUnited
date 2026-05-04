@@ -156,7 +156,6 @@
           <thead>
             <tr>
               <th>Unit</th>
-              <th>Category</th>
               <th>Rating</th>
               <th>Providers</th>
               <th>Completed</th>
@@ -247,19 +246,20 @@
           <input type="text" class="form-input" id="unitName" placeholder="e.g. QuickFix Plumbing" />
         </div>
         <div class="form-group">
-          <label class="form-label">Manager</label>
-          <input type="text" class="form-input" id="unitManager" placeholder="Manager name" />
-        </div>
-        <div class="form-group">
-          <label class="form-label">Category</label>
-          <select class="form-input" id="unitCategory">
-            <option>Plumbing</option>
-            <option>Electrical</option>
-            <option>Cleaning</option>
-            <option>Landscaping</option>
-            <option>Security</option>
-            <option>Painting</option>
-          </select>
+          <label class="form-label">Unit Manager <span class="form-hint">(optional)</span></label>
+          <div class="searchable-select" id="managerSelectWrap">
+            <input type="text" class="form-input searchable-select-input" id="managerSearchInput"
+              placeholder="Search unit managers..." autocomplete="off" />
+            <input type="hidden" id="selectedManagerId" value="" />
+            <div class="searchable-select-dropdown" id="managerDropdown"></div>
+            <div class="selected-manager-tag" id="selectedManagerTag" style="display:none;">
+              <span class="tag-name" id="selectedManagerName"></span>
+              <button class="tag-remove" id="clearManagerBtn" type="button" title="Remove manager">&times;</button>
+            </div>
+          </div>
+          <div class="form-error" id="managerError" style="display:none;">
+            This manager does not exist in the system. Please select from the list.
+          </div>
         </div>
       </div>
       <div class="modal-footer">

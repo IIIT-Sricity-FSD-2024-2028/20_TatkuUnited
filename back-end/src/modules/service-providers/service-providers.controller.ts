@@ -49,6 +49,15 @@ export class ServiceProvidersController {
     if (req.user.role === Role.COLLECTIVE_MANAGER) {
       const manager = this.accessScope.getCollectiveManager(req.user.sub);
       return this.serviceProvidersService.findAll().filter((sp) => {
+        if (!sp.unit_id) {
+          if (!sp.home_sector_id) return false;
+          try {
+            const sector = this.accessScope.getSector(sp.home_sector_id);
+            return sector.collective_id === manager.collective_id;
+          } catch {
+            return false;
+          }
+        }
         const unit = this.accessScope.getUnit(sp.unit_id);
         return unit.collective_id === manager.collective_id;
       });
@@ -88,7 +97,7 @@ export class ServiceProvidersController {
   }
 
   @Get(':id')
-  @Roles(Role.SUPER_USER, Role.SERVICE_PROVIDER, Role.UNIT_MANAGER)
+  @Roles(Role.SUPER_USER, Role.SERVICE_PROVIDER, Role.UNIT_MANAGER, Role.COLLECTIVE_MANAGER)
   @ApiOperation({ summary: 'Get service provider by ID' })
   @ApiResponse({ status: 200, description: 'Success' })
   @ApiResponse({ status: 404, description: 'Not found' })
@@ -97,7 +106,7 @@ export class ServiceProvidersController {
     if (req.user.role === Role.SERVICE_PROVIDER && req.user.sub !== id) {
       throw new ForbiddenException('Providers can only access their own account');
     }
-    if (req.user.role === Role.UNIT_MANAGER) {
+    if (req.user.role === Role.UNIT_MANAGER || req.user.role === Role.COLLECTIVE_MANAGER) {
       this.accessScope.assertProviderAccess(req.user, id);
     }
     return this.serviceProvidersService.findOne(id);
@@ -118,7 +127,7 @@ export class ServiceProvidersController {
   }
 
   @Patch(':id')
-  @Roles(Role.SUPER_USER, Role.SERVICE_PROVIDER, Role.UNIT_MANAGER)
+  @Roles(Role.SUPER_USER, Role.SERVICE_PROVIDER, Role.UNIT_MANAGER, Role.COLLECTIVE_MANAGER)
   @ApiOperation({ summary: 'Update a service provider' })
   @ApiResponse({ status: 200, description: 'Success' })
   @ApiResponse({ status: 404, description: 'Not found' })
@@ -131,7 +140,7 @@ export class ServiceProvidersController {
     if (req.user.role === Role.SERVICE_PROVIDER && req.user.sub !== id) {
       throw new ForbiddenException('Providers can only update their own account');
     }
-    if (req.user.role === Role.UNIT_MANAGER) {
+    if (req.user.role === Role.UNIT_MANAGER || req.user.role === Role.COLLECTIVE_MANAGER) {
       this.accessScope.assertProviderAccess(req.user, id);
     }
     if (dto.unit_id !== undefined || dto.sector_id !== undefined) {
@@ -139,7 +148,7 @@ export class ServiceProvidersController {
       const nextUnitId = dto.unit_id ?? provider.unit_id;
       const nextSectorId = dto.sector_id ?? provider.home_sector_id;
       this.accessScope.assertUnitAndSectorCompatible(nextUnitId, nextSectorId);
-      if (req.user.role === Role.UNIT_MANAGER) {
+      if (req.user.role === Role.UNIT_MANAGER || req.user.role === Role.COLLECTIVE_MANAGER) {
         this.accessScope.assertUnitAccess(req.user, nextUnitId);
         this.accessScope.assertSectorAccess(req.user, nextSectorId);
       }
