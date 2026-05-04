@@ -1,4 +1,4 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="en">
 
 <head>
@@ -7,6 +7,7 @@
   <title>Collective Manager – Revenue Reports</title>
   <link rel="stylesheet" href="../../css/collective_manager/revenue_reports.css" />
   <link rel="stylesheet" href="../../css/modules/global_search.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 
 <body>
@@ -95,6 +96,7 @@
           <option>This Month</option>
           <option>This Quarter</option>
           <option>This Year</option>
+          <option selected>All Time</option>
         </select>
       </div>
 
@@ -114,7 +116,7 @@
         <div class="stat-card">
           <div class="stat-inner">
             <span class="stat-label">Number of Bookings</span>
-            <span class="stat-value" id="stat-bookings">1,284</span>
+            <span class="stat-value" id="stat-bookings">0</span>
           </div>
           <div class="stat-icon icon-blue">
             <svg viewBox="0 0 24 24">
@@ -140,7 +142,7 @@
         <div class="stat-card">
           <div class="stat-inner">
             <span class="stat-label">Active Providers</span>
-            <span class="stat-value" id="stat-providers">142</span>
+            <span class="stat-value" id="stat-providers">0</span>
           </div>
           <div class="stat-icon icon-purple">
             <svg viewBox="0 0 24 24">
@@ -171,7 +173,9 @@
       <div class="chart-card donut-section">
         <h2 class="card-title">Category Revenue Split</h2>
         <div class="donut-wrap">
-          <canvas id="donutChart" width="220" height="220"></canvas>
+          <div class="donut-chart-box">
+            <canvas id="donutChart"></canvas>
+          </div>
           <div class="donut-legend" id="donutLegend"></div>
         </div>
       </div>

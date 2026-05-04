@@ -4652,6 +4652,39 @@
         ]
       }
     },
+    "/revenue-ledger/my": {
+      "get": {
+        "operationId": "RevenueLedgerController_getMyEarnings",
+        "parameters": [
+          {
+            "name": "x-id",
+            "in": "header",
+            "description": "Caller user ID (UUID)",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "x-role": []
+          },
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get current user earnings",
+        "tags": [
+          "Revenue Ledger"
+        ]
+      }
+    },
     "/revenue-ledger/provider/{spId}": {
       "get": {
         "operationId": "RevenueLedgerController_getProviderEarnings",

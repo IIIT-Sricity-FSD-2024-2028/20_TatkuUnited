@@ -79,7 +79,9 @@
     statusBadge.style.color        = isActive ? '#22c55e' : '#ef4444';
   }
 
-
+  /* ── 8. Render Charts & Activity ── */
+  renderRevenueChart(allTransactions, myBookingIds);
+  renderActivity(myAssignments, allBookings, allProviders, myUnits);
 })();
 
 /* ─── HELPERS ─────────────────────────────────────────── */
