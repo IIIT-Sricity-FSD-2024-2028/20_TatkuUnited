@@ -47,8 +47,13 @@ export class UnitManagersController {
     if (req.user.role === Role.COLLECTIVE_MANAGER) {
       const manager = this.accessScope.getCollectiveManager(req.user.sub);
       return this.unitManagersService.findAll().filter((um) => {
-        const unit = this.accessScope.getUnit(um.unit_id);
-        return unit.collective_id === manager.collective_id;
+        if (!um.unit_id) return true;
+        try {
+          const unit = this.accessScope.getUnit(um.unit_id);
+          return unit.collective_id === manager.collective_id;
+        } catch (e) {
+          return false;
+        }
       });
     }
     return this.unitManagersService.findAll();
@@ -93,7 +98,7 @@ export class UnitManagersController {
   }
 
   @Patch(':id')
-  @Roles(Role.SUPER_USER, Role.UNIT_MANAGER)
+  @Roles(Role.SUPER_USER, Role.UNIT_MANAGER, Role.COLLECTIVE_MANAGER)
   @ApiOperation({ summary: 'Update a unit manager' })
   @ApiResponse({ status: 200, description: 'Success' })
   @ApiResponse({ status: 404, description: 'Not found' })
@@ -107,8 +112,10 @@ export class UnitManagersController {
     if (req.user.role === Role.UNIT_MANAGER && req.user.sub !== id) {
       throw new ForbiddenException('Unit managers can only update their own account');
     }
-    this.accessScope.assertUnitAccess(req.user, manager.unit_id);
-    if (dto.unit_id !== undefined) {
+    if (req.user.role !== Role.COLLECTIVE_MANAGER) {
+      this.accessScope.assertUnitAccess(req.user, manager.unit_id);
+    }
+    if (dto.unit_id !== undefined && req.user.role !== Role.COLLECTIVE_MANAGER) {
       this.accessScope.assertUnitAccess(req.user, dto.unit_id);
     }
     return this.unitManagersService.update(id, dto);

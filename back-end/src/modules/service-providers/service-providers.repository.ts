@@ -80,7 +80,10 @@ export class ServiceProvidersRepository {
     if (dto.phone !== undefined) provider.phone = dto.phone;
     if (dto.unit_id !== undefined) provider.unit_id = dto.unit_id;
     if (dto.sector_id !== undefined) provider.home_sector_id = dto.sector_id;
-    if (dto.is_active !== undefined) provider.is_active = dto.is_active;
+    if (dto.is_active !== undefined) {
+      provider.is_active = dto.is_active;
+      provider.account_status = dto.is_active ? 'active' : 'inactive';
+    }
     
     provider.updated_at = new Date().toISOString();
     return provider;

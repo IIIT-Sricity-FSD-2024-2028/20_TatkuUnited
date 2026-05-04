@@ -40,8 +40,36 @@ function hydrateHero(cm, collective, units, allProviders) {
   const provEl = document.getElementById("stat-providers"); if (provEl) provEl.textContent = provCount;
 }
 
-function hydratePersonalCard(cm) { if (!cm) return; setVal("full-name",cm.name); setVal("email",cm.email); setVal("phone",String(cm.phone||"").replace(/\D/g,"").slice(-10)); const dobEl=document.getElementById("dob"); if(dobEl) dobEl.value=""; document.getElementById("hero-name").textContent=cm.name; document.getElementById("hero-email").textContent=cm.email; }
-function hydrateCollectiveCard(collective, allSectors) { if (!collective) return; setVal("collective-name",collective.collective_name); setVal("collective-id",collective.collective_id); const sectorIds=collective.sector_ids||[]; const firstSector=allSectors.find(s=>sectorIds.includes(s.sector_id)); if(firstSector) setVal("region",firstSector.region); }
+function hydratePersonalCard(cm) { if (!cm) return; setVal("full-name",cm.name); setVal("email",cm.email); setVal("phone",String(cm.phone||"").replace(/\D/g,"").slice(-10)); const dobEl=document.getElementById("dob"); if(dobEl) dobEl.value=cm.dob||""; document.getElementById("hero-name").textContent=cm.name; document.getElementById("hero-email").textContent=cm.email; }
+function hydrateCollectiveCard(collective, allSectors) { 
+  if (!collective) return; 
+  setVal("collective-name",collective.collective_name); 
+  setVal("collective-id",collective.collective_id); 
+  const sectorIds=collective.sector_ids||[]; 
+  const regionSelect=document.getElementById("region"); 
+  if(regionSelect) { 
+    regionSelect.innerHTML=""; 
+    const collectiveSectors=allSectors.filter(s=>sectorIds.includes(s.sector_id)); 
+    if(collectiveSectors.length>0) { 
+      const regionName=collectiveSectors[0].region; 
+      const defaultOpt=document.createElement("option"); 
+      defaultOpt.text=`Region: ${regionName}`; 
+      defaultOpt.value=""; 
+      regionSelect.appendChild(defaultOpt); 
+      collectiveSectors.forEach(s=>{ 
+        const opt=document.createElement("option"); 
+        opt.text=s.sector_name; 
+        opt.value=s.sector_id; 
+        opt.disabled=true; 
+        regionSelect.appendChild(opt); 
+      }); 
+    } else { 
+      const opt=document.createElement("option"); 
+      opt.text="No sectors assigned"; 
+      regionSelect.appendChild(opt); 
+    } 
+  } 
+}
 function setVal(id,val) { const el=document.getElementById(id); if(el) el.value=val||""; }
 
 function renderUnits(units, countFn) {
@@ -73,11 +101,12 @@ async function saveSection(section) {
     const name=(document.getElementById("full-name").value||"").trim();
     const email=(document.getElementById("email").value||"").trim();
     const rawPhone=(document.getElementById("phone").value||"").trim();
+    const dob=(document.getElementById("dob").value||"").trim();
     if (!name) { showToast("Name cannot be empty."); return; }
     if (rawPhone && !/^\d{10}$/.test(rawPhone)) { showToast("Phone must be exactly 10 digits."); return; }
     try {
-      await Api.patch("/collective-managers/"+_session.id, {name,email,phone:rawPhone});
-      _cm.name=name; _cm.email=email; _cm.phone=rawPhone;
+      await Api.patch("/collective-managers/"+_session.id, {name,email,phone:rawPhone,dob});
+      _cm.name=name; _cm.email=email; _cm.phone=rawPhone; _cm.dob=dob;
       document.getElementById("hero-name").textContent=name;
       document.getElementById("hero-email").textContent=email;
       showToast("Personal information saved ✓");
