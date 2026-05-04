@@ -16,7 +16,7 @@ export class RolesGuard implements CanActivate {
   constructor(
     private reflector: Reflector,
     private platformSettings: PlatformSettingsService,
-  ) {}
+  ) { }
 
   canActivate(context: ExecutionContext): boolean {
     const request = context.switchToHttp().getRequest();
@@ -56,8 +56,6 @@ export class RolesGuard implements CanActivate {
 
     const normalizedRole = currentUserRole?.toLowerCase();
     const allowedRoles = requiredRoles.map(r => String(r).toLowerCase());
-
-    console.log("ROLE FROM JWT:", request.user?.role);
 
     if (!normalizedRole) return false;
 
