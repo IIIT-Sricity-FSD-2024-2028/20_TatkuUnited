@@ -51,21 +51,22 @@ async function buildPayoutRows() {
 
     payoutRows = (ledgerEntries.rows || []).map((entry) => {
       const status =
-        (entry.payout_status || "").toUpperCase() === "DISBURSED" ||
-        (entry.payout_status || "").toUpperCase() === "PAID"
+        ["DISBURSED", "PAID"].includes((entry.payout_status || "").toUpperCase())
           ? "paid"
           : "pending";
       const effectiveDate =
         status === "paid"
-          ? entry.payout_at || entry.created_at
+          ? entry.paid_at || entry.created_at
           : entry.created_at;
+
+      const providerAmt = Number(entry.provider_amount || entry.sp_amount || entry.amount || 0);
 
       return {
         ref: entry.ledger_id || entry.id,
         date: effectiveDate,
         displayDate: formatDisplayDate(effectiveDate),
-        amount: Number(entry.sp_amount || entry.amount || 0),
-        amountLabel: formatCurrency(entry.sp_amount || entry.amount || 0),
+        amount: providerAmt,
+        amountLabel: formatCurrency(providerAmt),
         status,
         customer: entry.booking_id || "-",
         service: entry.booking_id || "-",
@@ -73,7 +74,7 @@ async function buildPayoutRows() {
         paymentMethod: entry.payment_method || "-",
         transactionId: entry.transaction_id || "-",
         paymentStatusRaw: status === "paid" ? "SUCCESS" : "PENDING",
-        originalAmount: Number(entry.total_amount || entry.amount || 0),
+        originalAmount: providerAmt > 0 ? Math.round((providerAmt / 0.78) * 100) / 100 : 0,
       };
     });
 
@@ -100,31 +101,32 @@ function renderStats() {
     .reduce((sum, row) => sum + row.originalAmount, 0);
 
   const paidCount = payoutRows.filter((row) => row.status === "paid").length;
+  const totalJobs = payoutRows.length;
   const avgValue = paidCount > 0 ? Math.round(totalRevenue / paidCount) : 0;
 
   const dynamicStats = [
     {
       label: "Total Earnings",
       value: formatCurrency(totalRevenue),
-      sub: `${paidCount} bookings completed`,
+      sub: `${paidCount} booking${paidCount !== 1 ? "s" : ""} completed`,
       subClass: "stat-change positive",
     },
     {
       label: "Pending Payout",
       value: formatCurrency(pendingPayout),
-      sub: "Awaiting settlement",
+      sub: `${totalJobs - paidCount} awaiting settlement`,
       subClass: "stat-sub",
     },
     {
-      label: "Platform GMV",
+      label: "Gross Service Value",
       value: formatCurrency(grossEarnings),
-      sub: "Your 78% cut earnings",
+      sub: "You earned 78% of this",
       subClass: "stat-blue",
     },
     {
       label: "Average Booking Value",
       value: formatCurrency(avgValue),
-      sub: "78% of customer payment",
+      sub: "Per completed booking",
       subClass: "stat-sub",
     },
   ];

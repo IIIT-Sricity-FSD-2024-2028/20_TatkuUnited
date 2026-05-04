@@ -121,7 +121,7 @@
     });
   }
 
-  function handlePasswordChange() {
+  async function handlePasswordChange() {
     const currentPwd = document.getElementById("pwd-current")?.value;
     const newPwd = document.getElementById("pwd-new")?.value;
     const confirmPwd = document.getElementById("pwd-confirm")?.value;
@@ -130,7 +130,7 @@
     if (newPwd !== confirmPwd) { showToast("New passwords do not match."); return; }
     if (newPwd.length < 12) { showToast("New password must be at least 12 characters."); return; }
 
-    const res = Auth.changePassword(currentPwd, newPwd);
+    const res = await Auth.changePassword(currentPwd, newPwd);
     if (res.success) {
       showToast("Password updated successfully!");
       closePwdModalBtn();
@@ -202,17 +202,18 @@
     const emailEl = document.getElementById("email");
     const phoneEl = document.getElementById("phone");
     const idEl = document.getElementById("super-user-id");
+    const dataSrc = suRecord || currentUser;
 
-    if (nameEl) nameEl.value = currentUser.name || "";
-    if (emailEl) emailEl.value = currentUser.email || "";
+    if (nameEl) nameEl.value = dataSrc.name || "";
+    if (emailEl) emailEl.value = dataSrc.email || "";
 
-    const rawPhone = currentUser.phone || "";
+    const rawPhone = dataSrc.phone || "";
     if (phoneEl) phoneEl.value = String(rawPhone).replace(/\D/g, "").slice(-10);
-    if (idEl) idEl.value = currentUser.id || "";
+    if (idEl) idEl.value = dataSrc.super_user_id || dataSrc.id || "";
 
     const avatarEl = document.getElementById("profile-avatar");
-    if (avatarEl && currentUser.pfp_url) {
-      avatarEl.innerHTML = `<img src="${currentUser.pfp_url}" alt="Super User" style="border-radius:50%;width:100%;height:100%;object-fit:cover;" />`;
+    if (avatarEl && dataSrc.pfp_url) {
+      avatarEl.innerHTML = `<img src="${dataSrc.pfp_url}" alt="Super User" style="border-radius:50%;width:100%;height:100%;object-fit:cover;" />`;
     }
     syncName();
     syncEmail();

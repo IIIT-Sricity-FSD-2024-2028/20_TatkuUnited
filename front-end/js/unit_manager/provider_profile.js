@@ -11,7 +11,14 @@
 
   function getQueryParam(name) {
     var params = new URLSearchParams(window.location.search);
-    return params.get(name);
+    let val = params.get(name);
+    if (!val && window.location.hash) {
+      // Try parsing from hash if search is empty (handles server-side param stripping)
+      const hashStr = window.location.hash.startsWith('#') ? window.location.hash.substring(1) : window.location.hash;
+      const hashParams = new URLSearchParams(hashStr);
+      val = hashParams.get(name);
+    }
+    return val;
   }
 
   function getInitials(name) {
@@ -49,7 +56,7 @@
     // Hero & Basic Info
     document.getElementById("hero-name").textContent = providerData.name;
     document.getElementById("info-name").textContent = providerData.name;
-    document.getElementById("hero-id").textContent = "ID: " + providerData.service_provider_id;
+    document.getElementById("hero-id").textContent = "ID: " + providerData.sp_id;
     document.getElementById("info-phone").textContent = providerData.phone || "N/A";
     document.getElementById("info-email").textContent = providerData.email || "N/A";
     document.getElementById("info-address").textContent = providerData.address || "N/A";
@@ -98,18 +105,33 @@
     });
     if (!mySkills.length) skillContainer.innerHTML = '<span class="list-secondary">No skills listed.</span>';
 
+    // Fetch all services to get names
+    var services = await Api.get("/services", { silent: true }) || [];
+    var serviceMap = {};
+    services.forEach((s) => { serviceMap[s.service_id] = s.service_name; });
+
     // Job History — fetch from API
     var myAssignments = [];
-    myAssignments  = await Api.get("/job-assignments/provider/" + providerId);
+    try {
+      myAssignments = await Api.get("/job-assignments/provider/" + providerId, { silent: true }) || [];
+    } catch (_) {}
 
     // Revenue ledger for this provider
+    var ledgerResponse = null;
     var ledger = [];
-    ledger  = await Api.get("/revenue-ledger/provider/" + providerId);
+    try {
+      ledgerResponse = await Api.get("/revenue-ledger/provider/" + providerId, { silent: true });
+      // API returns { pending, disbursed, rows } — extract the rows array
+      ledger = (ledgerResponse && Array.isArray(ledgerResponse.rows)) ? ledgerResponse.rows
+             : (Array.isArray(ledgerResponse) ? ledgerResponse : []);
+    } catch (_) {}
 
     var historyBody = document.getElementById("history-body");
     historyBody.innerHTML = "";
     
-    var totalEarnings = ledger.reduce((sum, r) => sum + (r.provider_amount || r.amount || 0), 0);
+    var totalEarnings = (ledgerResponse && typeof ledgerResponse.disbursed === "number")
+      ? ledgerResponse.disbursed
+      : ledger.reduce((sum, r) => sum + (r.provider_amount || 0), 0);
     var completedCount = 0;
     var ratingSum = 0;
     var ratedCount = 0;
@@ -123,13 +145,23 @@
         ratedCount++;
       }
 
+      // Find earnings for this specific assignment
+      var jobPayout = ledger.find((l) => l.booking_id === a.booking_id && l.service_id === a.service_id);
+      // Fallback: match by booking_id only if service_id match fails
+      if (!jobPayout) jobPayout = ledger.find((l) => l.booking_id === a.booking_id);
+      var earnedStr = jobPayout ? "₹" + Math.round(jobPayout.provider_amount).toLocaleString() : "-";
+      var serviceName = serviceMap[a.service_id] || a.service_name || "General Service";
+
       var tr = document.createElement("tr");
       tr.innerHTML = `
         <td>${new Date(a.assigned_at).toLocaleDateString()}</td>
-        <td><span style="font-weight:600">${a.booking_id}</span></td>
+        <td>
+          <div style="font-weight:600; color:var(--text-primary)">${serviceName}</div>
+          <div style="font-size:0.75rem; color:var(--text-secondary)">ID: ${a.booking_id.slice(0,8)}...</div>
+        </td>
         <td><span class="pill ${a.status === "COMPLETED" ? "pill-green" : "pill-blue"}">${a.status}</span></td>
         <td><span class="stars">${buildStars(a.assignment_score)}</span></td>
-        <td>${totalEarnings > 0 ? "₹" + Math.round(totalEarnings / myAssignments.length).toLocaleString() : "-"}</td>
+        <td>${earnedStr}</td>
       `;
       historyBody.appendChild(tr);
     });
@@ -153,6 +185,7 @@
   (async () => {
     session = Auth.requireSession(["unit_manager"]);
     if (!session) return;
+    Auth.syncUserAvatar();
     
     providerId = getQueryParam("id");
     if (!providerId) {

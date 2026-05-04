@@ -16,12 +16,12 @@ window.Auth = (() => {
   };
 
   const ROLE_DASHBOARDS = {
-    super_user: "/front-end/html/super_user/super_user_dashboard.html",
-    collective_manager: "/front-end/html/collective_manager/dashboard.html",
-    unit_manager: "/front-end/html/unit_manager/dashboard.html",
-    provider: "/front-end/html/provider/dashboard.html",
-    service_provider: "/front-end/html/provider/dashboard.html",
-    customer: "/front-end/html/customer/home.html",
+    super_user: "/html/super_user/super_user_dashboard.html",
+    collective_manager: "/html/collective_manager/dashboard.html",
+    unit_manager: "/html/unit_manager/dashboard.html",
+    provider: "/html/provider/dashboard.html",
+    service_provider: "/html/provider/dashboard.html",
+    customer: "/html/customer/home.html",
   };
 
   function toApiRole(role) {
@@ -79,8 +79,8 @@ window.Auth = (() => {
 
   function getRedirectUrl() {
     const session = getSession();
-    if (!session) return "/front-end/html/auth_pages/login.html";
-    return ROLE_DASHBOARDS[session.role] || "/front-end/html/auth_pages/login.html";
+    if (!session) return "/html/auth_pages/login.html";
+    return ROLE_DASHBOARDS[session.role] || "/html/auth_pages/login.html";
   }
 
   async function apiRequest(path, options) {
@@ -247,7 +247,7 @@ window.Auth = (() => {
   function requireSession(allowedRoles) {
     const session = getSession();
     if (!session) {
-      window.location.replace("/front-end/html/auth_pages/login.html");
+      window.location.replace("/html/auth_pages/login.html");
       return null;
     }
 
@@ -289,7 +289,7 @@ window.Auth = (() => {
       // ignore network failures during logout
     }
     clearAuthState();
-    window.location.replace("/front-end/html/auth_pages/logout.html");
+    window.location.replace("/html/auth_pages/logout.html");
   }
 
   function requestLogout() {
@@ -298,6 +298,28 @@ window.Auth = (() => {
 
   function getRegisteredRole() {
     return sessionStorage.getItem(STORAGE_KEYS.registeredRole) || "";
+  }
+
+  function syncUserAvatar() {
+    const session = getSession();
+    if (!session || !session.name) return;
+
+    const initials = session.name
+      .trim()
+      .split(/\s+/)
+      .map((w) => w[0])
+      .join("")
+      .slice(0, 2)
+      .toUpperCase() || "TU";
+
+    const avatars = document.querySelectorAll(".user-avatar");
+    avatars.forEach((av) => {
+      av.textContent = initials;
+      // Optional: Set a consistent color based on name
+      const palette = ["#3b82f6", "#0d9488", "#7c3aed", "#d97706", "#dc2626", "#16a34a"];
+      const colorIndex = session.name.charCodeAt(0) % palette.length;
+      av.style.backgroundColor = palette[colorIndex];
+    });
   }
 
   function clearRegisteredRole() {
@@ -320,6 +342,7 @@ window.Auth = (() => {
     updateProfilePicture,
     updateSession,
     syncSessionFromServer,
+    syncUserAvatar,
     getToken,
     getRegisteredRole,
     clearRegisteredRole,

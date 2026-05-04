@@ -295,13 +295,13 @@
       try {
         if (editingId) {
           await Api.patch("/skills/" + editingId, {
-            skill_name: name,
+            name: name,
             description: desc,
           });
           showToast(`✓ "${name}" updated successfully`);
         } else {
           await Api.post("/skills", {
-            skill_name: name,
+            name: name,
             description: desc,
           });
           showToast(`✓ "${name}" added to skill catalog`);

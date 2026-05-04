@@ -30,8 +30,6 @@ export class CartService {
 
     cart = this.cartRepo.createCart({
       customer_id: customerId,
-      booking_type: 'INSTANT',
-      scheduled_at: null,
       service_address: address,
     });
     return cart;
@@ -73,26 +71,14 @@ export class CartService {
       );
     }
 
-    // Check for duplicate (same service already in cart)
-    const existing = this.cartRepo.findItemByCartAndService(
-      cart.cart_id,
-      dto.service_id,
-    );
-    if (existing) {
-      // Increment quantity
-      const newQty = existing.quantity + (dto.quantity ?? 1);
-      const updated = this.cartRepo.updateItem(existing.cart_item_id, {
-        quantity: newQty,
-      });
-      return updated!;
-    }
-
-    // Add new item with price snapshot
+    // Add new item with price snapshot and schedule
     return this.cartRepo.addItem({
       cart_id: cart.cart_id,
       service_id: dto.service_id,
-      quantity: dto.quantity ?? 1,
+      quantity: 1, // Each item is a separate appointment
       price_snapshot: service.base_price,
+      booking_type: dto.booking_type || 'INSTANT',
+      scheduled_at: dto.scheduled_at || null,
     });
   }
 
@@ -148,8 +134,6 @@ export class CartService {
     const cart = this.getOrCreateCart(customerId);
 
     const updates: Partial<Cart> = {};
-    if (dto.booking_type !== undefined) updates.booking_type = dto.booking_type;
-    if (dto.scheduled_at !== undefined) updates.scheduled_at = dto.scheduled_at;
     if (dto.service_address !== undefined)
       updates.service_address = dto.service_address;
 

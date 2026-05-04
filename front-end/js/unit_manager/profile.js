@@ -102,9 +102,13 @@
 
   window.syncName = function () {
     var v = (document.getElementById("full-name").value || "").trim();
-    document.getElementById("hero-name").textContent =
-      v || (um ? um.name : "Unit Manager");
-    renderAvatar(um ? um.pfp_url : null, v || (um ? um.name : "Unit Manager"));
+    var displayName = v || (um ? um.name : "Unit Manager");
+    document.getElementById("hero-name").textContent = displayName;
+    renderAvatar(um ? um.pfp_url : null, displayName);
+    
+    // Also sync the top-right avatar live
+    const initials = displayName.split(/\s+/).map(w => w[0]).join("").slice(0, 2).toUpperCase() || "UM";
+    document.querySelectorAll(".user-avatar").forEach(av => av.textContent = initials);
   };
 
   window.saveSection = async function (section) {
@@ -134,6 +138,7 @@
         document.getElementById("hero-name").textContent = name;
         document.getElementById("hero-email").textContent = um.email || "";
         renderAvatar(um.pfp_url, name);
+        Auth.syncUserAvatar();
         showToast("Personal information saved ✓", "success");
       } catch (err) {
         showToast("Failed to save personal info.", "error");
@@ -250,7 +255,7 @@
     fields.appendChild(p);
   }
 
-  window.handlePasswordChange = function () {
+  window.handlePasswordChange = async function () {
     var currentPwd = document.getElementById("pwd-current")
       ? document.getElementById("pwd-current").value
       : "";
@@ -276,7 +281,7 @@
       return;
     }
 
-    var res = Auth.changePassword(currentPwd, newPwd);
+    var res = await Auth.changePassword(currentPwd, newPwd);
     if (res.success) {
       showToast("Password updated successfully ✓", "success");
       window.closePwdModalBtn();
@@ -440,6 +445,7 @@
   (async function () {
     session = Auth.requireSession(["unit_manager"]);
     if (!session) return;
+    Auth.syncUserAvatar();
 
     // Load UM profile from API
     um  = await Api.get("/unit-managers/" + session.id);
@@ -456,17 +462,25 @@
     try {
       var providers = await Api.get("/service-providers", { silent: true }) || [];
       var unitProviders = providers.filter(function(p) { return unit && p.unit_id === unit.unit_id; });
+      var unitProviderIds = new Set(unitProviders.map(function(p) { return p.sp_id; }));
       var totalProviders = unitProviders.length;
       var avgRating = 0;
       var ratedProviders = unitProviders.filter(function(p) { return typeof p.rating === "number"; });
       if (ratedProviders.length) {
         avgRating = ratedProviders.reduce(function(sum, p) { return sum + p.rating; }, 0) / ratedProviders.length;
       }
+
+      // Load all assignments for the unit to compute completion rate
+      var allAssignments = await Api.get("/job-assignments", { silent: true }) || [];
+      var unitAssignments = allAssignments.filter(function(a) { return unitProviderIds.has(a.sp_id); });
+      var completedJobs = unitAssignments.filter(function(a) { return a.status === "COMPLETED"; }).length;
+      var completionRate = unitAssignments.length ? (completedJobs / unitAssignments.length) * 100 : 0;
+
       _cachedMetrics = {
         totalProviders: totalProviders,
-        activeThisMonth: Math.min(totalProviders, 3),
+        activeThisMonth: Math.min(totalProviders, unitAssignments.length ? Math.ceil(unitAssignments.length / 4) : 0),
         avgRating: avgRating,
-        completionRate: 85,
+        completionRate: completionRate,
         totalProvidersPct: 100,
         activeThisMonthPct: totalProviders ? (Math.min(totalProviders, 3) / totalProviders) * 100 : 0,
         avgRatingPct: (avgRating / 5) * 100,

@@ -3055,6 +3055,54 @@
         ]
       }
     },
+    "/provider-skills/reject/{id}": {
+      "patch": {
+        "operationId": "ProviderSkillsController_rejectSkill",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VerifyProviderSkillDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Skill request rejected and removed"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        },
+        "security": [
+          {
+            "x-role": []
+          },
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Reject provider skill verification request",
+        "tags": [
+          "provider-skills"
+        ]
+      }
+    },
     "/provider-unavailability": {
       "get": {
         "operationId": "ProviderUnavailabilityController_findAll",
@@ -4334,6 +4382,240 @@
         ]
       }
     },
+    "/platform-settings": {
+      "post": {
+        "operationId": "PlatformSettingsController_create",
+        "parameters": [
+          {
+            "name": "x-id",
+            "in": "header",
+            "description": "Caller user ID (UUID)",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePlatformSettingDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Setting created"
+          },
+          "403": {
+            "description": "Forbidden — super_user only"
+          },
+          "409": {
+            "description": "Key already exists (ConflictException)"
+          }
+        },
+        "security": [
+          {
+            "x-role": []
+          },
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create a new platform setting",
+        "tags": [
+          "Platform Settings"
+        ]
+      },
+      "get": {
+        "operationId": "PlatformSettingsController_findAll",
+        "parameters": [
+          {
+            "name": "x-id",
+            "in": "header",
+            "description": "Caller user ID (UUID)",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Array of all settings"
+          },
+          "403": {
+            "description": "Forbidden — super_user only"
+          }
+        },
+        "security": [
+          {
+            "x-role": []
+          },
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List all platform settings",
+        "tags": [
+          "Platform Settings"
+        ]
+      }
+    },
+    "/platform-settings/{keyOrId}": {
+      "get": {
+        "operationId": "PlatformSettingsController_findOne",
+        "parameters": [
+          {
+            "name": "x-id",
+            "in": "header",
+            "description": "Caller user ID (UUID)",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "keyOrId",
+            "required": true,
+            "in": "path",
+            "description": "setting_id (UUID) or key string",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Setting found"
+          },
+          "403": {
+            "description": "Key not whitelisted for this role"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        },
+        "security": [
+          {
+            "x-role": []
+          },
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get one setting by UUID or key string",
+        "tags": [
+          "Platform Settings"
+        ]
+      }
+    },
+    "/platform-settings/{key}": {
+      "put": {
+        "operationId": "PlatformSettingsController_update",
+        "parameters": [
+          {
+            "name": "x-id",
+            "in": "header",
+            "description": "Caller user ID (UUID)",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "key",
+            "required": true,
+            "in": "path",
+            "description": "Setting key string",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePlatformSettingDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Setting updated"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "x-role": []
+          },
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Upsert a setting by key — super_user only",
+        "tags": [
+          "Platform Settings"
+        ]
+      }
+    },
+    "/platform-settings/{id}": {
+      "delete": {
+        "operationId": "PlatformSettingsController_remove",
+        "parameters": [
+          {
+            "name": "x-id",
+            "in": "header",
+            "description": "Caller user ID (UUID)",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "setting_id UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Setting deleted"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        },
+        "security": [
+          {
+            "x-role": []
+          },
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Delete a setting by UUID — super_user only",
+        "tags": [
+          "Platform Settings"
+        ]
+      }
+    },
     "/revenue-ledger/summary/platform": {
       "get": {
         "operationId": "RevenueLedgerController_getPlatformSummary",
@@ -4727,240 +5009,6 @@
         "summary": "List all ledger entries (scoped for managers)",
         "tags": [
           "Revenue Ledger"
-        ]
-      }
-    },
-    "/platform-settings": {
-      "post": {
-        "operationId": "PlatformSettingsController_create",
-        "parameters": [
-          {
-            "name": "x-id",
-            "in": "header",
-            "description": "Caller user ID (UUID)",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreatePlatformSettingDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "Setting created"
-          },
-          "403": {
-            "description": "Forbidden — super_user only"
-          },
-          "409": {
-            "description": "Key already exists (ConflictException)"
-          }
-        },
-        "security": [
-          {
-            "x-role": []
-          },
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Create a new platform setting",
-        "tags": [
-          "Platform Settings"
-        ]
-      },
-      "get": {
-        "operationId": "PlatformSettingsController_findAll",
-        "parameters": [
-          {
-            "name": "x-id",
-            "in": "header",
-            "description": "Caller user ID (UUID)",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Array of all settings"
-          },
-          "403": {
-            "description": "Forbidden — super_user only"
-          }
-        },
-        "security": [
-          {
-            "x-role": []
-          },
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "List all platform settings",
-        "tags": [
-          "Platform Settings"
-        ]
-      }
-    },
-    "/platform-settings/{keyOrId}": {
-      "get": {
-        "operationId": "PlatformSettingsController_findOne",
-        "parameters": [
-          {
-            "name": "x-id",
-            "in": "header",
-            "description": "Caller user ID (UUID)",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "keyOrId",
-            "required": true,
-            "in": "path",
-            "description": "setting_id (UUID) or key string",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Setting found"
-          },
-          "403": {
-            "description": "Key not whitelisted for this role"
-          },
-          "404": {
-            "description": "Not found"
-          }
-        },
-        "security": [
-          {
-            "x-role": []
-          },
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Get one setting by UUID or key string",
-        "tags": [
-          "Platform Settings"
-        ]
-      }
-    },
-    "/platform-settings/{key}": {
-      "put": {
-        "operationId": "PlatformSettingsController_update",
-        "parameters": [
-          {
-            "name": "x-id",
-            "in": "header",
-            "description": "Caller user ID (UUID)",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "key",
-            "required": true,
-            "in": "path",
-            "description": "Setting key string",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdatePlatformSettingDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Setting updated"
-          },
-          "403": {
-            "description": "Forbidden"
-          }
-        },
-        "security": [
-          {
-            "x-role": []
-          },
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Upsert a setting by key — super_user only",
-        "tags": [
-          "Platform Settings"
-        ]
-      }
-    },
-    "/platform-settings/{id}": {
-      "delete": {
-        "operationId": "PlatformSettingsController_remove",
-        "parameters": [
-          {
-            "name": "x-id",
-            "in": "header",
-            "description": "Caller user ID (UUID)",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "description": "setting_id UUID",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Setting deleted"
-          },
-          "403": {
-            "description": "Forbidden"
-          },
-          "404": {
-            "description": "Not found"
-          }
-        },
-        "security": [
-          {
-            "x-role": []
-          },
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Delete a setting by UUID — super_user only",
-        "tags": [
-          "Platform Settings"
         ]
       }
     },
@@ -5591,6 +5639,14 @@
           "is_active": {
             "type": "boolean",
             "example": true
+          },
+          "dob": {
+            "type": "string",
+            "example": "1990-01-01"
+          },
+          "pfp_url": {
+            "type": "string",
+            "example": "data:image/png;base64,..."
           }
         },
         "required": [
@@ -5627,6 +5683,14 @@
           "is_active": {
             "type": "boolean",
             "example": true
+          },
+          "dob": {
+            "type": "string",
+            "example": "1990-01-01"
+          },
+          "pfp_url": {
+            "type": "string",
+            "example": "data:image/png;base64,..."
           }
         }
       },
@@ -5987,6 +6051,14 @@
           "collective_id": {
             "type": "string",
             "example": "uuid-of-collective"
+          },
+          "category": {
+            "type": "string",
+            "example": "Appliances"
+          },
+          "zone": {
+            "type": "string",
+            "example": "Zone A"
           }
         },
         "required": [
@@ -6009,6 +6081,14 @@
           "collective_id": {
             "type": "string",
             "example": "uuid-of-collective"
+          },
+          "category": {
+            "type": "string",
+            "example": "Appliances"
+          },
+          "zone": {
+            "type": "string",
+            "example": "Zone A"
           }
         }
       },
@@ -6392,10 +6472,20 @@
             "type": "number",
             "description": "Quantity (defaults to 1)",
             "example": 1
+          },
+          "booking_type": {
+            "type": "string",
+            "description": "Booking type",
+            "example": "INSTANT"
+          },
+          "scheduled_at": {
+            "type": "string",
+            "description": "Scheduled date and time"
           }
         },
         "required": [
-          "service_id"
+          "service_id",
+          "booking_type"
         ]
       },
       "UpdateCartItemDto": {
@@ -6414,20 +6504,6 @@
       "UpdateCartMetaDto": {
         "type": "object",
         "properties": {
-          "booking_type": {
-            "type": "string",
-            "description": "Booking type",
-            "enum": [
-              "INSTANT",
-              "SCHEDULED"
-            ],
-            "example": "SCHEDULED"
-          },
-          "scheduled_at": {
-            "type": "string",
-            "description": "Scheduled date/time (ISO 8601)",
-            "example": "2026-06-15T10:00:00Z"
-          },
           "service_address": {
             "type": "string",
             "description": "Service address",
@@ -6577,72 +6653,6 @@
           }
         }
       },
-      "CreateRevenueLedgerDto": {
-        "type": "object",
-        "properties": {
-          "booking_id": {
-            "type": "string",
-            "example": "b123-uuid",
-            "description": "Associated booking ID"
-          },
-          "sp_id": {
-            "type": "string",
-            "example": "sp123-uuid",
-            "description": "Service Provider ID"
-          },
-          "um_id": {
-            "type": "string",
-            "example": "um123-uuid",
-            "description": "Unit Manager ID"
-          },
-          "cm_id": {
-            "type": "string",
-            "example": "cm123-uuid",
-            "description": "Collective Manager ID"
-          },
-          "provider_amount": {
-            "type": "number",
-            "example": 1013.22,
-            "description": "Provider amount"
-          },
-          "um_amount": {
-            "type": "number",
-            "example": 103.92,
-            "description": "Unit Manager amount"
-          },
-          "cm_amount": {
-            "type": "number",
-            "example": 51.96,
-            "description": "Collective Manager amount"
-          },
-          "platform_amount": {
-            "type": "number",
-            "example": 129.9,
-            "description": "Platform amount"
-          },
-          "payout_status": {
-            "type": "string",
-            "example": "PENDING",
-            "enum": [
-              "PENDING",
-              "DISBURSED",
-              "FAILED",
-              "HELD"
-            ],
-            "description": "Payout status"
-          }
-        },
-        "required": [
-          "booking_id",
-          "sp_id",
-          "um_id",
-          "cm_id",
-          "provider_amount",
-          "um_amount",
-          "cm_amount",
-          "platform_amount"
-        ]
-      },
       "CreatePlatformSettingDto": {
         "type": "object",
         "properties": {
@@ -6697,6 +6707,78 @@
             "description": "super_user_id of the caller (from x-id header)"
           }
         }
+      },
+      "CreateRevenueLedgerDto": {
+        "type": "object",
+        "properties": {
+          "booking_id": {
+            "type": "string",
+            "example": "b123-uuid",
+            "description": "Associated booking ID"
+          },
+          "service_id": {
+            "type": "string",
+            "example": "svc-uuid",
+            "description": "Associated service ID"
+          },
+          "sp_id": {
+            "type": "string",
+            "example": "sp123-uuid",
+            "description": "Service Provider ID"
+          },
+          "um_id": {
+            "type": "string",
+            "example": "um123-uuid",
+            "description": "Unit Manager ID"
+          },
+          "cm_id": {
+            "type": "string",
+            "example": "cm123-uuid",
+            "description": "Collective Manager ID"
+          },
+          "provider_amount": {
+            "type": "number",
+            "example": 1013.22,
+            "description": "Provider amount"
+          },
+          "um_amount": {
+            "type": "number",
+            "example": 103.92,
+            "description": "Unit Manager amount"
+          },
+          "cm_amount": {
+            "type": "number",
+            "example": 51.96,
+            "description": "Collective Manager amount"
+          },
+          "platform_amount": {
+            "type": "number",
+            "example": 129.9,
+            "description": "Platform amount"
+          },
+          "payout_status": {
+            "type": "string",
+            "example": "PENDING",
+            "enum": [
+              "PENDING",
+              "DISBURSED",
+              "FAILED",
+              "HELD"
+            ],
+            "description": "Payout status"
+          }
+        },
+        "required": [
+          "booking_id",
+          "service_id",
+          "sp_id",
+          "um_id",
+          "cm_id",
+          "provider_amount",
+          "um_amount",
+          "cm_amount",
+          "platform_amount"
+        ]
       },
       "CreateReviewDto": {
         "type": "object",

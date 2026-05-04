@@ -53,4 +53,16 @@ export class ProviderSkillsRepository {
     record.verified_at = new Date().toISOString();
     return record;
   }
+
+  rejectSkill(providerId: string, skillId: string): { message: string } {
+    const index = this.databaseService.providerSkills.findIndex(
+      (row) => row.sp_id === providerId && row.skill_id === skillId
+    );
+    if (index === -1) {
+      throw new NotFoundException(`Provider skill association not found`);
+    }
+
+    this.databaseService.providerSkills.splice(index, 1);
+    return { message: 'Skill verification request rejected and removed' };
+  }
 }

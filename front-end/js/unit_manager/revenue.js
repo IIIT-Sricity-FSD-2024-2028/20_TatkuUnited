@@ -59,26 +59,37 @@ async function loadRevenueData(session) {
   const umId = session.id;
 
   // Fetch revenue ledger entries for this unit manager
-  let unitLedgerEntries = [];
-  unitLedgerEntries  = await Api.get("/revenue-ledger/unit-manager/" + umId);
+  let response = await Api.get("/revenue-ledger/unit-manager/" + umId);
+  let unitLedgerEntries = response.rows || [];
 
   // Fetch transactions
-  let allTxns = [];
-  allTxns  = await Api.get("/transactions");
+  let allTxns = await Api.get("/transactions");
 
-  const txnById = new Map(allTxns.map((t) => [t.transaction_id, t]));
+  const txnByBookingId = new Map(allTxns.map((t) => [t.booking_id, t]));
 
   ALL_TRANSACTIONS = unitLedgerEntries.map((ledger_entry) => {
-    const txn = txnById.get(ledger_entry.transaction_id);
+    const txn = txnByBookingId.get(ledger_entry.booking_id);
+
+    // GMV per ledger row = sum of all splits (NOT txn.amount, which
+    // would double-count when multiple services share one booking).
+    const grossFromSplits =
+      (ledger_entry.provider_amount || 0) +
+      (ledger_entry.um_amount || 0) +
+      (ledger_entry.cm_amount || 0) +
+      (ledger_entry.platform_amount || 0);
+
     return {
-      id: ledger_entry.transaction_id,
+      id: txn ? txn.transaction_id : ledger_entry.ledger_id,
       method: txn ? mapMethod(txn.payment_method) : "Unknown",
       status: "SUCCESS",
-      amount: Number(txn ? txn.amount || 0 : 0),
-      unitManagerCut: Number(ledger_entry.amount || 0),
+      amount: grossFromSplits,
+      unitManagerCut: Number(ledger_entry.um_amount || 0),
+      providerAmount: Number(ledger_entry.provider_amount || 0),
+      cmAmount: Number(ledger_entry.cm_amount || 0),
+      platformAmount: Number(ledger_entry.platform_amount || 0),
       refund: 0,
       date: ledger_entry.created_at,
-      booking_id: txn ? txn.booking_id : "-",
+      booking_id: ledger_entry.booking_id,
       ledgerId: ledger_entry.ledger_id,
     };
   });
@@ -339,7 +350,7 @@ function buildRow(t) {
 
   const grossAmount = `<strong>${rupee(t.amount)}</strong>`;
   const unitCut = `<span class="fee-neg">${rupee(t.unitManagerCut)}</span>`;
-  const providerShare = `<span style="color:#3b82f6">${rupee(t.amount - t.unitManagerCut)}</span>`;
+  const providerShare = `<span style="color:#3b82f6">${rupee(t.providerAmount || (t.amount - t.unitManagerCut))}</span>`;
 
   tr.innerHTML = `
     <td><span class="txn-id">${t.id}</span></td>
@@ -482,9 +493,9 @@ function showDetail(t) {
 
   const grossAmount = rupee(t.amount);
   const unitManagerCut = rupee(t.unitManagerCut);
-  const providerShare = rupee(t.amount - t.unitManagerCut);
-  const collectiveManagerShare = rupee(t.amount * 0.04); // 4%
-  const superUserShare = rupee(t.amount * 0.11); // 11%
+  const providerShare = rupee(t.providerAmount || (t.amount - t.unitManagerCut - (t.cmAmount || 0) - (t.platformAmount || 0)));
+  const collectiveManagerShare = rupee(t.cmAmount || 0);
+  const superUserShare = rupee(t.platformAmount || 0);
 
   function row(label, value, valueStyle = "") {
     return `
@@ -508,10 +519,10 @@ function showDetail(t) {
     ${row("Payment Method", t.method)}
     <div style="margin-top:24px;padding:12px;background:rgba(37,99,235,0.1);border-radius:6px">
       <div style="font-size:.75rem;font-weight:600;text-transform:uppercase;color:#64748b;margin-bottom:12px">Revenue Split</div>
-      ${row("Provider (78%)", rupee(t.amount * 0.78), "color:#3b82f6")}
-      ${row("Unit Manager (7%)", unitManagerCut, "color:#10b981")}
-      ${row("Collective Manager (4%)", collectiveManagerShare, "color:#f59e0b")}
-      ${row("Super User (11%)", superUserShare, "color:#ec4899")}
+      ${row("Provider", providerShare, "color:#3b82f6")}
+      ${row("Unit Manager", unitManagerCut, "color:#10b981")}
+      ${row("Collective Manager", collectiveManagerShare, "color:#f59e0b")}
+      ${row("Platform", superUserShare, "color:#ec4899")}
     </div>
   `;
 
@@ -596,6 +607,7 @@ document.getElementById("btnExportPDF").addEventListener("click", function () {
 (async () => {
   const session = Auth.requireSession(["unit_manager"]);
   if (!session) return;
+  Auth.syncUserAvatar();
 
   await loadRevenueData(session);
   renderStatCards();

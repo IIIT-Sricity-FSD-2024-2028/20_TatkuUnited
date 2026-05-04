@@ -11,6 +11,7 @@ let TRANSACTIONS = [];
 let BOOKINGS = [];
 let CHART_DATA_ALL = [];
 let CHART_DATA_30 = [];
+let LEDGER_ENTRIES = [];
 
 const FEE_RATE = 0.07;
 let LATEST_TXN_DATE = new Date();
@@ -64,12 +65,12 @@ async function loadDashboardData(session) {
   let allProviders = [];
   allProviders  = await Api.get("/service-providers");
   const unitProviders = allProviders.filter((p) => p.unit_id === unitId);
-  const unitProviderIds = new Set(unitProviders.map((p) => p.service_provider_id));
+  const unitProviderIds = new Set(unitProviders.map((p) => p.sp_id));
 
   // Fetch job assignments
   let allAssignments = [];
   allAssignments  = await Api.get("/job-assignments");
-  const unitAssignments = allAssignments.filter((a) => unitProviderIds.has(a.service_provider_id));
+  const unitAssignments = allAssignments.filter((a) => unitProviderIds.has(a.sp_id));
 
   // Fetch skills
   let allSkills = [];
@@ -80,10 +81,10 @@ async function loadDashboardData(session) {
   // Build providers list
   PROVIDERS = unitProviders.map((sp) => {
     const providerAssignments = unitAssignments.filter(
-      (a) => a.service_provider_id === sp.service_provider_id,
+      (a) => a.sp_id === sp.sp_id,
     );
     return {
-      id: sp.service_provider_id,
+      id: sp.sp_id,
       name: sp.name,
       status: deriveProviderStatus(sp, providerAssignments),
       rating: typeof sp.rating === "number" ? sp.rating : 4.0,
@@ -93,8 +94,8 @@ async function loadDashboardData(session) {
   });
 
   // Fetch revenue ledger for this unit manager
-  let ledger = [];
-  ledger  = await Api.get("/revenue-ledger/unit-manager/" + umId);
+  let ledgerResp = await Api.get("/revenue-ledger/unit-manager/" + umId);
+  LEDGER_ENTRIES = ledgerResp.rows || [];
 
   // Fetch transactions
   let allTxns = [];
@@ -102,12 +103,12 @@ async function loadDashboardData(session) {
 
   const unitBookingIds = new Set(unitAssignments.map((a) => a.booking_id));
   TRANSACTIONS = allTxns
-    .filter((t) => unitBookingIds.has(t.booking_id))
     .map((t) => ({
       id: t.transaction_id,
       status: t.payment_status,
       amount: Number(t.amount || 0),
       date: t.verified_at || t.transaction_at || new Date().toISOString(),
+      booking_id: t.booking_id,
     }));
 
   // Fetch bookings
@@ -279,21 +280,39 @@ window.closeModal = closeModal;
    6. COMPUTE STATS
    ───────────────────────────────────────────── */
 
-function getStats(txns) {
-  const success = txns.filter((t) => t.status === "SUCCESS");
+function getStats(txns, ledgerEntries) {
+  // Use ledger entries as the source of truth (same formula as revenue.js)
+  if (ledgerEntries && ledgerEntries.length > 0) {
+    const totalGMV = ledgerEntries.reduce((sum, entry) => {
+      return sum +
+        (entry.provider_amount || 0) +
+        (entry.um_amount || 0) +
+        (entry.cm_amount || 0) +
+        (entry.platform_amount || 0);
+    }, 0);
+
+    const fees = ledgerEntries.reduce((sum, entry) => sum + (entry.um_amount || 0), 0);
+    return { totalRevenue: totalGMV, fees, net: totalGMV - fees, count: ledgerEntries.length };
+  }
+
+  // Fallback: no ledger data
+  const success = txns.filter((t) => t.status === "SUCCESS" || t.payment_status === "SUCCESS");
   const totalRevenue = success.reduce((s, t) => s + t.amount, 0);
   const fees = totalRevenue * FEE_RATE;
-  const net = totalRevenue - fees;
-  return { totalRevenue, fees, net, count: success.length };
+  return { totalRevenue, fees, net: totalRevenue - fees, count: success.length };
 }
 
 function getStatsFull() {
-  return getStats(TRANSACTIONS);
+  return getStats(TRANSACTIONS, LEDGER_ENTRIES);
 }
 function getStats30() {
   const cutoff = new Date(LATEST_TXN_DATE);
   cutoff.setDate(cutoff.getDate() - 30);
-  return getStats(TRANSACTIONS.filter((t) => new Date(t.date) >= cutoff));
+  
+  const filteredTxns = TRANSACTIONS.filter((t) => new Date(t.date) >= cutoff);
+  const filteredLedger = (LEDGER_ENTRIES || []).filter(entry => new Date(entry.created_at) >= cutoff);
+  
+  return getStats(filteredTxns, filteredLedger);
 }
 
 /* ─────────────────────────────────────────────
@@ -301,11 +320,11 @@ function getStats30() {
    ───────────────────────────────────────────── */
 
 function renderStatCards(mode30 = false) {
-  const { net, fees, count } = mode30 ? getStats30() : getStatsFull();
+  const { totalRevenue, fees, count } = mode30 ? getStats30() : getStatsFull();
 
   const activeBookings = BOOKINGS.filter((b) => b.status !== "CANCELLED");
   const bookingCount = mode30
-    ? Math.min(3, activeBookings.length)
+    ? Math.min(3, activeBookings.length) // Simulated 30-day filter for bookings
     : activeBookings.length;
 
   const avgRating = PROVIDERS.length
@@ -318,10 +337,11 @@ function renderStatCards(mode30 = false) {
   setHTML("statRating", `${avgRating} <small>/ 5.0</small>`);
   setText("statRatingBadge", `${PROVIDERS.length} providers`);
 
-  setHTML("statRevenue", rupee(net));
+  // Align with Revenue Reports page: Show Gross Revenue (GMV) as main stat
+  setHTML("statRevenue", rupee(totalRevenue));
   const badge = document.getElementById("statRevenueBadge");
   if (badge) {
-    badge.textContent = `${rupee(fees)} in fees`;
+    badge.textContent = `${rupee(fees)} in unit fees`;
     badge.className = "stat-badge";
   }
 }
@@ -521,30 +541,7 @@ document.getElementById("btnCallProvider")?.addEventListener("click", function (
   );
 });
 
-/* ─────────────────────────────────────────────
-   15. BUTTON: "Investigate"
-   ───────────────────────────────────────────── */
 
-document.getElementById("btnInvestigate")?.addEventListener("click", function () {
-  openModal(
-    "\u26A0\uFE0F Rating Incident",
-    `<div style="margin-top:16px;padding:12px;border-radius:8px;background:rgba(220,38,38,.1);
-      border:1px solid rgba(220,38,38,.3);font-size:.82rem;color:#fca5a5">
-      <strong>Recommended Action:</strong> Contact the customer directly, review job photos,
-      and suspend provider pending outcome if pattern repeats.
-    </div>`,
-    `<button onclick="closeModal()" style="padding:8px 16px;border-radius:8px;
-      border:1px solid var(--border,#334155);background:none;
-      color:var(--text-secondary,#94a3b8);cursor:pointer">Close</button>
-     <button onclick="escalate()" style="padding:8px 16px;border-radius:8px;border:none;
-      background:#d97706;color:#fff;cursor:pointer;font-weight:500">Escalate to Manager</button>`,
-  );
-});
-
-window.escalate = function () {
-  closeModal();
-  showToast("Incident escalated to unit manager \u2713", "warning");
-};
 
 /* ─────────────────────────────────────────────
    16. TOTAL BOOKINGS MODAL
@@ -611,6 +608,7 @@ function showBookingsModal() {
 (async () => {
   const session = Auth.requireSession(["unit_manager"]);
   if (!session) return;
+  Auth.syncUserAvatar();
 
   await loadDashboardData(session);
   renderStatCards(false);

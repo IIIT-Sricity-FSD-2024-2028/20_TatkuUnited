@@ -135,7 +135,7 @@ async function openUnitDetails(unitId) {
         <td><span class="rating"><span class="star">★</span>${r}</span></td>
         <td><span class="status-active" style="background:${p.is_active ? '#f0fdf4':'#fef2f2'}; color:${p.is_active ? '#16a34a':'#dc2626'};">${p.is_active ? 'Active' : 'Inactive'}</span></td>
       `;
-      tr.onclick = () => { window.location.href = `provider_profile.html?id=${p.service_provider_id}`; };
+      tr.onclick = () => window.location.href = `provider_profile.html#id=${p.service_provider_id}`;
       rosterBody.appendChild(tr);
     });
   }
