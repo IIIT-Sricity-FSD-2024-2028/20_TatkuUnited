@@ -10,3 +10,9 @@
 .vscode/
 *.iml
 *.suo
+
+# Winston log files
+*/logs/
+
+# Uploaded files
+*/uploads/

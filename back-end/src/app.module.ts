@@ -1,4 +1,4 @@
-import { Module, ValidationPipe } from '@nestjs/common';
+import { Module, ValidationPipe, NestModule, MiddlewareConsumer } from '@nestjs/common';
 import { APP_GUARD, APP_PIPE } from '@nestjs/core';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -25,9 +25,12 @@ import { DatabaseModule } from './common/database/database.module';
 import { CartModule } from './modules/cart/cart.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { RolesGuard } from './common/guards/roles.guard';
+import { LoggerModule } from './common/logger/logger.module';
+import { LoggerMiddleware } from './common/middleware/logger.middleware';
 
 @Module({
   imports: [
+    LoggerModule,
     SuperUsersModule,
     CollectiveManagersModule,
     UnitManagersModule,
@@ -64,4 +67,9 @@ import { RolesGuard } from './common/guards/roles.guard';
     },
   ],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    // Apply LoggerMiddleware to ALL routes (router-level middleware)
+    consumer.apply(LoggerMiddleware).forRoutes('*');
+  }
+}
