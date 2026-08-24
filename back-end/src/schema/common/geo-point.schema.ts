@@ -3,7 +3,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 // Stored as GeoJSON so you can use Mongo's $near / 2dsphere queries.
 @Schema({ _id: false })
 export class GeoPoint {
-  @Prop({ type: String, enum: ['Point'], default: 'oint' })
+  @Prop({ type: String, enum: ['Point'], default: 'Point' })
   type!: string;
 
   // [longitude, latitude]
