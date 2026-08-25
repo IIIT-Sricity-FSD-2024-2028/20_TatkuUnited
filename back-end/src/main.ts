@@ -6,9 +6,15 @@ import * as path from 'path';
 import * as fs from 'fs';
 import { Role } from './common/enums/role.enum';
 import { SpIdAliasInterceptor } from './common/interceptors/sp-id-alias.interceptor';
+import helmet from 'helmet';
+import { AppLoggerService } from './common/logger/logger.service';
+import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  // Security: set standard HTTP headers via helmet
+  app.use(helmet());
 
   // Allow any localhost port during development
   app.enableCors({
@@ -30,6 +36,13 @@ async function bootstrap() {
 
   // Add service_provider_id alias to all responses containing sp_id
   app.useGlobalInterceptors(new SpIdAliasInterceptor());
+
+  // Resolve the Winston-based logger from DI and use it app-wide
+  const logger = app.get(AppLoggerService);
+  app.useLogger(logger);
+
+  // Global exception filter — consistent error responses + error file logging
+  app.useGlobalFilters(new AllExceptionsFilter(logger));
 
   const config = new DocumentBuilder()
     .setTitle('TatkuUnited API')
@@ -75,7 +88,8 @@ async function bootstrap() {
 
   const PORT = process.env.PORT || 10000;
   await app.listen(PORT);
-  console.log(`API running at http://localhost:${PORT}`);
-  console.log(`Swagger docs at http://localhost:${PORT}/api-docs`);
+  logger.log(`API running at http://localhost:${PORT}`, 'Bootstrap');
+  logger.log(`Swagger docs at http://localhost:${PORT}/api-docs`, 'Bootstrap');
 }
 bootstrap();
+
