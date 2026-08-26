@@ -66,6 +66,7 @@ export class ServiceProvidersRepository {
     } as unknown as ServiceProvider;
     
     this.databaseService.serviceProviders.push(provider);
+    this.databaseService.save();
     return provider;
   }
 
@@ -84,8 +85,27 @@ export class ServiceProvidersRepository {
       provider.is_active = dto.is_active;
       provider.account_status = dto.is_active ? 'active' : 'inactive';
     }
+    if (dto.service_category !== undefined) provider.service_category = dto.service_category;
+    if (dto.experience !== undefined) provider.experience = dto.experience;
+
+    if (dto.skills !== undefined) {
+      // Clear existing provider skills
+      this.databaseService.providerSkills = this.databaseService.providerSkills.filter(
+        (ps) => ps.sp_id !== id,
+      );
+      // Add new ones
+      for (const skillId of dto.skills) {
+        this.databaseService.providerSkills.push({
+          sp_id: id,
+          skill_id: skillId,
+          verification_status: 'VERIFIED',
+          verified_at: new Date().toISOString(),
+        });
+      }
+    }
     
     provider.updated_at = new Date().toISOString();
+    this.databaseService.save();
     return provider;
   }
 
@@ -94,6 +114,7 @@ export class ServiceProvidersRepository {
     provider.hour_start = dto.hour_start;
     provider.hour_end = dto.hour_end;
     provider.updated_at = new Date().toISOString();
+    this.databaseService.save();
     return provider;
   }
 
@@ -105,6 +126,7 @@ export class ServiceProvidersRepository {
     if (dto.dob !== undefined) provider.dob = dto.dob;
     if (dto.gender !== undefined) provider.gender = dto.gender;
     provider.updated_at = new Date().toISOString();
+    this.databaseService.save();
     return provider;
   }
 
@@ -112,6 +134,7 @@ export class ServiceProvidersRepository {
     const provider = this.findById(id);
     provider.deactivation_requested = true;
     provider.updated_at = new Date().toISOString();
+    this.databaseService.save();
     return provider;
   }
 
@@ -123,6 +146,7 @@ export class ServiceProvidersRepository {
       throw new NotFoundException(`ServiceProvider with id "${id}" not found`);
     }
     const [removed] = this.databaseService.serviceProviders.splice(index, 1);
+    this.databaseService.save();
     return removed;
   }
 }

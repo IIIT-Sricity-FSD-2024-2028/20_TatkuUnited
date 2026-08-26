@@ -44,6 +44,7 @@
         isAvailable: svc.is_available,
         status: status,
         imageUrl: svc.image_url,
+        photos: svc.photos || [],
       };
     });
   }
@@ -359,6 +360,37 @@
       if (serviceWhatNotCovered) serviceWhatNotCovered.value = "";
     }
 
+    // Handle photos preview
+    const photoInput = document.getElementById("servicePhotoInput");
+    const photoPreview = document.getElementById("servicePhotosPreview");
+    if (photoInput) photoInput.value = "";
+    if (photoPreview) {
+      photoPreview.innerHTML = "";
+      if (svc && svc.photos && svc.photos.length > 0) {
+        svc.photos.forEach((url) => {
+          const imgWrap = document.createElement("div");
+          imgWrap.style.cssText = "position:relative; width:70px; height:70px; border-radius:6px; overflow:hidden; border:1px solid #334155;";
+          imgWrap.innerHTML = `
+            <img src="${url}" style="width:100%; height:100%; object-fit:cover;" />
+            <button type="button" class="btn-del-photo" style="position:absolute; top:2px; right:2px; background:rgba(0,0,0,0.7); color:#fff; border:none; border-radius:50%; width:18px; height:18px; cursor:pointer; font-size:10px; display:flex; align-items:center; justify-content:center;">✕</button>
+          `;
+          imgWrap.querySelector(".btn-del-photo").addEventListener("click", async () => {
+            try {
+              await Api.del("/services/" + svc.serviceId + "/photos", {
+                body: { photo_url: url },
+              });
+              imgWrap.remove();
+              showToast("Photo removed");
+              await refreshServices();
+            } catch (err) {
+              console.error("[services] Failed to remove photo:", err);
+            }
+          });
+          photoPreview.appendChild(imgWrap);
+        });
+      }
+    }
+
     if (btnSave) btnSave.textContent = svc ? "Save Changes" : "Add Service";
     if (modalOverlay) modalOverlay.classList.add("open");
   }
@@ -457,6 +489,7 @@
         document.getElementById("serviceWhatCovered")?.value.trim() || "";
       const whatNotCoveredText =
         document.getElementById("serviceWhatNotCovered")?.value.trim() || "";
+      const photoInput = document.getElementById("servicePhotoInput");
 
       // Validation
       if (!name) { showToast("⚠ Service name is required"); return; }
@@ -496,6 +529,7 @@
       };
 
       try {
+        let targetId = editingId;
         if (editingId) {
           await Api.patch("/services/" + editingId, payload);
           await Api.put("/services/" + editingId + "/content", parsedContent);
@@ -503,10 +537,25 @@
         } else {
           const created = await Api.post("/services", payload);
           if (created && created.service_id) {
+            targetId = created.service_id;
             await Api.put("/services/" + created.service_id + "/content", parsedContent);
           }
           showToast(`✓ "${name}" added to service catalog`);
         }
+
+        // Upload photos if any selected
+        if (photoInput && photoInput.files && photoInput.files.length > 0 && targetId) {
+          for (let i = 0; i < photoInput.files.length; i++) {
+            const formData = new FormData();
+            formData.append("photo", photoInput.files[i]);
+            try {
+              await Api.post("/services/" + targetId + "/photos", formData);
+            } catch (pErr) {
+              console.error("[services] Photo upload failed for file:", photoInput.files[i].name, pErr);
+            }
+          }
+        }
+
         await refreshServices();
       } catch (err) {
         console.error("[services] Save failed:", err);

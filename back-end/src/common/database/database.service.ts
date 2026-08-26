@@ -93,6 +93,8 @@ export interface ServiceProvider {
   updated_at: string;
   unit_id: string;
   home_sector_id: string;
+  service_category?: string;
+  experience?: string;
 }
 
 export interface ProviderUnavailability {
@@ -168,7 +170,10 @@ export interface Service {
   service_id: string;
   service_name: string;
   description: string;
-  image_url: string;
+  /** Legacy single-image URL — kept for backwards-compat, prefer photos[] */
+  image_url?: string;
+  /** Cloudinary photo URLs uploaded by super-user */
+  photos: string[];
   base_price: number;
   estimated_duration_min: number;
   average_rating: number;
@@ -407,7 +412,12 @@ export class DatabaseService implements OnModuleInit {
         if (data.carts) this.carts = data.carts;
         if (data.cartItems) this.cartItems = data.cartItems;
         if (data.categories) this.categories = data.categories;
-        if (data.services) this.services = data.services;
+        if (data.services) {
+          this.services = data.services.map((s: any) => ({
+            ...s,
+            photos: Array.isArray(s.photos) ? s.photos : [],
+          }));
+        }
         if (data.serviceSkills) this.serviceSkills = data.serviceSkills;
         if (data.serviceContent) this.serviceContent = data.serviceContent;
         if (data.serviceFaqs) this.serviceFaqs = data.serviceFaqs;
@@ -1219,6 +1229,7 @@ export class DatabaseService implements OnModuleInit {
       description: 'Complete standard clean for up to 3BHK homes.',
       image_url:
         'https://placehold.co/400x200/4A90D9/white?text=Standard+Clean',
+      photos: [],
       base_price: 499,
       estimated_duration_min: 120,
       // 1 review from booking[2], rating 4 → avg 4.0
@@ -1232,6 +1243,7 @@ export class DatabaseService implements OnModuleInit {
       service_name: 'Deep Home Clean',
       description: 'Deep cleaning for kitchen, bathrooms, and living areas.',
       image_url: 'https://placehold.co/400x200/4A90D9/white?text=Deep+Clean',
+      photos: [],
       base_price: 899,
       estimated_duration_min: 180,
       average_rating: 0,
@@ -1244,6 +1256,7 @@ export class DatabaseService implements OnModuleInit {
       service_name: 'Split AC Repair',
       description: 'Inspection and repair for common split AC faults.',
       image_url: 'https://placehold.co/400x200/2D9CDB/white?text=AC+Repair',
+      photos: [],
       base_price: 1299,
       estimated_duration_min: 90,
       // Reviews: booking[0] rating 5, booking[3] rating 4 → avg (5+4)/2 = 4.5
@@ -1257,6 +1270,7 @@ export class DatabaseService implements OnModuleInit {
       service_name: 'Kitchen Sink Leak Fix',
       description: 'Leak detection and repair for kitchen sink pipelines.',
       image_url: 'https://placehold.co/400x200/1E8E3E/white?text=Leak+Fix',
+      photos: [],
       base_price: 699,
       estimated_duration_min: 75,
       // Reviews: booking[1] rating 5, booking[3] rating 5 → avg 5.0
@@ -1270,6 +1284,7 @@ export class DatabaseService implements OnModuleInit {
       service_name: 'Bed Assembly',
       description: 'Expert assembly of all types of beds.',
       image_url: 'https://placehold.co/400x200/8B4513/white?text=Bed+Assembly',
+      photos: [],
       base_price: 999,
       estimated_duration_min: 120,
       average_rating: 0,
@@ -1282,6 +1297,7 @@ export class DatabaseService implements OnModuleInit {
       service_name: 'Door Lock Repair',
       description: 'Repair and replacement of door locks and handles.',
       image_url: 'https://placehold.co/400x200/8B4513/white?text=Lock+Repair',
+      photos: [],
       base_price: 499,
       estimated_duration_min: 60,
       average_rating: 0,
@@ -1294,6 +1310,7 @@ export class DatabaseService implements OnModuleInit {
       service_name: 'General Pest Control',
       description: 'Treatment for cockroaches, ants, and other common pests.',
       image_url: 'https://placehold.co/400x200/EB5757/white?text=Pest+Control',
+      photos: [],
       base_price: 1599,
       estimated_duration_min: 90,
       average_rating: 0,

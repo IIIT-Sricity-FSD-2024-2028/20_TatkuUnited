@@ -24,13 +24,16 @@ import { PlatformSettingsModule } from './modules/platform-settings/platform-set
 import { DatabaseModule } from './common/database/database.module';
 import { CartModule } from './modules/cart/cart.module';
 import { AuthModule } from './modules/auth/auth.module';
+import { CloudinaryModule } from './common/cloudinary/cloudinary.module';
 import { RolesGuard } from './common/guards/roles.guard';
 import { LoggerModule } from './common/logger/logger.module';
 import { LoggerMiddleware } from './common/middleware/logger.middleware';
+import { RequestTraceMiddleware } from './common/middleware/request-trace.middleware';
 
 @Module({
   imports: [
     LoggerModule,
+    CloudinaryModule,
     SuperUsersModule,
     CollectiveManagersModule,
     UnitManagersModule,
@@ -69,7 +72,12 @@ import { LoggerMiddleware } from './common/middleware/logger.middleware';
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    // Apply LoggerMiddleware to ALL routes (router-level middleware)
+    // Apply LoggerMiddleware to ALL routes
     consumer.apply(LoggerMiddleware).forRoutes('*');
+
+    // Scoped / router-level middleware for specific routes
+    consumer
+      .apply(RequestTraceMiddleware)
+      .forRoutes('service-providers', 'bookings');
   }
 }

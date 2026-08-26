@@ -261,9 +261,11 @@ window.Api = (() => {
 
     // Build headers
     const headers = {
-      "Content-Type": "application/json",
       Accept: "application/json",
     };
+    if (!(options.body instanceof FormData)) {
+      headers["Content-Type"] = "application/json";
+    }
 
     // Inject Bearer token
     const token =
@@ -299,7 +301,7 @@ window.Api = (() => {
     // Attach body for non-GET methods
     if (options.body !== undefined && method.toUpperCase() !== "GET") {
       fetchInit.body =
-        typeof options.body === "string"
+        (options.body instanceof FormData || typeof options.body === "string")
           ? options.body
           : JSON.stringify(options.body);
     }

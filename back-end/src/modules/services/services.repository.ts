@@ -40,14 +40,16 @@ export class ServicesRepository {
       service_name: dto.service_name,
       description: dto.description || '',
       image_url: dto.image_url || '',
+      photos: dto.photos || [],
       base_price: dto.base_price,
       estimated_duration_min: dto.estimated_duration_min,
       average_rating: 0,
       rating_count: 0,
-      is_available: true,
+      is_available: dto.is_available !== undefined ? dto.is_available : true,
       category_id: dto.category_id,
     };
     this.db.services.push(service);
+    this.db.save();
     return service;
   }
 
@@ -57,10 +59,39 @@ export class ServicesRepository {
     if (dto.service_name !== undefined) service.service_name = dto.service_name;
     if (dto.description !== undefined) service.description = dto.description;
     if (dto.image_url !== undefined) service.image_url = dto.image_url;
+    if (dto.photos !== undefined) service.photos = dto.photos;
     if (dto.base_price !== undefined) service.base_price = dto.base_price;
     if (dto.estimated_duration_min !== undefined) service.estimated_duration_min = dto.estimated_duration_min;
+    if (dto.is_available !== undefined) service.is_available = dto.is_available;
     if (dto.category_id !== undefined) service.category_id = dto.category_id;
 
+    this.db.save();
+    return service;
+  }
+
+  addPhoto(id: string, photoUrl: string): Service {
+    const service = this.findById(id);
+    if (!service.photos) {
+      service.photos = [];
+    }
+    service.photos.push(photoUrl);
+    // Also set image_url if not set
+    if (!service.image_url) {
+      service.image_url = photoUrl;
+    }
+    this.db.save();
+    return service;
+  }
+
+  removePhoto(id: string, photoUrl: string): Service {
+    const service = this.findById(id);
+    if (service.photos) {
+      service.photos = service.photos.filter((p) => p !== photoUrl);
+      if (service.image_url === photoUrl) {
+        service.image_url = service.photos[0] || '';
+      }
+      this.db.save();
+    }
     return service;
   }
 
@@ -72,6 +103,7 @@ export class ServicesRepository {
       throw new NotFoundException(`Service with id "${id}" not found`);
     }
     const [removed] = this.db.services.splice(index, 1);
+    this.db.save();
     return removed;
   }
 }

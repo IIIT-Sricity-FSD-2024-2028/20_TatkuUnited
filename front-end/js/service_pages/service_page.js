@@ -802,9 +802,39 @@
         svcDuration.prepend(icon);
       }
     }
-    if (heroImage) {
-      heroImage.src = service.image_url || "https://placehold.co/1200x800?text=" + encodeURIComponent(service.service_name);
-      heroImage.alt = service.service_name;
+    var heroRight = document.querySelector(".svc-hero-right");
+    var photos = service.photos || [];
+    if (!photos.length && service.image_url) {
+      photos = [service.image_url];
+    }
+    if (!photos.length) {
+      photos = ["https://placehold.co/1200x800?text=" + encodeURIComponent(service.service_name)];
+    }
+
+    if (heroRight) {
+      heroRight.innerHTML =
+        '<div class="svc-hero-img-wrap">' +
+        '<img id="mainSvcPhoto" src="' + photos[0] + '" alt="' + service.service_name + '" style="width:100%; border-radius:12px; object-fit:cover; max-height:400px;" />' +
+        '</div>' +
+        (photos.length > 1 ? 
+          '<div class="svc-photo-thumbs" style="display:flex; gap:10px; margin-top:12px; overflow-x:auto; padding-bottom:4px;">' +
+          photos.map(function(url, idx) {
+            return '<img src="' + url + '" class="svc-thumb ' + (idx === 0 ? 'active' : '') + '" data-url="' + url + '" style="width:70px; height:70px; border-radius:8px; object-fit:cover; cursor:pointer; border:2px solid ' + (idx === 0 ? '#3b82f6' : 'transparent') + ';" />';
+          }).join('') +
+          '</div>'
+          : ''
+        );
+
+      heroRight.querySelectorAll('.svc-thumb').forEach(function(thumb) {
+        thumb.addEventListener('click', function() {
+          var mainImg = document.getElementById('mainSvcPhoto');
+          if (mainImg) mainImg.src = thumb.dataset.url;
+          heroRight.querySelectorAll('.svc-thumb').forEach(function(t) {
+            t.style.borderColor = 'transparent';
+          });
+          thumb.style.borderColor = '#3b82f6';
+        });
+      });
     }
     if (stickyPrice) {
       stickyPrice.textContent = formatPrice(service.base_price);

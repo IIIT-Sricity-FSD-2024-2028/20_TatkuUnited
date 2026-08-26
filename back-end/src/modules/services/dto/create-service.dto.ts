@@ -17,6 +17,10 @@ export class CreateServiceDto {
   @IsOptional()
   image_url?: string;
 
+  @ApiProperty({ example: ['https://res.cloudinary.com/demo/image/upload/sample.jpg'], required: false })
+  @IsOptional()
+  photos?: string[];
+
   @ApiProperty({ example: 499 })
   @IsNumber()
   @Min(0)
@@ -26,6 +30,10 @@ export class CreateServiceDto {
   @IsNumber()
   @Min(1)
   estimated_duration_min: number;
+
+  @ApiProperty({ example: true, required: false })
+  @IsOptional()
+  is_available?: boolean;
 
   @ApiProperty({ example: 'uuid-of-category' })
   @IsString()

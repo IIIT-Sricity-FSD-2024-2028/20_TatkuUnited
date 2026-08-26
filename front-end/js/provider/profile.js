@@ -180,126 +180,7 @@ function updateAvatar(input) {
   reader.readAsDataURL(file);
 }
 
-// ── Resume & Certificates Upload ─────────────────────────────────────────────
-const ALLOWED_RESUME = [
-  "application/pdf",
-  "application/msword",
-  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-];
-const ALLOWED_CERTS = ["application/pdf", "image/jpeg", "image/png"];
-const MAX_BYTES = 5 * 1024 * 1024; // 5 MB
 
-// Tracks uploaded files per list so duplicates are rejected
-const uploadedFiles = { "resume-list": [], "certs-list": [] };
-
-function handleDragOver(e, zoneId) {
-  e.preventDefault();
-  document.getElementById(zoneId).classList.add("drag-over");
-}
-
-function handleDragLeave(zoneId) {
-  document.getElementById(zoneId).classList.remove("drag-over");
-}
-
-function handleDrop(e, inputId) {
-  e.preventDefault();
-  const input = document.getElementById(inputId);
-  const zoneId = input.closest(".upload-zone").id;
-  document.getElementById(zoneId).classList.remove("drag-over");
-
-  const listId = inputId === "resume-input" ? "resume-list" : "certs-list";
-  const multi = inputId === "certs-input";
-  const allowed = multi ? ALLOWED_CERTS : ALLOWED_RESUME;
-
-  const files = Array.from(e.dataTransfer.files);
-  processFiles(files, listId, multi, allowed);
-}
-
-function handleFileSelect(input, listId, multi) {
-  const allowed = multi ? ALLOWED_CERTS : ALLOWED_RESUME;
-  const files = Array.from(input.files);
-  processFiles(files, listId, multi, allowed);
-  input.value = ""; // reset so same file can be re-selected after removal
-}
-
-function processFiles(files, listId, multi, allowed) {
-  if (!multi) {
-    // For resume: replace existing file
-    uploadedFiles[listId] = [];
-    document.getElementById(listId).innerHTML = "";
-  }
-
-  let rejected = 0;
-  for (const file of files) {
-    if (!allowed.includes(file.type)) {
-      rejected++;
-      continue;
-    }
-    if (file.size > MAX_BYTES) {
-      rejected++;
-      continue;
-    }
-    if (
-      uploadedFiles[listId].some(
-        (f) => f.name === file.name && f.size === file.size,
-      )
-    )
-      continue;
-
-    uploadedFiles[listId].push(file);
-    renderFileItem(file, listId);
-  }
-
-  if (rejected)
-    showToast(`${rejected} file(s) skipped — wrong type or over 5 MB.`, true);
-}
-
-function formatBytes(bytes) {
-  if (bytes < 1024) return bytes + " B";
-  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB";
-  return (bytes / (1024 * 1024)).toFixed(1) + " MB";
-}
-
-function getFileIcon() {
-  return `<svg viewBox="0 0 24 24" width="16" height="16"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>`;
-}
-
-function renderFileItem(file, listId) {
-  const list = document.getElementById(listId);
-  const item = document.createElement("div");
-  item.className = "upload-file-item";
-  item.dataset.name = file.name;
-  item.dataset.size = file.size;
-  item.innerHTML = `
-    <div class="upload-file-icon">${getFileIcon()}</div>
-    <div class="upload-file-info">
-      <div class="upload-file-name" title="${file.name}">${file.name}</div>
-      <div class="upload-file-size">${formatBytes(file.size)}</div>
-    </div>
-    <div class="upload-file-status">
-      <svg viewBox="0 0 24 24" width="13" height="13"><polyline points="20 6 9 17 4 12"/></svg>
-      Uploaded
-    </div>
-    <button class="btn-remove-file" title="Remove" onclick="removeUploadedFile(this, '${listId}')">
-      <svg viewBox="0 0 24 24" width="12" height="12"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-    </button>
-  `;
-  list.appendChild(item);
-}
-
-function removeUploadedFile(btn, listId) {
-  const item = btn.closest(".upload-file-item");
-  const name = item.dataset.name;
-  const size = Number(item.dataset.size);
-  uploadedFiles[listId] = uploadedFiles[listId].filter(
-    (f) => !(f.name === name && f.size === size),
-  );
-  item.style.animation = "none";
-  item.style.opacity = "0";
-  item.style.transform = "translateY(-4px)";
-  item.style.transition = "opacity .18s, transform .18s";
-  setTimeout(() => item.remove(), 180);
-}
 
 function toggleAddSkill() {
   const panel = document.getElementById("add-skill-panel");
@@ -563,19 +444,7 @@ function updateDeactivationUI(status) {
   await fetchAndRenderSkills();
 
 
-  // Files
-  if (sp.resumeFiles && sp.resumeFiles.length > 0) {
-    sp.resumeFiles.forEach((f) => {
-      uploadedFiles["resume-list"].push(f);
-      renderFileItem(f, "resume-list");
-    });
-  }
-  if (sp.certFiles && sp.certFiles.length > 0) {
-    sp.certFiles.forEach((f) => {
-      uploadedFiles["certs-list"].push(f);
-      renderFileItem(f, "certs-list");
-    });
-  }
+
 
   // Work hours
   try {
