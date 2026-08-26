@@ -256,14 +256,24 @@ window.Api = (() => {
 
   // ── Core request function ─────────────────────────────────────────────────
 
+  function isFormData(val) {
+    return (
+      (typeof FormData !== "undefined" && val instanceof FormData) ||
+      (val && typeof val === "object" && Object.prototype.toString.call(val) === "[object FormData]") ||
+      (val && typeof val === "object" && typeof val.append === "function")
+    );
+  }
+
   async function request(method, path, options) {
     options = options || {};
+
+    const bodyIsFormData = isFormData(options.body);
 
     // Build headers
     const headers = {
       Accept: "application/json",
     };
-    if (!(options.body instanceof FormData)) {
+    if (!bodyIsFormData) {
       headers["Content-Type"] = "application/json";
     }
 
@@ -291,6 +301,11 @@ window.Api = (() => {
       });
     }
 
+    if (bodyIsFormData) {
+      delete headers["Content-Type"];
+      delete headers["content-type"];
+    }
+
     // Build fetch init
     const fetchInit = {
       method: method.toUpperCase(),
@@ -301,7 +316,7 @@ window.Api = (() => {
     // Attach body for non-GET methods
     if (options.body !== undefined && method.toUpperCase() !== "GET") {
       fetchInit.body =
-        (options.body instanceof FormData || typeof options.body === "string")
+        (bodyIsFormData || typeof options.body === "string")
           ? options.body
           : JSON.stringify(options.body);
     }

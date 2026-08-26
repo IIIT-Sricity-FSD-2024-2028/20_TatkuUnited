@@ -120,8 +120,10 @@ export class ServicesService {
     } catch (err) {
       // Fallback if Cloudinary credentials are not configured or request fails
       console.warn('Cloudinary upload warning:', err?.message || err);
-      // Generate a mock/fallback URL so application flow continues seamlessly
-      photoUrl = `https://placehold.co/800x600/4A90D9/white?text=${encodeURIComponent(file.originalname || 'Service+Photo')}`;
+      // Use data URI of uploaded buffer so actual uploaded image displays seamlessly
+      const mime = file.mimetype || 'image/png';
+      const base64 = file.buffer ? file.buffer.toString('base64') : '';
+      photoUrl = base64 ? `data:${mime};base64,${base64}` : 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=800&q=80';
     }
 
     return this.servicesRepository.addPhoto(serviceId, photoUrl);

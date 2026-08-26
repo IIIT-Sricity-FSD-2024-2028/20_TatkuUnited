@@ -1171,7 +1171,7 @@ export class DatabaseService implements OnModuleInit {
       category_name: 'Home Cleaning',
       description: 'All home cleaning services',
       icon: '🧹',
-      image_url: 'https://placehold.co/400x200/4A90D9/white?text=Home+Cleaning',
+      image_url: 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=800&q=80',
       // services[0] Standard Home Clean: 1 review, rating 4 → avg 4.0
       average_rating: 4.0,
       rating_count: 1,
@@ -1183,7 +1183,7 @@ export class DatabaseService implements OnModuleInit {
       description: 'Appliance diagnostics and repair services',
       icon: '🛠️',
       image_url:
-        'https://placehold.co/400x200/2D9CDB/white?text=Appliance+Repair',
+        'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&w=800&q=80',
       // services[2] Split AC Repair: 2 reviews (5,4) → avg 4.5
       average_rating: 4.5,
       rating_count: 2,
@@ -1194,7 +1194,7 @@ export class DatabaseService implements OnModuleInit {
       category_name: 'Plumbing',
       description: 'Leak fixing, fittings, and sanitary service work',
       icon: '🚰',
-      image_url: 'https://placehold.co/400x200/1E8E3E/white?text=Plumbing',
+      image_url: 'https://images.unsplash.com/photo-1607472586893-edb57bdc0e39?auto=format&fit=crop&w=800&q=80',
       // services[3] Kitchen Sink Leak Fix: 2 reviews (5,5) → avg 5.0
       average_rating: 5.0,
       rating_count: 2,
@@ -1205,7 +1205,7 @@ export class DatabaseService implements OnModuleInit {
       category_name: 'Carpentry & Furniture',
       description: 'Woodwork, repairs, and furniture assembly',
       icon: '🪵',
-      image_url: 'https://placehold.co/400x200/8B4513/white?text=Carpentry',
+      image_url: 'https://images.unsplash.com/photo-1538688525198-9b88f6f53126?auto=format&fit=crop&w=800&q=80',
       average_rating: 0,
       rating_count: 0,
       is_available: true,
@@ -1215,7 +1215,7 @@ export class DatabaseService implements OnModuleInit {
       category_name: 'Pest Control',
       description: 'Safe and effective pest management',
       icon: '🐜',
-      image_url: 'https://placehold.co/400x200/EB5757/white?text=Pest+Control',
+      image_url: 'https://images.unsplash.com/photo-1618477461853-cf6ed80faba5?auto=format&fit=crop&w=800&q=80',
       average_rating: 0,
       rating_count: 0,
       is_available: true,
@@ -1228,7 +1228,7 @@ export class DatabaseService implements OnModuleInit {
       service_name: 'Standard Home Clean',
       description: 'Complete standard clean for up to 3BHK homes.',
       image_url:
-        'https://placehold.co/400x200/4A90D9/white?text=Standard+Clean',
+        'https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=800&q=80',
       photos: [],
       base_price: 499,
       estimated_duration_min: 120,
@@ -1242,7 +1242,7 @@ export class DatabaseService implements OnModuleInit {
       service_id: this.genId(), // services[1] – Deep Home Clean
       service_name: 'Deep Home Clean',
       description: 'Deep cleaning for kitchen, bathrooms, and living areas.',
-      image_url: 'https://placehold.co/400x200/4A90D9/white?text=Deep+Clean',
+      image_url: 'https://images.unsplash.com/photo-1527515637462-cff94eecc1ac?auto=format&fit=crop&w=800&q=80',
       photos: [],
       base_price: 899,
       estimated_duration_min: 180,
@@ -1255,7 +1255,7 @@ export class DatabaseService implements OnModuleInit {
       service_id: this.genId(), // services[2] – Split AC Repair
       service_name: 'Split AC Repair',
       description: 'Inspection and repair for common split AC faults.',
-      image_url: 'https://placehold.co/400x200/2D9CDB/white?text=AC+Repair',
+      image_url: 'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&w=800&q=80',
       photos: [],
       base_price: 1299,
       estimated_duration_min: 90,
@@ -1269,7 +1269,7 @@ export class DatabaseService implements OnModuleInit {
       service_id: this.genId(), // services[3] – Kitchen Sink Leak Fix
       service_name: 'Kitchen Sink Leak Fix',
       description: 'Leak detection and repair for kitchen sink pipelines.',
-      image_url: 'https://placehold.co/400x200/1E8E3E/white?text=Leak+Fix',
+      image_url: 'https://images.unsplash.com/photo-1607472586893-edb57bdc0e39?auto=format&fit=crop&w=800&q=80',
       photos: [],
       base_price: 699,
       estimated_duration_min: 75,
@@ -1283,7 +1283,7 @@ export class DatabaseService implements OnModuleInit {
       service_id: this.genId(), // services[4] – Bed Assembly
       service_name: 'Bed Assembly',
       description: 'Expert assembly of all types of beds.',
-      image_url: 'https://placehold.co/400x200/8B4513/white?text=Bed+Assembly',
+      image_url: 'https://images.unsplash.com/photo-1505798577917-a671540f0afe?auto=format&fit=crop&w=800&q=80',
       photos: [],
       base_price: 999,
       estimated_duration_min: 120,
@@ -1296,7 +1296,7 @@ export class DatabaseService implements OnModuleInit {
       service_id: this.genId(), // services[5] – Door Lock Repair
       service_name: 'Door Lock Repair',
       description: 'Repair and replacement of door locks and handles.',
-      image_url: 'https://placehold.co/400x200/8B4513/white?text=Lock+Repair',
+      image_url: 'https://images.unsplash.com/photo-1538688525198-9b88f6f53126?auto=format&fit=crop&w=800&q=80',
       photos: [],
       base_price: 499,
       estimated_duration_min: 60,
@@ -1309,7 +1309,7 @@ export class DatabaseService implements OnModuleInit {
       service_id: this.genId(), // services[6] – General Pest Control
       service_name: 'General Pest Control',
       description: 'Treatment for cockroaches, ants, and other common pests.',
-      image_url: 'https://placehold.co/400x200/EB5757/white?text=Pest+Control',
+      image_url: 'https://images.unsplash.com/photo-1618477461853-cf6ed80faba5?auto=format&fit=crop&w=800&q=80',
       photos: [],
       base_price: 1599,
       estimated_duration_min: 90,

@@ -63,6 +63,39 @@
     };
   }
 
+  function getServiceImageUrl(service) {
+    if (!service) return "https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=800&q=80";
+    if (Array.isArray(service.photos) && service.photos.length > 0 && service.photos[0] && !service.photos[0].includes("placehold.co")) {
+      return service.photos[0];
+    }
+    if (service.image_url && typeof service.image_url === "string" && !service.image_url.includes("placehold.co")) {
+      return service.image_url;
+    }
+    var name = (service.service_name || service.name || "").toLowerCase();
+    if (name.indexOf("clean") >= 0) return "https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=800&q=80";
+    if (name.indexOf("ac") >= 0 || name.indexOf("appliance") >= 0 || name.indexOf("repair") >= 0 || name.indexOf("wm") >= 0) return "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&w=800&q=80";
+    if (name.indexOf("plumb") >= 0 || name.indexOf("pipe") >= 0 || name.indexOf("leak") >= 0 || name.indexOf("sink") >= 0 || name.indexOf("fitting") >= 0) return "https://images.unsplash.com/photo-1607472586893-edb57bdc0e39?auto=format&fit=crop&w=800&q=80";
+    if (name.indexOf("carpent") >= 0 || name.indexOf("bed") >= 0 || name.indexOf("lock") >= 0 || name.indexOf("shelf") >= 0 || name.indexOf("furniture") >= 0) return "https://images.unsplash.com/photo-1538688525198-9b88f6f53126?auto=format&fit=crop&w=800&q=80";
+    if (name.indexOf("electric") >= 0 || name.indexOf("fan") >= 0 || name.indexOf("wiring") >= 0) return "https://images.unsplash.com/photo-1621905252507-b35492cc74b4?auto=format&fit=crop&w=800&q=80";
+    if (name.indexOf("pest") >= 0 || name.indexOf("cockroach") >= 0 || name.indexOf("termite") >= 0) return "https://images.unsplash.com/photo-1618477461853-cf6ed80faba5?auto=format&fit=crop&w=800&q=80";
+    return "https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=800&q=80";
+  }
+
+  function getCategoryImageUrl(category) {
+    if (!category) return "https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=800&q=80";
+    if (category.image_url && typeof category.image_url === "string" && !category.image_url.includes("placehold.co")) {
+      return category.image_url;
+    }
+    var name = (category.category_name || category.name || "").toLowerCase();
+    if (name.indexOf("clean") >= 0) return "https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=800&q=80";
+    if (name.indexOf("appliance") >= 0 || name.indexOf("ac") >= 0) return "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&w=800&q=80";
+    if (name.indexOf("plumb") >= 0) return "https://images.unsplash.com/photo-1607472586893-edb57bdc0e39?auto=format&fit=crop&w=800&q=80";
+    if (name.indexOf("carpent") >= 0 || name.indexOf("furniture") >= 0) return "https://images.unsplash.com/photo-1538688525198-9b88f6f53126?auto=format&fit=crop&w=800&q=80";
+    if (name.indexOf("electric") >= 0) return "https://images.unsplash.com/photo-1621905252507-b35492cc74b4?auto=format&fit=crop&w=800&q=80";
+    if (name.indexOf("pest") >= 0) return "https://images.unsplash.com/photo-1618477461853-cf6ed80faba5?auto=format&fit=crop&w=800&q=80";
+    return "https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=800&q=80";
+  }
+
   function renderSubServices(grid, services, selectedServiceId) {
     grid.innerHTML = services
       .map(function (service, index) {
@@ -80,7 +113,7 @@
           '" style="position:relative">' +
           '<div class="sub-service-img">' +
           '<img src="' +
-          service.image_url +
+          getServiceImageUrl(service) +
           '" alt="' +
           service.service_name +
           '" />' +
@@ -234,7 +267,7 @@
           "</div>" +
           '<div class="explore-item-cta">' +
           '<div class="item-img-box"><img src="' +
-          service.image_url +
+          getServiceImageUrl(service) +
           '" alt="' +
           service.service_name +
           '" /></div>' +
@@ -480,7 +513,7 @@
         : "(No services yet)";
     }
     if (heroImage) {
-      heroImage.src = category.image_url;
+      heroImage.src = getCategoryImageUrl(category);
       heroImage.alt = category.category_name;
     }
 

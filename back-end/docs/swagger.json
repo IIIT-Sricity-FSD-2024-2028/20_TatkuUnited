@@ -2577,6 +2577,83 @@
         ]
       }
     },
+    "/services/{id}/photos": {
+      "post": {
+        "operationId": "ServicesController_uploadPhoto",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Photo uploaded and added to service"
+          },
+          "400": {
+            "description": "No photo provided"
+          },
+          "403": {
+            "description": "Forbidden — super_user only"
+          },
+          "404": {
+            "description": "Service not found"
+          }
+        },
+        "security": [
+          {
+            "x-role": []
+          },
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Upload a photo for a service to Cloudinary",
+        "tags": [
+          "services"
+        ]
+      },
+      "delete": {
+        "operationId": "ServicesController_removePhoto",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Photo removed from service"
+          },
+          "403": {
+            "description": "Forbidden — super_user only"
+          },
+          "404": {
+            "description": "Service not found"
+          }
+        },
+        "security": [
+          {
+            "x-role": []
+          },
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Remove a photo URL from a service",
+        "tags": [
+          "services"
+        ]
+      }
+    },
     "/services/{id}": {
       "get": {
         "operationId": "ServicesController_findOne",
@@ -5757,6 +5834,23 @@
           "is_active": {
             "type": "boolean",
             "example": true
+          },
+          "service_category": {
+            "type": "string",
+            "example": "Home Cleaning"
+          },
+          "experience": {
+            "type": "string",
+            "example": "8"
+          },
+          "skills": {
+            "example": [
+              "skill-uuid"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         },
         "required": [
@@ -5799,6 +5893,23 @@
           "is_active": {
             "type": "boolean",
             "example": true
+          },
+          "service_category": {
+            "type": "string",
+            "example": "Home Cleaning"
+          },
+          "experience": {
+            "type": "string",
+            "example": "8"
+          },
+          "skills": {
+            "example": [
+              "skill-uuid"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         }
       },
@@ -6296,6 +6407,15 @@
             "type": "string",
             "example": "https://placehold.co/400x200/4A90D9/white?text=Standard+Clean"
           },
+          "photos": {
+            "example": [
+              "https://res.cloudinary.com/demo/image/upload/sample.jpg"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
           "base_price": {
             "type": "number",
             "example": 499
@@ -6303,6 +6423,10 @@
           "estimated_duration_min": {
             "type": "number",
             "example": 120
+          },
+          "is_available": {
+            "type": "boolean",
+            "example": true
           },
           "category_id": {
             "type": "string",
@@ -6331,6 +6455,15 @@
             "type": "string",
             "example": "https://placehold.co/400x200/4A90D9/white?text=Standard+Clean"
           },
+          "photos": {
+            "example": [
+              "https://res.cloudinary.com/demo/image/upload/sample.jpg"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
           "base_price": {
             "type": "number",
             "example": 499
@@ -6338,6 +6471,10 @@
           "estimated_duration_min": {
             "type": "number",
             "example": 120
+          },
+          "is_available": {
+            "type": "boolean",
+            "example": true
           },
           "category_id": {
             "type": "string",

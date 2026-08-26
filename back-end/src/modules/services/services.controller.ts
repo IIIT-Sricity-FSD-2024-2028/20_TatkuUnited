@@ -10,9 +10,10 @@ import {
   UseGuards,
   UseInterceptors,
   UploadedFile,
+  UploadedFiles,
   BadRequestException,
 } from '@nestjs/common';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { FileInterceptor, AnyFilesInterceptor } from '@nestjs/platform-express';
 import { ApiBearerAuth,
   ApiConsumes,
   ApiOperation,
@@ -177,7 +178,7 @@ export class ServicesController {
 
   @Post(':id/photos')
   @Roles(Role.SUPER_USER)
-  @UseInterceptors(FileInterceptor('photo'))
+  @UseInterceptors(AnyFilesInterceptor())
   @ApiConsumes('multipart/form-data')
   @ApiOperation({ summary: 'Upload a photo for a service to Cloudinary' })
   @ApiResponse({ status: 201, description: 'Photo uploaded and added to service' })
@@ -186,8 +187,10 @@ export class ServicesController {
   @ApiResponse({ status: 403, description: 'Forbidden — super_user only' })
   uploadPhoto(
     @Param('id') id: string,
-    @UploadedFile() file: Express.Multer.File,
+    @UploadedFiles() files: Express.Multer.File[],
+    @UploadedFile() singleFile?: Express.Multer.File,
   ) {
+    const file = singleFile || (files && files[0]);
     if (!file) {
       throw new BadRequestException('No photo file provided');
     }
