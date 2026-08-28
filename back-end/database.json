@@ -358,10 +358,21 @@
       "service_address": "14 Boat Club Road, Chennai",
       "cart_id": "95a5cee7-273b-467c-8d28-b01343cea8e4",
       "created_at": "2026-05-04T11:42:02.699",
-      "updated_at": "2026-05-04T12:58:35.870"
+      "updated_at": "2026-08-25T23:03:43.519"
     }
   ],
-  "cartItems": [],
+  "cartItems": [
+    {
+      "cart_id": "95a5cee7-273b-467c-8d28-b01343cea8e4",
+      "service_id": "916bc5fc-12b4-4a1e-aac1-c9003d9ad1ca",
+      "quantity": 1,
+      "price_snapshot": 499,
+      "booking_type": "INSTANT",
+      "scheduled_at": null,
+      "cart_item_id": "bf4dacf9-8ec6-4534-9e61-86b72585f7a0",
+      "added_at": "2026-08-25T23:03:41.744"
+    }
+  ],
   "categories": [
     {
       "category_id": "9d70ce12-ec1a-4a6b-b27d-9b163a2bf1d9",
@@ -958,6 +969,17 @@
       "booking_id": "41ae27b9-7ef1-46aa-94f4-4026c7925be0",
       "created_at": "2026-05-04T12:58:38.094",
       "updated_at": "2026-05-04T12:59:03.933"
+    },
+    {
+      "service_address": "14 Boat Club Road, Chennai",
+      "status": "PENDING",
+      "failure_reason": null,
+      "is_active": true,
+      "customer_id": "1e541f38-cc88-4668-9495-bb41dea2aa76",
+      "sector_id": "a167786b-6c7b-464e-961b-c80e07939da9",
+      "booking_id": "54cad7e0-9328-4190-ac2f-26a478aae4b5",
+      "created_at": "2026-08-25T23:03:46.291",
+      "updated_at": "2026-08-25T23:03:46.291"
     }
   ],
   "bookingServices": [
@@ -1090,6 +1112,14 @@
       "service_id": "4d97f6a2-3ddb-4dfd-88ed-1837e390ddfa",
       "quantity": 1,
       "price_at_booking": 999,
+      "booking_type": "INSTANT",
+      "scheduled_at": null
+    },
+    {
+      "booking_id": "54cad7e0-9328-4190-ac2f-26a478aae4b5",
+      "service_id": "916bc5fc-12b4-4a1e-aac1-c9003d9ad1ca",
+      "quantity": 1,
+      "price_at_booking": 499,
       "booking_type": "INSTANT",
       "scheduled_at": null
     }
@@ -1515,6 +1545,20 @@
       "transaction_at": "2026-05-04T12:58:38.102",
       "verified_at": "2026-05-04T12:58:38.102",
       "booking_id": "41ae27b9-7ef1-46aa-94f4-4026c7925be0"
+    },
+    {
+      "transaction_id": "6930654c-a3d9-44af-80e8-992100627c3e",
+      "payment_gateway_ref": "PGR-54cad7e0-9328-4190-ac2f-26a478aae4b5",
+      "payment_method": "UPI",
+      "idempotency_key": "idem-checkout-54cad7e0-9328-4190-ac2f-26a478aae4b5",
+      "payment_status": "SUCCESS",
+      "amount": 499,
+      "currency": "INR",
+      "refund_amount": 0,
+      "refund_reason": null,
+      "transaction_at": "2026-08-25T23:03:46.311",
+      "verified_at": "2026-08-25T23:03:46.311",
+      "booking_id": "54cad7e0-9328-4190-ac2f-26a478aae4b5"
     }
   ],
   "revenueLedger": [
