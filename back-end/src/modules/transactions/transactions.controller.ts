@@ -64,24 +64,12 @@ export class TransactionsController {
   // ─────────────────────────── GET /transactions ───────────────────────────
 
   @Get()
-  @Roles(Role.SUPER_USER, Role.COLLECTIVE_MANAGER, Role.UNIT_MANAGER)
-  @ApiOperation({ summary: 'List all transactions (scoped for managers)' })
+  @Roles(Role.SUPER_USER)
+  @ApiOperation({ summary: 'List all transactions (super_user only)' })
   @ApiResponse({ status: 200, description: 'Array of transactions' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
   findAll(@Request() req: { user: JwtPayload }) {
-    if (req.user.role === Role.COLLECTIVE_MANAGER || req.user.role === Role.UNIT_MANAGER) {
-      return this.transactionsService.findAll().filter((txn) => {
-        const booking = this.transactionsService.findBooking(txn.booking_id);
-        try {
-          this.accessScope.assertSectorAccess(req.user, booking.sector_id);
-          return true;
-        } catch (e) {
-          return false;
-        }
-      });
-    }
     return this.transactionsService.findAll();
-
   }
 
   // ──────────── GET /transactions/booking/:bookingId ───────────────────────
@@ -105,8 +93,8 @@ export class TransactionsController {
   // ─────────────────── GET /transactions/:id ──────────────────────────────
 
   @Get(':id')
-  @Roles(Role.SUPER_USER, Role.UNIT_MANAGER)
-  @ApiOperation({ summary: 'Get transaction by ID — super_user or unit_manager' })
+  @Roles(Role.SUPER_USER)
+  @ApiOperation({ summary: 'Get transaction by ID (super_user only)' })
   @ApiParam({ name: 'id', description: 'transaction_id UUID' })
   @ApiResponse({ status: 200, description: 'Transaction found' })
   @ApiResponse({ status: 403, description: 'Forbidden' })

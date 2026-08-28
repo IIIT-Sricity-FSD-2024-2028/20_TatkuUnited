@@ -7,35 +7,6 @@ import * as path from 'path';
 // ENTITY INTERFACES
 // ─────────────────────────────────────────────────────────────────────────────
 
-export interface Collective {
-  collective_id: string;
-  collective_name: string;
-  is_active: boolean;
-  created_at: string;
-}
-
-export interface Sector {
-  sector_id: string;
-  sector_name: string;
-  state: string;
-  region: string;
-  density_tier: string;
-  is_active: boolean;
-  collective_id: string;
-}
-
-export interface Unit {
-  unit_id: string;
-  unit_name: string;
-  rating: number;
-  rating_count: number;
-  is_active: boolean;
-  created_at: string;
-  collective_id: string;
-  category?: string;
-  zone?: string;
-}
-
 export interface SuperUser {
   super_user_id: string;
   name: string;
@@ -47,17 +18,6 @@ export interface SuperUser {
   created_at: string;
 }
 
-export interface CollectiveManager {
-  cm_id: string;
-  name: string;
-  email: string;
-  password_hash: string;
-  phone: string;
-  is_active: boolean;
-  created_at: string;
-  updated_at: string;
-  collective_id: string;
-}
 
 export interface UnitManager {
   um_id: string;
@@ -68,7 +28,6 @@ export interface UnitManager {
   is_active: boolean;
   created_at: string;
   updated_at: string;
-  unit_id: string;
   dob?: string;
   pfp_url?: string;
 }
@@ -91,8 +50,8 @@ export interface ServiceProvider {
   hour_end: string;
   created_at: string;
   updated_at: string;
-  unit_id: string;
-  home_sector_id: string;
+  service_category?: string;
+  experience?: string;
 }
 
 export interface ProviderUnavailability {
@@ -129,7 +88,6 @@ export interface Customer {
   address: string;
   rating: number;
   is_active: boolean;
-  home_sector_id: string;
 }
 
 // Cart exists only while the customer is browsing / has not checked out.
@@ -168,7 +126,10 @@ export interface Service {
   service_id: string;
   service_name: string;
   description: string;
-  image_url: string;
+  /** Legacy single-image URL — kept for backwards-compat, prefer photos[] */
+  image_url?: string;
+  /** Cloudinary photo URLs uploaded by super-user */
+  photos: string[];
   base_price: number;
   estimated_duration_min: number;
   average_rating: number;
@@ -206,7 +167,6 @@ export interface Booking {
   created_at: string;
   updated_at: string;
   customer_id: string;
-  sector_id: string;
 }
 
 export interface BookingService {
@@ -257,16 +217,12 @@ export interface RevenueLedger {
   ledger_id: string;
   payout_status: string;
   provider_amount: number;
-  um_amount: number;
-  cm_amount: number;
   platform_amount: number;
   created_at: string;
   paid_at: string | null;
   booking_id: string;
   service_id: string;
   sp_id: string;
-  um_id: string;
-  cm_id: string;
 }
 
 // Review is per service per booking — not per booking as a whole.
@@ -356,12 +312,7 @@ export class DatabaseService implements OnModuleInit {
     console.log('DatabaseService: Attempting to save to disk...');
     try {
       const data = {
-        collectives: this.collectives,
-        sectors: this.sectors,
-        units: this.units,
         superUsers: this.superUsers,
-        collectiveManagers: this.collectiveManagers,
-        unitManagers: this.unitManagers,
         serviceProviders: this.serviceProviders,
         providerUnavailability: this.providerUnavailability,
         skills: this.skills,
@@ -393,12 +344,7 @@ export class DatabaseService implements OnModuleInit {
       if (fs.existsSync(this.DB_PATH)) {
         const raw = fs.readFileSync(this.DB_PATH, 'utf-8');
         const data = JSON.parse(raw);
-        if (data.collectives) this.collectives = data.collectives;
-        if (data.sectors) this.sectors = data.sectors;
-        if (data.units) this.units = data.units;
         if (data.superUsers) this.superUsers = data.superUsers;
-        if (data.collectiveManagers) this.collectiveManagers = data.collectiveManagers;
-        if (data.unitManagers) this.unitManagers = data.unitManagers;
         if (data.serviceProviders) this.serviceProviders = data.serviceProviders;
         if (data.providerUnavailability) this.providerUnavailability = data.providerUnavailability;
         if (data.skills) this.skills = data.skills;
@@ -407,7 +353,12 @@ export class DatabaseService implements OnModuleInit {
         if (data.carts) this.carts = data.carts;
         if (data.cartItems) this.cartItems = data.cartItems;
         if (data.categories) this.categories = data.categories;
-        if (data.services) this.services = data.services;
+        if (data.services) {
+          this.services = data.services.map((s: any) => ({
+            ...s,
+            photos: Array.isArray(s.photos) ? s.photos : [],
+          }));
+        }
         if (data.serviceSkills) this.serviceSkills = data.serviceSkills;
         if (data.serviceContent) this.serviceContent = data.serviceContent;
         if (data.serviceFaqs) this.serviceFaqs = data.serviceFaqs;
@@ -424,95 +375,6 @@ export class DatabaseService implements OnModuleInit {
       console.error('Failed to load database from disk:', err);
     }
   }
-  collectives: Collective[] = [
-    {
-      collective_id: this.genId(),
-      collective_name: 'North Chennai Collective',
-      is_active: true,
-      created_at: '2025-10-01T00:00:00Z',
-    },
-  ];
-
-  sectors: Sector[] = [
-    {
-      sector_id: this.genId(),
-      sector_name: 'Downtown Core',
-      state: 'Tamil Nadu',
-      region: 'Central',
-      density_tier: 'HIGH',
-      is_active: true,
-      collective_id: this.collectives[0].collective_id,
-    },
-    {
-      sector_id: this.genId(),
-      sector_name: 'Anna Nagar West',
-      state: 'Tamil Nadu',
-      region: 'North',
-      density_tier: 'MEDIUM',
-      is_active: true,
-      collective_id: this.collectives[0].collective_id,
-    },
-    {
-      sector_id: this.genId(),
-      sector_name: 'Velachery South',
-      state: 'Tamil Nadu',
-      region: 'South',
-      density_tier: 'HIGH',
-      is_active: true,
-      collective_id: this.collectives[0].collective_id,
-    },
-  ];
-
-  units: Unit[] = [
-    {
-      unit_id: this.genId(), // units[0] – Electrical & AC
-      unit_name: 'Electrical & AC Services',
-      // Ravi has 3 reviewed jobs (scores 5,4,4) → unit avg = (5+4+4)/3 = 4.33
-      rating: 4.33,
-      rating_count: 3,
-      is_active: true,
-      created_at: '2025-10-31T00:00:00Z',
-      collective_id: this.collectives[0].collective_id,
-    },
-    {
-      unit_id: this.genId(), // units[1] – Plumbing
-      unit_name: 'Plumbing & Sanitary Services',
-      // Manoj has 2 reviewed jobs (scores 5,5) → unit avg = 5.0
-      rating: 5.0,
-      rating_count: 2,
-      is_active: true,
-      created_at: '2025-11-20T00:00:00Z',
-      collective_id: this.collectives[0].collective_id,
-    },
-    {
-      unit_id: this.genId(), // units[2] – Carpentry
-      unit_name: 'Carpentry & Furniture Services',
-      rating: 0,
-      rating_count: 0,
-      is_active: true,
-      created_at: '2026-01-10T00:00:00Z',
-      collective_id: this.collectives[0].collective_id,
-    },
-    {
-      unit_id: this.genId(), // units[3] – Pest Control
-      unit_name: 'Pest Control & Sanitization',
-      rating: 0,
-      rating_count: 0,
-      is_active: true,
-      created_at: '2026-01-15T00:00:00Z',
-      collective_id: this.collectives[0].collective_id,
-    },
-    {
-      unit_id: this.genId(), // units[4] – Cleaning
-      unit_name: 'Home Cleaning Services',
-      rating: 0,
-      rating_count: 0,
-      is_active: true,
-      created_at: '2026-02-01T00:00:00Z',
-      collective_id: this.collectives[0].collective_id,
-    },
-  ];
-
   superUsers: SuperUser[] = [
     {
       super_user_id: this.genId(),
@@ -526,77 +388,7 @@ export class DatabaseService implements OnModuleInit {
     },
   ];
 
-  collectiveManagers: CollectiveManager[] = [
-    {
-      cm_id: this.genId(),
-      name: 'Suresh Patel',
-      email: 'suresh@collective.com',
-      password_hash: this.storePassword('Password@123'),
-      phone: '9988776655',
-      is_active: true,
-      created_at: '2024-10-10T00:00:00Z',
-      updated_at: '2026-04-10T00:00:00Z',
-      collective_id: this.collectives[0].collective_id,
-    },
-  ];
 
-  unitManagers: UnitManager[] = [
-    {
-      um_id: this.genId(), // unitManagers[0] – manages units[0]
-      name: 'Karan Mehta',
-      email: 'karan.m@unit.com',
-      password_hash: this.storePassword('Password@123'),
-      phone: '9955443322',
-      is_active: true,
-      created_at: '2024-11-09T00:00:00Z',
-      updated_at: '2026-04-10T00:00:00Z',
-      unit_id: this.units[0].unit_id,
-    },
-    {
-      um_id: this.genId(), // unitManagers[1] – manages units[1]
-      name: 'Naveen Raj',
-      email: 'naveen.r@unit.com',
-      password_hash: this.storePassword('Password@123'),
-      phone: '9930012277',
-      is_active: true,
-      created_at: '2024-12-05T00:00:00Z',
-      updated_at: '2026-04-09T00:00:00Z',
-      unit_id: this.units[1].unit_id,
-    },
-    {
-      um_id: this.genId(), // unitManagers[2] – manages units[2]
-      name: 'Anita Desai',
-      email: 'anita.d@unit.com',
-      password_hash: this.storePassword('Password@123'),
-      phone: '9944332211',
-      is_active: true,
-      created_at: '2026-01-10T00:00:00Z',
-      updated_at: '2026-04-10T00:00:00Z',
-      unit_id: this.units[2].unit_id,
-    },
-    {
-      um_id: this.genId(), // unitManagers[3] – manages units[3]
-      name: 'Rahul Sharma',
-      email: 'rahul.s@unit.com',
-      password_hash: this.storePassword('Password@123'),
-      phone: '9955667788',
-      is_active: true,
-      created_at: '2026-01-15T00:00:00Z',
-      updated_at: '2026-04-10T00:00:00Z',
-      unit_id: this.units[3].unit_id,
-    },
-    {
-      um_id: this.genId(), // unitManagers[4] – manages units[4]
-      name: 'Meera Reddy',
-      email: 'meera.r@unit.com',
-      password_hash: this.storePassword('Password@123'),
-      phone: '9966778899',
-      is_active: true,
-      created_at: '2026-02-01T00:00:00Z',
-      updated_at: '2026-04-10T00:00:00Z',
-      unit_id: this.units[4].unit_id,
-    },
-  ];
 
   serviceProviders: ServiceProvider[] = [
     {
@@ -619,8 +411,6 @@ export class DatabaseService implements OnModuleInit {
       hour_end: '23:59',
       created_at: '2024-10-31T08:00:00Z',
       updated_at: '2026-04-10T11:30:00Z',
-      unit_id: this.units[0].unit_id,
-      home_sector_id: this.sectors[0].sector_id,
     },
     {
       sp_id: this.genId(), // serviceProviders[1] – Manoj Selvam, Plumbing unit
@@ -642,8 +432,6 @@ export class DatabaseService implements OnModuleInit {
       hour_end: '23:59',
       created_at: '2024-11-22T08:00:00Z',
       updated_at: '2026-04-10T09:20:00Z',
-      unit_id: this.units[1].unit_id,
-      home_sector_id: this.sectors[1].sector_id,
     },
     {
       sp_id: this.genId(), // serviceProviders[2] – Priya Nair, AC unit, no jobs yet
@@ -663,8 +451,6 @@ export class DatabaseService implements OnModuleInit {
       hour_end: '23:59',
       created_at: '2025-01-06T08:00:00Z',
       updated_at: '2026-04-01T10:00:00Z',
-      unit_id: this.units[0].unit_id,
-      home_sector_id: this.sectors[2].sector_id,
     },
     {
       sp_id: this.genId(), // serviceProviders[3] – Vikram Singh, Carpentry unit
@@ -684,8 +470,6 @@ export class DatabaseService implements OnModuleInit {
       hour_end: '23:59',
       created_at: '2026-01-10T09:00:00Z',
       updated_at: '2026-04-10T10:00:00Z',
-      unit_id: this.units[2].unit_id,
-      home_sector_id: this.sectors[0].sector_id,
     },
     {
       sp_id: this.genId(), // serviceProviders[4] – Saritha Reddy, Carpentry unit
@@ -705,8 +489,6 @@ export class DatabaseService implements OnModuleInit {
       hour_end: '23:59',
       created_at: '2026-01-12T09:00:00Z',
       updated_at: '2026-04-10T11:00:00Z',
-      unit_id: this.units[2].unit_id,
-      home_sector_id: this.sectors[1].sector_id,
     },
     {
       sp_id: this.genId(), // serviceProviders[5] – Amit Verma, Pest Control unit
@@ -726,8 +508,6 @@ export class DatabaseService implements OnModuleInit {
       hour_end: '23:59',
       created_at: '2026-01-15T08:00:00Z',
       updated_at: '2026-04-10T09:00:00Z',
-      unit_id: this.units[3].unit_id,
-      home_sector_id: this.sectors[2].sector_id,
     },
     {
       sp_id: this.genId(), // serviceProviders[6] – Anjali Sharma, Cleaning unit
@@ -747,8 +527,6 @@ export class DatabaseService implements OnModuleInit {
       hour_end: '23:59',
       created_at: '2026-02-01T08:00:00Z',
       updated_at: '2026-04-10T10:00:00Z',
-      unit_id: this.units[4].unit_id,
-      home_sector_id: this.sectors[0].sector_id,
     },
     {
       sp_id: this.genId(),
@@ -768,8 +546,6 @@ export class DatabaseService implements OnModuleInit {
       hour_end: '23:59',
       created_at: '2026-04-15T09:00:00Z',
       updated_at: '2026-04-15T09:00:00Z',
-      unit_id: this.units[1].unit_id,
-      home_sector_id: this.sectors[0].sector_id,
     },
     {
       sp_id: this.genId(),
@@ -789,8 +565,6 @@ export class DatabaseService implements OnModuleInit {
       hour_end: '23:59',
       created_at: '2026-04-15T10:00:00Z',
       updated_at: '2026-04-15T10:00:00Z',
-      unit_id: this.units[0].unit_id,
-      home_sector_id: this.sectors[1].sector_id,
     },
     {
       sp_id: this.genId(),
@@ -810,8 +584,6 @@ export class DatabaseService implements OnModuleInit {
       hour_end: '23:59',
       created_at: '2026-04-15T11:00:00Z',
       updated_at: '2026-04-15T11:00:00Z',
-      unit_id: this.units[3].unit_id,
-      home_sector_id: this.sectors[1].sector_id,
     },
     {
       sp_id: this.genId(),
@@ -831,8 +603,6 @@ export class DatabaseService implements OnModuleInit {
       hour_end: '23:59',
       created_at: '2026-04-15T12:00:00Z',
       updated_at: '2026-04-15T12:00:00Z',
-      unit_id: this.units[2].unit_id,
-      home_sector_id: this.sectors[2].sector_id,
     },
     {
       sp_id: this.genId(),
@@ -852,8 +622,6 @@ export class DatabaseService implements OnModuleInit {
       hour_end: '23:59',
       created_at: '2026-04-15T13:00:00Z',
       updated_at: '2026-04-15T13:00:00Z',
-      unit_id: this.units[1].unit_id,
-      home_sector_id: this.sectors[2].sector_id,
     },
     {
       sp_id: this.genId(),
@@ -873,8 +641,6 @@ export class DatabaseService implements OnModuleInit {
       hour_end: '23:59',
       created_at: '2026-04-15T14:00:00Z',
       updated_at: '2026-04-15T14:00:00Z',
-      unit_id: this.units[4].unit_id,
-      home_sector_id: this.sectors[1].sector_id,
     },
     {
       sp_id: this.genId(),
@@ -894,8 +660,6 @@ export class DatabaseService implements OnModuleInit {
       hour_end: '23:59',
       created_at: '2026-04-15T15:00:00Z',
       updated_at: '2026-04-15T15:00:00Z',
-      unit_id: this.units[0].unit_id,
-      home_sector_id: this.sectors[2].sector_id,
     },
     {
       sp_id: this.genId(),
@@ -915,8 +679,6 @@ export class DatabaseService implements OnModuleInit {
       hour_end: '23:59',
       created_at: '2026-04-15T16:00:00Z',
       updated_at: '2026-04-15T16:00:00Z',
-      unit_id: this.units[4].unit_id,
-      home_sector_id: this.sectors[0].sector_id,
     },
   ];
 
@@ -1121,7 +883,6 @@ export class DatabaseService implements OnModuleInit {
       address: '14 Boat Club Road, Chennai',
       rating: 0,
       is_active: true,
-      home_sector_id: this.sectors[0].sector_id,
     },
     {
       customer_id: this.genId(), // customers[1] – Lakshmi
@@ -1133,7 +894,6 @@ export class DatabaseService implements OnModuleInit {
       address: '33 Anna Nagar, Chennai',
       rating: 0,
       is_active: true,
-      home_sector_id: this.sectors[1].sector_id,
     },
     {
       customer_id: this.genId(), // customers[2] – Arjun
@@ -1145,7 +905,6 @@ export class DatabaseService implements OnModuleInit {
       address: '77 Velachery Main Road, Chennai',
       rating: 0,
       is_active: true,
-      home_sector_id: this.sectors[2].sector_id,
     },
   ];
 
@@ -1161,7 +920,7 @@ export class DatabaseService implements OnModuleInit {
       category_name: 'Home Cleaning',
       description: 'All home cleaning services',
       icon: '🧹',
-      image_url: 'https://placehold.co/400x200/4A90D9/white?text=Home+Cleaning',
+      image_url: 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=800&q=80',
       // services[0] Standard Home Clean: 1 review, rating 4 → avg 4.0
       average_rating: 4.0,
       rating_count: 1,
@@ -1173,7 +932,7 @@ export class DatabaseService implements OnModuleInit {
       description: 'Appliance diagnostics and repair services',
       icon: '🛠️',
       image_url:
-        'https://placehold.co/400x200/2D9CDB/white?text=Appliance+Repair',
+        'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&w=800&q=80',
       // services[2] Split AC Repair: 2 reviews (5,4) → avg 4.5
       average_rating: 4.5,
       rating_count: 2,
@@ -1184,7 +943,7 @@ export class DatabaseService implements OnModuleInit {
       category_name: 'Plumbing',
       description: 'Leak fixing, fittings, and sanitary service work',
       icon: '🚰',
-      image_url: 'https://placehold.co/400x200/1E8E3E/white?text=Plumbing',
+      image_url: 'https://images.unsplash.com/photo-1607472586893-edb57bdc0e39?auto=format&fit=crop&w=800&q=80',
       // services[3] Kitchen Sink Leak Fix: 2 reviews (5,5) → avg 5.0
       average_rating: 5.0,
       rating_count: 2,
@@ -1195,7 +954,7 @@ export class DatabaseService implements OnModuleInit {
       category_name: 'Carpentry & Furniture',
       description: 'Woodwork, repairs, and furniture assembly',
       icon: '🪵',
-      image_url: 'https://placehold.co/400x200/8B4513/white?text=Carpentry',
+      image_url: 'https://images.unsplash.com/photo-1538688525198-9b88f6f53126?auto=format&fit=crop&w=800&q=80',
       average_rating: 0,
       rating_count: 0,
       is_available: true,
@@ -1205,7 +964,7 @@ export class DatabaseService implements OnModuleInit {
       category_name: 'Pest Control',
       description: 'Safe and effective pest management',
       icon: '🐜',
-      image_url: 'https://placehold.co/400x200/EB5757/white?text=Pest+Control',
+      image_url: 'https://images.unsplash.com/photo-1618477461853-cf6ed80faba5?auto=format&fit=crop&w=800&q=80',
       average_rating: 0,
       rating_count: 0,
       is_available: true,
@@ -1218,7 +977,8 @@ export class DatabaseService implements OnModuleInit {
       service_name: 'Standard Home Clean',
       description: 'Complete standard clean for up to 3BHK homes.',
       image_url:
-        'https://placehold.co/400x200/4A90D9/white?text=Standard+Clean',
+        'https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=800&q=80',
+      photos: [],
       base_price: 499,
       estimated_duration_min: 120,
       // 1 review from booking[2], rating 4 → avg 4.0
@@ -1231,7 +991,8 @@ export class DatabaseService implements OnModuleInit {
       service_id: this.genId(), // services[1] – Deep Home Clean
       service_name: 'Deep Home Clean',
       description: 'Deep cleaning for kitchen, bathrooms, and living areas.',
-      image_url: 'https://placehold.co/400x200/4A90D9/white?text=Deep+Clean',
+      image_url: 'https://images.unsplash.com/photo-1527515637462-cff94eecc1ac?auto=format&fit=crop&w=800&q=80',
+      photos: [],
       base_price: 899,
       estimated_duration_min: 180,
       average_rating: 0,
@@ -1243,7 +1004,8 @@ export class DatabaseService implements OnModuleInit {
       service_id: this.genId(), // services[2] – Split AC Repair
       service_name: 'Split AC Repair',
       description: 'Inspection and repair for common split AC faults.',
-      image_url: 'https://placehold.co/400x200/2D9CDB/white?text=AC+Repair',
+      image_url: 'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&w=800&q=80',
+      photos: [],
       base_price: 1299,
       estimated_duration_min: 90,
       // Reviews: booking[0] rating 5, booking[3] rating 4 → avg (5+4)/2 = 4.5
@@ -1256,7 +1018,8 @@ export class DatabaseService implements OnModuleInit {
       service_id: this.genId(), // services[3] – Kitchen Sink Leak Fix
       service_name: 'Kitchen Sink Leak Fix',
       description: 'Leak detection and repair for kitchen sink pipelines.',
-      image_url: 'https://placehold.co/400x200/1E8E3E/white?text=Leak+Fix',
+      image_url: 'https://images.unsplash.com/photo-1607472586893-edb57bdc0e39?auto=format&fit=crop&w=800&q=80',
+      photos: [],
       base_price: 699,
       estimated_duration_min: 75,
       // Reviews: booking[1] rating 5, booking[3] rating 5 → avg 5.0
@@ -1269,7 +1032,8 @@ export class DatabaseService implements OnModuleInit {
       service_id: this.genId(), // services[4] – Bed Assembly
       service_name: 'Bed Assembly',
       description: 'Expert assembly of all types of beds.',
-      image_url: 'https://placehold.co/400x200/8B4513/white?text=Bed+Assembly',
+      image_url: 'https://images.unsplash.com/photo-1505798577917-a671540f0afe?auto=format&fit=crop&w=800&q=80',
+      photos: [],
       base_price: 999,
       estimated_duration_min: 120,
       average_rating: 0,
@@ -1281,7 +1045,8 @@ export class DatabaseService implements OnModuleInit {
       service_id: this.genId(), // services[5] – Door Lock Repair
       service_name: 'Door Lock Repair',
       description: 'Repair and replacement of door locks and handles.',
-      image_url: 'https://placehold.co/400x200/8B4513/white?text=Lock+Repair',
+      image_url: 'https://images.unsplash.com/photo-1538688525198-9b88f6f53126?auto=format&fit=crop&w=800&q=80',
+      photos: [],
       base_price: 499,
       estimated_duration_min: 60,
       average_rating: 0,
@@ -1293,7 +1058,8 @@ export class DatabaseService implements OnModuleInit {
       service_id: this.genId(), // services[6] – General Pest Control
       service_name: 'General Pest Control',
       description: 'Treatment for cockroaches, ants, and other common pests.',
-      image_url: 'https://placehold.co/400x200/EB5757/white?text=Pest+Control',
+      image_url: 'https://images.unsplash.com/photo-1618477461853-cf6ed80faba5?auto=format&fit=crop&w=800&q=80',
+      photos: [],
       base_price: 1599,
       estimated_duration_min: 90,
       average_rating: 0,
@@ -1567,7 +1333,6 @@ export class DatabaseService implements OnModuleInit {
       created_at: '2026-03-29T03:18:22Z',
       updated_at: '2026-03-29T06:18:22Z',
       customer_id: this.customers[0].customer_id,
-      sector_id: this.sectors[0].sector_id,
     },
     {
       booking_id: this.genId(), // bookings[1]
@@ -1578,7 +1343,6 @@ export class DatabaseService implements OnModuleInit {
       created_at: '2026-04-01T16:30:00Z',
       updated_at: '2026-04-02T10:40:00Z',
       customer_id: this.customers[1].customer_id,
-      sector_id: this.sectors[1].sector_id,
     },
     {
       booking_id: this.genId(), // bookings[2]
@@ -1589,7 +1353,6 @@ export class DatabaseService implements OnModuleInit {
       created_at: '2026-04-02T08:10:00Z',
       updated_at: '2026-04-03T14:20:00Z',
       customer_id: this.customers[2].customer_id,
-      sector_id: this.sectors[2].sector_id,
     },
     {
       booking_id: this.genId(), // bookings[3] – Split AC Repair (was part of multi-service cart)
@@ -1600,7 +1363,6 @@ export class DatabaseService implements OnModuleInit {
       created_at: '2026-04-05T11:00:00Z',
       updated_at: '2026-04-07T10:35:00Z',
       customer_id: this.customers[0].customer_id,
-      sector_id: this.sectors[0].sector_id,
     },
     {
       booking_id: this.genId(), // bookings[4] – Kitchen Sink Leak Fix (was part of multi-service cart)
@@ -1611,7 +1373,6 @@ export class DatabaseService implements OnModuleInit {
       created_at: '2026-04-05T11:00:00Z',
       updated_at: '2026-04-07T12:30:00Z',
       customer_id: this.customers[0].customer_id,
-      sector_id: this.sectors[0].sector_id,
     },
     {
       booking_id: this.genId(), // bookings[5] – cancelled
@@ -1622,7 +1383,6 @@ export class DatabaseService implements OnModuleInit {
       created_at: '2026-04-08T09:15:00Z',
       updated_at: '2026-04-08T10:00:00Z',
       customer_id: this.customers[0].customer_id,
-      sector_id: this.sectors[0].sector_id,
     },
   ];
 
@@ -1855,39 +1615,28 @@ export class DatabaseService implements OnModuleInit {
   // REVENUE LEDGER
   //
   // One ledger row per job assignment (per service per booking), not per
-  // booking. This is because each service has a different provider, unit
-  // manager and potentially different collective manager.
+  // booking. Revenue split: Provider 85%, Platform 15%.
   // The split is calculated on price_at_booking for that specific service line.
   //
   //  booking[0] AC Repair ₹1299:
-  //    SP(Ravi)   78% = ₹1013.22
-  //    UM(Karan)   8% = ₹103.92
-  //    CM(Suresh)  4% = ₹51.96
-  //    Platform   10% = ₹129.90
+  //    Provider (Ravi)  85% = ₹1104.15
+  //    Platform         15% = ₹194.85
   //
   //  booking[1] Leak Fix ₹699:
-  //    SP(Manoj)  78% = ₹545.22
-  //    UM(Naveen)  8% = ₹55.92
-  //    CM(Suresh)  4% = ₹27.96
-  //    Platform   10% = ₹69.90
+  //    Provider (Manoj) 85% = ₹594.15
+  //    Platform         15% = ₹104.85
   //
   //  booking[2] Home Clean ₹499:
-  //    SP(Ravi)   78% = ₹389.22
-  //    UM(Karan)   8% = ₹39.92
-  //    CM(Suresh)  4% = ₹19.96
-  //    Platform   10% = ₹49.90
+  //    Provider (Ravi)  85% = ₹424.15
+  //    Platform         15% = ₹74.85
   //
   //  booking[3] AC Repair ₹1299 → Ravi:
-  //    SP(Ravi)   78% = ₹1013.22
-  //    UM(Karan)   8% = ₹103.92
-  //    CM(Suresh)  4% = ₹51.96
-  //    Platform   10% = ₹129.90
+  //    Provider (Ravi)  85% = ₹1104.15
+  //    Platform         15% = ₹194.85
   //
   //  booking[4] Leak Fix ₹699 → Manoj:
-  //    SP(Manoj)  78% = ₹545.22
-  //    UM(Naveen)  8% = ₹55.92
-  //    CM(Suresh)  4% = ₹27.96
-  //    Platform   10% = ₹69.90
+  //    Provider (Manoj) 85% = ₹594.15
+  //    Platform         15% = ₹104.85
   //
   //  booking[5] CANCELLED — no ledger rows.
   // ─────────────────────────────────────────────────────────────────────────
@@ -1896,79 +1645,59 @@ export class DatabaseService implements OnModuleInit {
     {
       ledger_id: this.genId(),
       payout_status: 'DISBURSED',
-      provider_amount: 1013.22,
-      um_amount: 103.92,
-      cm_amount: 51.96,
-      platform_amount: 129.9,
+      provider_amount: 1104.15,
+      platform_amount: 194.85,
       created_at: '2026-03-29T03:22:00Z',
       paid_at: '2026-03-29T06:20:00Z',
       booking_id: this.bookings[0].booking_id,
       service_id: this.services[2].service_id, // AC Repair
       sp_id: this.serviceProviders[0].sp_id, // Ravi
-      um_id: this.unitManagers[0].um_id, // Karan (AC unit)
-      cm_id: this.collectiveManagers[0].cm_id, // Suresh
     },
     {
       ledger_id: this.genId(),
       payout_status: 'DISBURSED',
-      provider_amount: 545.22,
-      um_amount: 55.92,
-      cm_amount: 27.96,
-      platform_amount: 69.9,
+      provider_amount: 594.15,
+      platform_amount: 104.85,
       created_at: '2026-04-01T16:35:00Z',
       paid_at: '2026-04-02T10:45:00Z',
       booking_id: this.bookings[1].booking_id,
       service_id: this.services[3].service_id, // Leak Fix
       sp_id: this.serviceProviders[1].sp_id, // Manoj
-      um_id: this.unitManagers[1].um_id, // Naveen (Plumbing unit)
-      cm_id: this.collectiveManagers[0].cm_id, // Suresh
     },
     {
       ledger_id: this.genId(),
       payout_status: 'DISBURSED',
-      provider_amount: 389.22,
-      um_amount: 39.92,
-      cm_amount: 19.96,
-      platform_amount: 49.9,
+      provider_amount: 424.15,
+      platform_amount: 74.85,
       created_at: '2026-04-02T08:12:00Z',
       paid_at: '2026-04-03T14:30:00Z',
       booking_id: this.bookings[2].booking_id,
       service_id: this.services[0].service_id, // Home Clean
       sp_id: this.serviceProviders[0].sp_id, // Ravi
-      um_id: this.unitManagers[0].um_id, // Karan (AC unit — Ravi cleans too)
-      cm_id: this.collectiveManagers[0].cm_id, // Suresh
     },
     // booking[3] – line 1: AC Repair → Ravi
     {
       ledger_id: this.genId(),
       payout_status: 'DISBURSED',
-      provider_amount: 1013.22,
-      um_amount: 103.92,
-      cm_amount: 51.96,
-      platform_amount: 129.9,
+      provider_amount: 1104.15,
+      platform_amount: 194.85,
       created_at: '2026-04-05T11:03:00Z',
       paid_at: '2026-04-07T10:40:00Z',
       booking_id: this.bookings[3].booking_id,
       service_id: this.services[2].service_id, // AC Repair
       sp_id: this.serviceProviders[0].sp_id, // Ravi
-      um_id: this.unitManagers[0].um_id, // Karan (AC unit)
-      cm_id: this.collectiveManagers[0].cm_id, // Suresh
     },
     // booking[4] – Leak Fix → Manoj
     {
       ledger_id: this.genId(),
       payout_status: 'DISBURSED',
-      provider_amount: 545.22,
-      um_amount: 55.92,
-      cm_amount: 27.96,
-      platform_amount: 69.9,
+      provider_amount: 594.15,
+      platform_amount: 104.85,
       created_at: '2026-04-05T11:03:00Z',
       paid_at: '2026-04-07T12:35:00Z',
       booking_id: this.bookings[3].booking_id,
       service_id: this.services[3].service_id, // Leak Fix
       sp_id: this.serviceProviders[1].sp_id, // Manoj
-      um_id: this.unitManagers[1].um_id, // Naveen (Plumbing unit)
-      cm_id: this.collectiveManagers[0].cm_id, // Suresh
     },
   ];
 

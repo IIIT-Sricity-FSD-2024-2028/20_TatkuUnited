@@ -802,9 +802,58 @@
         svcDuration.prepend(icon);
       }
     }
-    if (heroImage) {
-      heroImage.src = service.image_url || "https://placehold.co/1200x800?text=" + encodeURIComponent(service.service_name);
-      heroImage.alt = service.service_name;
+  function getServiceImageUrl(service) {
+    if (!service) return "https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=800&q=80";
+    if (Array.isArray(service.photos) && service.photos.length > 0 && service.photos[0] && !service.photos[0].includes("placehold.co")) {
+      return service.photos[0];
+    }
+    if (service.image_url && typeof service.image_url === "string" && !service.image_url.includes("placehold.co")) {
+      return service.image_url;
+    }
+    var name = (service.service_name || service.name || "").toLowerCase();
+    if (name.indexOf("clean") >= 0) return "https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=800&q=80";
+    if (name.indexOf("ac") >= 0 || name.indexOf("appliance") >= 0 || name.indexOf("repair") >= 0 || name.indexOf("wm") >= 0) return "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&w=800&q=80";
+    if (name.indexOf("plumb") >= 0 || name.indexOf("pipe") >= 0 || name.indexOf("leak") >= 0 || name.indexOf("sink") >= 0 || name.indexOf("fitting") >= 0) return "https://images.unsplash.com/photo-1607472586893-edb57bdc0e39?auto=format&fit=crop&w=800&q=80";
+    if (name.indexOf("carpent") >= 0 || name.indexOf("bed") >= 0 || name.indexOf("lock") >= 0 || name.indexOf("shelf") >= 0 || name.indexOf("furniture") >= 0) return "https://images.unsplash.com/photo-1538688525198-9b88f6f53126?auto=format&fit=crop&w=800&q=80";
+    if (name.indexOf("electric") >= 0 || name.indexOf("fan") >= 0 || name.indexOf("wiring") >= 0) return "https://images.unsplash.com/photo-1621905252507-b35492cc74b4?auto=format&fit=crop&w=800&q=80";
+    if (name.indexOf("pest") >= 0 || name.indexOf("cockroach") >= 0 || name.indexOf("termite") >= 0) return "https://images.unsplash.com/photo-1618477461853-cf6ed80faba5?auto=format&fit=crop&w=800&q=80";
+    return "https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=800&q=80";
+  }
+
+    var heroRight = document.querySelector(".svc-hero-right");
+    var rawPhotos = (service.photos || []).filter(function(url) { return url && !url.includes("placehold.co"); });
+    var photos = rawPhotos;
+    if (!photos.length && service.image_url && !service.image_url.includes("placehold.co")) {
+      photos = [service.image_url];
+    }
+    if (!photos.length) {
+      photos = [getServiceImageUrl(service)];
+    }
+
+    if (heroRight) {
+      heroRight.innerHTML =
+        '<div class="svc-hero-img-wrap">' +
+        '<img id="mainSvcPhoto" src="' + photos[0] + '" alt="' + service.service_name + '" style="width:100%; border-radius:12px; object-fit:cover; max-height:400px;" />' +
+        '</div>' +
+        (photos.length > 1 ? 
+          '<div class="svc-photo-thumbs" style="display:flex; gap:10px; margin-top:12px; overflow-x:auto; padding-bottom:4px;">' +
+          photos.map(function(url, idx) {
+            return '<img src="' + url + '" class="svc-thumb ' + (idx === 0 ? 'active' : '') + '" data-url="' + url + '" style="width:70px; height:70px; border-radius:8px; object-fit:cover; cursor:pointer; border:2px solid ' + (idx === 0 ? '#3b82f6' : 'transparent') + ';" />';
+          }).join('') +
+          '</div>'
+          : ''
+        );
+
+      heroRight.querySelectorAll('.svc-thumb').forEach(function(thumb) {
+        thumb.addEventListener('click', function() {
+          var mainImg = document.getElementById('mainSvcPhoto');
+          if (mainImg) mainImg.src = thumb.dataset.url;
+          heroRight.querySelectorAll('.svc-thumb').forEach(function(t) {
+            t.style.borderColor = 'transparent';
+          });
+          thumb.style.borderColor = '#3b82f6';
+        });
+      });
     }
     if (stickyPrice) {
       stickyPrice.textContent = formatPrice(service.base_price);

@@ -1,46 +1,3 @@
--- ============================================================
--- TATKU UNITED - Database Schema (New Design)
--- Source of truth: back-end/src/common/database/database.service.ts
--- PostgreSQL 16+
--- ============================================================
-
-CREATE EXTENSION IF NOT EXISTS "pgcrypto";
-
--- ============================================================
--- Core org hierarchy
--- ============================================================
-
-CREATE TABLE IF NOT EXISTS collective (
-    collective_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    collective_name VARCHAR(200) NOT NULL,
-    is_active BOOLEAN NOT NULL DEFAULT TRUE,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-
-CREATE TABLE IF NOT EXISTS sector (
-    sector_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    sector_name VARCHAR(200) NOT NULL,
-    state VARCHAR(100) NOT NULL,
-    region VARCHAR(100) NOT NULL,
-    density_tier VARCHAR(20) NOT NULL CHECK (density_tier IN ('HIGH', 'MEDIUM', 'LOW')),
-    is_active BOOLEAN NOT NULL DEFAULT TRUE,
-    collective_id UUID NOT NULL REFERENCES collective(collective_id) ON DELETE RESTRICT
-);
-
-CREATE TABLE IF NOT EXISTS unit (
-    unit_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    unit_name VARCHAR(200) NOT NULL,
-    rating NUMERIC(3,2) NOT NULL DEFAULT 0 CHECK (rating >= 0 AND rating <= 5),
-    rating_count INTEGER NOT NULL DEFAULT 0 CHECK (rating_count >= 0),
-    is_active BOOLEAN NOT NULL DEFAULT TRUE,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    collective_id UUID NOT NULL REFERENCES collective(collective_id) ON DELETE RESTRICT
-);
-
--- ============================================================
--- Auth / users
--- ============================================================
-
 CREATE TABLE IF NOT EXISTS super_user (
     super_user_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name VARCHAR(200) NOT NULL,
@@ -50,30 +7,6 @@ CREATE TABLE IF NOT EXISTS super_user (
     is_active BOOLEAN NOT NULL DEFAULT TRUE,
     last_login TIMESTAMPTZ,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-
-CREATE TABLE IF NOT EXISTS collective_manager (
-    cm_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    name VARCHAR(200) NOT NULL,
-    email VARCHAR(254) NOT NULL UNIQUE,
-    password_hash VARCHAR(255) NOT NULL,
-    phone VARCHAR(20) NOT NULL UNIQUE,
-    is_active BOOLEAN NOT NULL DEFAULT TRUE,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    collective_id UUID NOT NULL REFERENCES collective(collective_id) ON DELETE RESTRICT
-);
-
-CREATE TABLE IF NOT EXISTS unit_manager (
-    um_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    name VARCHAR(200) NOT NULL,
-    email VARCHAR(254) NOT NULL UNIQUE,
-    password_hash VARCHAR(255) NOT NULL,
-    phone VARCHAR(20) NOT NULL UNIQUE,
-    is_active BOOLEAN NOT NULL DEFAULT TRUE,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    unit_id UUID NOT NULL REFERENCES unit(unit_id) ON DELETE RESTRICT
 );
 
 CREATE TABLE IF NOT EXISTS service_provider (
@@ -94,8 +27,6 @@ CREATE TABLE IF NOT EXISTS service_provider (
     hour_end TIME NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    unit_id UUID NOT NULL REFERENCES unit(unit_id) ON DELETE RESTRICT,
-    home_sector_id UUID NOT NULL REFERENCES sector(sector_id) ON DELETE RESTRICT,
     CHECK (hour_end > hour_start)
 );
 
@@ -187,8 +118,7 @@ CREATE TABLE IF NOT EXISTS customer (
     dob DATE,
     address TEXT,
     rating NUMERIC(3,2) NOT NULL DEFAULT 0 CHECK (rating >= 0 AND rating <= 5),
-    is_active BOOLEAN NOT NULL DEFAULT TRUE,
-    home_sector_id UUID NOT NULL REFERENCES sector(sector_id) ON DELETE RESTRICT
+    is_active BOOLEAN NOT NULL DEFAULT TRUE
 );
 
 CREATE TABLE IF NOT EXISTS cart (
@@ -221,8 +151,7 @@ CREATE TABLE IF NOT EXISTS booking (
     is_active BOOLEAN NOT NULL DEFAULT TRUE,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    customer_id UUID NOT NULL REFERENCES customer(customer_id) ON DELETE RESTRICT,
-    sector_id UUID NOT NULL REFERENCES sector(sector_id) ON DELETE RESTRICT
+    customer_id UUID NOT NULL REFERENCES customer(customer_id) ON DELETE RESTRICT
 );
 
 CREATE TABLE IF NOT EXISTS booking_service (
@@ -273,15 +202,11 @@ CREATE TABLE IF NOT EXISTS revenue_ledger (
     ledger_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     payout_status VARCHAR(20) NOT NULL CHECK (payout_status IN ('PENDING', 'DISBURSED', 'FAILED', 'HELD')),
     provider_amount NUMERIC(10,2) NOT NULL DEFAULT 0 CHECK (provider_amount >= 0),
-    um_amount NUMERIC(10,2) NOT NULL DEFAULT 0 CHECK (um_amount >= 0),
-    cm_amount NUMERIC(10,2) NOT NULL DEFAULT 0 CHECK (cm_amount >= 0),
     platform_amount NUMERIC(10,2) NOT NULL DEFAULT 0 CHECK (platform_amount >= 0),
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     paid_at TIMESTAMPTZ,
     booking_id UUID NOT NULL REFERENCES booking(booking_id) ON DELETE CASCADE,
-    sp_id UUID NOT NULL REFERENCES service_provider(sp_id) ON DELETE RESTRICT,
-    um_id UUID NOT NULL REFERENCES unit_manager(um_id) ON DELETE RESTRICT,
-    cm_id UUID NOT NULL REFERENCES collective_manager(cm_id) ON DELETE RESTRICT
+    sp_id UUID NOT NULL REFERENCES service_provider(sp_id) ON DELETE RESTRICT
 );
 
 CREATE TABLE IF NOT EXISTS review (
@@ -309,18 +234,13 @@ CREATE TABLE IF NOT EXISTS platform_setting (
 -- Helpful indexes
 -- ============================================================
 
-CREATE INDEX IF NOT EXISTS idx_sector_collective_id ON sector (collective_id);
-CREATE INDEX IF NOT EXISTS idx_unit_collective_id ON unit (collective_id);
-CREATE INDEX IF NOT EXISTS idx_um_unit_id ON unit_manager (unit_id);
-CREATE INDEX IF NOT EXISTS idx_sp_unit_id ON service_provider (unit_id);
-CREATE INDEX IF NOT EXISTS idx_sp_home_sector_id ON service_provider (home_sector_id);
+CREATE INDEX IF NOT EXISTS idx_sp_rating ON service_provider (unit_id);
 CREATE INDEX IF NOT EXISTS idx_provider_unavailability_sp_id ON provider_unavailability (sp_id);
 CREATE INDEX IF NOT EXISTS idx_service_category_id ON service (category_id);
 CREATE INDEX IF NOT EXISTS idx_service_faq_service_id ON service_faq (service_id);
 CREATE INDEX IF NOT EXISTS idx_cart_customer_id ON cart (customer_id);
 CREATE INDEX IF NOT EXISTS idx_cart_item_cart_id ON cart_item (cart_id);
 CREATE INDEX IF NOT EXISTS idx_booking_customer_id ON booking (customer_id);
-CREATE INDEX IF NOT EXISTS idx_booking_sector_id ON booking (sector_id);
 CREATE INDEX IF NOT EXISTS idx_booking_status ON booking (status);
 CREATE INDEX IF NOT EXISTS idx_job_assignment_booking_id ON job_assignment (booking_id);
 CREATE INDEX IF NOT EXISTS idx_job_assignment_sp_id ON job_assignment (sp_id);

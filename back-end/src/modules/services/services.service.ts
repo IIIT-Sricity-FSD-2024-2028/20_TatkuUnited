@@ -9,6 +9,8 @@ import { UpsertServiceContentDto } from './dto/upsert-service-content.dto';
 import { CreateServiceFaqDto } from './dto/create-service-faq.dto';
 import { UpdateServiceFaqDto } from './dto/update-service-faq.dto';
 
+import { CloudinaryService } from '../../common/cloudinary/cloudinary.service';
+
 @Injectable()
 export class ServicesService {
   constructor(
@@ -16,6 +18,7 @@ export class ServicesService {
     private readonly serviceSkillsRepository: ServiceSkillsRepository,
     private readonly serviceContentRepository: ServiceContentRepository,
     private readonly serviceFaqsRepository: ServiceFaqsRepository,
+    private readonly cloudinaryService: CloudinaryService,
   ) {}
 
   // ── Core CRUD ──────────────────────────────────────────
@@ -100,5 +103,33 @@ export class ServicesService {
 
   deleteFaq(faqId: string) {
     return this.serviceFaqsRepository.delete(faqId);
+  }
+
+  // ── Service Photos ─────────────────────────────────────
+
+  async uploadPhoto(serviceId: string, file: Express.Multer.File) {
+    this.servicesRepository.findById(serviceId);
+    let photoUrl: string;
+
+    try {
+      const result = await this.cloudinaryService.uploadBuffer(
+        file.buffer,
+        'tatku-united/services',
+      );
+      photoUrl = result.url;
+    } catch (err) {
+      // Fallback if Cloudinary credentials are not configured or request fails
+      console.warn('Cloudinary upload warning:', err?.message || err);
+      // Use data URI of uploaded buffer so actual uploaded image displays seamlessly
+      const mime = file.mimetype || 'image/png';
+      const base64 = file.buffer ? file.buffer.toString('base64') : '';
+      photoUrl = base64 ? `data:${mime};base64,${base64}` : 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=800&q=80';
+    }
+
+    return this.servicesRepository.addPhoto(serviceId, photoUrl);
+  }
+
+  removePhoto(serviceId: string, photoUrl: string) {
+    return this.servicesRepository.removePhoto(serviceId, photoUrl);
   }
 }

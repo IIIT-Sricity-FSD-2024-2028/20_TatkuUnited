@@ -30,18 +30,6 @@ export class ServiceProvidersRepository {
     );
   }
 
-  findByUnit(unitId: string): ServiceProvider[] {
-    return this.databaseService.serviceProviders.filter(
-      (row) => row.unit_id === unitId,
-    );
-  }
-
-  findBySector(sectorId: string): ServiceProvider[] {
-    return this.databaseService.serviceProviders.filter(
-      (row) => row.home_sector_id === sectorId,
-    );
-  }
-
   create(dto: CreateServiceProviderDto): ServiceProvider {
     const provider = {
       sp_id: randomUUID(),
@@ -61,11 +49,10 @@ export class ServiceProvidersRepository {
       hour_end: '',
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
-      unit_id: dto.unit_id,
-      home_sector_id: dto.sector_id,
     } as unknown as ServiceProvider;
     
     this.databaseService.serviceProviders.push(provider);
+    this.databaseService.save();
     return provider;
   }
 
@@ -78,14 +65,31 @@ export class ServiceProvidersRepository {
     if (dto.full_name !== undefined) provider.name = dto.full_name;
     if (dto.email !== undefined) provider.email = dto.email;
     if (dto.phone !== undefined) provider.phone = dto.phone;
-    if (dto.unit_id !== undefined) provider.unit_id = dto.unit_id;
-    if (dto.sector_id !== undefined) provider.home_sector_id = dto.sector_id;
     if (dto.is_active !== undefined) {
       provider.is_active = dto.is_active;
       provider.account_status = dto.is_active ? 'active' : 'inactive';
     }
+    if (dto.service_category !== undefined) provider.service_category = dto.service_category;
+    if (dto.experience !== undefined) provider.experience = dto.experience;
+
+    if (dto.skills !== undefined) {
+      // Clear existing provider skills
+      this.databaseService.providerSkills = this.databaseService.providerSkills.filter(
+        (ps) => ps.sp_id !== id,
+      );
+      // Add new ones
+      for (const skillId of dto.skills) {
+        this.databaseService.providerSkills.push({
+          sp_id: id,
+          skill_id: skillId,
+          verification_status: 'VERIFIED',
+          verified_at: new Date().toISOString(),
+        });
+      }
+    }
     
     provider.updated_at = new Date().toISOString();
+    this.databaseService.save();
     return provider;
   }
 
@@ -94,6 +98,7 @@ export class ServiceProvidersRepository {
     provider.hour_start = dto.hour_start;
     provider.hour_end = dto.hour_end;
     provider.updated_at = new Date().toISOString();
+    this.databaseService.save();
     return provider;
   }
 
@@ -105,6 +110,7 @@ export class ServiceProvidersRepository {
     if (dto.dob !== undefined) provider.dob = dto.dob;
     if (dto.gender !== undefined) provider.gender = dto.gender;
     provider.updated_at = new Date().toISOString();
+    this.databaseService.save();
     return provider;
   }
 
@@ -112,6 +118,7 @@ export class ServiceProvidersRepository {
     const provider = this.findById(id);
     provider.deactivation_requested = true;
     provider.updated_at = new Date().toISOString();
+    this.databaseService.save();
     return provider;
   }
 
@@ -123,6 +130,7 @@ export class ServiceProvidersRepository {
       throw new NotFoundException(`ServiceProvider with id "${id}" not found`);
     }
     const [removed] = this.databaseService.serviceProviders.splice(index, 1);
+    this.databaseService.save();
     return removed;
   }
 }

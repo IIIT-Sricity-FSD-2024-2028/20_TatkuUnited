@@ -47,19 +47,6 @@ export class CustomersController {
     return this.customersService.findAll();
   }
 
-  @Get('sector/:sector_id')
-  @Roles(Role.SUPER_USER, Role.COLLECTIVE_MANAGER, Role.UNIT_MANAGER)
-  @ApiOperation({ summary: 'Get customers by sector ID' })
-  @ApiResponse({ status: 200, description: 'Success' })
-  @ApiResponse({ status: 403, description: 'Forbidden' })
-  findBySector(
-    @Param('sector_id') sectorId: string,
-    @Request() req: { user: JwtPayload },
-  ) {
-    this.accessScope.assertSectorAccess(req.user, sectorId);
-    return this.customersService.findBySector(sectorId);
-  }
-
   @Get(':id')
   @Roles(Role.SUPER_USER, Role.CUSTOMER)
   @ApiOperation({ summary: 'Get customer by ID' })

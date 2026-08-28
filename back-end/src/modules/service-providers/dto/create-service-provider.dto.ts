@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsBoolean, IsEmail, IsNotEmpty, IsString, IsUUID, MinLength } from 'class-validator';
+import { IsBoolean, IsEmail, IsNotEmpty, IsOptional, IsString, IsUUID, MinLength } from 'class-validator';
 
 export class CreateServiceProviderDto {
   @ApiProperty({ example: 'provider@tatku.com' })
@@ -23,17 +23,23 @@ export class CreateServiceProviderDto {
   @IsNotEmpty()
   phone: string;
 
-  @ApiProperty({ example: 'unit-uuid' })
-  @IsUUID()
-  @IsNotEmpty()
-  unit_id: string;
-
-  @ApiProperty({ example: 'sector-uuid' })
-  @IsUUID()
-  @IsNotEmpty()
-  sector_id: string;
-
   @ApiProperty({ example: true })
   @IsBoolean()
   is_active: boolean;
+
+  @ApiProperty({ example: 'Home Cleaning', required: false })
+  @IsString()
+  @IsOptional()
+  service_category?: string;
+
+  @ApiProperty({ example: '8', required: false })
+  @IsString()
+  @IsOptional()
+  experience?: string;
+
+
+
+  @ApiProperty({ example: ['skill-uuid'], required: false })
+  @IsOptional()
+  skills?: string[];
 }

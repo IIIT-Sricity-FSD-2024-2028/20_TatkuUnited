@@ -8,8 +8,14 @@ import {
   Param,
   Delete,
   UseGuards,
+  UseInterceptors,
+  UploadedFile,
+  UploadedFiles,
+  BadRequestException,
 } from '@nestjs/common';
+import { FileInterceptor, AnyFilesInterceptor } from '@nestjs/platform-express';
 import { ApiBearerAuth,
+  ApiConsumes,
   ApiOperation,
   ApiResponse,
   ApiTags } from '@nestjs/swagger';
@@ -164,6 +170,47 @@ export class ServicesController {
   @ApiResponse({ status: 403, description: 'Forbidden — super_user only' })
   deleteFaq(@Param('faqId') faqId: string) {
     return this.servicesService.deleteFaq(faqId);
+  }
+
+  // ══════════════════════════════════════════════════════════
+  // Service Photos
+  // ══════════════════════════════════════════════════════════
+
+  @Post(':id/photos')
+  @Roles(Role.SUPER_USER)
+  @UseInterceptors(AnyFilesInterceptor())
+  @ApiConsumes('multipart/form-data')
+  @ApiOperation({ summary: 'Upload a photo for a service to Cloudinary' })
+  @ApiResponse({ status: 201, description: 'Photo uploaded and added to service' })
+  @ApiResponse({ status: 400, description: 'No photo provided' })
+  @ApiResponse({ status: 404, description: 'Service not found' })
+  @ApiResponse({ status: 403, description: 'Forbidden — super_user only' })
+  uploadPhoto(
+    @Param('id') id: string,
+    @UploadedFiles() files: Express.Multer.File[],
+    @UploadedFile() singleFile?: Express.Multer.File,
+  ) {
+    const file = singleFile || (files && files[0]);
+    if (!file) {
+      throw new BadRequestException('No photo file provided');
+    }
+    return this.servicesService.uploadPhoto(id, file);
+  }
+
+  @Delete(':id/photos')
+  @Roles(Role.SUPER_USER)
+  @ApiOperation({ summary: 'Remove a photo URL from a service' })
+  @ApiResponse({ status: 200, description: 'Photo removed from service' })
+  @ApiResponse({ status: 404, description: 'Service not found' })
+  @ApiResponse({ status: 403, description: 'Forbidden — super_user only' })
+  removePhoto(
+    @Param('id') id: string,
+    @Body('photo_url') photoUrl: string,
+  ) {
+    if (!photoUrl) {
+      throw new BadRequestException('photo_url is required');
+    }
+    return this.servicesService.removePhoto(id, photoUrl);
   }
 
   // ══════════════════════════════════════════════════════════
