@@ -36,29 +36,17 @@ export class ProviderSkillsController {
   ) {}
 
   @Get()
-  @Roles(Role.SUPER_USER, Role.COLLECTIVE_MANAGER, Role.UNIT_MANAGER)
-  @ApiOperation({ summary: 'Get all provider skills (scoped for managers)' })
+  @Roles(Role.SUPER_USER)
+  @ApiOperation({ summary: 'Get all provider skills' })
   @ApiResponse({ status: 200, description: 'Success' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
   findAll(@Request() req: { user: JwtPayload }) {
-    const rows = this.providerSkillsService.findAll();
-    if (req.user.role === Role.COLLECTIVE_MANAGER || req.user.role === Role.UNIT_MANAGER) {
-      return rows.filter((row) => {
-        try {
-          this.accessScope.assertProviderAccess(req.user, row.sp_id);
-          return true;
-        } catch {
-          return false;
-        }
-      });
-    }
-    return rows;
+    return this.providerSkillsService.findAll();
   }
 
   @Get('provider/:provider_id')
-  @Roles(Role.SUPER_USER, Role.COLLECTIVE_MANAGER, Role.UNIT_MANAGER, Role.SERVICE_PROVIDER, Role.CUSTOMER)
+  @Roles(Role.SUPER_USER, Role.SERVICE_PROVIDER, Role.CUSTOMER)
   @ApiOperation({ summary: 'Get provider skills by provider ID' })
-  
   @ApiResponse({ status: 200, description: 'Success' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
   findByProvider(
@@ -68,40 +56,24 @@ export class ProviderSkillsController {
     if (req.user.role === Role.SERVICE_PROVIDER && req.user.sub !== providerId) {
       throw new ForbiddenException('Providers can only access their own skills');
     }
-    if (req.user.role === Role.COLLECTIVE_MANAGER || req.user.role === Role.UNIT_MANAGER) {
-      this.accessScope.assertProviderAccess(req.user, providerId);
-    }
     return this.providerSkillsService.findByProvider(providerId);
   }
 
   @Get('skill/:skill_id')
-  @Roles(Role.SUPER_USER, Role.COLLECTIVE_MANAGER, Role.UNIT_MANAGER, Role.SERVICE_PROVIDER, Role.CUSTOMER)
+  @Roles(Role.SUPER_USER, Role.SERVICE_PROVIDER, Role.CUSTOMER)
   @ApiOperation({ summary: 'Get providers by skill ID' })
-  
   @ApiResponse({ status: 200, description: 'Success' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
   findBySkill(
     @Param('skill_id') skillId: string,
     @Request() req: { user: JwtPayload },
   ) {
-    const rows = this.providerSkillsService.findBySkill(skillId);
-    if (req.user.role === Role.COLLECTIVE_MANAGER || req.user.role === Role.UNIT_MANAGER) {
-      return rows.filter((row) => {
-        try {
-          this.accessScope.assertProviderAccess(req.user, row.sp_id);
-          return true;
-        } catch {
-          return false;
-        }
-      });
-    }
-    return rows;
+    return this.providerSkillsService.findBySkill(skillId);
   }
 
   @Post()
   @Roles(Role.SUPER_USER, Role.SERVICE_PROVIDER)
   @ApiOperation({ summary: 'Assign skill to provider' })
-  
   @ApiResponse({ status: 201, description: 'Created successfully' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
   create(@Body() dto: CreateProviderSkillDto, @Request() req: { user: JwtPayload }) {
@@ -111,16 +83,12 @@ export class ProviderSkillsController {
     ) {
       throw new ForbiddenException('Providers can only request skills for themselves');
     }
-    if (req.user.role === Role.SERVICE_PROVIDER) {
-      this.accessScope.assertProviderAccess(req.user, dto.service_provider_id);
-    }
     return this.providerSkillsService.create(dto);
   }
 
   @Patch('verify/:id')
-  @Roles(Role.SUPER_USER, Role.COLLECTIVE_MANAGER)
+  @Roles(Role.SUPER_USER)
   @ApiOperation({ summary: 'Verify provider skill' })
-  
   @ApiResponse({ status: 200, description: 'Success' })
   @ApiResponse({ status: 404, description: 'Not found' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
@@ -129,16 +97,12 @@ export class ProviderSkillsController {
     @Body() dto: VerifyProviderSkillDto,
     @Request() req: { user: JwtPayload },
   ) {
-    if (req.user.role === Role.COLLECTIVE_MANAGER) {
-      this.accessScope.assertProviderAccess(req.user, providerId);
-    }
     return this.providerSkillsService.verifySkill(providerId, dto.skill_id);
   }
 
   @Patch('reject/:id')
-  @Roles(Role.SUPER_USER, Role.COLLECTIVE_MANAGER)
+  @Roles(Role.SUPER_USER)
   @ApiOperation({ summary: 'Reject provider skill verification request' })
-  
   @ApiResponse({ status: 200, description: 'Skill request rejected and removed' })
   @ApiResponse({ status: 404, description: 'Not found' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
@@ -147,9 +111,6 @@ export class ProviderSkillsController {
     @Body() dto: VerifyProviderSkillDto,
     @Request() req: { user: JwtPayload },
   ) {
-    if (req.user.role === Role.COLLECTIVE_MANAGER) {
-      this.accessScope.assertProviderAccess(req.user, providerId);
-    }
     return this.providerSkillsService.rejectSkill(providerId, dto.skill_id);
   }
 }

@@ -30,7 +30,7 @@ export class SkillsController {
   constructor(private readonly skillsService: SkillsService) {}
 
   @Get()
-  @Roles(Role.SUPER_USER, Role.COLLECTIVE_MANAGER, Role.UNIT_MANAGER, Role.SERVICE_PROVIDER, Role.CUSTOMER)
+  @Roles(Role.SUPER_USER, Role.SERVICE_PROVIDER, Role.CUSTOMER)
   @ApiOperation({ summary: 'Get all skills' })
   @ApiResponse({ status: 200, description: 'Success' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
@@ -39,7 +39,7 @@ export class SkillsController {
   }
 
   @Get(':id')
-  @Roles(Role.SUPER_USER, Role.COLLECTIVE_MANAGER, Role.UNIT_MANAGER, Role.SERVICE_PROVIDER, Role.CUSTOMER)
+  @Roles(Role.SUPER_USER, Role.SERVICE_PROVIDER, Role.CUSTOMER)
   @ApiOperation({ summary: 'Get skill by ID' })
   @ApiResponse({ status: 200, description: 'Success' })
   @ApiResponse({ status: 404, description: 'Not found' })

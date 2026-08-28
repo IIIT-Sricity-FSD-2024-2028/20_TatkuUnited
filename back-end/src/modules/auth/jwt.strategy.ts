@@ -52,24 +52,6 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         : null;
     }
 
-    if (normalizedRole === Role.COLLECTIVE_MANAGER) {
-      const user = this.databaseService.collectiveManagers.find(
-        (row) => row.email.toLowerCase() === email && row.is_active,
-      );
-      return user
-        ? { id: user.cm_id, role: normalizedRole, name: user.name, email: user.email }
-        : null;
-    }
-
-    if (normalizedRole === Role.UNIT_MANAGER) {
-      const user = this.databaseService.unitManagers.find(
-        (row) => row.email.toLowerCase() === email && row.is_active,
-      );
-      return user
-        ? { id: user.um_id, role: normalizedRole, name: user.name, email: user.email }
-        : null;
-    }
-
     if (normalizedRole === Role.SERVICE_PROVIDER) {
       const user = this.databaseService.serviceProviders.find(
         (row) => row.email.toLowerCase() === email && row.is_active,

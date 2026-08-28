@@ -4,427 +4,10 @@
     "inclusion_rule": "Only non-null assignment_score values are counted",
     "service_average_rule": "Average of assignment scores for bookings that include the service",
     "provider_average_rule": "Average of assignment scores for assignments handled by the provider",
-    "unit_average_rule": "Average of assignment scores for all providers in that unit",
     "category_average_rule": "Average of assignment scores for services in the category",
     "fallback_average_rule": "If average_rating is missing, fill it with the mean of all available non-null average_rating values (currently 4.73)",
     "updated_on": "2026-04-01"
   },
-  "collectives": [
-    {
-      "collective_id": "COL001",
-      "collective_name": "North Chennai Collective",
-      "is_active": true,
-      "created_at": "2023-01-10T08:00:00Z",
-      "sector_ids": [
-        "SEC002"
-      ]
-    },
-    {
-      "collective_id": "COL002",
-      "collective_name": "Central Chennai Collective",
-      "is_active": true,
-      "created_at": "2024-12-12T09:30:00Z",
-      "sector_ids": [
-        "SEC001",
-        "SEC006"
-      ]
-    },
-    {
-      "collective_id": "COL003",
-      "collective_name": "South Chennai Collective",
-      "is_active": false,
-      "created_at": "2024-08-19T07:45:00Z",
-      "sector_ids": [
-        "SEC003"
-      ]
-    },
-    {
-      "collective_id": "COL004",
-      "collective_name": "West Chennai Collective",
-      "is_active": true,
-      "created_at": "2023-07-01T10:00:00Z",
-      "sector_ids": [
-        "SEC004"
-      ]
-    },
-    {
-      "collective_id": "COL005",
-      "collective_name": "East Chennai Collective",
-      "is_active": true,
-      "created_at": "2024-01-05T08:30:00Z",
-      "sector_ids": [
-        "SEC005"
-      ]
-    }
-  ],
-  "units": [
-    {
-      "unit_id": "UNT001",
-      "unit_name": "Electrical & AC Services",
-      "rating": 5,
-      "rating_count": 1,
-      "is_active": true,
-      "created_at": "2024-10-31T00:00:00Z",
-      "collective_id": "COL001"
-    },
-    {
-      "unit_id": "UNT002",
-      "unit_name": "Plumbing Services",
-      "rating": null,
-      "rating_count": 0,
-      "is_active": true,
-      "created_at": "2025-01-07T00:00:00Z",
-      "collective_id": "COL001"
-    },
-    {
-      "unit_id": "UNT003",
-      "unit_name": "Domestic Cleaning",
-      "rating": null,
-      "rating_count": 0,
-      "is_active": false,
-      "created_at": "2025-03-04T00:00:00Z",
-      "collective_id": "COL002"
-    },
-    {
-      "unit_id": "UNT004",
-      "unit_name": "Carpentry & Furniture",
-      "rating": null,
-      "rating_count": 0,
-      "is_active": true,
-      "created_at": "2025-05-14T00:00:00Z",
-      "collective_id": "COL002"
-    },
-    {
-      "unit_id": "UNT005",
-      "unit_name": "Painting & Waterproofing",
-      "rating": null,
-      "rating_count": 0,
-      "is_active": true,
-      "created_at": "2025-05-31T00:00:00Z",
-      "collective_id": "COL003"
-    },
-    {
-      "unit_id": "UNT006",
-      "unit_name": "Pest Control",
-      "rating": null,
-      "rating_count": 0,
-      "is_active": true,
-      "created_at": "2025-07-19T00:00:00Z",
-      "collective_id": "COL003"
-    },
-    {
-      "unit_id": "UNT007",
-      "unit_name": "AC & Appliance Repair",
-      "rating": 4.2,
-      "rating_count": 1,
-      "is_active": true,
-      "created_at": "2025-08-04T00:00:00Z",
-      "collective_id": "COL004"
-    },
-    {
-      "unit_id": "UNT008",
-      "unit_name": "Electrical Services",
-      "rating": 5,
-      "rating_count": 1,
-      "is_active": true,
-      "created_at": "2025-10-09T00:00:00Z",
-      "collective_id": "COL004"
-    },
-    {
-      "unit_id": "UNT009",
-      "unit_name": "Deep Cleaning Specialists",
-      "rating": null,
-      "rating_count": 0,
-      "is_active": true,
-      "created_at": "2025-10-31T00:00:00Z",
-      "collective_id": "COL005"
-    },
-    {
-      "unit_id": "UNT010",
-      "unit_name": "Gardening & Landscaping",
-      "rating": null,
-      "rating_count": 0,
-      "is_active": true,
-      "created_at": "2025-12-13T00:00:00Z",
-      "collective_id": "COL005"
-    }
-  ],
-  "sectors": [
-    {
-      "sector_id": "SEC001",
-      "sector_name": "Downtown Core",
-      "resolution": 10,
-      "state": "Tamil Nadu",
-      "region": "Central",
-      "density_tier": "HIGH",
-      "is_active": true
-    },
-    {
-      "sector_id": "SEC002",
-      "sector_name": "Suburban North",
-      "resolution": 10,
-      "state": "Tamil Nadu",
-      "region": "North",
-      "density_tier": "MEDIUM",
-      "is_active": true
-    },
-    {
-      "sector_id": "SEC003",
-      "sector_name": "Industrial South",
-      "resolution": 10,
-      "state": "Tamil Nadu",
-      "region": "South",
-      "density_tier": "LOW",
-      "is_active": false
-    },
-    {
-      "sector_id": "SEC004",
-      "sector_name": "West Suburbs",
-      "resolution": 10,
-      "state": "Tamil Nadu",
-      "region": "West",
-      "density_tier": "MEDIUM",
-      "is_active": true
-    },
-    {
-      "sector_id": "SEC005",
-      "sector_name": "Coastal East",
-      "resolution": 10,
-      "state": "Tamil Nadu",
-      "region": "East",
-      "density_tier": "HIGH",
-      "is_active": true
-    },
-    {
-      "sector_id": "SEC006",
-      "sector_name": "Tech Corridor",
-      "resolution": 10,
-      "state": "Tamil Nadu",
-      "region": "South West",
-      "density_tier": "HIGH",
-      "is_active": true
-    },
-    {
-      "sector_id": "SEC007",
-      "sector_name": "Harbor Zone",
-      "resolution": 10,
-      "state": "Tamil Nadu",
-      "region": "North East",
-      "density_tier": "MEDIUM",
-      "is_active": true
-    },
-    {
-      "sector_id": "SEC008",
-      "sector_name": "Airport Corridor",
-      "resolution": 10,
-      "state": "Tamil Nadu",
-      "region": "South",
-      "density_tier": "HIGH",
-      "is_active": true
-    },
-    {
-      "sector_id": "SEC009",
-      "sector_name": "University Belt",
-      "resolution": 10,
-      "state": "Tamil Nadu",
-      "region": "Central",
-      "density_tier": "MEDIUM",
-      "is_active": true
-    },
-    {
-      "sector_id": "SEC010",
-      "sector_name": "Old City Quarter",
-      "resolution": 10,
-      "state": "Tamil Nadu",
-      "region": "North",
-      "density_tier": "LOW",
-      "is_active": true
-    }
-  ],
-  "collective_managers": [
-    {
-      "cm_id": "CM001",
-      "name": "Suresh Patel",
-      "password": "Password@123",
-      "phone": "9988776655",
-      "email": "suresh@collective.com",
-      "pfp_url": null,
-      "is_active": true,
-      "created_at": "2024-10-10T00:00:00Z",
-      "updated_at": "2025-09-30T00:00:00Z",
-      "collective_id": "COL001"
-    },
-    {
-      "cm_id": "CM002",
-      "name": "Meena Iyer",
-      "password": "Password@123",
-      "phone": "9977665544",
-      "email": "meena@collective.com",
-      "pfp_url": null,
-      "is_active": true,
-      "created_at": "2024-12-13T00:00:00Z",
-      "updated_at": "2025-09-30T00:00:00Z",
-      "collective_id": "COL002"
-    },
-    {
-      "cm_id": "CM003",
-      "name": "Aryan Kapoor",
-      "password": "Password@123",
-      "phone": "9966554433",
-      "email": "aryan@collective.com",
-      "pfp_url": null,
-      "is_active": false,
-      "created_at": "2025-02-16T00:00:00Z",
-      "updated_at": "2025-09-30T00:00:00Z",
-      "collective_id": "COL003"
-    },
-    {
-      "cm_id": "CM004",
-      "name": "Lakshmi Rajan",
-      "password": "Password@123",
-      "phone": "9955443322",
-      "email": "lakshmi@collective.com",
-      "pfp_url": null,
-      "is_active": true,
-      "created_at": "2025-03-31T00:00:00Z",
-      "updated_at": "2025-10-31T00:00:00Z",
-      "collective_id": "COL004"
-    },
-    {
-      "cm_id": "CM005",
-      "name": "Vijay Menon",
-      "password": "Password@123",
-      "phone": "9944332211",
-      "email": "vijay@collective.com",
-      "pfp_url": null,
-      "is_active": true,
-      "created_at": "2025-10-05T00:00:00Z",
-      "updated_at": "2025-11-29T00:00:00Z",
-      "collective_id": "COL005"
-    },
-    {
-      "cm_id": "CM006",
-      "name": "Deepa Sundaram",
-      "password": "Password@123",
-      "phone": "9933445566",
-      "email": "deepa.s@collective.com",
-      "pfp_url": null,
-      "is_active": true,
-      "created_at": "2024-06-10T00:00:00Z",
-      "updated_at": "2024-06-10T00:00:00Z",
-      "collective_id": null
-    },
-    {
-      "cm_id": "CM007",
-      "name": "Harish Raghavan",
-      "password": "Password@123",
-      "phone": "9922334455",
-      "email": "harish.r@collective.com",
-      "pfp_url": null,
-      "is_active": true,
-      "created_at": "2024-08-01T00:00:00Z",
-      "updated_at": "2024-08-01T00:00:00Z",
-      "collective_id": null
-    }
-  ],
-  "unit_managers": [
-    {
-      "um_id": "UM001",
-      "name": "Karan Mehta",
-      "password": "Password@123",
-      "phone": "9955443322",
-      "email": "karan.m@unit.com",
-      "pfp_url": null,
-      "is_active": true,
-      "created_at": "2024-11-09T00:00:00Z",
-      "updated_at": "2025-09-30T00:00:00Z",
-      "unit_id": "UNT001"
-    },
-    {
-      "um_id": "UM002",
-      "name": "Deepa Nair",
-      "password": "Password@123",
-      "phone": "9944332211",
-      "email": "deepa.n@unit.com",
-      "pfp_url": null,
-      "is_active": true,
-      "created_at": "2025-01-08T00:00:00Z",
-      "updated_at": "2025-09-30T00:00:00Z",
-      "unit_id": "UNT002"
-    },
-    {
-      "um_id": "UM003",
-      "name": "Rahul Sharma",
-      "password": "Password@123",
-      "phone": "9933221100",
-      "email": "rahul.s@unit.com",
-      "pfp_url": null,
-      "is_active": true,
-      "created_at": "2025-05-15T00:00:00Z",
-      "updated_at": "2025-09-30T00:00:00Z",
-      "unit_id": "UNT004"
-    },
-    {
-      "um_id": "UM004",
-      "name": "Anita Desai",
-      "password": "Password@123",
-      "phone": "9922110099",
-      "email": "anita.d@unit.com",
-      "pfp_url": null,
-      "is_active": true,
-      "created_at": "2025-08-05T00:00:00Z",
-      "updated_at": "2025-10-31T00:00:00Z",
-      "unit_id": "UNT007"
-    },
-    {
-      "um_id": "UM005",
-      "name": "Sanjay Pillai",
-      "password": "Password@123",
-      "phone": "9911009988",
-      "email": "sanjay.p@unit.com",
-      "pfp_url": null,
-      "is_active": true,
-      "created_at": "2025-10-10T00:00:00Z",
-      "updated_at": "2025-11-29T00:00:00Z",
-      "unit_id": "UNT008"
-    },
-    {
-      "um_id": "UM006",
-      "name": "Preethi Subramanian",
-      "password": "Password@123",
-      "phone": "9900998877",
-      "email": "preethi.s@unit.com",
-      "pfp_url": null,
-      "is_active": false,
-      "created_at": "2025-11-01T00:00:00Z",
-      "updated_at": "2025-12-30T00:00:00Z",
-      "unit_id": "UNT009"
-    },
-    {
-      "um_id": "UM007",
-      "name": "Rajesh Kumar",
-      "password": "Password@123",
-      "phone": "9899887766",
-      "email": "rajesh.k@unit.com",
-      "pfp_url": null,
-      "is_active": true,
-      "created_at": "2024-03-10T00:00:00Z",
-      "updated_at": "2024-03-10T00:00:00Z",
-      "unit_id": null
-    },
-    {
-      "um_id": "UM008",
-      "name": "Priya Venkatesan",
-      "password": "Password@123",
-      "phone": "9888776655",
-      "email": "priya.v@unit.com",
-      "pfp_url": null,
-      "is_active": true,
-      "created_at": "2024-03-15T00:00:00Z",
-      "updated_at": "2024-03-15T00:00:00Z",
-      "unit_id": null
-    }
-  ],
   "service_providers": [
     {
       "service_provider_id": "SP001",
@@ -442,9 +25,7 @@
       "account_status": "active",
       "deactivation_requested": false,
       "created_at": "2024-10-31T08:00:00Z",
-      "updated_at": "2026-03-15T10:30:00Z",
-      "unit_id": "UNT001",
-      "home_sector_id": "SEC001"
+      "updated_at": "2026-03-15T10:30:00Z"
     },
     {
       "service_provider_id": "SP002",
@@ -462,9 +43,7 @@
       "account_status": "active",
       "deactivation_requested": false,
       "created_at": "2025-01-07T09:15:00Z",
-      "updated_at": "2026-02-17T14:00:00Z",
-      "unit_id": "UNT002",
-      "home_sector_id": "SEC002"
+      "updated_at": "2026-02-17T14:00:00Z"
     },
     {
       "service_provider_id": "SP003",
@@ -482,9 +61,7 @@
       "account_status": "active",
       "deactivation_requested": false,
       "created_at": "2025-03-04T11:00:00Z",
-      "updated_at": "2025-10-09T09:45:00Z",
-      "unit_id": "UNT001",
-      "home_sector_id": "SEC003"
+      "updated_at": "2025-10-09T09:45:00Z"
     },
     {
       "service_provider_id": "SP004",
@@ -502,9 +79,7 @@
       "account_status": "active",
       "deactivation_requested": false,
       "created_at": "2025-05-19T10:00:00Z",
-      "updated_at": "2026-01-08T11:00:00Z",
-      "unit_id": "UNT004",
-      "home_sector_id": "SEC004"
+      "updated_at": "2026-01-08T11:00:00Z"
     },
     {
       "service_provider_id": "SP005",
@@ -522,9 +97,7 @@
       "account_status": "active",
       "deactivation_requested": false,
       "created_at": "2025-08-09T09:00:00Z",
-      "updated_at": "2026-01-29T10:00:00Z",
-      "unit_id": "UNT007",
-      "home_sector_id": "SEC004"
+      "updated_at": "2026-01-29T10:00:00Z"
     },
     {
       "service_provider_id": "SP006",
@@ -542,9 +115,7 @@
       "account_status": "active",
       "deactivation_requested": false,
       "created_at": "2025-10-14T08:30:00Z",
-      "updated_at": "2026-03-01T09:00:00Z",
-      "unit_id": "UNT008",
-      "home_sector_id": "SEC005"
+      "updated_at": "2026-03-01T09:00:00Z"
     },
     {
       "service_provider_id": "SP007",
@@ -562,9 +133,7 @@
       "account_status": "active",
       "deactivation_requested": false,
       "created_at": "2025-11-09T07:45:00Z",
-      "updated_at": "2026-03-10T12:00:00Z",
-      "unit_id": "UNT009",
-      "home_sector_id": "SEC005"
+      "updated_at": "2026-03-10T12:00:00Z"
     },
     {
       "service_provider_id": "SP008",
@@ -582,9 +151,7 @@
       "account_status": "active",
       "deactivation_requested": false,
       "created_at": "2025-12-18T10:15:00Z",
-      "updated_at": "2026-03-15T14:30:00Z",
-      "unit_id": "UNT009",
-      "home_sector_id": "SEC006"
+      "updated_at": "2026-03-15T14:30:00Z"
     },
     {
       "service_provider_id": "SP009",
@@ -602,9 +169,7 @@
       "account_status": "active",
       "deactivation_requested": false,
       "created_at": "2024-04-05T08:00:00Z",
-      "updated_at": "2024-06-20T10:30:00Z",
-      "unit_id": "UNT002",
-      "home_sector_id": "SEC002"
+      "updated_at": "2024-06-20T10:30:00Z"
     },
     {
       "service_provider_id": "SP010",
@@ -622,9 +187,7 @@
       "account_status": "active",
       "deactivation_requested": false,
       "created_at": "2024-04-10T09:30:00Z",
-      "updated_at": "2024-06-18T11:15:00Z",
-      "unit_id": "UNT004",
-      "home_sector_id": "SEC004"
+      "updated_at": "2024-06-18T11:15:00Z"
     },
     {
       "service_provider_id": "SP011",
@@ -642,9 +205,7 @@
       "account_status": "active",
       "deactivation_requested": false,
       "created_at": "2024-04-15T07:45:00Z",
-      "updated_at": "2024-06-19T09:00:00Z",
-      "unit_id": "UNT005",
-      "home_sector_id": "SEC003"
+      "updated_at": "2024-06-19T09:00:00Z"
     },
     {
       "service_provider_id": "SP012",
@@ -662,9 +223,7 @@
       "account_status": "active",
       "deactivation_requested": false,
       "created_at": "2024-04-20T10:00:00Z",
-      "updated_at": "2024-06-17T13:30:00Z",
-      "unit_id": "UNT006",
-      "home_sector_id": "SEC005"
+      "updated_at": "2024-06-17T13:30:00Z"
     },
     {
       "service_provider_id": "SP013",
@@ -682,9 +241,7 @@
       "account_status": "active",
       "deactivation_requested": false,
       "created_at": "2024-05-01T08:30:00Z",
-      "updated_at": "2024-06-16T10:45:00Z",
-      "unit_id": "UNT007",
-      "home_sector_id": "SEC004"
+      "updated_at": "2024-06-16T10:45:00Z"
     },
     {
       "service_provider_id": "SP014",
@@ -702,9 +259,7 @@
       "account_status": "active",
       "deactivation_requested": false,
       "created_at": "2024-05-05T11:00:00Z",
-      "updated_at": "2024-06-15T14:20:00Z",
-      "unit_id": "UNT008",
-      "home_sector_id": "SEC005"
+      "updated_at": "2024-06-15T14:20:00Z"
     },
     {
       "service_provider_id": "SP015",
@@ -722,9 +277,7 @@
       "account_status": "active",
       "deactivation_requested": false,
       "created_at": "2024-05-10T09:15:00Z",
-      "updated_at": "2024-06-21T11:30:00Z",
-      "unit_id": "UNT001",
-      "home_sector_id": "SEC001"
+      "updated_at": "2024-06-21T11:30:00Z"
     },
     {
       "service_provider_id": "SP016",
@@ -742,9 +295,7 @@
       "account_status": "active",
       "deactivation_requested": false,
       "created_at": "2024-05-15T10:30:00Z",
-      "updated_at": "2024-06-20T12:00:00Z",
-      "unit_id": "UNT009",
-      "home_sector_id": "SEC006"
+      "updated_at": "2024-06-20T12:00:00Z"
     },
     {
       "service_provider_id": "SP017",
@@ -762,9 +313,7 @@
       "account_status": "active",
       "deactivation_requested": false,
       "created_at": "2024-05-20T08:45:00Z",
-      "updated_at": "2024-06-19T15:00:00Z",
-      "unit_id": "UNT002",
-      "home_sector_id": "SEC002"
+      "updated_at": "2024-06-19T15:00:00Z"
     },
     {
       "service_provider_id": "SP018",
@@ -782,9 +331,7 @@
       "account_status": "active",
       "deactivation_requested": false,
       "created_at": "2024-05-25T09:00:00Z",
-      "updated_at": "2024-06-21T10:15:00Z",
-      "unit_id": "UNT004",
-      "home_sector_id": "SEC004"
+      "updated_at": "2024-06-21T10:15:00Z"
     }
   ],
   "provider_working_hours": [
@@ -1076,8 +623,7 @@
       "address": "14 Boat Club Road, Chennai",
       "pfp_url": null,
       "rating": 5,
-      "is_active": true,
-      "home_sector_id": "SEC001"
+      "is_active": true
     },
     {
       "customer_id": "CUS002",
@@ -1089,8 +635,7 @@
       "address": "88 Kilpauk, Chennai",
       "pfp_url": null,
       "rating": 4,
-      "is_active": true,
-      "home_sector_id": "SEC002"
+      "is_active": true
     },
     {
       "customer_id": "CUS003",
@@ -1102,8 +647,7 @@
       "address": "5 Velachery Main Road, Chennai",
       "pfp_url": null,
       "rating": 4,
-      "is_active": false,
-      "home_sector_id": "SEC003"
+      "is_active": false
     },
     {
       "customer_id": "CUS004",
@@ -1115,8 +659,7 @@
       "address": "32 Nungambakkam, Chennai",
       "pfp_url": null,
       "rating": 5,
-      "is_active": true,
-      "home_sector_id": "SEC001"
+      "is_active": true
     },
     {
       "customer_id": "CUS005",
@@ -1128,8 +671,7 @@
       "address": "77 Perambur, Chennai",
       "pfp_url": null,
       "rating": 4,
-      "is_active": true,
-      "home_sector_id": "SEC002"
+      "is_active": true
     },
     {
       "customer_id": "CUS006",
@@ -1141,8 +683,7 @@
       "address": "45 Sholinganallur, Chennai",
       "pfp_url": null,
       "rating": 5,
-      "is_active": true,
-      "home_sector_id": "SEC006"
+      "is_active": true
     },
     {
       "customer_id": "CUS007",
@@ -1154,8 +695,7 @@
       "address": "120 Chromepet, Chennai",
       "pfp_url": null,
       "rating": 4,
-      "is_active": true,
-      "home_sector_id": "SEC004"
+      "is_active": true
     },
     {
       "customer_id": "CUS008",
@@ -1167,8 +707,7 @@
       "address": "9 Adyar, Chennai",
       "pfp_url": null,
       "rating": 5,
-      "is_active": true,
-      "home_sector_id": "SEC005"
+      "is_active": true
     }
   ],
   "categories": [
@@ -1179,7 +718,7 @@
       "icon": "🧹",
       "image_url": "https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=800&q=80",
       "is_available": true,
-      "average_rating": 5.0,
+      "average_rating": 5,
       "rating_count": 1
     },
     {
@@ -1199,7 +738,7 @@
       "icon": "⚡",
       "image_url": "https://images.unsplash.com/photo-1621905252507-b35492cc74b4?auto=format&fit=crop&w=800&q=80",
       "is_available": true,
-      "average_rating": 5.0,
+      "average_rating": 5,
       "rating_count": 2
     },
     {
@@ -1241,7 +780,7 @@
       "image_url": "https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=800&q=80",
       "base_price": 499,
       "estimated_duration_min": 120,
-      "average_rating": 5.0,
+      "average_rating": 5,
       "rating_count": 1,
       "is_available": true,
       "category_id": "CAT001"
@@ -1289,7 +828,7 @@
       "image_url": "https://images.unsplash.com/photo-1621905252507-b35492cc74b4?auto=format&fit=crop&w=800&q=80",
       "base_price": 299,
       "estimated_duration_min": 45,
-      "average_rating": 5.0,
+      "average_rating": 5,
       "rating_count": 2,
       "is_available": true,
       "category_id": "CAT003"
@@ -1876,8 +1415,7 @@
       "is_active": true,
       "created_at": "2026-03-29T03:18:22Z",
       "updated_at": "2026-03-29T06:18:22Z",
-      "customer_id": "CUS001",
-      "sector_id": "SEC001"
+      "customer_id": "CUS001"
     },
     {
       "booking_id": "BKG002",
@@ -1889,8 +1427,7 @@
       "is_active": true,
       "created_at": "2026-03-17T14:08:14Z",
       "updated_at": "2026-03-18T11:08:14Z",
-      "customer_id": "CUS002",
-      "sector_id": "SEC002"
+      "customer_id": "CUS002"
     },
     {
       "booking_id": "BKG003",
@@ -1902,8 +1439,7 @@
       "is_active": false,
       "created_at": "2026-02-24T08:12:15Z",
       "updated_at": "2026-02-24T08:37:15Z",
-      "customer_id": "CUS003",
-      "sector_id": "SEC003"
+      "customer_id": "CUS003"
     },
     {
       "booking_id": "BKG004",
@@ -1915,8 +1451,7 @@
       "is_active": true,
       "created_at": "2026-02-25T22:04:33Z",
       "updated_at": "2026-02-25T22:04:33Z",
-      "customer_id": "CUS004",
-      "sector_id": "SEC001"
+      "customer_id": "CUS004"
     },
     {
       "booking_id": "BKG005",
@@ -1928,8 +1463,7 @@
       "is_active": true,
       "created_at": "2026-02-07T18:52:44Z",
       "updated_at": "2026-02-07T19:12:44Z",
-      "customer_id": "CUS005",
-      "sector_id": "SEC002"
+      "customer_id": "CUS005"
     },
     {
       "booking_id": "BKG006",
@@ -1941,8 +1475,7 @@
       "is_active": true,
       "created_at": "2026-03-29T21:47:25Z",
       "updated_at": "2026-03-29T23:32:25Z",
-      "customer_id": "CUS006",
-      "sector_id": "SEC006"
+      "customer_id": "CUS006"
     },
     {
       "booking_id": "BKG007",
@@ -1954,8 +1487,7 @@
       "is_active": true,
       "created_at": "2026-02-07T16:47:40Z",
       "updated_at": "2026-02-07T17:47:40Z",
-      "customer_id": "CUS007",
-      "sector_id": "SEC004"
+      "customer_id": "CUS007"
     },
     {
       "booking_id": "BKG008",
@@ -1967,8 +1499,7 @@
       "is_active": true,
       "created_at": "2026-03-13T00:56:12Z",
       "updated_at": "2026-03-13T00:56:12Z",
-      "customer_id": "CUS008",
-      "sector_id": "SEC005"
+      "customer_id": "CUS008"
     },
     {
       "booking_id": "BKG009",
@@ -1980,8 +1511,7 @@
       "is_active": true,
       "created_at": "2026-02-04T19:42:12Z",
       "updated_at": "2026-02-04T22:12:12Z",
-      "customer_id": "CUS001",
-      "sector_id": "SEC001"
+      "customer_id": "CUS001"
     },
     {
       "booking_id": "BKG010",
@@ -1993,8 +1523,7 @@
       "is_active": false,
       "created_at": "2026-02-28T04:10:29Z",
       "updated_at": "2026-03-02T02:10:29Z",
-      "customer_id": "CUS004",
-      "sector_id": "SEC001"
+      "customer_id": "CUS004"
     }
   ],
   "booking_services": [
