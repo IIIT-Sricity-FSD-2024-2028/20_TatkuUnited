@@ -1,0 +1,43 @@
+Component structure:
+RegisterPage component - Top level parent compoenent for the register page
+Child components:
+1. CreateAccount - Header component for the register page
+2. SelectRolePage - Component for selecting the user role
+3. FillUserData - Component for filling in user data (name, email, phone, address)
+4. FillPassword - Component for filling in the password and confirming it
+5. LoginLink - Component for redirecting to login page if user already registered
+6. RegistrationSuccess - Component for displaying success message if registration is successful
+7. RegistrationFailed - Component for displaying failure message if registration fails
+
+Brief explanation:
+1. Props: 
+Data props like "formData", "errors" and "role" are passed down from the 
+RegisterPage component to the child components to manage the state and handle 
+user input and the error details.
+Setter props like "setFormData", "setErrors", "setCurPage" and "setRole" are 
+passed down to child components from the parent. These are used to change the 
+state in the parent component to reflect the changes made in the child components.
+
+2. Callbacks:
+Callbacks like "setCurPage", "setFormData", "updateField", "setErrors" are passed 
+down to children as callback to handle user input changes and update the parent 
+component state. These are used for lifting the state up to the parent component.
+Callbacks like "handleSubmit" are passed down to child components to handle form 
+submission and validation.
+
+3. Lifted state:
+State variables like "curPage", "role", "formData" and "errors" are lifted up 
+to the RegisterPage component to manage the state of the entire registration 
+process. This allows for better control and management of the registration flow 
+across different child components.
+
+First, I designed the register page as a single component, but soon, the 
+component became too complex and tighly coupled. So, I decided to break 
+each page in the registration process into separate child components. After
+this separation, I needed some way to pass data and state between the parent
+register component and the child page components, so, here I used props and
+callbacks to lift the state up from the child to the parent component.
+Finally, as the user clicks the final create account button, I added a callback
+to send a post request to the backend API to create the user account. If the
+registration is successful, the success page is displayed, otherwise, the
+failure page is displayed.
