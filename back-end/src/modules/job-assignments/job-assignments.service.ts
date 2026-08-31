@@ -20,6 +20,198 @@ export class JobAssignmentsService {
 
   // ── Auto-assign ────────────────────────────────────────
 
+  // ── Shared provider-finding logic (read-only, no side effects) ──
+
+  private findBestProvider(serviceId: string, scheduledAtStr: string) {
+
+    // a. Find required skills for this service
+    const requiredSkillIds = this.db.serviceSkills
+      .filter((ss) => ss.service_id === serviceId)
+      .map((ss) => ss.skill_id);
+
+    const service = this.db.services.find(
+      (s) => s.service_id === serviceId,
+    );
+    const durationMin = service?.estimated_duration_min || 60;
+
+    let scheduledDate: string;
+    let scheduledTime: string;
+
+    if (scheduledAtStr.endsWith('Z')) {
+      const utcDate = new Date(scheduledAtStr);
+      const istDate = new Date(utcDate.getTime() + 5.5 * 60 * 60 * 1000);
+      const istIso = istDate.toISOString();
+      scheduledDate = istIso.split('T')[0];
+      scheduledTime = istIso.split('T')[1].slice(0, 5);
+    } else {
+      scheduledDate = scheduledAtStr.split('T')[0];
+      scheduledTime = scheduledAtStr.split('T')[1]?.slice(0, 5) || '';
+    }
+
+    // b. Find providers who have ALL required skills (verified)
+    const qualifiedProviderIds = this.db.serviceProviders
+      .filter((sp) => sp.is_active)
+      .filter((sp) => {
+        if (requiredSkillIds.length === 0) return true;
+        const providerSkillIds = this.db.providerSkills
+          .filter(
+            (ps) =>
+              ps.sp_id === sp.sp_id &&
+              ps.verification_status.toLowerCase() === 'verified',
+          )
+          .map((ps) => ps.skill_id);
+        return requiredSkillIds.every((sid) =>
+          providerSkillIds.includes(sid),
+        );
+      });
+
+    // c. Candidates are all qualified providers
+    let candidates = qualifiedProviderIds;
+
+    // d. Filter by availability, capacity, and schedule overlap
+    candidates = candidates.filter((sp) => {
+      const slotStart = this.toMinutes(scheduledTime || sp.hour_start);
+      const slotEnd = slotStart + durationMin;
+      const providerStart = this.toMinutes(sp.hour_start || '09:00');
+      const providerEnd = this.toMinutes(sp.hour_end || '18:00');
+
+      if (slotStart < providerStart || slotEnd > providerEnd) return false;
+
+      const hasUnavailability = this.db.providerUnavailability.some((pu) => {
+        if (pu.sp_id !== sp.sp_id) return false;
+        if (!pu.date || pu.date !== scheduledDate) return false;
+        const blockStart = this.toMinutes(pu.hour_start);
+        const blockEnd = this.toMinutes(pu.hour_end);
+        return this.overlaps(slotStart, slotEnd, blockStart, blockEnd);
+      });
+
+      if (hasUnavailability) return false;
+
+      // e. Reject provider if they have ANY active assignment that overlaps this time slot
+      //    (one job at a time — no concurrent bookings for the same provider)
+      const activeAssignments = this.db.jobAssignments.filter(
+        (ja) =>
+          ja.sp_id === sp.sp_id &&
+          ja.scheduled_date === scheduledDate &&
+          ['ASSIGNED', 'IN_PROGRESS'].includes(ja.status),
+      );
+
+      const hasTimeCollision = activeAssignments.some((ja) => {
+        const existingStart = this.toMinutes(ja.hour_start);
+        const existingEnd = this.toMinutes(ja.hour_end);
+        return this.overlaps(slotStart, slotEnd, existingStart, existingEnd);
+      });
+
+      if (hasTimeCollision) return false;
+
+      return true; 
+    });
+
+    const safetyCritical = this.isSafetyCritical(requiredSkillIds);
+
+    const scoredCandidates = candidates
+      .map((sp) => {
+        const providerSkillIds = this.db.providerSkills
+          .filter(
+            (ps) =>
+              ps.sp_id === sp.sp_id &&
+              ps.verification_status.toLowerCase() === 'verified',
+          )
+          .map((ps) => ps.skill_id);
+
+        const bonusSkillCount = providerSkillIds.filter(
+          (sid) => !requiredSkillIds.includes(sid),
+        ).length;
+
+        const skillScore = requiredSkillIds.length === 0
+          ? 1
+          : Math.min(
+              1,
+              0.7 +
+                Math.min(
+                  1,
+                  bonusSkillCount / Math.max(1, requiredSkillIds.length),
+                ) *
+                  0.3,
+            );
+
+        const ratingValue = sp.rating_count === 0 ? 3.5 : sp.rating;
+        const ratingNorm = Math.max(
+          0,
+          Math.min(1, (ratingValue - 1) / 4),
+        );
+
+        const proximityNorm = 1.0;
+
+        const isNewProvider = sp.rating_count < 5;
+
+        let w1 = 0.4;
+        let w2 = 0.35;
+        let w3 = 0.25;
+
+        if (sp.rating_count >= 50) {
+          w1 = 0.3;
+          w2 = 0.45;
+          w3 = 0.25;
+        }
+
+        if (safetyCritical) {
+          w1 = 0.45;
+          w2 = 0.35;
+          w3 = 0.2;
+        }
+
+        const score = isNewProvider
+          ? skillScore * proximityNorm
+          : (skillScore * w1 + ratingNorm * w2 + proximityNorm * w3);
+
+        return { provider: sp, score };
+      })
+      .sort((a, b) => b.score - a.score);
+
+    const best = scoredCandidates[0];
+    const serviceName = service?.service_name || serviceId;
+    const anyQualified = qualifiedProviderIds.length > 0;
+
+    return {
+      best: best || null,
+      serviceName,
+      durationMin,
+      scheduledDate,
+      scheduledTime,
+      anyQualified,
+    };
+  }
+
+  // ── Check availability (dry-run, no side effects) ──────────
+
+  /**
+   * Checks whether a provider can be found for a specific service at a given time.
+   * Returns { available, serviceName, reason? } without creating any records.
+   */
+  checkAvailability(serviceId: string, scheduledAt: string | null) {
+    const scheduledAtStr = scheduledAt || this.db.now();
+    const result = this.findBestProvider(serviceId, scheduledAtStr);
+
+    if (!result.best) {
+      const timeMessage = result.anyQualified
+        ? ' (some providers are qualified but may be off-duty or fully booked at this time)'
+        : '';
+      return {
+        available: false,
+        serviceName: result.serviceName,
+        reason: `No qualified provider found for "${result.serviceName}" at the scheduled time in your area.${timeMessage}`,
+      };
+    }
+
+    return {
+      available: true,
+      serviceName: result.serviceName,
+    };
+  }
+
+  // ── Auto-assign ────────────────────────────────────────
+
   autoAssign(bookingId: string) {
     // 1. Get booking
     const booking = this.bookingsRepo.findById(bookingId);
@@ -34,177 +226,36 @@ export class JobAssignmentsService {
     }
 
     const assignments: any[] = [];
-    const maxConcurrent = 3;
 
     // 3. For each service line
     for (const bs of bookingServices) {
-      // a. Find required skills for this service
-      const requiredSkillIds = this.db.serviceSkills
-        .filter((ss) => ss.service_id === bs.service_id)
-        .map((ss) => ss.skill_id);
-
-      const service = this.db.services.find(
-        (s) => s.service_id === bs.service_id,
-      );
-      const durationMin = service?.estimated_duration_min || 60;
-
       const scheduledAtStr = bs.scheduled_at || this.db.now();
-      let scheduledDate: string;
-      let scheduledTime: string;
+      const result = this.findBestProvider(bs.service_id, scheduledAtStr);
 
-      if (scheduledAtStr.endsWith('Z')) {
-        // Convert UTC string to IST by adding 5.5 hours
-        const utcDate = new Date(scheduledAtStr);
-        const istDate = new Date(utcDate.getTime() + 5.5 * 60 * 60 * 1000);
-        const istIso = istDate.toISOString();
-        scheduledDate = istIso.split('T')[0];
-        scheduledTime = istIso.split('T')[1].slice(0, 5);
-      } else {
-        // String is already IST (from our new db.now() or local input)
-        scheduledDate = scheduledAtStr.split('T')[0];
-        scheduledTime = scheduledAtStr.split('T')[1]?.slice(0, 5) || '';
-      }
-
-      // b. Find providers who have ALL required skills (verified)
-      const qualifiedProviderIds = this.db.serviceProviders
-        .filter((sp) => sp.is_active)
-        .filter((sp) => {
-          if (requiredSkillIds.length === 0) return true;
-          const providerSkillIds = this.db.providerSkills
-            .filter(
-              (ps) =>
-                ps.sp_id === sp.sp_id &&
-                ps.verification_status.toLowerCase() === 'verified',
-            )
-            .map((ps) => ps.skill_id);
-          return requiredSkillIds.every((sid) =>
-            providerSkillIds.includes(sid),
-          );
-        });
-
-      // c. Candidates are all qualified providers
-      let candidates = qualifiedProviderIds;
-
-      // d. Filter by availability, capacity, and schedule overlap
-      candidates = candidates.filter((sp) => {
-        const slotStart = this.toMinutes(scheduledTime || sp.hour_start);
-        const slotEnd = slotStart + durationMin;
-        const providerStart = this.toMinutes(sp.hour_start || '09:00');
-        const providerEnd = this.toMinutes(sp.hour_end || '18:00');
-
-        if (slotStart < providerStart || slotEnd > providerEnd) return false;
-
-        const hasUnavailability = this.db.providerUnavailability.some((pu) => {
-          if (pu.sp_id !== sp.sp_id) return false;
-          if (!pu.date || pu.date !== scheduledDate) return false;
-          const blockStart = this.toMinutes(pu.hour_start);
-          const blockEnd = this.toMinutes(pu.hour_end);
-          return this.overlaps(slotStart, slotEnd, blockStart, blockEnd);
-        });
-
-        if (hasUnavailability) return false;
-
-        const activeAssignments = this.db.jobAssignments.filter(
-          (ja) =>
-            ja.sp_id === sp.sp_id &&
-            ja.scheduled_date === scheduledDate &&
-            ['ASSIGNED', 'IN_PROGRESS'].includes(ja.status),
-        );
-
-        if (activeAssignments.length >= maxConcurrent) return false;
-
-        // Relaxed for simulation: allow multiple concurrent jobs up to maxConcurrent
-        return true; 
-      });
-
-      const safetyCritical = this.isSafetyCritical(requiredSkillIds);
-
-      const scoredCandidates = candidates
-        .map((sp) => {
-          const providerSkillIds = this.db.providerSkills
-            .filter(
-              (ps) =>
-                ps.sp_id === sp.sp_id &&
-                ps.verification_status.toLowerCase() === 'verified',
-            )
-            .map((ps) => ps.skill_id);
-
-          const bonusSkillCount = providerSkillIds.filter(
-            (sid) => !requiredSkillIds.includes(sid),
-          ).length;
-
-          const skillScore = requiredSkillIds.length === 0
-            ? 1
-            : Math.min(
-                1,
-                0.7 +
-                  Math.min(
-                    1,
-                    bonusSkillCount / Math.max(1, requiredSkillIds.length),
-                  ) *
-                    0.3,
-              );
-
-          const ratingValue = sp.rating_count === 0 ? 3.5 : sp.rating;
-          const ratingNorm = Math.max(
-            0,
-            Math.min(1, (ratingValue - 1) / 4),
-          );
-
-          const proximityNorm = 1.0;
-
-          const isNewProvider = sp.rating_count < 5;
-
-          let w1 = 0.4;
-          let w2 = 0.35;
-          let w3 = 0.25;
-
-          if (sp.rating_count >= 50) {
-            w1 = 0.3;
-            w2 = 0.45;
-            w3 = 0.25;
-          }
-
-          if (safetyCritical) {
-            w1 = 0.45;
-            w2 = 0.35;
-            w3 = 0.2;
-          }
-
-          const score = isNewProvider
-            ? skillScore * proximityNorm
-            : (skillScore * w1 + ratingNorm * w2 + proximityNorm * w3);
-
-          return { provider: sp, score };
-        })
-        .sort((a, b) => b.score - a.score);
-
-      const best = scoredCandidates[0];
-      const bestProvider = best?.provider;
+      const bestProvider = result.best?.provider;
 
       if (!bestProvider) {
-        const anyQualifiedForSkill = qualifiedProviderIds.length > 0;
-        const timeMessage = anyQualifiedForSkill 
+        const timeMessage = result.anyQualified 
           ? " (Note: some providers are qualified but may be off-duty or fully booked at this time)"
           : "";
           
         throw new BadRequestException(
-          `No qualified provider found for service "${service?.service_name || bs.service_id}" at the scheduled time in your area.${timeMessage}`,
+          `No qualified provider found for service "${result.serviceName}" at the scheduled time in your area.${timeMessage}`,
         );
       }
 
-      const hourStart = scheduledTime || bestProvider.hour_start || '09:00';
-      const endMinutes = this.toMinutes(hourStart) + durationMin;
+      const hourStart = result.scheduledTime || bestProvider.hour_start || '09:00';
+      const endMinutes = this.toMinutes(hourStart) + result.durationMin;
       const hourEnd = this.fromMinutes(endMinutes);
 
-      // g. Create assignment
+      // Create assignment
       const assignment = this.jaRepo.create({
         service_id: bs.service_id,
-        scheduled_date: scheduledDate || this.db.now().split('T')[0],
+        scheduled_date: result.scheduledDate || this.db.now().split('T')[0],
         hour_start: hourStart,
         hour_end: hourEnd,
         status: 'ASSIGNED',
-        assignment_score: best?.score ?? null,
+        assignment_score: result.best?.score ?? null,
         notes: null,
         assigned_at: this.db.now(),
         booking_id: bookingId,

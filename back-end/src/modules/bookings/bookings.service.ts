@@ -60,6 +60,33 @@ export class BookingsService {
       throw new BadRequestException('Service address is required for checkout.');
     }
 
+    // ─── PHASE 1: Validate all services can be assigned (dry-run) ───
+    // No bookings, transactions, or assignments are created in this phase.
+    // If ANY service fails, the entire checkout is rejected.
+
+    const unavailableServices: string[] = [];
+
+    for (const item of cartItems) {
+      const availability = this.jobAssignmentsService.checkAvailability(
+        item.service_id,
+        item.scheduled_at || null,
+      );
+
+      if (!availability.available) {
+        unavailableServices.push(availability.serviceName);
+      }
+    }
+
+    if (unavailableServices.length > 0) {
+      const serviceList = unavailableServices.join(', ');
+      throw new BadRequestException(
+        `Could not assign providers for: ${serviceList}. Please try a different time or remove these services from your cart. No bookings have been created.`,
+      );
+    }
+
+    // ─── PHASE 2: Commit (all services passed availability check) ───
+    // Now safe to create bookings, transactions, and assignments.
+
     // 3. Customer lookup & payment method normalization
     const customer = this.db.customers.find(
       (c) => c.customer_id === customerId,
