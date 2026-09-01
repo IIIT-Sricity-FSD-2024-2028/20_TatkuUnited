@@ -78,8 +78,6 @@
   // 2. High rated providers under this CM
   const myProviders = allProviders.filter((p) => p.region_id === collectiveId);
   const myProviderIds = new Set(myProviders.map((p) => p.sp_id || p.service_provider_id));
-  const myProviders = allProviders.filter((p) => myProviderIds.has(p.region_id));
-  const myProviderIds = new Set(myProviders.map((p) => p.service_provider_id));
   const myBookings = allBookings.filter((b) => {
     const bookingAssignments = allJobAssignments.filter((a) => a.booking_id === b.booking_id);
     return bookingAssignments.some((a) =>
@@ -139,12 +137,12 @@
       category: "unit",
       read: false,
       color: "amber",
-      title: "Inactive Unit Detected",
-      desc: `${u.unit_name} is currently inactive and may need review.`,
-      time: getTimeAgo(u.created_at),
+      title: "Unit Status Update",
+      desc: `Review service provider status and assignments in your region.`,
+      time: getTimeAgo(new Date().toISOString()),
       icon: `<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`,
       actions: [
-        { label: "Open Unit", cls: "primary", href: "manage_units.html" },
+        { label: "Manage Providers", cls: "primary", href: "admit_providers.html" },
       ],
     });
   });

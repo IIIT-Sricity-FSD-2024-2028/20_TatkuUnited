@@ -44,14 +44,6 @@
           </svg>
           Manage Service Providers
         </a>
-        <a href="manage_units.html" class="nav-item">
-          <svg viewBox="0 0 24 24">
-            <path
-              d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"
-            />
-          </svg>
-          Manage Providers
-        </a>
         <a href="profile.html" class="nav-item active">
           <svg viewBox="0 0 24 24">
             <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
@@ -61,12 +53,7 @@
         </a>
       </nav>
       <div class="sidebar-footer">
-        <a
-          href="../auth_pages/logout.html"
-          class="logout-link"
-          id="logout-btn"
-          
-        >
+        <a href="../auth_pages/logout.html" class="logout-link" id="logout-btn">
           <svg viewBox="0 0 24 24">
             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
             <polyline points="16 17 21 12 16 7" />
@@ -93,7 +80,6 @@
           />
         </div>
         <div class="topbar-right">
-          
           <a
             href="profile.html"
             class="avatar active-avatar"
@@ -110,13 +96,11 @@
         <div class="profile-hero">
           <div class="profile-avatar-wrap">
             <div class="profile-avatar" id="profile-avatar">CM</div>
-
           </div>
           <div class="profile-hero-info">
             <h1 class="profile-name" id="hero-name">—</h1>
             <p class="profile-role">Region Manager</p>
             <p class="profile-email" id="hero-email">—</p>
-
           </div>
         </div>
 
@@ -211,8 +195,11 @@
                 </div>
                 <div class="form-field">
                   <label>Region & Region Area</label>
-                  <select id="region" class="readonly-field" onchange="this.selectedIndex=0">
-                  </select>
+                  <select
+                    id="region"
+                    class="readonly-field"
+                    onchange="this.selectedIndex = 0"
+                  ></select>
                 </div>
               </div>
               <div class="card-footer">
@@ -244,7 +231,6 @@
 
           <!-- RIGHT -->
           <div class="profile-right">
-
             <!-- Danger Zone -->
             <div class="card danger-card">
               <div class="card-head danger-head">

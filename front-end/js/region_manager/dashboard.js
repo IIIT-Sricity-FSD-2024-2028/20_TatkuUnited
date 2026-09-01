@@ -38,9 +38,11 @@
 
   region = (regions || []).find(r => r.region_id === regionId) || regions[0] || { region_name: 'Chennai North', is_active: true };
 
-  /* ── 3. Scope data to this region ── */
+  /* ── 3. Scope data to this region consistently across all widgets ── */
   const myProviders = (allProviders || []).filter(p => p.region_id === region.region_id);
-  const pendingProviders = (allProviders || []).filter(p => p.account_status === 'pending' || !p.region_id);
+  const pendingProviders = myProviders.filter(
+    p => p.account_status === 'pending' || !p.region_id
+  );
   const myProviderIds = new Set(myProviders.map(p => p.sp_id || p.service_provider_id));
 
   const myAssignments = (allAssignments || []).filter(a => myProviderIds.has(a.sp_id || a.service_provider_id));

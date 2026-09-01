@@ -21,15 +21,64 @@
 
 async function loadProviders(region) {
   let providers = [];
+  let assignments = [];
+  
   try {
     providers = await Api.get('/service-providers', { silent: true }) || [];
   } catch (_) {}
 
-  const pendingList = providers.filter(p => p.account_status === 'pending' || !p.region_id);
-  const activeList = providers.filter(p => p.region_id === region.region_id && p.account_status !== 'pending');
+  try {
+    assignments = await Api.get('/job-assignments', { silent: true }) || [];
+  } catch (_) {}
+
+  const regionProviders = providers.filter(p => p.region_id === region.region_id);
+  const pendingList = regionProviders.filter(
+    p => p.account_status === 'pending' || !p.region_id
+  );
+  const activeList = regionProviders.filter(
+    p => p.account_status !== 'pending'
+  );
+
+  const avgRating = regionProviders.length
+    ? regionProviders.reduce((sum, p) => sum + getProviderRating(p), 0) / regionProviders.length
+    : 0;
+  const verificationQueue = regionProviders.filter(p =>
+    p.verification_status === 'pending' ||
+    p.skill_verification_status === 'pending' ||
+    p.status === 'verification_pending' ||
+    p.account_status === 'verification_pending'
+  );
+
+  // Calculate region stats
+  const regionProviderIds = new Set(regionProviders.map(p => p.sp_id || p.service_provider_id));
+  const regionAssignments = assignments.filter(a => regionProviderIds.has(a.sp_id || a.service_provider_id));
+  const completedJobs = regionAssignments.filter(a => a.status === 'COMPLETED').length;
+  const activeJobs = regionAssignments.filter(a => a.status !== 'COMPLETED').length;
+
+  setText('stat-total-active', activeList.length.toString());
+  setText('stat-avg-rating', avgRating.toFixed(1));
+  setText('metric-admissions-count', pendingList.length.toString());
+  setText('metric-verifications-count', verificationQueue.length.toString());
+  
+  // Set region stats
+  setText('stat-region-total-providers', regionProviders.length.toString());
+  setText('stat-region-completed-jobs', completedJobs.toString());
+  setText('stat-region-active-jobs', activeJobs.toString());
 
   renderPendingTable(pendingList, region);
   renderActiveTable(activeList);
+}
+
+
+function getProviderRating(provider) {
+  const raw = provider?.rating ?? provider?.avg_rating ?? provider?.overall_rating ?? provider?.review_score ?? 0;
+  const value = Number(raw);
+  return Number.isFinite(value) ? value : 0;
+}
+
+function setText(id, text) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = text;
 }
 
 function renderPendingTable(pendingList, region) {

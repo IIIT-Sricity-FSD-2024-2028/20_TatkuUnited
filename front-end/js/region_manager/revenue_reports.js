@@ -4,28 +4,37 @@
   const session = Auth.requireSession(['region_manager']);
   if (!session) return;
 
+  let allProviders = [];
+  try {
+    allProviders = await Api.get('/service-providers', { silent: true }) || [];
+  } catch (_) {}
+
+  const regionProviders = (allProviders || []).filter(p => p.region_id === session.region_id);
+  setText('stat-providers', regionProviders.length.toString());
+
   let ledgerRows = [];
   try {
     const res = await Api.get('/revenue-ledger/my', { silent: true });
     ledgerRows = Array.isArray(res) ? res : (res && res.rows ? res.rows : []);
   } catch (_) {}
 
-  // If ledger is empty, fetch all ledger rows or fallback to transactions
   if (!ledgerRows || ledgerRows.length === 0) {
     try {
       const allLedger = await Api.get('/revenue-ledger', { silent: true }) || [];
-      const myProviders = await Api.get('/service-providers', { silent: true }) || [];
-      const regionProviders = myProviders.filter(p => p.region_id === session.region_id);
-      const providerIds = new Set(regionProviders.map(p => p.sp_id));
-      ledgerRows = allLedger.filter(r => providerIds.has(r.sp_id) || r.rm_id === session.id);
+      const providerIds = new Set(regionProviders.map(p => p.sp_id || p.service_provider_id));
+      ledgerRows = allLedger.filter(r => (r.rm_id === session.id) || providerIds.has(r.sp_id || r.service_provider_id));
     } catch (_) {}
+  }
+
+  if (ledgerRows && ledgerRows.length > 0 && session.region_id) {
+    const providerIds = new Set(regionProviders.map(p => p.sp_id || p.service_provider_id));
+    ledgerRows = ledgerRows.filter(r => (r.rm_id === session.id) || providerIds.has(r.sp_id || r.service_provider_id));
   }
 
   const totalGMV = ledgerRows.reduce((sum, r) => sum + (r.provider_amount || 0) + (r.platform_amount || 0), 0);
   const providerEarnings = ledgerRows.reduce((sum, r) => sum + (r.provider_amount || 0), 0);
   const platformRevenue = ledgerRows.reduce((sum, r) => sum + (r.platform_amount || 0), 0);
 
-  // Set values for both card layouts
   setText('statTotalRevenue', '₹' + Math.round(totalGMV).toLocaleString('en-IN'));
   setText('statProviderPayout', '₹' + Math.round(providerEarnings).toLocaleString('en-IN'));
   setText('statPlatformRevenue', '₹' + Math.round(platformRevenue).toLocaleString('en-IN'));
