@@ -238,7 +238,7 @@ function getLandingContent() {
       ],
     },
     smarterWay: {
-      flowLabel: "Our Collective System",
+      flowLabel: "Our Region System",
       flowSteps: [
         {
           icon: "👤",
@@ -259,7 +259,7 @@ function getLandingContent() {
       rightLabel: "Why We're Different",
       title: "A Smarter Way to Deliver Services",
       description:
-        "Unlike traditional platforms, Tatku United automatically assigns service providers from trusted collectives, ensuring reliable scheduling and fair work distribution.",
+        "Unlike traditional platforms, Tatku United automatically assigns service providers from trusted regions, ensuring reliable scheduling and fair work distribution.",
       features: [
         "Automated provider matching for faster service",
         "Fair workload distribution across professionals",

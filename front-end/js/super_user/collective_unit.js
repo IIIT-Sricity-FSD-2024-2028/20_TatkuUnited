@@ -1,14 +1,14 @@
 /* collective_unit.js — API-backed */
 
 var _cache = {
-  collectives: [], units: [], sectors: [], unitManagers: [], collectiveManagers: [],
+  regions: [], units: [], sectors: [], regionManagers: [], regionManagers: [],
   providers: [], providerSkills: [], skills: [], assignments: []
 };
 
 async function _loadCache() {
   const endpoints = [
-    ["/collectives", "collectives"], ["/units", "units"], ["/sectors", "sectors"],
-    ["/unit-managers", "unitManagers"], ["/collective-managers", "collectiveManagers"],
+    ["/regions", "regions"], ["/regions", "units"], ["/regions", "sectors"],
+    ["/unit-managers", "regionManagers"], ["/collective-managers", "regionManagers"],
     ["/service-providers", "providers"], ["/provider-skills", "providerSkills"],
     ["/skills", "skills"], ["/job-assignments", "assignments"]
   ];
@@ -37,7 +37,7 @@ async function _loadCache() {
 
   var PAGE_SIZE = 5;
   var state = {
-    selectedCollectiveId: null,
+    selectedRegionId: null,
     selectedUnitId: null,
     editingUnitId: null,
     providerPage: 1,
@@ -48,28 +48,28 @@ async function _loadCache() {
     reassignProviderId: null,
     selectedCmId: null,
     reassignCmId: null,
-    reassignCollectiveId: null,
-    editingCollectiveId: null,
+    reassignRegionId: null,
+    editingRegionId: null,
     editCmId: null,
     collectivePage: 1,
     COLLECTIVE_PAGE_SIZE: 6,
-    collectiveManager: "All Managers",
+    regionManager: "All Managers",
     expandedUnitIds: [], // Track which units are expanded
   };
 
   var el = {
     logoutBtn: document.getElementById("logout-btn"),
     createUnitBtn: document.getElementById("btn-create-unit"),
-    createCollectiveBtn: document.getElementById("btn-create-collective"),
+    createRegionBtn: document.getElementById("btn-create-collective"),
     searchInput: document.getElementById("quick-search"),
     sectorFilter: document.getElementById("city-filter"),
     managerFilter: document.getElementById("manager-filter"),
-    collectiveManagerFilter: document.getElementById("collective-manager-filter"),
-    collectivesGrid: document.getElementById("collectives-grid"),
-    collectivesPrevPageBtn: document.getElementById("collectives-prev-page"),
-    collectivesNextPageBtn: document.getElementById("collectives-next-page"),
-    collectivesTableInfo: document.getElementById("collectives-table-info"),
-    collectivesPages: document.getElementById("collectives-pages"),
+    regionManagerFilter: document.getElementById("collective-manager-filter"),
+    regionsGrid: document.getElementById("regions-grid"),
+    regionsPrevPageBtn: document.getElementById("regions-prev-page"),
+    regionsNextPageBtn: document.getElementById("regions-next-page"),
+    regionsTableInfo: document.getElementById("regions-table-info"),
+    regionsPages: document.getElementById("regions-pages"),
     collectiveModal: document.getElementById("collective-modal"),
     collectiveModalClose: document.getElementById("collective-modal-close"),
     collectiveCancelBtn: document.getElementById("collective-cancel-btn"),
@@ -79,21 +79,21 @@ async function _loadCache() {
     collectiveSectorSelect: document.getElementById("collective-sector-select"),
     collectiveNameError: document.getElementById("collective-name-error"),
     collectiveSectorError: document.getElementById("collective-sector-error"),
-    collectiveManagerInput: document.getElementById("collective-manager-input"),
-    collectiveManagerDropdown: document.getElementById("collective-manager-dropdown"),
-    collectiveManagerError: document.getElementById("collective-manager-error"),
+    regionManagerInput: document.getElementById("collective-manager-input"),
+    regionManagerDropdown: document.getElementById("collective-manager-dropdown"),
+    regionManagerError: document.getElementById("collective-manager-error"),
     unitModal: document.getElementById("unit-modal"),
     unitModalClose: document.getElementById("unit-modal-close"),
     unitCancelBtn: document.getElementById("unit-cancel-btn"),
     unitForm: document.getElementById("unit-form"),
     unitNameInput: document.getElementById("unit-name-input"),
-    unitCollectiveSelect: document.getElementById("unit-collective-select"),
-    unitManagerSelect: document.getElementById("unit-manager-select"),
+    unitRegionSelect: document.getElementById("unit-collective-select"),
+    regionManagerSelect: document.getElementById("unit-manager-select"),
     unitStatusSelect: document.getElementById("unit-status-select"),
     unitSubmitBtn: document.getElementById("unit-submit-btn"),
     unitNameError: document.getElementById("unit-name-error"),
-    unitCollectiveError: document.getElementById("unit-collective-error"),
-    unitManagerError: document.getElementById("unit-manager-error"),
+    unitRegionError: document.getElementById("unit-collective-error"),
+    regionManagerError: document.getElementById("unit-manager-error"),
     unitModalTitle: document.getElementById("unit-modal-title"),
     confirmModal: document.getElementById("confirm-modal"),
     confirmModalClose: document.getElementById("confirm-modal-close"),
@@ -113,15 +113,15 @@ async function _loadCache() {
     reassignCmDropdown: document.getElementById("reassign-cm-dropdown"),
     reassignCmError: document.getElementById("reassign-cm-error"),
     reassignCmCancelBtn: document.getElementById("reassign-cm-cancel-btn"),
-    editCollectiveModal: document.getElementById("edit-collective-modal"),
-    editCollectiveModalClose: document.getElementById("edit-collective-modal-close"),
-    editCollectiveForm: document.getElementById("edit-collective-form"),
-    editCollectiveCmInput: document.getElementById("edit-collective-cm-input"),
-    editCollectiveCmDropdown: document.getElementById("edit-collective-cm-dropdown"),
-    editCollectiveCmError: document.getElementById("edit-collective-cm-error"),
-    editCollectiveSectorSelect: document.getElementById("edit-collective-sector-select"),
-    editCollectiveSectorError: document.getElementById("edit-collective-sector-error"),
-    editCollectiveCancelBtn: document.getElementById("edit-collective-cancel-btn"),
+    editRegionModal: document.getElementById("edit-collective-modal"),
+    editRegionModalClose: document.getElementById("edit-collective-modal-close"),
+    editRegionForm: document.getElementById("edit-collective-form"),
+    editRegionCmInput: document.getElementById("edit-collective-cm-input"),
+    editRegionCmDropdown: document.getElementById("edit-collective-cm-dropdown"),
+    editRegionCmError: document.getElementById("edit-collective-cm-error"),
+    editRegionSectorSelect: document.getElementById("edit-collective-sector-select"),
+    editRegionSectorError: document.getElementById("edit-collective-sector-error"),
+    editRegionCancelBtn: document.getElementById("edit-collective-cancel-btn"),
   };
 
   var confirmHandler = null;
@@ -229,30 +229,30 @@ async function _loadCache() {
     modalEl.setAttribute("aria-hidden", "true");
   }
 
-  function resetCollectiveForm() {
+  function resetRegionForm() {
     if (el.collectiveForm) el.collectiveForm.reset();
     if (el.collectiveStatusSelect) el.collectiveStatusSelect.value = "true";
     state.selectedCmId = null;
-    if (el.collectiveManagerInput) el.collectiveManagerInput.value = "";
-    if (el.collectiveManagerDropdown) el.collectiveManagerDropdown.innerHTML = "";
-    if (el.collectiveManagerDropdown) el.collectiveManagerDropdown.style.display = "none";
+    if (el.regionManagerInput) el.regionManagerInput.value = "";
+    if (el.regionManagerDropdown) el.regionManagerDropdown.innerHTML = "";
+    if (el.regionManagerDropdown) el.regionManagerDropdown.style.display = "none";
     setFieldError(el.collectiveNameInput, el.collectiveNameError, "");
     setFieldError(el.collectiveSectorSelect, el.collectiveSectorError, "");
-    setFieldError(el.collectiveManagerInput, el.collectiveManagerError, "");
+    setFieldError(el.regionManagerInput, el.regionManagerError, "");
   }
 
   function resetUnitForm() {
     if (el.unitForm) el.unitForm.reset();
     if (el.unitStatusSelect) el.unitStatusSelect.value = "true";
     setFieldError(el.unitNameInput, el.unitNameError, "");
-    setFieldError(el.unitCollectiveSelect, el.unitCollectiveError, "");
-    setFieldError(el.unitManagerSelect, el.unitManagerError, "");
+    setFieldError(el.unitRegionSelect, el.unitRegionError, "");
+    setFieldError(el.regionManagerSelect, el.regionManagerError, "");
     state.editingUnitId = null;
-    if (el.unitModalTitle) el.unitModalTitle.textContent = "Create New Unit";
+    if (el.unitModalTitle) el.unitModalTitle.textContent = "Create New Region";
     if (el.unitSubmitBtn) el.unitSubmitBtn.textContent = "Create Unit";
   }
 
-  function populateCollectiveFormOptions() {
+  function populateRegionFormOptions() {
     var tables = getTables();
     if (!el.collectiveSectorSelect) return;
 
@@ -266,10 +266,10 @@ async function _loadCache() {
       })
       .forEach(function (sector) {
         var option = document.createElement("option");
-        option.value = sector.sector_id;
-        var taken = usedSectorIds.indexOf(sector.sector_id) !== -1;
+        option.value = sector.region_id;
+        var taken = usedSectorIds.indexOf(sector.region_id) !== -1;
         option.textContent =
-          sector.sector_id +
+          sector.region_id +
           " - " +
           sector.sector_name +
           " (" +
@@ -284,12 +284,12 @@ async function _loadCache() {
       });
   }
 
-  function getUsedSectorIds(excludeCollectiveId) {
-    var collectives = _cache.collectives;
+  function getUsedSectorIds(excludeRegionId) {
+    var regions = _cache.regions;
     var used = [];
-    collectives.forEach(function (c) {
-      if (c.collective_id === excludeCollectiveId) return;
-      var ids = Array.isArray(c.sector_ids) ? c.sector_ids : [];
+    regions.forEach(function (c) {
+      if (c.region_id === excludeRegionId) return;
+      var ids = Array.isArray(c.region_ids) ? c.region_ids : [];
       ids.forEach(function (sid) {
         if (used.indexOf(sid) === -1) used.push(sid);
       });
@@ -299,34 +299,34 @@ async function _loadCache() {
 
   function populateUnitFormOptions(includeManagerUnitId) {
     var tables = getTables();
-    if (el.unitCollectiveSelect) {
-      el.unitCollectiveSelect.innerHTML =
+    if (el.unitRegionSelect) {
+      el.unitRegionSelect.innerHTML =
         '<option value="">Select collective</option>';
-      tables.collectives
+      tables.regions
         .slice()
         .sort(function (a, b) {
-          return String(a.collective_name).localeCompare(
-            String(b.collective_name),
+          return String(a.region_name).localeCompare(
+            String(b.region_name),
           );
         })
         .forEach(function (collective) {
           var option = document.createElement("option");
-          option.value = collective.collective_id;
+          option.value = collective.region_id;
           option.textContent =
-            collective.collective_name + " (" + collective.collective_id + ")";
-          el.unitCollectiveSelect.appendChild(option);
+            collective.region_name + " (" + collective.region_id + ")";
+          el.unitRegionSelect.appendChild(option);
         });
 
-      if (state.selectedCollectiveId) {
-        el.unitCollectiveSelect.value = state.selectedCollectiveId;
+      if (state.selectedRegionId) {
+        el.unitRegionSelect.value = state.selectedRegionId;
       }
     }
 
-    if (el.unitManagerSelect) {
-      el.unitManagerSelect.innerHTML = '<option value="">Unassigned</option>';
-      tables.unitManagers
+    if (el.regionManagerSelect) {
+      el.regionManagerSelect.innerHTML = '<option value="">Unassigned</option>';
+      tables.regionManagers
         .filter(function (manager) {
-          return !manager.unit_id || manager.unit_id === includeManagerUnitId;
+          return !manager.region_id || manager.region_id === includeManagerUnitId;
         })
         .sort(function (a, b) {
           return String(a.name).localeCompare(String(b.name));
@@ -335,14 +335,14 @@ async function _loadCache() {
           var option = document.createElement("option");
           option.value = manager.um_id;
           option.textContent = manager.name + " (" + manager.um_id + ")";
-          el.unitManagerSelect.appendChild(option);
+          el.regionManagerSelect.appendChild(option);
         });
     }
   }
 
-  function openCreateCollectiveModal() {
-    populateCollectiveFormOptions();
-    resetCollectiveForm();
+  function openCreateRegionModal() {
+    populateRegionFormOptions();
+    resetRegionForm();
     openModal(el.collectiveModal);
     if (el.collectiveNameInput) el.collectiveNameInput.focus();
   }
@@ -357,34 +357,34 @@ async function _loadCache() {
   function openEditUnitModal(unitId) {
     var tables = getTables();
     var unit = tables.units.find(function (row) {
-      return row.unit_id === unitId;
+      return row.region_id === unitId;
     });
     if (!unit) {
       notify("Unit not found.");
       return;
     }
 
-    state.editingUnitId = unit.unit_id;
-    populateUnitFormOptions(unit.unit_id);
+    state.editingUnitId = unit.region_id;
+    populateUnitFormOptions(unit.region_id);
     if (el.unitModalTitle) el.unitModalTitle.textContent = "Edit Unit";
     if (el.unitSubmitBtn) el.unitSubmitBtn.textContent = "Save Changes";
 
     if (el.unitNameInput) el.unitNameInput.value = unit.unit_name || "";
-    if (el.unitCollectiveSelect)
-      el.unitCollectiveSelect.value = unit.collective_id;
+    if (el.unitRegionSelect)
+      el.unitRegionSelect.value = unit.region_id;
     if (el.unitStatusSelect)
       el.unitStatusSelect.value = unit.is_active ? "true" : "false";
 
-    var currentManager = tables.unitManagers.find(function (m) {
-      return m.unit_id === unit.unit_id;
+    var currentManager = tables.regionManagers.find(function (m) {
+      return m.region_id === unit.region_id;
     });
-    if (el.unitManagerSelect) {
-      el.unitManagerSelect.value = currentManager ? currentManager.um_id : "";
+    if (el.regionManagerSelect) {
+      el.regionManagerSelect.value = currentManager ? currentManager.um_id : "";
     }
 
     setFieldError(el.unitNameInput, el.unitNameError, "");
-    setFieldError(el.unitCollectiveSelect, el.unitCollectiveError, "");
-    setFieldError(el.unitManagerSelect, el.unitManagerError, "");
+    setFieldError(el.unitRegionSelect, el.unitRegionError, "");
+    setFieldError(el.regionManagerSelect, el.regionManagerError, "");
 
     openModal(el.unitModal);
     if (el.unitNameInput) el.unitNameInput.focus();
@@ -428,7 +428,7 @@ async function _loadCache() {
 
     var options = units
       .filter(function (unit) {
-        return unit.unit_id !== provider.unit_id;
+        return unit.region_id !== provider.region_id;
       })
       .sort(function (a, b) {
         return String(a.unit_name).localeCompare(String(b.unit_name));
@@ -441,8 +441,8 @@ async function _loadCache() {
 
     options.forEach(function (unit) {
       var option = document.createElement("option");
-      option.value = unit.unit_id;
-      option.textContent = unit.unit_name + " (" + unit.unit_id + ")";
+      option.value = unit.region_id;
+      option.textContent = unit.unit_name + " (" + unit.region_id + ")";
       el.reassignUnitSelect.appendChild(option);
     });
 
@@ -468,19 +468,19 @@ async function _loadCache() {
     var provider = _cache.providers.find(function (row) { return row.service_provider_id === providerId; });
     if (!provider) { notify("Provider not found."); closeReassignModal(); return; }
 
-    var targetUnit = _cache.units.find(function (unit) { return unit.unit_id === targetUnitId; });
+    var targetUnit = _cache.units.find(function (unit) { return unit.region_id === targetUnitId; });
     if (!targetUnit) { setFieldError(el.reassignUnitSelect, el.reassignUnitError, "Selected unit is invalid."); return; }
 
     try {
-      await Api.patch("/service-providers/" + providerId, { unit_id: targetUnitId, is_active: true });
-      provider.unit_id = targetUnitId;
+      await Api.patch("/service-providers/" + providerId, { region_id: targetUnitId, is_active: true });
+      provider.region_id = targetUnitId;
       provider.is_active = true;
     } catch (_) {}
 
     state.selectedUnitId = targetUnitId;
     state.providerPage = 1;
     closeReassignModal();
-    renderCollectives();
+    renderRegions();
     notify("Provider reassigned.");
   }
 
@@ -488,18 +488,18 @@ async function _loadCache() {
     return _cache;
   }
 
-  function setupCmAutocomplete(inputEl, dropdownEl, errorEl, selectedIdKey, includeCollectiveId) {
+  function setupCmAutocomplete(inputEl, dropdownEl, errorEl, selectedIdKey, includeRegionId) {
     if (!inputEl || !dropdownEl) return;
 
     function renderDropdown(query) {
-      var managers = _cache.collectiveManagers;
+      var managers = _cache.regionManagers;
       var q = String(query || "").trim().toLowerCase();
 
       var options = managers.filter(function (m) {
         if (!m.is_active) return false;
 
-        var isUnassigned = !m.collective_id;
-        var isCurrentAssigned = includeCollectiveId && m.collective_id === includeCollectiveId;
+        var isUnassigned = !m.region_id;
+        var isCurrentAssigned = includeRegionId && m.region_id === includeRegionId;
 
         if (!isUnassigned && !isCurrentAssigned) return false;
         if (q && m.name.toLowerCase().indexOf(q) === -1 && m.cm_id.toLowerCase().indexOf(q) === -1) {
@@ -549,8 +549,8 @@ async function _loadCache() {
     });
   }
 
-  function getCollectiveRegions(collective, sectorsById) {
-    var ids = Array.isArray(collective.sector_ids) ? collective.sector_ids : [];
+  function getRegionRegions(collective, sectorsById) {
+    var ids = Array.isArray(collective.region_ids) ? collective.region_ids : [];
     var regions = [];
     ids.forEach(function (sectorId) {
       var s = sectorsById[sectorId];
@@ -561,10 +561,10 @@ async function _loadCache() {
     return regions;
   }
 
-  function getUnitManagerMap(unitManagers) {
+  function getUnitManagerMap(regionManagers) {
     var map = {};
-    unitManagers.forEach(function (m) {
-      if (m.unit_id) map[m.unit_id] = m;
+    regionManagers.forEach(function (m) {
+      if (m.region_id) map[m.region_id] = m;
     });
     return map;
   }
@@ -657,7 +657,7 @@ async function _loadCache() {
     var tables = getTables();
     var sectorsById = {};
     tables.sectors.forEach(function (s) {
-      sectorsById[s.sector_id] = s;
+      sectorsById[s.region_id] = s;
     });
 
     // Get all unique sector names from the sectors table
@@ -671,7 +671,7 @@ async function _loadCache() {
       })
       .sort();
 
-    var unitManagerValues = tables.unitManagers
+    var regionManagerValues = tables.regionManagers
       .map(function (m) {
         return m.name;
       })
@@ -681,7 +681,7 @@ async function _loadCache() {
       })
       .sort();
 
-    var collectiveManagerValues = (tables.collectiveManagers || [])
+    var regionManagerValues = (tables.regionManagers || [])
       .map(function (m) {
         return m.name;
       })
@@ -699,8 +699,8 @@ async function _loadCache() {
       el.sectorFilter.appendChild(option);
     });
 
-    el.managerFilter.innerHTML = "<option>All Managers</option><option>No Unit Manager</option>";
-    unitManagerValues.forEach(function (name) {
+    el.managerFilter.innerHTML = "<option>All Managers</option><option>No Region Manager</option>";
+    regionManagerValues.forEach(function (name) {
       if (name === "Unassigned") return;
       var option = document.createElement("option");
       option.textContent = name;
@@ -708,47 +708,47 @@ async function _loadCache() {
       el.managerFilter.appendChild(option);
     });
 
-    el.collectiveManagerFilter.innerHTML = "<option>All Managers</option><option>No Collective Manager</option>";
-    collectiveManagerValues.forEach(function (name) {
+    el.regionManagerFilter.innerHTML = "<option>All Managers</option><option>No Region Manager</option>";
+    regionManagerValues.forEach(function (name) {
       if (name === "Unassigned") return;
       var option = document.createElement("option");
       option.textContent = name;
       option.value = name;
-      el.collectiveManagerFilter.appendChild(option);
+      el.regionManagerFilter.appendChild(option);
     });
 
-    el.collectiveManagerFilter.value = state.collectiveManager;
+    el.regionManagerFilter.value = state.regionManager;
     el.sectorFilter.value = state.sector;
   }
 
-  function getFilteredCollectivesData() {
+  function getFilteredRegionsData() {
     var tables = getTables();
     var sectorsById = {};
     tables.sectors.forEach(function (s) {
-      sectorsById[s.sector_id] = s;
+      sectorsById[s.region_id] = s;
     });
-    var managerByUnit = getUnitManagerMap(tables.unitManagers);
+    var managerByUnit = getUnitManagerMap(tables.regionManagers);
     var providersByUnit = {};
     tables.providers.forEach(function (p) {
-      if (!p.unit_id) return;
-      if (!providersByUnit[p.unit_id]) providersByUnit[p.unit_id] = 0;
-      providersByUnit[p.unit_id] += 1;
+      if (!p.region_id) return;
+      if (!providersByUnit[p.region_id]) providersByUnit[p.region_id] = 0;
+      providersByUnit[p.region_id] += 1;
     });
 
     var q = state.quickSearch.toLowerCase();
 
-    var collectiveManagerMap = {};
-    (tables.collectiveManagers || []).forEach(function (m) {
-      if (m.collective_id) collectiveManagerMap[m.collective_id] = m;
+    var regionManagerMap = {};
+    (tables.regionManagers || []).forEach(function (m) {
+      if (m.region_id) regionManagerMap[m.region_id] = m;
     });
 
-    return tables.collectives
+    return tables.regions
       .map(function (collective, idx) {
         var units = tables.units.filter(function (u) {
-          return u.collective_id === collective.collective_id;
+          return u.region_id === collective.region_id;
         });
 
-        var collectiveSectors = (collective.sector_ids || []).map(function (id) {
+        var collectiveSectors = (collective.region_ids || []).map(function (id) {
           return sectorsById[id] ? sectorsById[id].sector_name : "";
         });
 
@@ -757,18 +757,18 @@ async function _loadCache() {
           collectiveSectors.indexOf(state.sector) !== -1;
 
         units = units.filter(function (unit) {
-          var manager = managerByUnit[unit.unit_id];
+          var manager = managerByUnit[unit.region_id];
           var managerName =
             manager && manager.name ? manager.name : "Unassigned";
 
           var managerMatches =
             state.manager === "All Managers" ||
-            (state.manager === "No Unit Manager" &&
+            (state.manager === "No Region Manager" &&
               managerName === "Unassigned") ||
             managerName === state.manager;
 
           var unitSearchBlob = (
-            unit.unit_id +
+            unit.region_id +
             " " +
             unit.unit_name +
             " " +
@@ -779,19 +779,19 @@ async function _loadCache() {
           return managerMatches && unitMatchesSearch;
         });
 
-        var collectiveCm = collectiveManagerMap[collective.collective_id];
+        var collectiveCm = regionManagerMap[collective.region_id];
         var collectiveCmName = collectiveCm ? collectiveCm.name : "Unassigned";
 
         var collectiveCmMatches =
-          state.collectiveManager === "All Managers" ||
-          (state.collectiveManager === "No Collective Manager" &&
+          state.regionManager === "All Managers" ||
+          (state.regionManager === "No Region Manager" &&
             collectiveCmName === "Unassigned") ||
-          collectiveCmName === state.collectiveManager;
+          collectiveCmName === state.regionManager;
 
         var collectiveSearchBlob = (
-          collective.collective_id +
+          collective.region_id +
           " " +
-          collective.collective_name +
+          collective.region_name +
           " " +
           collectiveCmName
         ).toLowerCase();
@@ -801,7 +801,7 @@ async function _loadCache() {
         var visible = sectorMatches && collectiveCmMatches;
 
         if (state.manager !== "All Managers") {
-          // If a Unit Manager filter is applied, we must have units
+          // If a Region Manager filter is applied, we must have units
           if (units.length === 0) visible = false;
         } else {
           // Default: show if name/ID matches or at least one unit matches
@@ -811,10 +811,10 @@ async function _loadCache() {
         if (!visible) return null;
 
         var providerCount = units.reduce(function (sum, u) {
-          return sum + (providersByUnit[u.unit_id] || 0);
+          return sum + (providersByUnit[u.region_id] || 0);
         }, 0);
 
-        var collectiveCm = collectiveManagerMap[collective.collective_id];
+        var collectiveCm = regionManagerMap[collective.region_id];
 
         return {
           idx: idx,
@@ -824,7 +824,7 @@ async function _loadCache() {
           providerCount: providerCount,
           managerByUnit: managerByUnit,
           providersByUnit: providersByUnit,
-          collectiveManager: collectiveCm,
+          regionManager: collectiveCm,
         };
       })
       .filter(Boolean);
@@ -834,13 +834,13 @@ async function _loadCache() {
     var unitIds = [];
     filteredData.forEach(function (entry) {
       entry.units.forEach(function (u) {
-        unitIds.push(u.unit_id);
+        unitIds.push(u.region_id);
       });
     });
 
     if (!unitIds.length) {
       state.selectedUnitId = null;
-      state.selectedCollectiveId = null;
+      state.selectedRegionId = null;
       return;
     }
 
@@ -850,12 +850,12 @@ async function _loadCache() {
 
     var selectedOwner = filteredData.find(function (entry) {
       return entry.units.some(function (u) {
-        return u.unit_id === state.selectedUnitId;
+        return u.region_id === state.selectedUnitId;
       });
     });
 
     if (selectedOwner) {
-      state.selectedCollectiveId = selectedOwner.collective.collective_id;
+      state.selectedRegionId = selectedOwner.collective.region_id;
     }
   }
 
@@ -866,11 +866,11 @@ async function _loadCache() {
     } else {
       state.expandedUnitIds.splice(idx, 1);
     }
-    renderCollectives();
+    renderRegions();
   }
 
-  function renderCollectives() {
-    var filteredData = getFilteredCollectivesData();
+  function renderRegions() {
+    var filteredData = getFilteredRegionsData();
     
     var total = filteredData.length;
     var maxPage = Math.max(1, Math.ceil(total / state.COLLECTIVE_PAGE_SIZE));
@@ -880,32 +880,32 @@ async function _loadCache() {
     var pageData = filteredData.slice(start, start + state.COLLECTIVE_PAGE_SIZE);
 
     if (!total) {
-      el.collectivesGrid.innerHTML = `
+      el.regionsGrid.innerHTML = `
         <div class="collective-card" style="grid-column: 1/-1; padding: 48px; text-align: center;">
-          <h2 style="font-family: var(--font-title); font-size: 24px; margin-bottom: 8px;">No collectives found</h2>
+          <h2 style="font-family: var(--font-title); font-size: 24px; margin-bottom: 8px;">No regions found</h2>
           <p style="color: var(--p-text-sub);">Try adjusting your filters or search query.</p>
         </div>
       `;
-      el.collectivesTableInfo.textContent = "Showing 0 of 0 collectives";
-      el.collectivesPrevPageBtn.disabled = true;
-      el.collectivesNextPageBtn.disabled = true;
-      el.collectivesPages.innerHTML = "";
+      el.regionsTableInfo.textContent = "Showing 0 of 0 regions";
+      el.regionsPrevPageBtn.disabled = true;
+      el.regionsNextPageBtn.disabled = true;
+      el.regionsPages.innerHTML = "";
       return;
     }
 
     var providerSkillsLookup = getProviderSkillsLookup(_cache.providerSkills, _cache.skills);
 
-    el.collectivesGrid.innerHTML = pageData.map(function (entry) {
+    el.regionsGrid.innerHTML = pageData.map(function (entry) {
       var collective = entry.collective;
       var iconClass = entry.idx % 3 === 0 ? "collective-icon--teal" : (entry.idx % 3 === 1 ? "collective-icon--orange" : "collective-icon--blue");
       var statusClass = collective.is_active ? "status-available" : "status-offline";
       var statusText = collective.is_active ? "Active" : "Inactive";
       
       var unitsHtml = entry.units.length ? entry.units.map(function (unit) {
-        var manager = entry.managerByUnit[unit.unit_id];
+        var manager = entry.managerByUnit[unit.region_id];
         var managerName = manager && manager.name ? manager.name : "Unassigned";
-        var isExpanded = state.expandedUnitIds.indexOf(unit.unit_id) !== -1;
-        var providers = _cache.providers.filter(p => p.unit_id === unit.unit_id);
+        var isExpanded = state.expandedUnitIds.indexOf(unit.region_id) !== -1;
+        var providers = _cache.providers.filter(p => p.region_id === unit.region_id);
         
         var providersHtml = providers.length ? providers.map(p => {
           var status = getProviderStatus(p, _cache.assignments, []);
@@ -939,16 +939,16 @@ async function _loadCache() {
         }).join('') : '<tr><td colspan="5" style="padding: 16px; text-align: center; color: var(--p-text-muted);">No providers in this unit.</td></tr>';
 
         return `
-          <div class="unit-container ${isExpanded ? 'expanded' : ''}" data-unit-id="${escapeHtml(unit.unit_id)}">
+          <div class="unit-container ${isExpanded ? 'expanded' : ''}" data-unit-id="${escapeHtml(unit.region_id)}">
             <div class="unit-row" data-action="toggle-unit">
               <svg class="unit-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
-              <span class="unit-name">${escapeHtml(unit.unit_name)} <span style="font-weight: 400; color: var(--p-text-muted); font-size: 12px;">(${escapeHtml(unit.unit_id)})</span></span>
+              <span class="unit-name">${escapeHtml(unit.unit_name)} <span style="font-weight: 400; color: var(--p-text-muted); font-size: 12px;">(${escapeHtml(unit.region_id)})</span></span>
               <div class="unit-badges">
                 <span class="badge badge-providers">${providers.length} Providers</span>
                 <span class="badge badge-manager">${escapeHtml(managerName)}</span>
               </div>
               <div class="unit-actions">
-                <button class="icon-btn" data-action="edit-unit" data-unit-id="${escapeHtml(unit.unit_id)}">
+                <button class="icon-btn" data-action="edit-unit" data-unit-id="${escapeHtml(unit.region_id)}">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
                 </button>
               </div>
@@ -971,7 +971,7 @@ async function _loadCache() {
         `;
       }).join("") : '<div style="padding: 24px; text-align: center; color: var(--p-text-muted);">No units available.</div>';
 
-      var cmName = entry.collectiveManager ? entry.collectiveManager.name : "Unassigned";
+      var cmName = entry.regionManager ? entry.regionManager.name : "Unassigned";
       var sectorTags = entry.sectorNames.map(s => `<span style="background: #f1f5f9; padding: 2px 8px; border-radius: 4px; font-size: 11px;">${escapeHtml(s)}</span>`).join(' ');
 
       return `
@@ -981,7 +981,7 @@ async function _loadCache() {
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
             </div>
             <div class="collective-info">
-              <div class="collective-name">${escapeHtml(collective.collective_name)}</div>
+              <div class="collective-name">${escapeHtml(collective.region_name)}</div>
               <div class="collective-meta">
                 <span><svg class="svg-mini" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg> ${sectorTags}</span>
                 <span>•</span>
@@ -989,7 +989,7 @@ async function _loadCache() {
               </div>
               <div style="margin-top: 8px; font-size: 13px; font-weight: 500; color: var(--p-text-sub);">
                 CM: ${escapeHtml(cmName)}
-                <button type="button" class="icon-btn icon-btn--small" data-action="edit-collective" data-collective-id="${escapeHtml(collective.collective_id)}">
+                <button type="button" class="icon-btn icon-btn--small" data-action="edit-collective" data-collective-id="${escapeHtml(collective.region_id)}">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
                 </button>
               </div>
@@ -1015,10 +1015,10 @@ async function _loadCache() {
 
     var shownStart = total ? start + 1 : 0;
     var shownEnd = Math.min(start + state.COLLECTIVE_PAGE_SIZE, total);
-    el.collectivesTableInfo.textContent = `Showing ${shownStart}-${shownEnd} of ${total} collectives`;
+    el.regionsTableInfo.textContent = `Showing ${shownStart}-${shownEnd} of ${total} regions`;
 
-    el.collectivesPrevPageBtn.disabled = state.collectivePage <= 1;
-    el.collectivesNextPageBtn.disabled = state.collectivePage >= maxPage;
+    el.regionsPrevPageBtn.disabled = state.collectivePage <= 1;
+    el.regionsNextPageBtn.disabled = state.collectivePage >= maxPage;
 
     // Render page numbers
     var pagesHtml = "";
@@ -1028,7 +1028,7 @@ async function _loadCache() {
         pagesHtml += `<button class="page-num ${activeClass}" data-page="${p}">${p}</button>`;
       }
     }
-    el.collectivesPages.innerHTML = pagesHtml;
+    el.regionsPages.innerHTML = pagesHtml;
   }
 
   function starHTML(rating) {
@@ -1041,7 +1041,7 @@ async function _loadCache() {
     return stars;
   }
 
-  function validateCollectiveForm() {
+  function validateRegionForm() {
     var tables = getTables();
     var name = String(el.collectiveNameInput.value || "").trim();
     var isActive = el.collectiveStatusSelect.value === "true";
@@ -1056,7 +1056,7 @@ async function _loadCache() {
       setFieldError(
         el.collectiveNameInput,
         el.collectiveNameError,
-        "Collective name is required.",
+        "Region name is required.",
       );
       valid = false;
     } else if (name.length < 3) {
@@ -1067,9 +1067,9 @@ async function _loadCache() {
       );
       valid = false;
     } else {
-      var duplicate = tables.collectives.some(function (collective) {
+      var duplicate = tables.regions.some(function (collective) {
         return (
-          normalizeName(collective.collective_name) === normalizeName(name)
+          normalizeName(collective.region_name) === normalizeName(name)
         );
       });
       if (duplicate) {
@@ -1109,15 +1109,15 @@ async function _loadCache() {
     }
 
     if (!state.selectedCmId) {
-      setFieldError(el.collectiveManagerInput, el.collectiveManagerError, "A valid unassigned collective manager must be selected.");
+      setFieldError(el.regionManagerInput, el.regionManagerError, "A valid unassigned collective manager must be selected.");
       valid = false;
     } else {
-      var managerRef = tables.collectiveManagers.find(function (m) { return m.cm_id === state.selectedCmId; });
-      if (!managerRef || managerRef.collective_id) {
-        setFieldError(el.collectiveManagerInput, el.collectiveManagerError, "The selected manager is not available.");
+      var managerRef = tables.regionManagers.find(function (m) { return m.cm_id === state.selectedCmId; });
+      if (!managerRef || managerRef.region_id) {
+        setFieldError(el.regionManagerInput, el.regionManagerError, "The selected manager is not available.");
         valid = false;
       } else {
-        setFieldError(el.collectiveManagerInput, el.collectiveManagerError, "");
+        setFieldError(el.regionManagerInput, el.regionManagerError, "");
       }
     }
 
@@ -1130,44 +1130,44 @@ async function _loadCache() {
     };
   }
 
-  async function submitCreateCollective() {
-    var result = validateCollectiveForm();
+  async function submitCreateRegion() {
+    var result = validateRegionForm();
     if (!result) return;
 
     try {
-      var newCollective = await Api.post("/collectives", {
-        collective_name: result.name,
+      var newRegion = await Api.post("/regions", {
+        region_name: result.name,
         is_active: result.isActive,
-        sector_ids: result.sectorIds,
+        region_ids: result.sectorIds,
       });
-      _cache.collectives.push(newCollective);
+      _cache.regions.push(newRegion);
 
       // Assign CM
       if (result.cmId) {
-        await Api.patch("/collective-managers/" + result.cmId, { collective_id: newCollective.collective_id });
-        _cache.collectiveManagers.forEach(function (m) {
+        await Api.patch("/collective-managers/" + result.cmId, { region_id: newRegion.region_id });
+        _cache.regionManagers.forEach(function (m) {
           if (m.cm_id === result.cmId) {
-            m.collective_id = newCollective.collective_id;
+            m.region_id = newRegion.region_id;
             m.updated_at = new Date().toISOString();
           }
         });
       }
 
-      state.selectedCollectiveId = newCollective.collective_id;
+      state.selectedRegionId = newRegion.region_id;
       state.selectedUnitId = null;
       state.providerPage = 1;
 
       closeModal(el.collectiveModal);
       populateFilters();
-      renderCollectives();
-      notify("Collective created successfully: " + newCollective.collective_id);
+      renderRegions();
+      notify("Region created successfully: " + newRegion.region_id);
     } catch (err) {
       notify("Failed to create collective.");
     }
   }
 
   function openReassignCmModal(collectiveId) {
-    state.reassignCollectiveId = collectiveId;
+    state.reassignRegionId = collectiveId;
     state.reassignCmId = null;
     if (el.reassignCmForm) el.reassignCmForm.reset();
     if (el.reassignCmInput) el.reassignCmInput.value = "";
@@ -1176,7 +1176,7 @@ async function _loadCache() {
 
     // Attempt to pre-fill the current manager
     var tables = getTables();
-    var currentMgr = tables.collectiveManagers.find(function (m) { return m.collective_id === collectiveId; });
+    var currentMgr = tables.regionManagers.find(function (m) { return m.region_id === collectiveId; });
     if (currentMgr && el.reassignCmInput) {
       el.reassignCmInput.value = currentMgr.name;
       state.reassignCmId = currentMgr.cm_id;
@@ -1188,73 +1188,73 @@ async function _loadCache() {
   }
 
   async function submitReassignCm() {
-    if (!state.reassignCollectiveId) { closeModal(el.reassignCmModal); return; }
+    if (!state.reassignRegionId) { closeModal(el.reassignCmModal); return; }
     if (!state.reassignCmId) {
       setFieldError(el.reassignCmInput, el.reassignCmError, "Please select a valid manager from the list.");
       return;
     }
 
-    var managers = _cache.collectiveManagers;
-    var collectiveId = state.reassignCollectiveId;
+    var managers = _cache.regionManagers;
+    var collectiveId = state.reassignRegionId;
     var chosenId = state.reassignCmId;
 
     var chosenManager = managers.find(function (m) { return m.cm_id === chosenId; });
-    if (!chosenManager || (chosenManager.collective_id && chosenManager.collective_id !== collectiveId)) {
+    if (!chosenManager || (chosenManager.region_id && chosenManager.region_id !== collectiveId)) {
       setFieldError(el.reassignCmInput, el.reassignCmError, "This manager is not available.");
       return;
     }
 
     try {
       // Unassign old
-      managers.forEach(function (m) { if (m.collective_id === collectiveId) m.collective_id = null; });
+      managers.forEach(function (m) { if (m.region_id === collectiveId) m.region_id = null; });
       // Assign new
-      await Api.patch("/collective-managers/" + chosenId, { collective_id: collectiveId });
-      chosenManager.collective_id = collectiveId;
+      await Api.patch("/collective-managers/" + chosenId, { region_id: collectiveId });
+      chosenManager.region_id = collectiveId;
       chosenManager.updated_at = new Date().toISOString();
     } catch (_) {}
 
     closeModal(el.reassignCmModal);
-    renderCollectives();
-    notify("Collective Manager updated.");
+    renderRegions();
+    notify("Region Manager updated.");
   }
 
-  function openEditCollectiveModal(collectiveId) {
-    state.editingCollectiveId = collectiveId;
+  function openEditRegionModal(collectiveId) {
+    state.editingRegionId = collectiveId;
     state.editCmId = null;
 
     var tables = getTables();
-    var collective = tables.collectives.find(function (c) {
-      return c.collective_id === collectiveId;
+    var collective = tables.regions.find(function (c) {
+      return c.region_id === collectiveId;
     });
     if (!collective) {
-      notify("Collective not found.");
+      notify("Region not found.");
       return;
     }
 
     // Reset form
-    if (el.editCollectiveForm) el.editCollectiveForm.reset();
-    if (el.editCollectiveCmInput) el.editCollectiveCmInput.value = "";
-    if (el.editCollectiveCmDropdown) el.editCollectiveCmDropdown.innerHTML = "";
-    setFieldError(el.editCollectiveCmInput, el.editCollectiveCmError, "");
-    setFieldError(el.editCollectiveSectorSelect, el.editCollectiveSectorError, "");
+    if (el.editRegionForm) el.editRegionForm.reset();
+    if (el.editRegionCmInput) el.editRegionCmInput.value = "";
+    if (el.editRegionCmDropdown) el.editRegionCmDropdown.innerHTML = "";
+    setFieldError(el.editRegionCmInput, el.editRegionCmError, "");
+    setFieldError(el.editRegionSectorSelect, el.editRegionSectorError, "");
 
     // Pre-fill current CM
-    var currentMgr = tables.collectiveManagers.find(function (m) {
-      return m.collective_id === collectiveId;
+    var currentMgr = tables.regionManagers.find(function (m) {
+      return m.region_id === collectiveId;
     });
-    if (currentMgr && el.editCollectiveCmInput) {
-      el.editCollectiveCmInput.value = currentMgr.name;
+    if (currentMgr && el.editRegionCmInput) {
+      el.editRegionCmInput.value = currentMgr.name;
       state.editCmId = currentMgr.cm_id;
     }
 
-    // Populate sector multi-select (mark taken sectors from OTHER collectives as disabled)
+    // Populate sector multi-select (mark taken sectors from OTHER regions as disabled)
     var usedSectorIds = getUsedSectorIds(collectiveId);
-    var currentSectorIds = Array.isArray(collective.sector_ids)
-      ? collective.sector_ids
+    var currentSectorIds = Array.isArray(collective.region_ids)
+      ? collective.region_ids
       : [];
 
-    if (el.editCollectiveSectorSelect) {
-      el.editCollectiveSectorSelect.innerHTML = "";
+    if (el.editRegionSectorSelect) {
+      el.editRegionSectorSelect.innerHTML = "";
       tables.sectors
         .slice()
         .sort(function (a, b) {
@@ -1262,10 +1262,10 @@ async function _loadCache() {
         })
         .forEach(function (sector) {
           var option = document.createElement("option");
-          option.value = sector.sector_id;
-          var taken = usedSectorIds.indexOf(sector.sector_id) !== -1;
+          option.value = sector.region_id;
+          var taken = usedSectorIds.indexOf(sector.region_id) !== -1;
           option.textContent =
-            sector.sector_id +
+            sector.region_id +
             " - " +
             sector.sector_name +
             " (" +
@@ -1277,18 +1277,18 @@ async function _loadCache() {
             option.style.color = "#9ca3af";
           }
           // Pre-select sectors belonging to this collective
-          if (currentSectorIds.indexOf(sector.sector_id) !== -1) {
+          if (currentSectorIds.indexOf(sector.region_id) !== -1) {
             option.selected = true;
           }
-          el.editCollectiveSectorSelect.appendChild(option);
+          el.editRegionSectorSelect.appendChild(option);
         });
     }
 
     // Setup CM autocomplete (include current collective for re-selection)
     setupCmAutocomplete(
-      el.editCollectiveCmInput,
-      el.editCollectiveCmDropdown,
-      el.editCollectiveCmError,
+      el.editRegionCmInput,
+      el.editRegionCmDropdown,
+      el.editRegionCmError,
       "editCmId",
       collectiveId,
     );
@@ -1297,26 +1297,26 @@ async function _loadCache() {
     var titleEl = document.getElementById("edit-collective-modal-title");
     if (titleEl) {
       titleEl.textContent =
-        "Edit: " + collective.collective_name;
+        "Edit: " + collective.region_name;
     }
 
-    openModal(el.editCollectiveModal);
+    openModal(el.editRegionModal);
   }
 
-  function submitEditCollective() {
-    var collectiveId = state.editingCollectiveId;
+  function submitEditRegion() {
+    var collectiveId = state.editingRegionId;
     if (!collectiveId) {
-      closeModal(el.editCollectiveModal);
+      closeModal(el.editRegionModal);
       return;
     }
 
     var tables = getTables();
-    var collective = tables.collectives.find(function (c) {
-      return c.collective_id === collectiveId;
+    var collective = tables.regions.find(function (c) {
+      return c.region_id === collectiveId;
     });
     if (!collective) {
-      notify("Collective not found.");
-      closeModal(el.editCollectiveModal);
+      notify("Region not found.");
+      closeModal(el.editRegionModal);
       return;
     }
 
@@ -1325,42 +1325,42 @@ async function _loadCache() {
     // Validate CM
     if (!state.editCmId) {
       setFieldError(
-        el.editCollectiveCmInput,
-        el.editCollectiveCmError,
+        el.editRegionCmInput,
+        el.editRegionCmError,
         "Please select a valid manager from the list.",
       );
       valid = false;
     } else {
-      var chosenMgr = tables.collectiveManagers.find(function (m) {
+      var chosenMgr = tables.regionManagers.find(function (m) {
         return m.cm_id === state.editCmId;
       });
       if (
         !chosenMgr ||
-        (chosenMgr.collective_id &&
-          chosenMgr.collective_id !== collectiveId)
+        (chosenMgr.region_id &&
+          chosenMgr.region_id !== collectiveId)
       ) {
         setFieldError(
-          el.editCollectiveCmInput,
-          el.editCollectiveCmError,
+          el.editRegionCmInput,
+          el.editRegionCmError,
           "This manager is not available.",
         );
         valid = false;
       } else {
-        setFieldError(el.editCollectiveCmInput, el.editCollectiveCmError, "");
+        setFieldError(el.editRegionCmInput, el.editRegionCmError, "");
       }
     }
 
     // Validate sectors
     var sectorIds = Array.from(
-      el.editCollectiveSectorSelect.selectedOptions,
+      el.editRegionSectorSelect.selectedOptions,
     ).map(function (opt) {
       return opt.value;
     });
 
     if (!sectorIds.length) {
       setFieldError(
-        el.editCollectiveSectorSelect,
-        el.editCollectiveSectorError,
+        el.editRegionSectorSelect,
+        el.editRegionSectorError,
         "A collective must have at least one sector.",
       );
       valid = false;
@@ -1371,16 +1371,16 @@ async function _loadCache() {
       });
       if (conflicts.length) {
         setFieldError(
-          el.editCollectiveSectorSelect,
-          el.editCollectiveSectorError,
+          el.editRegionSectorSelect,
+          el.editRegionSectorError,
           "These sectors are already assigned to another collective: " +
           conflicts.join(", "),
         );
         valid = false;
       } else {
         setFieldError(
-          el.editCollectiveSectorSelect,
-          el.editCollectiveSectorError,
+          el.editRegionSectorSelect,
+          el.editRegionSectorError,
           "",
         );
       }
@@ -1389,29 +1389,29 @@ async function _loadCache() {
     if (!valid) return;
 
     // Apply CM change
-    var managers = _cache.collectiveManagers;
+    var managers = _cache.regionManagers;
     // Unassign old manager from this collective
-    managers.forEach(function (m) { if (m.collective_id === collectiveId) m.collective_id = null; });
+    managers.forEach(function (m) { if (m.region_id === collectiveId) m.region_id = null; });
     // Assign new manager
     var newMgr = managers.find(function (m) { return m.cm_id === state.editCmId; });
     if (newMgr) {
-      newMgr.collective_id = collectiveId;
+      newMgr.region_id = collectiveId;
       newMgr.updated_at = new Date().toISOString();
-      try { Api.patch("/collective-managers/" + state.editCmId, { collective_id: collectiveId }); } catch (_) {}
+      try { Api.patch("/collective-managers/" + state.editCmId, { region_id: collectiveId }); } catch (_) {}
     }
 
     // Apply sector changes
-    collective.sector_ids = sectorIds;
-    try { Api.patch("/collectives/" + collectiveId, { sector_ids: sectorIds }); } catch (_) {}
-    closeModal(el.editCollectiveModal);
+    collective.region_ids = sectorIds;
+    try { Api.patch("/regions/" + collectiveId, { region_ids: sectorIds }); } catch (_) {}
+    closeModal(el.editRegionModal);
     populateFilters();
-    renderCollectives();
-    notify("Collective updated successfully.");
+    renderRegions();
+    notify("Region updated successfully.");
   }
 
   function assignUnitManager(unitId, managerRef) {
     if (!managerRef) return true;
-    var managers = _cache.unitManagers;
+    var managers = _cache.regionManagers;
     var selected = managers.find(function (m) {
       return (
         m.um_id === managerRef ||
@@ -1423,25 +1423,25 @@ async function _loadCache() {
       notify('Unit manager "' + managerRef + '" does not exist.');
       return false;
     }
-    if (selected.unit_id && selected.unit_id !== unitId) {
+    if (selected.region_id && selected.region_id !== unitId) {
       notify(selected.name + " already manages another unit.");
       return false;
     }
 
     managers.forEach(function (m) {
-      if (m.unit_id === unitId && m.um_id !== selected.um_id) {
-        m.unit_id = null;
+      if (m.region_id === unitId && m.um_id !== selected.um_id) {
+        m.region_id = null;
       }
     });
-    selected.unit_id = unitId;
+    selected.region_id = unitId;
     return true;
   }
 
   function validateUnitForm() {
     var tables = getTables();
     var name = String(el.unitNameInput.value || "").trim();
-    var collectiveId = String(el.unitCollectiveSelect.value || "").trim();
-    var managerRef = String(el.unitManagerSelect.value || "").trim();
+    var collectiveId = String(el.unitRegionSelect.value || "").trim();
+    var managerRef = String(el.regionManagerSelect.value || "").trim();
     var isActive = el.unitStatusSelect.value === "true";
 
     var valid = true;
@@ -1462,8 +1462,8 @@ async function _loadCache() {
     } else {
       var duplicate = tables.units.some(function (unit) {
         return (
-          unit.unit_id !== state.editingUnitId &&
-          unit.collective_id === collectiveId &&
+          unit.region_id !== state.editingUnitId &&
+          unit.region_id === collectiveId &&
           normalizeName(unit.unit_name) === normalizeName(name)
         );
       });
@@ -1479,39 +1479,39 @@ async function _loadCache() {
       }
     }
 
-    var hasCollective = tables.collectives.some(function (collective) {
-      return collective.collective_id === collectiveId;
+    var hasRegion = tables.regions.some(function (collective) {
+      return collective.region_id === collectiveId;
     });
-    if (!collectiveId || !hasCollective) {
+    if (!collectiveId || !hasRegion) {
       setFieldError(
-        el.unitCollectiveSelect,
-        el.unitCollectiveError,
+        el.unitRegionSelect,
+        el.unitRegionError,
         "Please choose a valid collective.",
       );
       valid = false;
     } else {
-      setFieldError(el.unitCollectiveSelect, el.unitCollectiveError, "");
+      setFieldError(el.unitRegionSelect, el.unitRegionError, "");
     }
 
     if (managerRef) {
-      var manager = tables.unitManagers.find(function (m) {
+      var manager = tables.regionManagers.find(function (m) {
         return (
           m.um_id === managerRef ||
           m.name.toLowerCase() === managerRef.toLowerCase()
         );
       });
-      if (!manager || manager.unit_id) {
+      if (!manager || manager.region_id) {
         setFieldError(
-          el.unitManagerSelect,
-          el.unitManagerError,
+          el.regionManagerSelect,
+          el.regionManagerError,
           "Selected manager is not available.",
         );
         valid = false;
       } else {
-        setFieldError(el.unitManagerSelect, el.unitManagerError, "");
+        setFieldError(el.regionManagerSelect, el.regionManagerError, "");
       }
     } else {
-      setFieldError(el.unitManagerSelect, el.unitManagerError, "");
+      setFieldError(el.regionManagerSelect, el.regionManagerError, "");
     }
 
     if (!valid) return null;
@@ -1528,43 +1528,43 @@ async function _loadCache() {
     if (!result) return;
 
     var units = _cache.units;
-    var managers = _cache.unitManagers;
+    var managers = _cache.regionManagers;
     var unitId = state.editingUnitId || ("UNT-" + Date.now());
 
     if (!assignUnitManager(unitId, result.managerRef)) return;
 
     if (!result.managerRef) {
       managers.forEach(function (manager) {
-        if (manager.unit_id === unitId) manager.unit_id = null;
+        if (manager.region_id === unitId) manager.region_id = null;
       });
     }
 
     try {
       if (state.editingUnitId) {
-        var existing = units.find(function (unit) { return unit.unit_id === state.editingUnitId; });
+        var existing = units.find(function (unit) { return unit.region_id === state.editingUnitId; });
         if (!existing) { notify("Unit not found."); return; }
-        await Api.patch("/units/" + state.editingUnitId, {
-          unit_name: result.name, collective_id: result.collectiveId, is_active: result.isActive
+        await Api.patch("/regions/" + state.editingUnitId, {
+          unit_name: result.name, region_id: result.collectiveId, is_active: result.isActive
         });
         existing.unit_name = result.name;
-        existing.collective_id = result.collectiveId;
+        existing.region_id = result.collectiveId;
         existing.is_active = result.isActive;
       } else {
-        var created = await Api.post("/units", {
-          unit_name: result.name, collective_id: result.collectiveId, is_active: result.isActive
+        var created = await Api.post("/regions", {
+          unit_name: result.name, region_id: result.collectiveId, is_active: result.isActive
         });
-        unitId = created.unit_id || unitId;
+        unitId = created.region_id || unitId;
         units.push(created);
       }
     } catch (err) { notify("Failed to save unit."); return; }
 
-    state.selectedCollectiveId = result.collectiveId;
+    state.selectedRegionId = result.collectiveId;
     state.selectedUnitId = unitId;
     state.providerPage = 1;
 
     closeModal(el.unitModal);
     populateFilters();
-    renderCollectives();
+    renderRegions();
     notify(
       state.editingUnitId
         ? "Unit updated: " + unitId
@@ -1580,10 +1580,10 @@ async function _loadCache() {
       "Remove " + provider.name + " from this unit?",
       async function () {
         try {
-          await Api.patch("/service-providers/" + providerId, { unit_id: null });
-          provider.unit_id = null;
+          await Api.patch("/service-providers/" + providerId, { region_id: null });
+          provider.region_id = null;
         } catch (_) {}
-        renderCollectives();
+        renderRegions();
         notify("Provider removed from unit.");
       },
     );
@@ -1599,11 +1599,11 @@ async function _loadCache() {
 
     if (!state.selectedUnitId) { notify("Select a unit first."); return; }
     try {
-      await Api.patch("/service-providers/" + providerId, { unit_id: state.selectedUnitId, is_active: true });
-      provider.unit_id = state.selectedUnitId;
+      await Api.patch("/service-providers/" + providerId, { region_id: state.selectedUnitId, is_active: true });
+      provider.region_id = state.selectedUnitId;
       provider.is_active = true;
     } catch (_) {}
-    renderCollectives();
+    renderRegions();
     notify("Provider assigned to selected unit.");
   }
 
@@ -1617,15 +1617,15 @@ async function _loadCache() {
       });
     }
 
-    if (el.createCollectiveBtn) {
-      el.createCollectiveBtn.addEventListener(
+    if (el.createRegionBtn) {
+      el.createRegionBtn.addEventListener(
         "click",
-        openCreateCollectiveModal,
+        openCreateRegionModal,
       );
     }
     if (el.createUnitBtn) {
       el.createUnitBtn.addEventListener("click", function () {
-        if (!_cache.collectives.length) {
+        if (!_cache.regions.length) {
           notify("Create a collective first.");
           return;
         }
@@ -1651,7 +1651,7 @@ async function _loadCache() {
     if (el.collectiveForm) {
       el.collectiveForm.addEventListener("submit", function (event) {
         event.preventDefault();
-        submitCreateCollective();
+        submitCreateRegion();
       });
     }
 
@@ -1680,31 +1680,31 @@ async function _loadCache() {
     el.searchInput.addEventListener("input", function (event) {
       state.quickSearch = (event.target.value || "").trim();
       state.providerPage = 1;
-      renderCollectives();
+      renderRegions();
     });
 
     el.sectorFilter.addEventListener("change", function (event) {
       state.sector = event.target.value;
       state.collectivePage = 1;
       state.providerPage = 1;
-      renderCollectives();
+      renderRegions();
     });
 
     el.managerFilter.addEventListener("change", function (event) {
       state.manager = event.target.value;
       state.collectivePage = 1;
       state.providerPage = 1;
-      renderCollectives();
+      renderRegions();
     });
 
-    el.collectiveManagerFilter.addEventListener("change", function (event) {
-      state.collectiveManager = event.target.value;
+    el.regionManagerFilter.addEventListener("change", function (event) {
+      state.regionManager = event.target.value;
       state.collectivePage = 1;
       state.providerPage = 1;
-      renderCollectives();
+      renderRegions();
     });
 
-    el.collectivesGrid.addEventListener("click", function (event) {
+    el.regionsGrid.addEventListener("click", function (event) {
       var target = event.target;
       var actionEl = target.closest("[data-action]");
       if (!actionEl) return;
@@ -1722,7 +1722,7 @@ async function _loadCache() {
       if (action === "edit-collective") {
         event.preventDefault();
         event.stopPropagation();
-        openEditCollectiveModal(actionEl.getAttribute("data-collective-id"));
+        openEditRegionModal(actionEl.getAttribute("data-collective-id"));
       }
       
       var providerId = actionEl.getAttribute("data-provider-id");
@@ -1791,50 +1791,50 @@ async function _loadCache() {
       });
     }
 
-    if (el.editCollectiveModalClose) {
-      el.editCollectiveModalClose.addEventListener("click", function () { closeModal(el.editCollectiveModal); });
+    if (el.editRegionModalClose) {
+      el.editRegionModalClose.addEventListener("click", function () { closeModal(el.editRegionModal); });
     }
-    if (el.editCollectiveCancelBtn) {
-      el.editCollectiveCancelBtn.addEventListener("click", function () { closeModal(el.editCollectiveModal); });
+    if (el.editRegionCancelBtn) {
+      el.editRegionCancelBtn.addEventListener("click", function () { closeModal(el.editRegionModal); });
     }
-    if (el.editCollectiveModal) {
-      el.editCollectiveModal.addEventListener("click", function (event) {
-        if (event.target === el.editCollectiveModal) closeModal(el.editCollectiveModal);
+    if (el.editRegionModal) {
+      el.editRegionModal.addEventListener("click", function (event) {
+        if (event.target === el.editRegionModal) closeModal(el.editRegionModal);
       });
     }
-    if (el.editCollectiveForm) {
-      el.editCollectiveForm.addEventListener("submit", function (event) {
+    if (el.editRegionForm) {
+      el.editRegionForm.addEventListener("submit", function (event) {
         event.preventDefault();
-        submitEditCollective();
+        submitEditRegion();
       });
     }
 
-    if (el.collectivesPrevPageBtn) {
-      el.collectivesPrevPageBtn.addEventListener("click", function () {
+    if (el.regionsPrevPageBtn) {
+      el.regionsPrevPageBtn.addEventListener("click", function () {
         if (state.collectivePage <= 1) return;
         state.collectivePage -= 1;
-        renderCollectives();
+        renderRegions();
       });
     }
 
-    if (el.collectivesNextPageBtn) {
-      el.collectivesNextPageBtn.addEventListener("click", function () {
-        var total = getFilteredCollectivesData().length;
+    if (el.regionsNextPageBtn) {
+      el.regionsNextPageBtn.addEventListener("click", function () {
+        var total = getFilteredRegionsData().length;
         var maxPage = Math.max(1, Math.ceil(total / state.COLLECTIVE_PAGE_SIZE));
         if (state.collectivePage >= maxPage) return;
         state.collectivePage += 1;
-        renderCollectives();
+        renderRegions();
       });
     }
 
-    if (el.collectivesPages) {
-      el.collectivesPages.addEventListener("click", function (event) {
+    if (el.regionsPages) {
+      el.regionsPages.addEventListener("click", function (event) {
         var target = event.target;
         if (target.classList.contains("page-num")) {
           var page = parseInt(target.getAttribute("data-page"), 10);
           if (!isNaN(page) && page !== state.collectivePage) {
             state.collectivePage = page;
-            renderCollectives();
+            renderRegions();
           }
         }
       });
@@ -1848,8 +1848,8 @@ async function _loadCache() {
   function initSelection() {
     var units = _cache.units;
     if (units.length) {
-      state.selectedUnitId = units[0].unit_id;
-      state.selectedCollectiveId = units[0].collective_id;
+      state.selectedUnitId = units[0].region_id;
+      state.selectedRegionId = units[0].region_id;
     }
   }
 
@@ -1857,6 +1857,6 @@ async function _loadCache() {
   initSelection();
   populateFilters();
   bindEvents();
-  renderCollectives();
-  setupCmAutocomplete(el.collectiveManagerInput, el.collectiveManagerDropdown, el.collectiveManagerError, "selectedCmId", null);
+  renderRegions();
+  setupCmAutocomplete(el.regionManagerInput, el.regionManagerDropdown, el.regionManagerError, "selectedCmId", null);
 })();

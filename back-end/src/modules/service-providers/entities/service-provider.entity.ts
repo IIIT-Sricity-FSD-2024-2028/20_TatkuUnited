@@ -6,6 +6,7 @@ export class ServiceProvider {
   phone: string;
   dob: string;
   address: string;
+  city: string;
   gender: string;
   rating: number;
   rating_count: number;
@@ -16,6 +17,5 @@ export class ServiceProvider {
   hour_end: string;
   created_at: string;
   updated_at: string;
-  unit_id: string;
-  home_sector_id: string;
+  region_id: string | null;
 }

@@ -24,18 +24,12 @@ export class CustomersRepository {
 
   findByEmail(email: string): Customer | undefined {
     return this.databaseService.customers.find(
-      (row) => row.email === email,
-    );
-  }
-
-  findBySector(sectorId: string): Customer[] {
-    return this.databaseService.customers.filter(
-      (row) => row.home_sector_id === sectorId,
+      (row) => row.email.toLowerCase() === email.toLowerCase(),
     );
   }
 
   create(dto: CreateCustomerDto): Customer {
-    const customer = {
+    const customer: Customer = {
       customer_id: randomUUID(),
       full_name: dto.name,
       email: dto.email,
@@ -43,13 +37,13 @@ export class CustomersRepository {
       phone: dto.phone,
       dob: '',
       address: '',
+      city: dto.city || 'Chennai',
       rating: 0,
-      is_active: dto.is_active,
-      home_sector_id: '',
-      created_at: new Date().toISOString(),
-    } as unknown as Customer;
+      is_active: dto.is_active ?? true,
+    };
     
     this.databaseService.customers.push(customer);
+    this.databaseService.save();
     return customer;
   }
 
@@ -64,11 +58,9 @@ export class CustomersRepository {
     if (dto.phone !== undefined) customer.phone = dto.phone;
     if (dto.is_active !== undefined) customer.is_active = dto.is_active;
     if (dto.address !== undefined) customer.address = dto.address;
-    if (dto.home_sector_id !== undefined) customer.home_sector_id = dto.home_sector_id;
-    if ((dto as any).saved_addresses !== undefined) {
-      (customer as any).saved_addresses = (dto as any).saved_addresses;
-    }
+    if (dto.city !== undefined) customer.city = dto.city;
     
+    this.databaseService.save();
     return customer;
   }
 
@@ -80,6 +72,7 @@ export class CustomersRepository {
       throw new NotFoundException(`Customer with id "${id}" not found`);
     }
     const [removed] = this.databaseService.customers.splice(index, 1);
+    this.databaseService.save();
     return removed;
   }
 }

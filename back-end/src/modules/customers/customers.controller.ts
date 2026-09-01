@@ -1,6 +1,5 @@
 import {
   Controller,
-  ForbiddenException,
   Get,
   Post,
   Body,
@@ -10,12 +9,7 @@ import {
   Request,
   UseGuards,
 } from '@nestjs/common';
-import {
-  ApiBearerAuth,
-  ApiOperation,
-  ApiResponse,
-  ApiTags,
-} from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CustomersService } from './customers.service';
 import { CreateCustomerDto } from './dto/create-customer.dto';
 import { UpdateCustomerDto } from './dto/update-customer.dto';
@@ -39,86 +33,48 @@ export class CustomersController {
   ) {}
 
   @Get()
-  @Roles(Role.SUPER_USER)
+  @Roles(Role.SUPER_USER, Role.REGION_MANAGER)
   @ApiOperation({ summary: 'Get all customers' })
   @ApiResponse({ status: 200, description: 'Success' })
-  @ApiResponse({ status: 403, description: 'Forbidden' })
   findAll() {
     return this.customersService.findAll();
   }
 
-  @Get('sector/:sector_id')
-  @Roles(Role.SUPER_USER, Role.COLLECTIVE_MANAGER, Role.UNIT_MANAGER)
-  @ApiOperation({ summary: 'Get customers by sector ID' })
-  @ApiResponse({ status: 200, description: 'Success' })
-  @ApiResponse({ status: 403, description: 'Forbidden' })
-  findBySector(
-    @Param('sector_id') sectorId: string,
-    @Request() req: { user: JwtPayload },
-  ) {
-    this.accessScope.assertSectorAccess(req.user, sectorId);
-    return this.customersService.findBySector(sectorId);
-  }
-
   @Get(':id')
-  @Roles(Role.SUPER_USER, Role.CUSTOMER)
+  @Roles(Role.SUPER_USER, Role.CUSTOMER, Role.REGION_MANAGER)
   @ApiOperation({ summary: 'Get customer by ID' })
   @ApiResponse({ status: 200, description: 'Success' })
-  @ApiResponse({ status: 404, description: 'Not found' })
-  @ApiResponse({ status: 403, description: 'Forbidden' })
   findOne(@Param('id') id: string, @Request() req: { user: JwtPayload }) {
-    if (req.user.role === Role.CUSTOMER && req.user.sub !== id) {
-      throw new ForbiddenException('Customers can only access their own account');
-    }
+    this.accessScope.assertCustomerAccess(req.user, id);
     return this.customersService.findOne(id);
   }
 
   @Post()
   @Roles(Role.SUPER_USER)
-  @ApiOperation({ summary: 'Create a new customer' })
-  @ApiResponse({ status: 201, description: 'Created successfully' })
-  @ApiResponse({ status: 403, description: 'Forbidden' })
+  @ApiOperation({ summary: 'Create customer' })
+  @ApiResponse({ status: 201, description: 'Created' })
   create(@Body() dto: CreateCustomerDto) {
     return this.customersService.create(dto);
   }
 
   @Patch(':id')
   @Roles(Role.SUPER_USER, Role.CUSTOMER)
-  @ApiOperation({ summary: 'Update a customer' })
-  @ApiResponse({ status: 200, description: 'Success' })
-  @ApiResponse({ status: 404, description: 'Not found' })
-  @ApiResponse({ status: 403, description: 'Forbidden' })
+  @ApiOperation({ summary: 'Update customer' })
+  @ApiResponse({ status: 200, description: 'Updated' })
   update(
     @Param('id') id: string,
     @Body() dto: UpdateCustomerDto,
     @Request() req: { user: JwtPayload },
   ) {
-    if (req.user.role === Role.CUSTOMER && req.user.sub !== id) {
-      throw new ForbiddenException('Customers can only update their own account');
-    }
+    this.accessScope.assertCustomerAccess(req.user, id);
     return this.customersService.update(id, dto);
   }
 
   @Delete(':id')
   @Roles(Role.SUPER_USER)
-  @ApiOperation({ summary: 'Delete a customer' })
-  @ApiResponse({ status: 200, description: 'Success' })
-  @ApiResponse({ status: 404, description: 'Not found' })
-  @ApiResponse({ status: 403, description: 'Forbidden' })
+  @ApiOperation({ summary: 'Delete customer' })
+  @ApiResponse({ status: 200, description: 'Deleted' })
   remove(@Param('id') id: string) {
-    return this.customersService.remove(id);
-  }
-
-  @Delete('account/:id')
-  @Roles(Role.SUPER_USER, Role.CUSTOMER)
-  @ApiOperation({ summary: 'Delete customer account' })
-  @ApiResponse({ status: 200, description: 'Account deleted successfully' })
-  @ApiResponse({ status: 404, description: 'Not found' })
-  @ApiResponse({ status: 403, description: 'Forbidden' })
-  deleteAccount(@Param('id') id: string, @Request() req: { user: JwtPayload }) {
-    if (req.user.role === Role.CUSTOMER && req.user.sub !== id) {
-      throw new ForbiddenException('Customers can only delete their own account');
-    }
     return this.customersService.remove(id);
   }
 }

@@ -18,7 +18,6 @@ export class ServiceSkillsRepository {
   }
 
   link(serviceId: string, skillId: string): ServiceSkill {
-    // Check for duplicate
     const exists = this.db.serviceSkills.find(
       (row) => row.service_id === serviceId && row.skill_id === skillId,
     );
@@ -28,8 +27,9 @@ export class ServiceSkillsRepository {
       );
     }
 
-    const record: ServiceSkill = { service_id: serviceId, skill_id: skillId };
+    const record: ServiceSkill = { service_id: serviceId, skill_id: skillId, is_required: true };
     this.db.serviceSkills.push(record);
+    this.db.save();
     return record;
   }
 
@@ -43,6 +43,7 @@ export class ServiceSkillsRepository {
       );
     }
     const [removed] = this.db.serviceSkills.splice(index, 1);
+    this.db.save();
     return removed;
   }
 }

@@ -17,8 +17,8 @@ window.Auth = (() => {
 
   const ROLE_DASHBOARDS = {
     super_user: "/html/super_user/super_user_dashboard.html",
-    collective_manager: "/html/collective_manager/dashboard.html",
-    unit_manager: "/html/unit_manager/dashboard.html",
+    region_manager: "/html/region_manager/dashboard.html",
+    region_manager: "/html/region_manager/dashboard.html",
     provider: "/html/provider/dashboard.html",
     service_provider: "/html/provider/dashboard.html",
     customer: "/html/customer/home.html",
@@ -43,7 +43,8 @@ window.Auth = (() => {
     return {
       ...session,
       role,
-      collectiveId: session.collectiveId || session.collective_id || null,
+      collectiveId: session.region_id || session.collectiveId || null,
+      region_id: session.region_id || null,
       unitId: session.unitId || session.unit_id || null,
       customerId: session.customerId || session.customer_id || null,
       service_provider_id:
@@ -132,7 +133,7 @@ window.Auth = (() => {
       name: user.name,
       email: user.email,
       role: user.role,
-      collective_id: user.collective_id || null,
+      region_id: user.region_id || null,
       unit_id: user.unit_id || null,
       customer_id: user.customer_id || null,
       loginAt: Date.now(),
@@ -232,7 +233,7 @@ window.Auth = (() => {
         name: me.name,
         email: me.email,
         role: me.role,
-        collective_id: me.collective_id || null,
+        region_id: me.region_id || null,
         unit_id: me.unit_id || null,
         customer_id: me.customer_id || null,
       });

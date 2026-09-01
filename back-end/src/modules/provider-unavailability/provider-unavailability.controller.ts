@@ -37,7 +37,7 @@ export class ProviderUnavailabilityController {
   ) {}
 
   @Get()
-  @Roles(Role.SUPER_USER, Role.UNIT_MANAGER, Role.COLLECTIVE_MANAGER)
+  @Roles(Role.SUPER_USER, Role.REGION_MANAGER)
   @ApiOperation({ summary: 'Get all provider unavailabilities' })
   
   @ApiResponse({ status: 200, description: 'Success' })
@@ -56,7 +56,7 @@ export class ProviderUnavailabilityController {
   }
 
   @Get('provider/:provider_id')
-  @Roles(Role.SUPER_USER, Role.SERVICE_PROVIDER, Role.UNIT_MANAGER, Role.COLLECTIVE_MANAGER)
+  @Roles(Role.SUPER_USER, Role.SERVICE_PROVIDER, Role.REGION_MANAGER)
   @ApiOperation({ summary: 'Get provider unavailabilities by provider ID' })
   
   @ApiResponse({ status: 200, description: 'Success' })
@@ -68,14 +68,14 @@ export class ProviderUnavailabilityController {
     if (req.user.role === Role.SERVICE_PROVIDER && req.user.sub !== providerId) {
       throw new ForbiddenException('Providers can only access their own unavailability');
     }
-    if (req.user.role === Role.COLLECTIVE_MANAGER || req.user.role === Role.UNIT_MANAGER) {
+    if (req.user.role === Role.REGION_MANAGER) {
       this.accessScope.assertProviderAccess(req.user, providerId);
     }
     return this.providerUnavailabilityService.findByProvider(providerId);
   }
 
   @Get(':id')
-  @Roles(Role.SUPER_USER, Role.SERVICE_PROVIDER, Role.UNIT_MANAGER, Role.COLLECTIVE_MANAGER)
+  @Roles(Role.SUPER_USER, Role.SERVICE_PROVIDER, Role.REGION_MANAGER)
   @ApiOperation({ summary: 'Get provider unavailability by ID' })
   
   @ApiResponse({ status: 200, description: 'Success' })
@@ -86,7 +86,7 @@ export class ProviderUnavailabilityController {
     if (req.user.role === Role.SERVICE_PROVIDER && req.user.sub !== record.sp_id) {
       throw new ForbiddenException('Providers can only access their own unavailability');
     }
-    if (req.user.role === Role.COLLECTIVE_MANAGER || req.user.role === Role.UNIT_MANAGER) {
+    if (req.user.role === Role.REGION_MANAGER) {
       this.accessScope.assertProviderAccess(req.user, record.sp_id);
     }
     return record;

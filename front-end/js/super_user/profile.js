@@ -11,14 +11,14 @@
   let suRecord = null;
   suRecord  = await Api.get("/super-users/" + session.id);
 
-  let collectivesCount = 0;
+  let regionsCount = 0;
   let unitsCount = 0;
   try {
-    const collectives = await Api.get("/collectives", { silent: true }) || [];
-    collectivesCount = collectives.length;
+    const regions = await Api.get("/regions", { silent: true }) || [];
+    regionsCount = regions.length;
   } catch (_) {}
   try {
-    const units = await Api.get("/units", { silent: true }) || [];
+    const units = await Api.get("/regions", { silent: true }) || [];
     unitsCount = units.filter(u => u.is_active).length;
   } catch (_) {}
 
@@ -220,11 +220,11 @@
   }
 
   // Populate Hero Stats from API data
-  const collEl = document.getElementById("hero-collectives");
+  const collEl = document.getElementById("hero-regions");
   const unitsEl = document.getElementById("hero-units");
   const usersEl = document.getElementById("hero-users");
 
-  if (collEl) collEl.textContent = collectivesCount;
+  if (collEl) collEl.textContent = regionsCount;
   if (unitsEl) unitsEl.textContent = unitsCount;
   if (usersEl) usersEl.textContent = totalUsers;
 

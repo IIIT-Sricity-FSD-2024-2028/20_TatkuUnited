@@ -6,8 +6,8 @@ export class Customer {
   phone: string;
   dob: string;
   address: string;
+  city: string;
   rating: number;
   is_active: boolean;
-  home_sector_id: string;
   created_at?: string;
 }

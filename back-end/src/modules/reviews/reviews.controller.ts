@@ -48,7 +48,7 @@ export class ReviewsController {
   }
 
   @Get()
-  @Roles(Role.SUPER_USER, Role.COLLECTIVE_MANAGER, Role.UNIT_MANAGER)
+  @Roles(Role.SUPER_USER, Role.REGION_MANAGER)
   @ApiOperation({ summary: 'List all reviews for operational dashboards' })
   @ApiResponse({ status: 200, description: 'Reviews returned' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
@@ -57,7 +57,7 @@ export class ReviewsController {
   }
 
   @Get('booking/:bookingId')
-  @Roles(Role.SUPER_USER, Role.COLLECTIVE_MANAGER, Role.UNIT_MANAGER, Role.SERVICE_PROVIDER, Role.CUSTOMER)
+  @Roles(Role.SUPER_USER, Role.REGION_MANAGER, Role.SERVICE_PROVIDER, Role.CUSTOMER)
   @ApiOperation({ summary: 'List reviews for a booking' })
   @ApiResponse({ status: 200, description: 'Booking reviews returned' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
@@ -69,7 +69,7 @@ export class ReviewsController {
   }
 
   @Get('provider/:spId')
-  @Roles(Role.SUPER_USER, Role.COLLECTIVE_MANAGER, Role.UNIT_MANAGER, Role.SERVICE_PROVIDER, Role.CUSTOMER)
+  @Roles(Role.SUPER_USER, Role.REGION_MANAGER, Role.SERVICE_PROVIDER, Role.CUSTOMER)
   @ApiOperation({ summary: 'List reviews for a service provider' })
   @ApiResponse({ status: 200, description: 'Provider reviews returned' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
@@ -81,7 +81,7 @@ export class ReviewsController {
   }
 
   @Get('customer/:customerId')
-  @Roles(Role.SUPER_USER, Role.COLLECTIVE_MANAGER, Role.UNIT_MANAGER, Role.CUSTOMER)
+  @Roles(Role.SUPER_USER, Role.REGION_MANAGER, Role.CUSTOMER)
   @ApiOperation({ summary: 'List reviews written by a customer' })
   @ApiResponse({ status: 200, description: 'Customer reviews returned' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
@@ -102,7 +102,7 @@ export class ReviewsController {
   }
 
   @Get(':id')
-  @Roles(Role.SUPER_USER, Role.COLLECTIVE_MANAGER, Role.UNIT_MANAGER, Role.SERVICE_PROVIDER, Role.CUSTOMER)
+  @Roles(Role.SUPER_USER, Role.REGION_MANAGER, Role.SERVICE_PROVIDER, Role.CUSTOMER)
   @ApiOperation({ summary: 'Get review by ID' })
   @ApiResponse({ status: 200, description: 'Review returned' })
   @ApiResponse({ status: 403, description: 'Forbidden' })

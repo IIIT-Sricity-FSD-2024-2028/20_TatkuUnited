@@ -21,12 +21,8 @@ export class RevenueLedgerRepository {
     return this.db.revenueLedger.filter((row) => row.sp_id === spId);
   }
 
-  findByUm(umId: string): RevenueLedger[] {
-    return this.db.revenueLedger.filter((row) => row.um_id === umId);
-  }
-
-  findByCm(cmId: string): RevenueLedger[] {
-    return this.db.revenueLedger.filter((row) => row.cm_id === cmId);
+  findByRm(rmId: string): RevenueLedger[] {
+    return this.db.revenueLedger.filter((row) => row.rm_id === rmId);
   }
 
   findByPayoutStatus(status: string): RevenueLedger[] {

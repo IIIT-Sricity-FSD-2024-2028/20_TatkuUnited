@@ -99,13 +99,13 @@ window.CRUD = (() => {
      CASCADE DELETE CHECKS — via API
      ========================================================================= */
 
-  async function checkDeleteCollective(collectiveId) {
+  async function checkDeleteRegion(collectiveId) {
     let units=[], providers=[], jobs=[];
     units  = await Api.get("/units");
     providers  = await Api.get("/service-providers");
     jobs  = await Api.get("/job-assignments");
 
-    const childUnits = units.filter(u => u.collective_id === collectiveId);
+    const childUnits = units.filter(u => u.region_id === collectiveId);
     const unitIds = childUnits.map(u => u.unit_id);
     const childProviders = providers.filter(p => unitIds.includes(p.unit_id));
     const providerIds = childProviders.map(p => p.service_provider_id);
@@ -171,7 +171,7 @@ window.CRUD = (() => {
     deleteRecord,
     upsertProviderResume,
     addProviderCertificate,
-    checkDeleteCollective,
+    checkDeleteRegion,
     checkDeleteUnit,
     checkDeleteProvider,
     checkDeleteCategory,

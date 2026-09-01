@@ -3,13 +3,10 @@ import { APP_GUARD, APP_PIPE } from '@nestjs/core';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { SuperUsersModule } from './modules/super-users/super-users.module';
-import { CollectiveManagersModule } from './modules/collective-managers/collective-managers.module';
-import { UnitManagersModule } from './modules/unit-managers/unit-managers.module';
+import { RegionManagersModule } from './modules/region-managers/region-managers.module';
 import { ServiceProvidersModule } from './modules/service-providers/service-providers.module';
 import { CustomersModule } from './modules/customers/customers.module';
-import { CollectivesModule } from './modules/collectives/collectives.module';
-import { SectorsModule } from './modules/sectors/sectors.module';
-import { UnitsModule } from './modules/units/units.module';
+import { RegionsModule } from './modules/regions/regions.module';
 import { CategoriesModule } from './modules/categories/categories.module';
 import { ServicesModule } from './modules/services/services.module';
 import { SkillsModule } from './modules/skills/skills.module';
@@ -35,13 +32,10 @@ import { RequestTraceMiddleware } from './common/middleware/request-trace.middle
     LoggerModule,
     CloudinaryModule,
     SuperUsersModule,
-    CollectiveManagersModule,
-    UnitManagersModule,
+    RegionManagersModule,
     ServiceProvidersModule,
     CustomersModule,
-    CollectivesModule,
-    SectorsModule,
-    UnitsModule,
+    RegionsModule,
     CategoriesModule,
     ServicesModule,
     SkillsModule,
@@ -72,10 +66,8 @@ import { RequestTraceMiddleware } from './common/middleware/request-trace.middle
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    // Apply LoggerMiddleware to ALL routes
     consumer.apply(LoggerMiddleware).forRoutes('*');
 
-    // Scoped / router-level middleware for specific routes
     consumer
       .apply(RequestTraceMiddleware)
       .forRoutes('service-providers', 'bookings');

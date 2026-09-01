@@ -52,21 +52,12 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         : null;
     }
 
-    if (normalizedRole === Role.COLLECTIVE_MANAGER) {
-      const user = this.databaseService.collectiveManagers.find(
+    if (normalizedRole === Role.REGION_MANAGER) {
+      const user = this.databaseService.regionManagers.find(
         (row) => row.email.toLowerCase() === email && row.is_active,
       );
       return user
-        ? { id: user.cm_id, role: normalizedRole, name: user.name, email: user.email }
-        : null;
-    }
-
-    if (normalizedRole === Role.UNIT_MANAGER) {
-      const user = this.databaseService.unitManagers.find(
-        (row) => row.email.toLowerCase() === email && row.is_active,
-      );
-      return user
-        ? { id: user.um_id, role: normalizedRole, name: user.name, email: user.email }
+        ? { id: user.rm_id, role: normalizedRole, name: user.name, email: user.email }
         : null;
     }
 

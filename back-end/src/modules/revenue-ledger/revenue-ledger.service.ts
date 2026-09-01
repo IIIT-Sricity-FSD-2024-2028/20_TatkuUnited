@@ -17,40 +17,30 @@ export class RevenueLedgerService {
   ) {}
 
   computeSplit(gross: number) {
-    const spPct = this.ps.getNumericSetting('revenue_split_sp_percentage', 78);
-    const umPct = this.ps.getNumericSetting('revenue_split_um_percentage', 8);
-    const cmPct = this.ps.getNumericSetting('revenue_split_cm_percentage', 4);
-
+    const spPct = this.ps.getNumericSetting('revenue_split_sp_percentage', 85);
     const round2 = (n: number) => Math.round(n * 100) / 100;
     const sp = round2((gross * spPct) / 100);
-    const um = round2((gross * umPct) / 100);
-    const cm = round2((gross * cmPct) / 100);
-    const platform = round2(gross - sp - um - cm);
-
-    return { provider_amount: sp, um_amount: um, cm_amount: cm, platform_amount: platform };
+    const platform = round2(gross - sp);
+    return { provider_amount: sp, platform_amount: platform };
   }
 
   createPendingFromAssignment(assignment: JobAssignment) {
-    // 1. Get price for this specific service in the booking
     const bsRow = this.db.bookingServices.find(
       (r) => r.booking_id === assignment.booking_id && r.service_id === assignment.service_id,
     );
     if (!bsRow) throw new NotFoundException('BookingService row not found');
 
-    // 2. Walk: sp → unit → unitManager → collective → collectiveManager
     const sp = this.db.serviceProviders.find((p) => p.sp_id === assignment.sp_id);
     if (!sp) throw new NotFoundException('Service provider not found');
-    const unit = this.db.units.find((u) => u.unit_id === sp.unit_id);
-    if (!unit) throw new NotFoundException('Unit not found');
-    const um = this.db.unitManagers.find((m) => m.unit_id === unit.unit_id);
-    if (!um) throw new NotFoundException('Unit manager not found');
-    const cm = this.db.collectiveManagers.find((m) => m.collective_id === unit.collective_id);
-    if (!cm) throw new NotFoundException('Collective manager not found');
+    
+    let rm = this.db.regionManagers.find((m) => m.region_id === sp.region_id);
+    if (!rm) {
+      rm = this.db.regionManagers[0];
+    }
+    const rmId = rm ? rm.rm_id : '';
 
-    // 3. Compute split on price_at_booking
     const split = this.computeSplit(bsRow.price_at_booking);
 
-    // 4. Push ledger row
     const row = this.repo.create({
       ledger_id: this.db.genId(),
       payout_status: 'PENDING',
@@ -59,12 +49,11 @@ export class RevenueLedgerService {
       booking_id: assignment.booking_id,
       service_id: assignment.service_id,
       sp_id: assignment.sp_id,
-      um_id: um.um_id,
-      cm_id: cm.cm_id,
+      rm_id: rmId,
       ...split,
     });
     
-    console.log(`RevenueLedgerService: Created pending entry ${row.ledger_id} for booking ${row.booking_id} (CM: ${row.cm_id})`);
+    console.log(`RevenueLedgerService: Created pending entry ${row.ledger_id} for booking ${row.booking_id} (RM: ${row.rm_id})`);
     return row;
   }
 
@@ -99,44 +88,24 @@ export class RevenueLedgerService {
     return this.getProviderEarnings(spId);
   }
 
-  getUmEarnings(umId: string) {
-    const rows = this.repo.findByUm(umId);
+  getRmEarnings(rmId: string) {
+    const rows = this.repo.findByRm(rmId);
     return {
       pending: rows
         .filter((r) => r.payout_status === 'PENDING')
-        .reduce((s, r) => s + r.um_amount, 0),
+        .reduce((s, r) => s + r.provider_amount + r.platform_amount, 0),
       disbursed: rows
         .filter((r) => r.payout_status === 'DISBURSED')
-        .reduce((s, r) => s + r.um_amount, 0),
+        .reduce((s, r) => s + r.provider_amount + r.platform_amount, 0),
       rows,
     };
   }
 
-  getUmEarningsScoped(umId: string, user: JwtPayload) {
-    if (user.role === Role.UNIT_MANAGER && user.sub !== umId) {
-      throw new NotFoundException('Unit manager earnings not found');
+  getRmEarningsScoped(rmId: string, user: JwtPayload) {
+    if (user.role === Role.REGION_MANAGER && user.sub !== rmId) {
+      throw new NotFoundException('Region manager earnings not found');
     }
-    return this.getUmEarnings(umId);
-  }
-
-  getCmEarnings(cmId: string) {
-    const rows = this.repo.findByCm(cmId);
-    return {
-      pending: rows
-        .filter((r) => r.payout_status === 'PENDING')
-        .reduce((s, r) => s + r.cm_amount, 0),
-      disbursed: rows
-        .filter((r) => r.payout_status === 'DISBURSED')
-        .reduce((s, r) => s + r.cm_amount, 0),
-      rows,
-    };
-  }
-
-  getCmEarningsScoped(cmId: string, user: JwtPayload) {
-    if (user.role === Role.COLLECTIVE_MANAGER && user.sub !== cmId) {
-      throw new NotFoundException('Collective manager earnings not found');
-    }
-    return this.getCmEarnings(cmId);
+    return this.getRmEarnings(rmId);
   }
 
   getPlatformSummary() {
@@ -169,11 +138,8 @@ export class RevenueLedgerService {
       booking_id: dto.booking_id,
       service_id: dto.service_id,
       sp_id: dto.sp_id,
-      um_id: dto.um_id,
-      cm_id: dto.cm_id,
+      rm_id: dto.rm_id,
       provider_amount: dto.provider_amount,
-      um_amount: dto.um_amount,
-      cm_amount: dto.cm_amount,
       platform_amount: dto.platform_amount,
     });
   }
@@ -190,14 +156,9 @@ export class RevenueLedgerService {
 
   findOneScoped(id: string, user: JwtPayload) {
     const row = this.findOne(id);
-    if (user.role === Role.UNIT_MANAGER) {
-      this.accessScope.assertUnitAccess(user, this.accessScope.getUnitManager(row.um_id).unit_id);
-    }
-    if (user.role === Role.COLLECTIVE_MANAGER) {
-      this.accessScope.assertCollectiveAccess(
-        user,
-        this.accessScope.getCollectiveManager(row.cm_id).collective_id,
-      );
+    if (user.role === Role.REGION_MANAGER) {
+      const rm = this.accessScope.getRegionManager(user.sub);
+      this.accessScope.assertRegionAccess(user, rm.region_id);
     }
     return row;
   }

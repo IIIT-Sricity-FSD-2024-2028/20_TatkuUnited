@@ -21,12 +21,16 @@ export class ServiceProvidersService {
     return this.serviceProvidersRepository.findByEmail(email);
   }
 
-  findByUnit(unitId: string) {
-    return this.serviceProvidersRepository.findByUnit(unitId);
+  findByRegion(regionId: string) {
+    return this.serviceProvidersRepository.findByRegion(regionId);
   }
 
-  findBySector(sectorId: string) {
-    return this.serviceProvidersRepository.findBySector(sectorId);
+  findPending() {
+    return this.serviceProvidersRepository.findPending();
+  }
+
+  approve(id: string, regionId: string) {
+    return this.serviceProvidersRepository.approve(id, regionId);
   }
 
   create(dto: CreateServiceProviderDto) {

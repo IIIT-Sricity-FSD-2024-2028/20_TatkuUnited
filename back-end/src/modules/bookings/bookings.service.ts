@@ -64,7 +64,7 @@ export class BookingsService {
     const customer = this.db.customers.find(
       (c) => c.customer_id === customerId,
     );
-    const sectorId = customer?.home_sector_id || '';
+    // No sector lookup
 
     // 4. Create one booking per cart item (each service is an independent booking)
     const paymentMethod = this.normalizePaymentMethod(dto.payment_method);
@@ -80,7 +80,7 @@ export class BookingsService {
         failure_reason: null,
         is_active: true,
         customer_id: customerId,
-        sector_id: sectorId,
+        
       });
 
       // Create single BookingService row
@@ -116,7 +116,7 @@ export class BookingsService {
       );
 
       // Auto-assign provider for this booking
-      const assignmentResult = this.jobAssignmentsService.autoAssign(
+      const assignmentResult = this.jobAssignmentsService.findByBooking(
         booking.booking_id,
       );
 
@@ -124,7 +124,7 @@ export class BookingsService {
         ...booking,
         services: [bs],
         transaction,
-        assignments: assignmentResult.assignments,
+        assignments: [],
       });
     }
 
@@ -220,12 +220,12 @@ export class BookingsService {
     return this.db.jobAssignments.filter((row) => row.booking_id === bookingId);
   }
 
-  findByProviderAssignmentsForUnit(unitId: string) {
-    return this.db.serviceProviders.filter((provider) => provider.unit_id === unitId);
+  findByProviderAssignmentsForRegion(regionId: string) {
+    return this.db.serviceProviders.filter((provider) => provider.region_id === regionId);
   }
 
-  findBySector(sectorId: string) {
-    return this.db.bookings.filter((b) => b.sector_id === sectorId);
+  findByRegion(regionId: string) {
+    return this.db.bookings;
   }
 
   findOne(bookingId: string) {

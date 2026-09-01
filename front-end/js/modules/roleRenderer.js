@@ -12,14 +12,14 @@ window.RoleRenderer = (() => {
             { label: "Dashboard", href: "/html/super_user/super_user_dashboard.html", icon: "🏠" },
             { label: "User Management", href: "/html/super_user/user_management.html", icon: "👥" },
         ],
-        collective_manager: [
-            { label: "Dashboard", href: "/html/collective_manager/collective_dashboard.html", icon: "🏠" },
-            { label: "Collective Management", href: "/html/collective_manager/collective_manage.html", icon: "🏢" },
+        region_manager: [
+            { label: "Dashboard", href: "/html/region_manager/collective_dashboard.html", icon: "🏠" },
+            { label: "Region Management", href: "/html/region_manager/collective_manage.html", icon: "🏢" },
         ],
-        unit_manager: [
-            { label: "Dashboard", href: "/html/unit_manager/unit_dashboard.html", icon: "🏠" },
-            { label: "Provider Management", href: "/html/unit_manager/unit_providers.html", icon: "🔧" },
-            { label: "Booking Management", href: "/html/unit_manager/unit_bookings.html", icon: "📋" },
+        region_manager: [
+            { label: "Dashboard", href: "/html/region_manager/unit_dashboard.html", icon: "🏠" },
+            { label: "Provider Management", href: "/html/region_manager/unit_providers.html", icon: "🔧" },
+            { label: "Booking Management", href: "/html/region_manager/unit_bookings.html", icon: "📋" },
         ],
         provider: [
             { label: "Dashboard", href: "/html/provider/provider_dashboard.html", icon: "🏠" },
@@ -36,16 +36,16 @@ window.RoleRenderer = (() => {
 
     const ROLE_LABELS = {
         superuser: "Super User",
-        collective_manager: "Collective Manager",
-        unit_manager: "Unit Manager",
+        region_manager: "Region Manager",
+        region_manager: "Region Manager",
         provider: "Service Provider",
         customer: "Customer",
     };
 
     const ROLE_ACCENT_COLORS = {
         superuser: "#6c63ff",
-        collective_manager: "#0ea5e9",
-        unit_manager: "#f59e0b",
+        region_manager: "#0ea5e9",
+        region_manager: "#f59e0b",
         provider: "#10b981",
         customer: "#ef4444",
     };

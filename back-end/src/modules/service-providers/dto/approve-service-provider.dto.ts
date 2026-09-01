@@ -1,8 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsUUID } from 'class-validator';
+import { IsString } from 'class-validator';
 
 export class ApproveServiceProviderDto {
-  @ApiProperty({ description: 'Unit ID to assign the provider to' })
-  @IsUUID()
-  unit_id: string;
+  @ApiProperty({ description: 'Region ID to assign the provider to' })
+  @IsString()
+  region_id: string;
 }

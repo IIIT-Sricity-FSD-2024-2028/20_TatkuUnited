@@ -23,19 +23,20 @@ export class CreateServiceProviderDto {
   @IsNotEmpty()
   phone: string;
 
-  @ApiProperty({ example: 'unit-uuid' })
-  @IsUUID()
-  @IsNotEmpty()
-  unit_id: string;
+  @ApiProperty({ example: 'Chennai', required: false })
+  @IsString()
+  @IsOptional()
+  city?: string;
 
-  @ApiProperty({ example: 'sector-uuid' })
-  @IsUUID()
-  @IsNotEmpty()
-  sector_id: string;
+  @ApiProperty({ example: 'region-uuid', required: false })
+  @IsString()
+  @IsOptional()
+  region_id?: string;
 
-  @ApiProperty({ example: true })
+  @ApiProperty({ example: true, required: false })
   @IsBoolean()
-  is_active: boolean;
+  @IsOptional()
+  is_active?: boolean;
 
   @ApiProperty({ example: 'Home Cleaning', required: false })
   @IsString()
@@ -46,8 +47,6 @@ export class CreateServiceProviderDto {
   @IsString()
   @IsOptional()
   experience?: string;
-
-
 
   @ApiProperty({ example: ['skill-uuid'], required: false })
   @IsOptional()

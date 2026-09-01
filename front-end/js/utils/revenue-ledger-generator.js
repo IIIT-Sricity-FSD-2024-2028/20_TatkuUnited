@@ -1,15 +1,15 @@
 /**
  * Revenue Ledger Generator Utility — API-backed
  * Automatically creates ledger entries when a task is completed
- * Revenue split: Provider 78%, Unit Manager 7%, Collective Manager 4%, Super User 11%
+ * Revenue split: Provider 78%, Region Manager 7%, Region Manager 4%, Super User 11%
  */
 
 const RevenueManager = {
   // Revenue split percentages
   SPLITS: {
     provider: 0.78,
-    unit_manager: 0.07,
-    collective_manager: 0.04,
+    region_manager: 0.07,
+    region_manager: 0.04,
     super_user: 0.11,
   },
 
@@ -25,7 +25,7 @@ const RevenueManager = {
       job_assignments: "/job-assignments",
       service_providers: "/service-providers",
       units: "/units",
-      collectives: "/collectives",
+      regions: "/regions",
       super_users: "/super-users",
     };
     const data = {};
@@ -72,8 +72,8 @@ const RevenueManager = {
     const unit = data.units?.find((u) => u.unit_id === provider.unit_id);
     if (!unit) { console.warn(`[RevenueManager] Unit not found for provider: ${provider.service_provider_id}`); return false; }
 
-    const collective = data.collectives?.find((c) => c.collective_id === unit.collective_id);
-    if (!collective) { console.warn(`[RevenueManager] Collective not found for unit: ${unit.unit_id}`); return false; }
+    const collective = data.regions?.find((c) => c.region_id === unit.region_id);
+    if (!collective) { console.warn(`[RevenueManager] Region not found for unit: ${unit.unit_id}`); return false; }
 
     const superUser = data.super_users?.[0];
     if (!superUser) { console.warn(`[RevenueManager] No super user found`); return false; }
@@ -84,8 +84,8 @@ const RevenueManager = {
 
     const entries = [
       { role: "provider", service_provider_id: provider.service_provider_id, amount: Math.round(totalAmount * this.SPLITS.provider * 100) / 100, percentage: 78 },
-      { role: "unit_manager", unit_id: unit.unit_id, amount: Math.round(totalAmount * this.SPLITS.unit_manager * 100) / 100, percentage: 7 },
-      { role: "collective_manager", collective_id: collective.collective_id, amount: Math.round(totalAmount * this.SPLITS.collective_manager * 100) / 100, percentage: 4 },
+      { role: "region_manager", unit_id: unit.unit_id, amount: Math.round(totalAmount * this.SPLITS.region_manager * 100) / 100, percentage: 7 },
+      { role: "region_manager", region_id: collective.region_id, amount: Math.round(totalAmount * this.SPLITS.region_manager * 100) / 100, percentage: 4 },
       { role: "super_user", super_user_id: superUser.super_user_id, amount: Math.round(totalAmount * this.SPLITS.super_user * 100) / 100, percentage: 11 },
     ];
 

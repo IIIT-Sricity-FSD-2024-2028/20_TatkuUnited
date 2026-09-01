@@ -3,11 +3,11 @@
 
   // ── Valid table names ────────────────────────────────────────────────────────
   const VALID_TABLES = [
-    "collectives",
-    "units",
-    "sectors",
-    "collective_managers",
-    "unit_managers",
+    "regions",
+    
+    
+    "region_managers",
+    
     "service_providers",
     "provider_documents",
     "provider_working_hours",
@@ -38,11 +38,11 @@
 
   // ── Prefix → table mapping ───────────────────────────────────────────────────
   const PREFIX_TABLE_MAP = {
-    COL: "collectives",
-    UNT: "units",
-    SEC: "sectors",
-    CM: "collective_managers",
-    UM: "unit_managers",
+    REG: "regions",
+    
+    
+    RM: "region_managers",
+    
     SP: "service_providers",
     DOC: "provider_documents",
     WH: "provider_working_hours",
@@ -63,11 +63,11 @@
 
   // ── Empty data scaffold (used on fetch failure) ──────────────────────────────
   const EMPTY_DATA = {
-    collectives: [],
+    regions: [],
     units: [],
     sectors: [],
-    collective_managers: [],
-    unit_managers: [],
+    region_managers: [],
+    region_managers: [],
     service_providers: [],
     provider_documents: [],
     provider_working_hours: [],
@@ -604,12 +604,11 @@
     var bookings = AppStore.getTable("bookings") || [];
     var transactions = AppStore.getTable("transactions") || [];
     var providers = AppStore.getTable("service_providers") || [];
-    var units = AppStore.getTable("units") || [];
-    var collectives = AppStore.getTable("collectives") || [];
+    // units table removed
+    var regions = AppStore.getTable("regions") || [];
     var superUsers = AppStore.getTable("super_users") || [];
 
-    var superUser = superUsers[0];
-    if (!superUser) return false;
+    // no superUser needed
 
     var bookingById = new Map(
       bookings.map(function (b) {
@@ -652,7 +651,8 @@
         return;
       }
 
-      if (!ja.service_provider_id || !ja.booking_id) return;
+      var spId = ja.sp_id || ja.service_provider_id;
+      if (!spId || !ja.booking_id) return;
 
       var booking = bookingById.get(ja.booking_id);
       if (!booking) return;
@@ -661,19 +661,9 @@
       if (!txn) return;
 
       var provider = providers.find(function (sp) {
-        return sp.service_provider_id === ja.service_provider_id;
+        return (sp.sp_id || sp.service_provider_id) === spId;
       });
       if (!provider) return;
-
-      var unit = units.find(function (u) {
-        return u.unit_id === provider.unit_id;
-      });
-      if (!unit) return;
-
-      var collective = collectives.find(function (c) {
-        return c.collective_id === unit.collective_id;
-      });
-      if (!collective) return;
 
       var bookingSuffix = String(ja.booking_id).replace("BKG", "");
       var totalAmount = Number(txn.amount || 0);
@@ -698,51 +688,18 @@
         booking_id: ja.booking_id,
         role: "provider",
         service_provider_id: provider.service_provider_id,
-        amount: Math.round(totalAmount * 0.78 * 100) / 100,
-        percentage: 78,
+        amount: Math.round(totalAmount * 0.85 * 100) / 100,
+        percentage: 85,
         payout_status: payoutStatus,
         created_at: createdAt,
         payout_at: payoutAt,
       });
 
-      upsertEntry({
-        ledger_id: "LDG" + bookingSuffix + "_UNIT_MANAGER",
-        transaction_id: txn.transaction_id,
-        booking_id: ja.booking_id,
-        role: "unit_manager",
-        unit_id: unit.unit_id,
-        amount: Math.round(totalAmount * 0.07 * 100) / 100,
-        percentage: 7,
-        payout_status: payoutStatus,
-        created_at: createdAt,
-        payout_at: payoutAt,
-      });
+      
 
-      upsertEntry({
-        ledger_id: "LDG" + bookingSuffix + "_COLLECTIVE_MANAGER",
-        transaction_id: txn.transaction_id,
-        booking_id: ja.booking_id,
-        role: "collective_manager",
-        collective_id: collective.collective_id,
-        amount: Math.round(totalAmount * 0.04 * 100) / 100,
-        percentage: 4,
-        payout_status: payoutStatus,
-        created_at: createdAt,
-        payout_at: payoutAt,
-      });
+      
 
-      upsertEntry({
-        ledger_id: "LDG" + bookingSuffix + "_SUPER_USER",
-        transaction_id: txn.transaction_id,
-        booking_id: ja.booking_id,
-        role: "super_user",
-        super_user_id: superUser.super_user_id,
-        amount: Math.round(totalAmount * 0.11 * 100) / 100,
-        percentage: 11,
-        payout_status: payoutStatus,
-        created_at: createdAt,
-        payout_at: payoutAt,
-      });
+      
     });
 
     AppStore.data.revenue_ledger = ledger;

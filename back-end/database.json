@@ -1,97 +1,34 @@
 {
-  "collectives": [
+  "regions": [
     {
-      "collective_id": "b2b636cc-a295-445c-844f-eed968905d91",
-      "collective_name": "North Chennai Collective",
+      "region_id": "b2b636cc-a295-445c-844f-eed968905d91",
+      "region_name": "Chennai North",
       "is_active": true,
       "created_at": "2025-10-01T00:00:00Z"
-    }
-  ],
-  "sectors": [
-    {
-      "sector_id": "a167786b-6c7b-464e-961b-c80e07939da9",
-      "sector_name": "Downtown Core",
-      "state": "Tamil Nadu",
-      "region": "Central",
-      "density_tier": "HIGH",
-      "is_active": true,
-      "collective_id": "b2b636cc-a295-445c-844f-eed968905d91"
     },
     {
-      "sector_id": "c4a3ff32-47d9-4061-8f88-8d13929e42f1",
-      "sector_name": "Anna Nagar West",
-      "state": "Tamil Nadu",
-      "region": "North",
-      "density_tier": "MEDIUM",
+      "region_id": "r2b636cc-a295-445c-844f-eed968905d92",
+      "region_name": "Chennai South",
       "is_active": true,
-      "collective_id": "b2b636cc-a295-445c-844f-eed968905d91"
+      "created_at": "2025-10-01T00:00:00Z"
     },
     {
-      "sector_id": "3e0f5367-375e-4234-87d0-2ebe00e7853f",
-      "sector_name": "Velachery South",
-      "state": "Tamil Nadu",
-      "region": "South",
-      "density_tier": "HIGH",
+      "region_id": "r3b636cc-a295-445c-844f-eed968905d93",
+      "region_name": "Trichy",
       "is_active": true,
-      "collective_id": "b2b636cc-a295-445c-844f-eed968905d91"
-    }
-  ],
-  "units": [
-    {
-      "unit_id": "de90b05c-9dc0-4e6c-b2f8-8f42914783fa",
-      "unit_name": "Electrical & AC Services",
-      "rating": 4.33,
-      "rating_count": 3,
-      "is_active": true,
-      "created_at": "2025-10-31T00:00:00Z",
-      "collective_id": "b2b636cc-a295-445c-844f-eed968905d91",
-      "category": "Plumbing",
-      "zone": ""
+      "created_at": "2025-10-01T00:00:00Z"
     },
     {
-      "unit_id": "8f06716e-01e2-47d1-a51f-f7889dcdd68a",
-      "unit_name": "Plumbing & Sanitary Services",
-      "rating": 5,
-      "rating_count": 2,
+      "region_id": "r4b636cc-a295-445c-844f-eed968905d94",
+      "region_name": "Madurai",
       "is_active": true,
-      "created_at": "2025-11-20T00:00:00Z",
-      "collective_id": "b2b636cc-a295-445c-844f-eed968905d91"
+      "created_at": "2025-10-01T00:00:00Z"
     },
     {
-      "unit_id": "fdf27d6a-0ab1-4f61-9a57-8cc1a886bf4d",
-      "unit_name": "Carpentry & Furniture Services",
-      "rating": 0,
-      "rating_count": 0,
+      "region_id": "r5b636cc-a295-445c-844f-eed968905d95",
+      "region_name": "Coimbatore",
       "is_active": true,
-      "created_at": "2026-01-10T00:00:00Z",
-      "collective_id": "b2b636cc-a295-445c-844f-eed968905d91"
-    },
-    {
-      "unit_id": "ff4dc4e4-9be3-4960-b286-3cd79e497a41",
-      "unit_name": "Pest Control & Sanitization",
-      "rating": 0,
-      "rating_count": 0,
-      "is_active": true,
-      "created_at": "2026-01-15T00:00:00Z",
-      "collective_id": "b2b636cc-a295-445c-844f-eed968905d91"
-    },
-    {
-      "unit_id": "b4304bcb-eff4-4797-ad52-f7427c133a23",
-      "unit_name": "Home Cleaning Services",
-      "rating": 0,
-      "rating_count": 0,
-      "is_active": true,
-      "created_at": "2026-02-01T00:00:00Z",
-      "collective_id": "b2b636cc-a295-445c-844f-eed968905d91"
-    },
-    {
-      "unit_id": "5442e303-0877-4aea-90fa-bf1880010833",
-      "unit_name": "Shricharan's unit",
-      "rating": 0,
-      "rating_count": 0,
-      "is_active": true,
-      "created_at": "2026-05-04T07:45:16.321Z",
-      "collective_id": "b2b636cc-a295-445c-844f-eed968905d91"
+      "created_at": "2025-10-01T00:00:00Z"
     }
   ],
   "superUsers": [
@@ -106,86 +43,61 @@
       "created_at": "2023-01-01T00:00:00Z"
     }
   ],
-  "collectiveManagers": [
+  "regionManagers": [
     {
-      "cm_id": "895cfdc6-a51b-41f4-8a19-e14be2941c22",
+      "rm_id": "895cfdc6-a51b-41f4-8a19-e14be2941c22",
       "name": "Suresh Patel",
-      "email": "suresh@collective.com",
+      "email": "suresh@region.com",
       "password_hash": "scrypt:3d4c29d2e57fdf163812df24d61c6737:80f48acd07e1a15af93b80877db83caa04c36a52049f2aec099cb7ac6a565034dc67dfd28691e16ed77f0ba0d68950f97f5a2a9b904e33be2f905e9909c54b95",
       "phone": "9988776655",
       "is_active": true,
       "created_at": "2024-10-10T00:00:00Z",
       "updated_at": "2026-04-10T00:00:00Z",
-      "collective_id": "b2b636cc-a295-445c-844f-eed968905d91"
-    }
-  ],
-  "unitManagers": [
-    {
-      "um_id": "d86b4722-006e-45f8-8a14-303896f61528",
-      "name": "Karan Mehta",
-      "email": "karan.m@unit.com",
-      "password_hash": "scrypt:0e7129922fc8f95cf5d3b07e25784af5:417636cee3b87a6acf175ef0b55ccf60085527c8ad7985c11fde091446f4ac0d506e91f6103349e1c9f09e7d41b78621cb7ed7213cf09b4c4cf2107117e8dcba",
-      "phone": "9876543210",
-      "is_active": true,
-      "created_at": "2024-11-09T00:00:00Z",
-      "updated_at": "2026-05-03T23:12:18.674Z",
-      "unit_id": "de90b05c-9dc0-4e6c-b2f8-8f42914783fa",
-      "dob": "0056-05-04"
+      "region_id": "b2b636cc-a295-445c-844f-eed968905d91"
     },
     {
-      "um_id": "07c96683-e3cd-4670-9e91-72dca1b4c4da",
-      "name": "Naveen Raj",
-      "email": "naveen.r@unit.com",
-      "password_hash": "scrypt:c84a3e52417de03ffad210ecb7bfe58b:ac1f7c0e7f56c9f77cfd09a6c7bd8a7c8706635498b3b2f73a0c1d0c8850998dd4be6d287f0c32187435bffc3588e57094f8b274fa8ee749181e3826b1e0f9e0",
-      "phone": "9930012277",
+      "rm_id": "rm-chennai-south-002",
+      "name": "Ramesh Sundaram",
+      "email": "ramesh@region.com",
+      "password_hash": "scrypt:3d4c29d2e57fdf163812df24d61c6737:80f48acd07e1a15af93b80877db83caa04c36a52049f2aec099cb7ac6a565034dc67dfd28691e16ed77f0ba0d68950f97f5a2a9b904e33be2f905e9909c54b95",
+      "phone": "9988776656",
       "is_active": true,
-      "created_at": "2024-12-05T00:00:00Z",
-      "updated_at": "2026-04-09T00:00:00Z",
-      "unit_id": "8f06716e-01e2-47d1-a51f-f7889dcdd68a"
-    },
-    {
-      "um_id": "997b09ee-34f5-47e5-8fe7-cc42322bcdb6",
-      "name": "Anita Desai",
-      "email": "anita.d@unit.com",
-      "password_hash": "scrypt:f73b55491898a7e824d8435244b7df42:9abc4011879d6cce73a7b651a835b13f8ea2ba2be36bb8bb67900a0333c417f8ba1e8e2120d9ffcb126a4b3dca3b8951aea6eecc407e9eb256a5fb274902542f",
-      "phone": "9944332211",
-      "is_active": true,
-      "created_at": "2026-01-10T00:00:00Z",
+      "created_at": "2024-11-01T00:00:00Z",
       "updated_at": "2026-04-10T00:00:00Z",
-      "unit_id": "fdf27d6a-0ab1-4f61-9a57-8cc1a886bf4d"
+      "region_id": "r2b636cc-a295-445c-844f-eed968905d92"
     },
     {
-      "um_id": "42f152f8-b0b6-465b-9fe3-17eddc4c8245",
-      "name": "Rahul Sharma",
-      "email": "rahul.s@unit.com",
-      "password_hash": "scrypt:db9b2bc35b6a9aa9456269b54ae99965:b455ff9b4498819fe6ff70af515327446f4c96643c9857fa1fd6afb28962c7b52c3d08a66b8195a682e362d659bf0c874398986d921c7f93e36f1f9e76309408",
-      "phone": "9955667788",
+      "rm_id": "rm-trichy-003",
+      "name": "Karthik Raja",
+      "email": "karthik@region.com",
+      "password_hash": "scrypt:3d4c29d2e57fdf163812df24d61c6737:80f48acd07e1a15af93b80877db83caa04c36a52049f2aec099cb7ac6a565034dc67dfd28691e16ed77f0ba0d68950f97f5a2a9b904e33be2f905e9909c54b95",
+      "phone": "9988776657",
       "is_active": true,
-      "created_at": "2026-01-15T00:00:00Z",
+      "created_at": "2024-12-01T00:00:00Z",
       "updated_at": "2026-04-10T00:00:00Z",
-      "unit_id": "ff4dc4e4-9be3-4960-b286-3cd79e497a41"
+      "region_id": "r3b636cc-a295-445c-844f-eed968905d93"
     },
     {
-      "um_id": "4d77a4e7-3922-43d7-8867-9fd4d55e038a",
-      "name": "Meera Reddy",
-      "email": "meera.r@unit.com",
-      "password_hash": "scrypt:16120ccae0057ed050b3712cd389fc16:4432e805089bb8dc35eb503ae58145bfc39e611a7446b705ba12c9a708d570ccbe1e79622812bb2a89d22fdab55e68ce9f6cd5d24defd10e32993371ea74c4c7",
-      "phone": "9966778899",
+      "rm_id": "rm-madurai-004",
+      "name": "Meena Swaminathan",
+      "email": "meena@region.com",
+      "password_hash": "scrypt:3d4c29d2e57fdf163812df24d61c6737:80f48acd07e1a15af93b80877db83caa04c36a52049f2aec099cb7ac6a565034dc67dfd28691e16ed77f0ba0d68950f97f5a2a9b904e33be2f905e9909c54b95",
+      "phone": "9988776658",
       "is_active": true,
-      "created_at": "2026-02-01T00:00:00Z",
+      "created_at": "2025-01-01T00:00:00Z",
       "updated_at": "2026-04-10T00:00:00Z",
-      "unit_id": "b4304bcb-eff4-4797-ad52-f7427c133a23"
+      "region_id": "r4b636cc-a295-445c-844f-eed968905d94"
     },
     {
-      "um_id": "c26e6d63-c6c1-48c6-bf18-3566d7b5f043",
-      "name": "Shri charan",
-      "email": "vasudevmmmm@gmail.com",
-      "password_hash": "scrypt:61cbf77005450932cdea5b2a1f3d1db1:303f56dcef9080b3f248eb8aa0b0039911a6c1a27721b5520f83ae02c3a1e40f14daf57fcdf900e5c917fa6bbcaf0bd5f81ab2d4f591972b31cc8dc2df17cff9",
-      "phone": "+911234567890",
+      "rm_id": "rm-coimbatore-005",
+      "name": "Anand Rajan",
+      "email": "anand@region.com",
+      "password_hash": "scrypt:3d4c29d2e57fdf163812df24d61c6737:80f48acd07e1a15af93b80877db83caa04c36a52049f2aec099cb7ac6a565034dc67dfd28691e16ed77f0ba0d68950f97f5a2a9b904e33be2f905e9909c54b95",
+      "phone": "9988776659",
       "is_active": true,
-      "unit_id": "5442e303-0877-4aea-90fa-bf1880010833",
-      "created_at": "2026-05-04T07:39:38.145Z",
-      "updated_at": "2026-05-04T07:45:16.326Z"
+      "created_at": "2025-02-01T00:00:00Z",
+      "updated_at": "2026-04-10T00:00:00Z",
+      "region_id": "r5b636cc-a295-445c-844f-eed968905d95"
     }
   ],
   "serviceProviders": [
@@ -207,8 +119,8 @@
       "hour_end": "23:00",
       "created_at": "2024-10-31T08:00:00Z",
       "updated_at": "2026-04-10T11:30:00Z",
-      "unit_id": "de90b05c-9dc0-4e6c-b2f8-8f42914783fa",
-      "home_sector_id": "a167786b-6c7b-464e-961b-c80e07939da9"
+      "city": "Chennai",
+      "region_id": "b2b636cc-a295-445c-844f-eed968905d91"
     },
     {
       "sp_id": "02ded170-f08e-4870-8877-83566238dad9",
@@ -228,8 +140,8 @@
       "hour_end": "23:00",
       "created_at": "2024-11-22T08:00:00Z",
       "updated_at": "2026-04-10T09:20:00Z",
-      "unit_id": "8f06716e-01e2-47d1-a51f-f7889dcdd68a",
-      "home_sector_id": "c4a3ff32-47d9-4061-8f88-8d13929e42f1"
+      "city": "Chennai",
+      "region_id": "b2b636cc-a295-445c-844f-eed968905d91"
     },
     {
       "sp_id": "8b2ca424-d655-4005-a253-ddb53d463aa0",
@@ -249,8 +161,8 @@
       "hour_end": "23:00",
       "created_at": "2025-01-06T08:00:00Z",
       "updated_at": "2026-04-01T10:00:00Z",
-      "unit_id": "de90b05c-9dc0-4e6c-b2f8-8f42914783fa",
-      "home_sector_id": "3e0f5367-375e-4234-87d0-2ebe00e7853f"
+      "city": "Chennai",
+      "region_id": "b2b636cc-a295-445c-844f-eed968905d91"
     },
     {
       "sp_id": "f0b571d2-60d4-4368-bab7-4aa86846bb96",
@@ -270,8 +182,8 @@
       "hour_end": "23:00",
       "created_at": "2026-01-10T09:00:00Z",
       "updated_at": "2026-04-10T10:00:00Z",
-      "unit_id": "fdf27d6a-0ab1-4f61-9a57-8cc1a886bf4d",
-      "home_sector_id": "a167786b-6c7b-464e-961b-c80e07939da9"
+      "city": "Chennai",
+      "region_id": "b2b636cc-a295-445c-844f-eed968905d91"
     },
     {
       "sp_id": "d15687e3-f19c-439e-863c-a5df968c468f",
@@ -291,8 +203,8 @@
       "hour_end": "23:00",
       "created_at": "2026-01-12T09:00:00Z",
       "updated_at": "2026-04-10T11:00:00Z",
-      "unit_id": "fdf27d6a-0ab1-4f61-9a57-8cc1a886bf4d",
-      "home_sector_id": "c4a3ff32-47d9-4061-8f88-8d13929e42f1"
+      "city": "Chennai",
+      "region_id": "r2b636cc-a295-445c-844f-eed968905d92"
     },
     {
       "sp_id": "119bae69-96f2-4141-9d4f-fa9a0d4ab083",
@@ -312,8 +224,8 @@
       "hour_end": "23:00",
       "created_at": "2026-01-15T08:00:00Z",
       "updated_at": "2026-04-10T09:00:00Z",
-      "unit_id": "ff4dc4e4-9be3-4960-b286-3cd79e497a41",
-      "home_sector_id": "3e0f5367-375e-4234-87d0-2ebe00e7853f"
+      "city": "Chennai",
+      "region_id": "r2b636cc-a295-445c-844f-eed968905d92"
     },
     {
       "sp_id": "5e3908ef-0319-4058-91eb-430a54860f7e",
@@ -333,8 +245,8 @@
       "hour_end": "23:00",
       "created_at": "2026-02-01T08:00:00Z",
       "updated_at": "2026-04-10T10:00:00Z",
-      "unit_id": "b4304bcb-eff4-4797-ad52-f7427c133a23",
-      "home_sector_id": "a167786b-6c7b-464e-961b-c80e07939da9"
+      "city": "Chennai",
+      "region_id": "r2b636cc-a295-445c-844f-eed968905d92"
     },
     {
       "sp_id": "66ff9a47-2eec-4f89-9d6b-a9f2692c3d63",
@@ -354,8 +266,8 @@
       "hour_end": "23:00",
       "created_at": "2026-05-04T07:10:47.245Z",
       "updated_at": "2026-05-04T07:10:47.246Z",
-      "unit_id": "8f06716e-01e2-47d1-a51f-f7889dcdd68a",
-      "home_sector_id": "a167786b-6c7b-464e-961b-c80e07939da9"
+      "city": "Trichy",
+      "region_id": "r3b636cc-a295-445c-844f-eed968905d93"
     },
     {
       "sp_id": "21724a6a-88dd-4379-b777-798fceebe43e",
@@ -375,8 +287,8 @@
       "hour_end": "23:00",
       "created_at": "2026-05-04T07:10:47.246Z",
       "updated_at": "2026-05-04T07:10:47.246Z",
-      "unit_id": "8f06716e-01e2-47d1-a51f-f7889dcdd68a",
-      "home_sector_id": "3e0f5367-375e-4234-87d0-2ebe00e7853f"
+      "city": "Trichy",
+      "region_id": "r3b636cc-a295-445c-844f-eed968905d93"
     }
   ],
   "providerUnavailability": [
@@ -523,7 +435,7 @@
       "address": "14 Boat Club Road, Chennai",
       "rating": 0,
       "is_active": true,
-      "home_sector_id": "a167786b-6c7b-464e-961b-c80e07939da9"
+      "city": "Chennai"
     },
     {
       "customer_id": "ea92e879-8322-4578-9db8-6cc4e2f481cf",
@@ -535,7 +447,7 @@
       "address": "33 Anna Nagar, Chennai",
       "rating": 0,
       "is_active": true,
-      "home_sector_id": "c4a3ff32-47d9-4061-8f88-8d13929e42f1"
+      "city": "Chennai"
     },
     {
       "customer_id": "df3791f4-9e12-468e-9c7d-9b5e26d03f1c",
@@ -547,7 +459,7 @@
       "address": "77 Velachery Main Road, Chennai",
       "rating": 0,
       "is_active": true,
-      "home_sector_id": "3e0f5367-375e-4234-87d0-2ebe00e7853f"
+      "city": "Chennai"
     }
   ],
   "carts": [
@@ -617,7 +529,7 @@
       "service_id": "916bc5fc-12b4-4a1e-aac1-c9003d9ad1ca",
       "service_name": "Standard Home Clean",
       "description": "Complete standard clean for up to 3BHK homes.",
-      "image_url": "https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=800&q=80",
+      "image_url": "https://res.cloudinary.com/ddwqapdwe/image/upload/v1788275198/Home_Clean_rs9yxq.jpg",
       "base_price": 499,
       "estimated_duration_min": 120,
       "average_rating": 4,
@@ -625,86 +537,101 @@
       "is_available": true,
       "category_id": "9d70ce12-ec1a-4a6b-b27d-9b163a2bf1d9",
       "photos": [
-        "https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=800&q=80"
+        "https://res.cloudinary.com/ddwqapdwe/image/upload/v1788275198/Home_Clean_rs9yxq.jpg"
       ]
     },
     {
       "service_id": "6f1c5ae3-d507-4b07-80f6-db26c7a1ef3c",
       "service_name": "Deep Home Clean",
       "description": "Deep cleaning for kitchen, bathrooms, and living areas.",
-      "image_url": "https://images.unsplash.com/photo-1527515637462-cff94eecc1ac?auto=format&fit=crop&w=800&q=80",
+      "image_url": "https://res.cloudinary.com/ddwqapdwe/image/upload/v1788275197/Deep_Clean_ygwxxj.jpg",
       "base_price": 899,
       "estimated_duration_min": 180,
       "average_rating": 0,
       "rating_count": 0,
       "is_available": true,
       "category_id": "9d70ce12-ec1a-4a6b-b27d-9b163a2bf1d9",
-      "photos": []
+      "photos": [
+        "https://res.cloudinary.com/ddwqapdwe/image/upload/v1788275197/Deep_Clean_ygwxxj.jpg"
+      ]
     },
     {
       "service_id": "15dab8e7-1465-4461-a9df-28798195b97a",
       "service_name": "Split AC Repair",
       "description": "Inspection and repair for common split AC faults.",
-      "image_url": "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&w=800&q=80",
+      "image_url": "https://res.cloudinary.com/ddwqapdwe/image/upload/v1788275196/AC_Repair-1_cdlpiy.jpg",
       "base_price": 1299,
       "estimated_duration_min": 90,
       "average_rating": 4.5,
       "rating_count": 2,
       "is_available": true,
       "category_id": "baf467f1-dfad-493a-9995-dfce7f14cb50",
-      "photos": []
+      "photos": [
+        "https://res.cloudinary.com/ddwqapdwe/image/upload/v1788275196/AC_Repair-1_cdlpiy.jpg",
+        "https://res.cloudinary.com/ddwqapdwe/image/upload/v1788275196/AC_Repair-2_jhaesn.jpg"
+      ]
     },
     {
       "service_id": "074e6b61-ab44-4948-a365-ad0ef50e92e9",
       "service_name": "Kitchen Sink Leak Fix",
       "description": "Leak detection and repair for kitchen sink pipelines.",
-      "image_url": "https://images.unsplash.com/photo-1607472586893-edb57bdc0e39?auto=format&fit=crop&w=800&q=80",
+      "image_url": "https://res.cloudinary.com/ddwqapdwe/image/upload/v1788275197/Kitchen_Sink_Leak_wldn35.jpg",
       "base_price": 699,
       "estimated_duration_min": 75,
       "average_rating": 5,
       "rating_count": 2,
       "is_available": true,
       "category_id": "7991c5d3-ba82-47c5-970c-1a3d429d0eb8",
-      "photos": []
+      "photos": [
+        "https://res.cloudinary.com/ddwqapdwe/image/upload/v1788275197/Kitchen_Sink_Leak_wldn35.jpg"
+      ]
     },
     {
       "service_id": "4d97f6a2-3ddb-4dfd-88ed-1837e390ddfa",
       "service_name": "Bed Assembly",
       "description": "Expert assembly of all types of beds.",
-      "image_url": "https://images.unsplash.com/photo-1505798577917-a671540f0afe?auto=format&fit=crop&w=800&q=80",
+      "image_url": "https://res.cloudinary.com/ddwqapdwe/image/upload/v1788275196/Bed_Assembly_mhl6vp.webp",
       "base_price": 999,
       "estimated_duration_min": 120,
       "average_rating": 0,
       "rating_count": 0,
       "is_available": true,
       "category_id": "388e5317-5de7-4f3d-a802-eeb72670491a",
-      "photos": []
+      "photos": [
+        "https://res.cloudinary.com/ddwqapdwe/image/upload/v1788275196/Bed_Assembly_mhl6vp.webp"
+      ]
     },
     {
       "service_id": "5c5ee42e-0a18-41e0-a327-a788069d75dd",
       "service_name": "Door Lock Repair",
       "description": "Repair and replacement of door locks and handles.",
-      "image_url": "https://images.unsplash.com/photo-1538688525198-9b88f6f53126?auto=format&fit=crop&w=800&q=80",
+      "image_url": "https://res.cloudinary.com/ddwqapdwe/image/upload/v1788275196/Door_Lock_Repair-2_tpt7wk.jpg",
       "base_price": 499,
       "estimated_duration_min": 60,
       "average_rating": 0,
       "rating_count": 0,
       "is_available": true,
       "category_id": "388e5317-5de7-4f3d-a802-eeb72670491a",
-      "photos": []
+      "photos": [
+        "https://res.cloudinary.com/ddwqapdwe/image/upload/v1788275196/Door_Lock_Repair-2_tpt7wk.jpg",
+        "https://res.cloudinary.com/ddwqapdwe/image/upload/v1788275196/Door_Lock_Repair-1_zbos6r.avif"
+      ]
     },
     {
       "service_id": "cfdfe0ab-afec-445f-82d8-4e6810a6f903",
       "service_name": "General Pest Control",
       "description": "Treatment for cockroaches, ants, and other common pests.",
-      "image_url": "https://images.unsplash.com/photo-1618477461853-cf6ed80faba5?auto=format&fit=crop&w=800&q=80",
+      "image_url": "https://res.cloudinary.com/ddwqapdwe/image/upload/v1788275197/Pest_Control-2_r61mjv.jpg",
       "base_price": 1599,
       "estimated_duration_min": 90,
       "average_rating": 0,
       "rating_count": 0,
       "is_available": true,
       "category_id": "0f8373f8-e3a6-4c18-9f46-816f86c3f8f2",
-      "photos": []
+      "photos": [
+        "https://res.cloudinary.com/ddwqapdwe/image/upload/v1788275197/Pest_Control-2_r61mjv.jpg",
+        "https://res.cloudinary.com/ddwqapdwe/image/upload/v1788275197/Pest_Control-1_ugqzyd.jpg"
+      ]
     }
   ],
   "serviceSkills": [
@@ -984,8 +911,7 @@
       "is_active": true,
       "created_at": "2026-03-29T03:18:22Z",
       "updated_at": "2026-03-29T06:18:22Z",
-      "customer_id": "1e541f38-cc88-4668-9495-bb41dea2aa76",
-      "sector_id": "a167786b-6c7b-464e-961b-c80e07939da9"
+      "customer_id": "1e541f38-cc88-4668-9495-bb41dea2aa76"
     },
     {
       "booking_id": "8e542704-f41e-4191-bf1c-56b3dc337ab2",
@@ -997,8 +923,7 @@
       "is_active": true,
       "created_at": "2026-04-01T16:30:00Z",
       "updated_at": "2026-04-02T10:40:00Z",
-      "customer_id": "ea92e879-8322-4578-9db8-6cc4e2f481cf",
-      "sector_id": "c4a3ff32-47d9-4061-8f88-8d13929e42f1"
+      "customer_id": "ea92e879-8322-4578-9db8-6cc4e2f481cf"
     },
     {
       "booking_id": "c5bc5d10-c4f3-4813-b889-dc5c62adc9b9",
@@ -1010,8 +935,7 @@
       "is_active": true,
       "created_at": "2026-04-02T08:10:00Z",
       "updated_at": "2026-04-03T14:20:00Z",
-      "customer_id": "df3791f4-9e12-468e-9c7d-9b5e26d03f1c",
-      "sector_id": "3e0f5367-375e-4234-87d0-2ebe00e7853f"
+      "customer_id": "df3791f4-9e12-468e-9c7d-9b5e26d03f1c"
     },
     {
       "booking_id": "6f61b74c-24d9-4f22-9896-6966dd6f3c7e",
@@ -1023,8 +947,7 @@
       "is_active": true,
       "created_at": "2026-04-05T11:00:00Z",
       "updated_at": "2026-04-07T12:30:00Z",
-      "customer_id": "1e541f38-cc88-4668-9495-bb41dea2aa76",
-      "sector_id": "a167786b-6c7b-464e-961b-c80e07939da9"
+      "customer_id": "1e541f38-cc88-4668-9495-bb41dea2aa76"
     },
     {
       "booking_id": "faa244a5-c1e0-43ea-ab3a-be1b1f5b02e0",
@@ -1036,8 +959,7 @@
       "is_active": false,
       "created_at": "2026-04-08T09:15:00Z",
       "updated_at": "2026-04-08T10:00:00Z",
-      "customer_id": "1e541f38-cc88-4668-9495-bb41dea2aa76",
-      "sector_id": "a167786b-6c7b-464e-961b-c80e07939da9"
+      "customer_id": "1e541f38-cc88-4668-9495-bb41dea2aa76"
     },
     {
       "service_address": "14 Boat Club Road, Chennai",
@@ -1045,7 +967,6 @@
       "failure_reason": null,
       "is_active": true,
       "customer_id": "1e541f38-cc88-4668-9495-bb41dea2aa76",
-      "sector_id": "a167786b-6c7b-464e-961b-c80e07939da9",
       "booking_id": "0dfb49ef-5451-4e3b-b255-02068a1c6df3",
       "created_at": "2026-05-04T11:42:21.763",
       "updated_at": "2026-05-04T11:42:21.775"
@@ -1056,7 +977,6 @@
       "failure_reason": null,
       "is_active": true,
       "customer_id": "1e541f38-cc88-4668-9495-bb41dea2aa76",
-      "sector_id": "a167786b-6c7b-464e-961b-c80e07939da9",
       "booking_id": "cc21e108-7967-46a8-8f37-0cea27bd1d79",
       "created_at": "2026-05-04T11:42:21.776",
       "updated_at": "2026-05-04T11:42:21.783"
@@ -1067,7 +987,6 @@
       "failure_reason": null,
       "is_active": true,
       "customer_id": "1e541f38-cc88-4668-9495-bb41dea2aa76",
-      "sector_id": "a167786b-6c7b-464e-961b-c80e07939da9",
       "booking_id": "5a1eea10-88eb-4dff-8576-779bd76e33c6",
       "created_at": "2026-05-04T12:28:11.760",
       "updated_at": "2026-05-04T12:28:11.760"
@@ -1078,7 +997,6 @@
       "failure_reason": null,
       "is_active": true,
       "customer_id": "1e541f38-cc88-4668-9495-bb41dea2aa76",
-      "sector_id": "a167786b-6c7b-464e-961b-c80e07939da9",
       "booking_id": "485b4054-9dda-49c9-8419-1f11b8f763f0",
       "created_at": "2026-05-04T12:37:08.935",
       "updated_at": "2026-05-04T12:37:08.935"
@@ -1089,7 +1007,6 @@
       "failure_reason": null,
       "is_active": true,
       "customer_id": "1e541f38-cc88-4668-9495-bb41dea2aa76",
-      "sector_id": "a167786b-6c7b-464e-961b-c80e07939da9",
       "booking_id": "56b410f6-830a-4ac0-8b30-4226bb092fff",
       "created_at": "2026-05-04T12:37:34.177",
       "updated_at": "2026-05-04T12:37:34.177"
@@ -1100,7 +1017,6 @@
       "failure_reason": null,
       "is_active": true,
       "customer_id": "1e541f38-cc88-4668-9495-bb41dea2aa76",
-      "sector_id": "a167786b-6c7b-464e-961b-c80e07939da9",
       "booking_id": "26afeafa-14c6-4ff0-88d0-16b4e07fc9f4",
       "created_at": "2026-05-04T12:37:39.397",
       "updated_at": "2026-05-04T12:37:39.397"
@@ -1111,7 +1027,6 @@
       "failure_reason": null,
       "is_active": true,
       "customer_id": "1e541f38-cc88-4668-9495-bb41dea2aa76",
-      "sector_id": "a167786b-6c7b-464e-961b-c80e07939da9",
       "booking_id": "c1cab78a-53b6-4ded-ad0e-cf5aa487b44f",
       "created_at": "2026-05-04T12:41:07.952",
       "updated_at": "2026-05-04T12:41:07.971"
@@ -1122,7 +1037,6 @@
       "failure_reason": null,
       "is_active": true,
       "customer_id": "1e541f38-cc88-4668-9495-bb41dea2aa76",
-      "sector_id": "a167786b-6c7b-464e-961b-c80e07939da9",
       "booking_id": "e1cd2a09-58d8-4f79-868b-c63283d90ab8",
       "created_at": "2026-05-04T12:41:48.542",
       "updated_at": "2026-05-04T12:47:39.909"
@@ -1133,7 +1047,6 @@
       "failure_reason": null,
       "is_active": true,
       "customer_id": "1e541f38-cc88-4668-9495-bb41dea2aa76",
-      "sector_id": "a167786b-6c7b-464e-961b-c80e07939da9",
       "booking_id": "174a7d23-8099-4111-84f9-a10609d16bc2",
       "created_at": "2026-05-04T12:43:02.748",
       "updated_at": "2026-05-04T12:47:44.124"
@@ -1144,7 +1057,6 @@
       "failure_reason": null,
       "is_active": true,
       "customer_id": "1e541f38-cc88-4668-9495-bb41dea2aa76",
-      "sector_id": "a167786b-6c7b-464e-961b-c80e07939da9",
       "booking_id": "a74e8340-5e57-4a45-802a-f7dd67d9df07",
       "created_at": "2026-05-04T12:58:38.050",
       "updated_at": "2026-05-04T12:59:30.933"
@@ -1155,7 +1067,6 @@
       "failure_reason": null,
       "is_active": true,
       "customer_id": "1e541f38-cc88-4668-9495-bb41dea2aa76",
-      "sector_id": "a167786b-6c7b-464e-961b-c80e07939da9",
       "booking_id": "605327c2-1f13-428d-bb56-b920d71631ea",
       "created_at": "2026-05-04T12:58:38.070",
       "updated_at": "2026-05-04T12:59:19.884"
@@ -1166,7 +1077,6 @@
       "failure_reason": null,
       "is_active": true,
       "customer_id": "1e541f38-cc88-4668-9495-bb41dea2aa76",
-      "sector_id": "a167786b-6c7b-464e-961b-c80e07939da9",
       "booking_id": "41ae27b9-7ef1-46aa-94f4-4026c7925be0",
       "created_at": "2026-05-04T12:58:38.094",
       "updated_at": "2026-05-04T12:59:03.933"
@@ -1733,72 +1643,57 @@
     {
       "ledger_id": "39397d91-46b8-4323-a0a7-2e4f3e93dbf3",
       "payout_status": "DISBURSED",
-      "provider_amount": 1013.22,
-      "um_amount": 103.92,
-      "cm_amount": 51.96,
-      "platform_amount": 129.9,
+      "provider_amount": 1104.15,
+      "platform_amount": 194.85,
       "created_at": "2026-03-29T03:22:00Z",
       "paid_at": "2026-03-29T06:20:00Z",
       "booking_id": "e63de561-0bf0-4476-be40-24b9f617cb5e",
       "sp_id": "89b3386b-aea4-4602-a2f8-1199b5c14303",
-      "um_id": "d86b4722-006e-45f8-8a14-303896f61528",
-      "cm_id": "895cfdc6-a51b-41f4-8a19-e14be2941c22"
+      "rm_id": "895cfdc6-a51b-41f4-8a19-e14be2941c22"
     },
     {
       "ledger_id": "bd3d5bdd-7cb7-441e-8742-17b0ccde70bc",
       "payout_status": "DISBURSED",
-      "provider_amount": 545.22,
-      "um_amount": 55.92,
-      "cm_amount": 27.96,
-      "platform_amount": 69.9,
+      "provider_amount": 594.15,
+      "platform_amount": 104.85,
       "created_at": "2026-04-01T16:35:00Z",
       "paid_at": "2026-04-02T10:45:00Z",
       "booking_id": "8e542704-f41e-4191-bf1c-56b3dc337ab2",
       "sp_id": "02ded170-f08e-4870-8877-83566238dad9",
-      "um_id": "07c96683-e3cd-4670-9e91-72dca1b4c4da",
-      "cm_id": "895cfdc6-a51b-41f4-8a19-e14be2941c22"
+      "rm_id": "895cfdc6-a51b-41f4-8a19-e14be2941c22"
     },
     {
       "ledger_id": "849fa1b3-fc95-4429-9f68-cb6c16489ff2",
       "payout_status": "DISBURSED",
-      "provider_amount": 389.22,
-      "um_amount": 39.92,
-      "cm_amount": 19.96,
-      "platform_amount": 49.9,
+      "provider_amount": 424.15,
+      "platform_amount": 74.85,
       "created_at": "2026-04-02T08:12:00Z",
       "paid_at": "2026-04-03T14:30:00Z",
       "booking_id": "c5bc5d10-c4f3-4813-b889-dc5c62adc9b9",
       "sp_id": "89b3386b-aea4-4602-a2f8-1199b5c14303",
-      "um_id": "d86b4722-006e-45f8-8a14-303896f61528",
-      "cm_id": "895cfdc6-a51b-41f4-8a19-e14be2941c22"
+      "rm_id": "895cfdc6-a51b-41f4-8a19-e14be2941c22"
     },
     {
       "ledger_id": "4e8a1d43-8444-4d74-963d-25c5a1363269",
       "payout_status": "DISBURSED",
-      "provider_amount": 1013.22,
-      "um_amount": 103.92,
-      "cm_amount": 51.96,
-      "platform_amount": 129.9,
+      "provider_amount": 1104.15,
+      "platform_amount": 194.85,
       "created_at": "2026-04-05T11:03:00Z",
       "paid_at": "2026-04-07T10:40:00Z",
       "booking_id": "6f61b74c-24d9-4f22-9896-6966dd6f3c7e",
       "sp_id": "89b3386b-aea4-4602-a2f8-1199b5c14303",
-      "um_id": "d86b4722-006e-45f8-8a14-303896f61528",
-      "cm_id": "895cfdc6-a51b-41f4-8a19-e14be2941c22"
+      "rm_id": "895cfdc6-a51b-41f4-8a19-e14be2941c22"
     },
     {
       "ledger_id": "f0e7c5a3-8c76-4ec6-a4e3-de5fae1d592c",
       "payout_status": "DISBURSED",
-      "provider_amount": 545.22,
-      "um_amount": 55.92,
-      "cm_amount": 27.96,
-      "platform_amount": 69.9,
+      "provider_amount": 594.15,
+      "platform_amount": 104.85,
       "created_at": "2026-04-05T11:03:00Z",
       "paid_at": "2026-04-07T12:35:00Z",
       "booking_id": "6f61b74c-24d9-4f22-9896-6966dd6f3c7e",
       "sp_id": "02ded170-f08e-4870-8877-83566238dad9",
-      "um_id": "07c96683-e3cd-4670-9e91-72dca1b4c4da",
-      "cm_id": "895cfdc6-a51b-41f4-8a19-e14be2941c22"
+      "rm_id": "895cfdc6-a51b-41f4-8a19-e14be2941c22"
     },
     {
       "ledger_id": "47a94738-4ae9-4de3-9f32-00f0c4458dd7",
@@ -1808,12 +1703,9 @@
       "booking_id": "0dfb49ef-5451-4e3b-b255-02068a1c6df3",
       "service_id": "074e6b61-ab44-4948-a365-ad0ef50e92e9",
       "sp_id": "02ded170-f08e-4870-8877-83566238dad9",
-      "um_id": "07c96683-e3cd-4670-9e91-72dca1b4c4da",
-      "cm_id": "895cfdc6-a51b-41f4-8a19-e14be2941c22",
-      "provider_amount": 545.22,
-      "um_amount": 55.92,
-      "cm_amount": 27.96,
-      "platform_amount": 69.9
+      "provider_amount": 594.15,
+      "platform_amount": 104.85,
+      "rm_id": "895cfdc6-a51b-41f4-8a19-e14be2941c22"
     },
     {
       "ledger_id": "0c6ede95-ff0d-424d-ba93-14cc02540384",
@@ -1823,12 +1715,9 @@
       "booking_id": "cc21e108-7967-46a8-8f37-0cea27bd1d79",
       "service_id": "15dab8e7-1465-4461-a9df-28798195b97a",
       "sp_id": "89b3386b-aea4-4602-a2f8-1199b5c14303",
-      "um_id": "d86b4722-006e-45f8-8a14-303896f61528",
-      "cm_id": "895cfdc6-a51b-41f4-8a19-e14be2941c22",
-      "provider_amount": 1013.22,
-      "um_amount": 103.92,
-      "cm_amount": 51.96,
-      "platform_amount": 129.9
+      "provider_amount": 1104.15,
+      "platform_amount": 194.85,
+      "rm_id": "895cfdc6-a51b-41f4-8a19-e14be2941c22"
     },
     {
       "ledger_id": "6bb4a0ee-e356-40f6-80af-396c9d9586c7",
@@ -1838,12 +1727,9 @@
       "booking_id": "c1cab78a-53b6-4ded-ad0e-cf5aa487b44f",
       "service_id": "074e6b61-ab44-4948-a365-ad0ef50e92e9",
       "sp_id": "66ff9a47-2eec-4f89-9d6b-a9f2692c3d63",
-      "um_id": "07c96683-e3cd-4670-9e91-72dca1b4c4da",
-      "cm_id": "895cfdc6-a51b-41f4-8a19-e14be2941c22",
-      "provider_amount": 545.22,
-      "um_amount": 55.92,
-      "cm_amount": 27.96,
-      "platform_amount": 69.9
+      "provider_amount": 594.15,
+      "platform_amount": 104.85,
+      "rm_id": "rm-trichy-003"
     },
     {
       "ledger_id": "e763fb7f-f730-420b-aa27-745abfcaa556",
@@ -1853,12 +1739,9 @@
       "booking_id": "e1cd2a09-58d8-4f79-868b-c63283d90ab8",
       "service_id": "5c5ee42e-0a18-41e0-a327-a788069d75dd",
       "sp_id": "f0b571d2-60d4-4368-bab7-4aa86846bb96",
-      "um_id": "997b09ee-34f5-47e5-8fe7-cc42322bcdb6",
-      "cm_id": "895cfdc6-a51b-41f4-8a19-e14be2941c22",
-      "provider_amount": 389.22,
-      "um_amount": 39.92,
-      "cm_amount": 19.96,
-      "platform_amount": 49.9
+      "provider_amount": 424.15,
+      "platform_amount": 74.85,
+      "rm_id": "895cfdc6-a51b-41f4-8a19-e14be2941c22"
     },
     {
       "ledger_id": "47bc1f05-7b78-428a-bdbc-7d0a7d57af1d",
@@ -1868,12 +1751,9 @@
       "booking_id": "174a7d23-8099-4111-84f9-a10609d16bc2",
       "service_id": "4d97f6a2-3ddb-4dfd-88ed-1837e390ddfa",
       "sp_id": "f0b571d2-60d4-4368-bab7-4aa86846bb96",
-      "um_id": "997b09ee-34f5-47e5-8fe7-cc42322bcdb6",
-      "cm_id": "895cfdc6-a51b-41f4-8a19-e14be2941c22",
-      "provider_amount": 779.22,
-      "um_amount": 79.92,
-      "cm_amount": 39.96,
-      "platform_amount": 99.9
+      "provider_amount": 849.15,
+      "platform_amount": 149.85,
+      "rm_id": "895cfdc6-a51b-41f4-8a19-e14be2941c22"
     },
     {
       "ledger_id": "b9e2a29a-9867-44df-9707-c89cd0697d96",
@@ -1883,12 +1763,9 @@
       "booking_id": "a74e8340-5e57-4a45-802a-f7dd67d9df07",
       "service_id": "4d97f6a2-3ddb-4dfd-88ed-1837e390ddfa",
       "sp_id": "f0b571d2-60d4-4368-bab7-4aa86846bb96",
-      "um_id": "997b09ee-34f5-47e5-8fe7-cc42322bcdb6",
-      "cm_id": "895cfdc6-a51b-41f4-8a19-e14be2941c22",
-      "provider_amount": 779.22,
-      "um_amount": 79.92,
-      "cm_amount": 39.96,
-      "platform_amount": 99.9
+      "provider_amount": 849.15,
+      "platform_amount": 149.85,
+      "rm_id": "895cfdc6-a51b-41f4-8a19-e14be2941c22"
     },
     {
       "ledger_id": "49365696-6639-48b5-98fd-c5239182b40b",
@@ -1898,12 +1775,9 @@
       "booking_id": "605327c2-1f13-428d-bb56-b920d71631ea",
       "service_id": "4d97f6a2-3ddb-4dfd-88ed-1837e390ddfa",
       "sp_id": "f0b571d2-60d4-4368-bab7-4aa86846bb96",
-      "um_id": "997b09ee-34f5-47e5-8fe7-cc42322bcdb6",
-      "cm_id": "895cfdc6-a51b-41f4-8a19-e14be2941c22",
-      "provider_amount": 779.22,
-      "um_amount": 79.92,
-      "cm_amount": 39.96,
-      "platform_amount": 99.9
+      "provider_amount": 849.15,
+      "platform_amount": 149.85,
+      "rm_id": "895cfdc6-a51b-41f4-8a19-e14be2941c22"
     },
     {
       "ledger_id": "40e4719c-3e9b-41f2-829d-3f74eb4942be",
@@ -1913,12 +1787,9 @@
       "booking_id": "41ae27b9-7ef1-46aa-94f4-4026c7925be0",
       "service_id": "4d97f6a2-3ddb-4dfd-88ed-1837e390ddfa",
       "sp_id": "f0b571d2-60d4-4368-bab7-4aa86846bb96",
-      "um_id": "997b09ee-34f5-47e5-8fe7-cc42322bcdb6",
-      "cm_id": "895cfdc6-a51b-41f4-8a19-e14be2941c22",
-      "provider_amount": 779.22,
-      "um_amount": 79.92,
-      "cm_amount": 39.96,
-      "platform_amount": 99.9
+      "provider_amount": 849.15,
+      "platform_amount": 149.85,
+      "rm_id": "895cfdc6-a51b-41f4-8a19-e14be2941c22"
     }
   ],
   "reviews": [
@@ -1993,24 +1864,16 @@
     {
       "setting_id": "44092443-f494-4ed8-9130-2bb24d4e595e",
       "key": "revenue_split_sp_percentage",
-      "value": "78",
+      "value": "85",
       "description": "Percentage of booking amount going to service provider",
       "updated_at": "2026-05-03T20:54:22.038Z",
       "updated_by": "7de6c1ad-a059-462a-af39-dbaea975c3cf"
     },
     {
       "setting_id": "b88dbc9a-8bdd-4be9-9334-0b254a996831",
-      "key": "revenue_split_um_percentage",
-      "value": "8",
-      "description": "Percentage of booking amount going to unit manager",
-      "updated_at": "2026-05-03T20:54:22.038Z",
-      "updated_by": "7de6c1ad-a059-462a-af39-dbaea975c3cf"
-    },
-    {
-      "setting_id": "91ab70c4-6190-4d2e-bff7-1098251369c5",
-      "key": "revenue_split_cm_percentage",
-      "value": "4",
-      "description": "Percentage of booking amount going to collective manager",
+      "key": "revenue_split_platform_percentage",
+      "value": "15",
+      "description": "Percentage of booking amount going to platform",
       "updated_at": "2026-05-03T20:54:22.038Z",
       "updated_by": "7de6c1ad-a059-462a-af39-dbaea975c3cf"
     },

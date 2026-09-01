@@ -85,7 +85,7 @@ The platform adopts a **Collective Fulfillment Model**, inspired by real-world l
   - Region  
   - Skill sets  
 - The platform provides a **shared work calendar** for the service providers of a collective for better schedule and time management.
-- A designated **Collective Manager** is responsible for coordination and operational oversight within the collective.
+- A designated **Region Manager** is responsible for coordination and operational oversight within the collective.
 
 ### Why This Model?
 
@@ -124,8 +124,8 @@ The platform supports three booking types:
 
 1. **Customer**: End-users who browse services, book jobs, and provide feedback.
 2. **Service Provider**: Skilled professionals who execute the assigned services.
-3. **Unit Manager**: Oversees a specific skill-based unit (e.g., Electrical, Plumbing) within a collective.
-4. **Collective Manager**: Manages an entire collective, coordinating across multiple units and sectors.
+3. **Region Manager**: Oversees a specific skill-based unit (e.g., Electrical, Plumbing) within a collective.
+4. **Region Manager**: Manages an entire collective, coordinating across multiple units and region areas.
 5. **Super User**: Platform administrators responsible for global settings and oversight.
 
 Fulfillment logic, scheduling algorithms, delivery coordination, and administrative controls are **internal system responsibilities**.
@@ -152,9 +152,9 @@ Fulfillment logic, scheduling algorithms, delivery coordination, and administrat
 
 ---
 
-### Unit & Collective Managers
-- **Unit Manager**: Oversee unit-level provider performance, manage unit-specific schedules, and handle disputes.
-- **Collective Manager**: Oversee collective-level operations, manage units, and ensure regional fulfillment efficiency.
+### Unit & Region Managers
+- **Region Manager**: Oversee unit-level provider performance, manage unit-specific schedules, and handle disputes.
+- **Region Manager**: Oversee collective-level operations, manage units, and ensure regional fulfillment efficiency.
 
 ---
 
@@ -168,16 +168,16 @@ Fulfillment logic, scheduling algorithms, delivery coordination, and administrat
 
 ### Front-End
 - **Technology**: Vanilla HTML5, CSS3, and JavaScript.
-- **Architecture**: Modular structure with dedicated portal pages for each actor (`customer`, `provider`, `unit_manager`, `collective_manager`, `super_user`, `auth_pages`, and `service_pages`).
+- **Architecture**: Modular structure with dedicated portal pages for each actor (`customer`, `provider`, `region_manager`, `region_manager`, `super_user`, `auth_pages`, and `service_pages`).
 - **State Management**: Centralized data stores and utilities (`js/data/`, `js/utils/`) managing session and UI state.
 
 ### Back-End
 - **Framework**: NestJS (TypeScript).
 - **Data Layer (`database.service.ts`)**: Currently utilizes a comprehensive in-memory datastore simulating a relational database with seeded data. It covers complex relationships across:
-  - **Users & Orgs**: Customers, ServiceProviders, Managers (Unit/Collective), SuperUsers, Collectives, Units, Sectors.
+  - **Users & Orgs**: Customers, ServiceProviders, Managers (Unit/Collective), SuperUsers, Collectives, Units, Region Areas.
   - **Catalog**: Categories, Services, Skills, ServiceContent, ServiceFaq.
   - **Fulfillment**: Carts, Bookings, JobAssignments (one per service in a booking), ProviderUnavailability.
-  - **Financials**: Transactions and RevenueLedgers (managing payout splits between SP, Unit Manager, Collective Manager, and Platform).
+  - **Financials**: Transactions and RevenueLedgers (managing payout splits between SP, Region Manager, Region Manager, and Platform).
   - **Feedback**: Post-job Reviews.
 
 ---

@@ -26,24 +26,24 @@ export class ServiceProvidersRepository {
 
   findByEmail(email: string): ServiceProvider | undefined {
     return this.databaseService.serviceProviders.find(
-      (row) => row.email === email,
+      (row) => row.email.toLowerCase() === email.toLowerCase(),
     );
   }
 
-  findByUnit(unitId: string): ServiceProvider[] {
+  findByRegion(regionId: string): ServiceProvider[] {
     return this.databaseService.serviceProviders.filter(
-      (row) => row.unit_id === unitId,
+      (row) => row.region_id === regionId,
     );
   }
 
-  findBySector(sectorId: string): ServiceProvider[] {
+  findPending(): ServiceProvider[] {
     return this.databaseService.serviceProviders.filter(
-      (row) => row.home_sector_id === sectorId,
+      (row) => row.account_status === 'pending' || !row.region_id,
     );
   }
 
   create(dto: CreateServiceProviderDto): ServiceProvider {
-    const provider = {
+    const provider: ServiceProvider = {
       sp_id: randomUUID(),
       name: dto.full_name,
       email: dto.email,
@@ -51,21 +51,33 @@ export class ServiceProvidersRepository {
       phone: dto.phone,
       dob: '',
       address: '',
+      city: dto.city || 'Chennai',
       gender: '',
       rating: 0,
       rating_count: 0,
-      is_active: dto.is_active,
-      account_status: dto.is_active ? 'active' : 'inactive',
+      is_active: dto.is_active ?? false,
+      account_status: dto.is_active ? 'active' : 'pending',
       deactivation_requested: false,
-      hour_start: '',
-      hour_end: '',
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-      unit_id: dto.unit_id,
-      home_sector_id: dto.sector_id,
-    } as unknown as ServiceProvider;
+      hour_start: '07:00',
+      hour_end: '23:00',
+      created_at: this.databaseService.now(),
+      updated_at: this.databaseService.now(),
+      region_id: dto.region_id || null,
+      service_category: dto.service_category || '',
+      experience: dto.experience || '',
+    };
     
     this.databaseService.serviceProviders.push(provider);
+    this.databaseService.save();
+    return provider;
+  }
+
+  approve(id: string, regionId: string): ServiceProvider {
+    const provider = this.findById(id);
+    provider.region_id = regionId;
+    provider.account_status = 'active';
+    provider.is_active = true;
+    provider.updated_at = this.databaseService.now();
     this.databaseService.save();
     return provider;
   }
@@ -79,8 +91,8 @@ export class ServiceProvidersRepository {
     if (dto.full_name !== undefined) provider.name = dto.full_name;
     if (dto.email !== undefined) provider.email = dto.email;
     if (dto.phone !== undefined) provider.phone = dto.phone;
-    if (dto.unit_id !== undefined) provider.unit_id = dto.unit_id;
-    if (dto.sector_id !== undefined) provider.home_sector_id = dto.sector_id;
+    if (dto.city !== undefined) provider.city = dto.city;
+    if (dto.region_id !== undefined) provider.region_id = dto.region_id;
     if (dto.is_active !== undefined) {
       provider.is_active = dto.is_active;
       provider.account_status = dto.is_active ? 'active' : 'inactive';
@@ -89,22 +101,20 @@ export class ServiceProvidersRepository {
     if (dto.experience !== undefined) provider.experience = dto.experience;
 
     if (dto.skills !== undefined) {
-      // Clear existing provider skills
       this.databaseService.providerSkills = this.databaseService.providerSkills.filter(
         (ps) => ps.sp_id !== id,
       );
-      // Add new ones
       for (const skillId of dto.skills) {
         this.databaseService.providerSkills.push({
           sp_id: id,
           skill_id: skillId,
-          verification_status: 'VERIFIED',
-          verified_at: new Date().toISOString(),
+          verification_status: 'Pending',
+          verified_at: null,
         });
       }
     }
-    
-    provider.updated_at = new Date().toISOString();
+
+    provider.updated_at = this.databaseService.now();
     this.databaseService.save();
     return provider;
   }
@@ -113,19 +123,17 @@ export class ServiceProvidersRepository {
     const provider = this.findById(id);
     provider.hour_start = dto.hour_start;
     provider.hour_end = dto.hour_end;
-    provider.updated_at = new Date().toISOString();
+    provider.updated_at = this.databaseService.now();
     this.databaseService.save();
     return provider;
   }
 
   updateProfile(id: string, dto: UpdateProviderProfileDto): ServiceProvider {
     const provider = this.findById(id);
-    if (dto.name !== undefined) provider.name = dto.name;
-    if (dto.address !== undefined) provider.address = dto.address;
-    if (dto.phone !== undefined) provider.phone = dto.phone;
     if (dto.dob !== undefined) provider.dob = dto.dob;
+    if (dto.address !== undefined) provider.address = dto.address;
     if (dto.gender !== undefined) provider.gender = dto.gender;
-    provider.updated_at = new Date().toISOString();
+    provider.updated_at = this.databaseService.now();
     this.databaseService.save();
     return provider;
   }
@@ -133,20 +141,18 @@ export class ServiceProvidersRepository {
   requestDeactivation(id: string): ServiceProvider {
     const provider = this.findById(id);
     provider.deactivation_requested = true;
-    provider.updated_at = new Date().toISOString();
+    provider.updated_at = this.databaseService.now();
     this.databaseService.save();
     return provider;
   }
 
-  delete(id: string): ServiceProvider {
+  delete(id: string): boolean {
     const index = this.databaseService.serviceProviders.findIndex(
-      (row) => row.sp_id === id,
+      (p) => p.sp_id === id,
     );
-    if (index < 0) {
-      throw new NotFoundException(`ServiceProvider with id "${id}" not found`);
-    }
-    const [removed] = this.databaseService.serviceProviders.splice(index, 1);
+    if (index === -1) return false;
+    this.databaseService.serviceProviders.splice(index, 1);
     this.databaseService.save();
-    return removed;
+    return true;
   }
 }

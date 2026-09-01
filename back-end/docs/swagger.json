@@ -223,16 +223,13 @@
         ]
       }
     },
-    "/collective-managers": {
+    "/region-managers": {
       "get": {
-        "operationId": "CollectiveManagersController_findAll",
+        "operationId": "RegionManagersController_findAll",
         "parameters": [],
         "responses": {
           "200": {
             "description": "Success"
-          },
-          "403": {
-            "description": "Forbidden"
           }
         },
         "security": [
@@ -243,30 +240,27 @@
             "bearer": []
           }
         ],
-        "summary": "Get all collective managers",
+        "summary": "Get all region managers",
         "tags": [
-          "collective-managers"
+          "region-managers"
         ]
       },
       "post": {
-        "operationId": "CollectiveManagersController_create",
+        "operationId": "RegionManagersController_create",
         "parameters": [],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/CreateCollectiveManagerDto"
+                "$ref": "#/components/schemas/CreateRegionManagerDto"
               }
             }
           }
         },
         "responses": {
           "201": {
-            "description": "Created successfully"
-          },
-          "403": {
-            "description": "Forbidden"
+            "description": "Created"
           }
         },
         "security": [
@@ -277,50 +271,15 @@
             "bearer": []
           }
         ],
-        "summary": "Create a new collective manager",
+        "summary": "Create region manager",
         "tags": [
-          "collective-managers"
+          "region-managers"
         ]
       }
     },
-    "/collective-managers/collective/{collective_id}": {
+    "/region-managers/{id}": {
       "get": {
-        "operationId": "CollectiveManagersController_findByCollective",
-        "parameters": [
-          {
-            "name": "collective_id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success"
-          },
-          "403": {
-            "description": "Forbidden"
-          }
-        },
-        "security": [
-          {
-            "x-role": []
-          },
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Get collective managers by collective ID",
-        "tags": [
-          "collective-managers"
-        ]
-      }
-    },
-    "/collective-managers/{id}": {
-      "get": {
-        "operationId": "CollectiveManagersController_findOne",
+        "operationId": "RegionManagersController_findOne",
         "parameters": [
           {
             "name": "id",
@@ -335,9 +294,6 @@
           "200": {
             "description": "Success"
           },
-          "403": {
-            "description": "Forbidden"
-          },
           "404": {
             "description": "Not found"
           }
@@ -350,13 +306,13 @@
             "bearer": []
           }
         ],
-        "summary": "Get collective manager by ID",
+        "summary": "Get region manager by ID",
         "tags": [
-          "collective-managers"
+          "region-managers"
         ]
       },
       "patch": {
-        "operationId": "CollectiveManagersController_update",
+        "operationId": "RegionManagersController_update",
         "parameters": [
           {
             "name": "id",
@@ -372,20 +328,14 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/UpdateCollectiveManagerDto"
+                "$ref": "#/components/schemas/UpdateRegionManagerDto"
               }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "Success"
-          },
-          "403": {
-            "description": "Forbidden"
-          },
-          "404": {
-            "description": "Not found"
+            "description": "Updated"
           }
         },
         "security": [
@@ -396,13 +346,13 @@
             "bearer": []
           }
         ],
-        "summary": "Update a collective manager",
+        "summary": "Update region manager",
         "tags": [
-          "collective-managers"
+          "region-managers"
         ]
       },
       "delete": {
-        "operationId": "CollectiveManagersController_remove",
+        "operationId": "RegionManagersController_remove",
         "parameters": [
           {
             "name": "id",
@@ -415,13 +365,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success"
-          },
-          "403": {
-            "description": "Forbidden"
-          },
-          "404": {
-            "description": "Not found"
+            "description": "Deleted"
           }
         },
         "security": [
@@ -432,224 +376,9 @@
             "bearer": []
           }
         ],
-        "summary": "Delete a collective manager",
+        "summary": "Delete region manager",
         "tags": [
-          "collective-managers"
-        ]
-      }
-    },
-    "/unit-managers": {
-      "get": {
-        "operationId": "UnitManagersController_findAll",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "Success"
-          },
-          "403": {
-            "description": "Forbidden"
-          }
-        },
-        "security": [
-          {
-            "x-role": []
-          },
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Get all unit managers",
-        "tags": [
-          "unit-managers"
-        ]
-      },
-      "post": {
-        "operationId": "UnitManagersController_create",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateUnitManagerDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "Created successfully"
-          },
-          "403": {
-            "description": "Forbidden"
-          }
-        },
-        "security": [
-          {
-            "x-role": []
-          },
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Create a new unit manager",
-        "tags": [
-          "unit-managers"
-        ]
-      }
-    },
-    "/unit-managers/unit/{unit_id}": {
-      "get": {
-        "operationId": "UnitManagersController_findByUnit",
-        "parameters": [
-          {
-            "name": "unit_id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success"
-          },
-          "403": {
-            "description": "Forbidden"
-          }
-        },
-        "security": [
-          {
-            "x-role": []
-          },
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Get unit managers by unit ID",
-        "tags": [
-          "unit-managers"
-        ]
-      }
-    },
-    "/unit-managers/{id}": {
-      "get": {
-        "operationId": "UnitManagersController_findOne",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success"
-          },
-          "403": {
-            "description": "Forbidden"
-          },
-          "404": {
-            "description": "Not found"
-          }
-        },
-        "security": [
-          {
-            "x-role": []
-          },
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Get unit manager by ID",
-        "tags": [
-          "unit-managers"
-        ]
-      },
-      "patch": {
-        "operationId": "UnitManagersController_update",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateUnitManagerDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Success"
-          },
-          "403": {
-            "description": "Forbidden"
-          },
-          "404": {
-            "description": "Not found"
-          }
-        },
-        "security": [
-          {
-            "x-role": []
-          },
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Update a unit manager",
-        "tags": [
-          "unit-managers"
-        ]
-      },
-      "delete": {
-        "operationId": "UnitManagersController_remove",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success"
-          },
-          "403": {
-            "description": "Forbidden"
-          },
-          "404": {
-            "description": "Not found"
-          }
-        },
-        "security": [
-          {
-            "x-role": []
-          },
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Delete a unit manager",
-        "tags": [
-          "unit-managers"
+          "region-managers"
         ]
       }
     },
@@ -659,10 +388,7 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Success - returns list of providers"
-          },
-          "403": {
-            "description": "Forbidden"
+            "description": "Success"
           }
         },
         "security": [
@@ -673,7 +399,7 @@
             "bearer": []
           }
         ],
-        "summary": "Get all service providers (scoped for managers)",
+        "summary": "Get service providers (scoped for region managers)",
         "tags": [
           "service-providers"
         ]
@@ -693,10 +419,7 @@
         },
         "responses": {
           "201": {
-            "description": "Created successfully"
-          },
-          "403": {
-            "description": "Forbidden"
+            "description": "Created"
           }
         },
         "security": [
@@ -707,18 +430,41 @@
             "bearer": []
           }
         ],
-        "summary": "Create a new service provider",
+        "summary": "Create service provider",
         "tags": [
           "service-providers"
         ]
       }
     },
-    "/service-providers/unit/{unit_id}": {
+    "/service-providers/pending": {
       "get": {
-        "operationId": "ServiceProvidersController_findByUnit",
+        "operationId": "ServiceProvidersController_findPending",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "security": [
+          {
+            "x-role": []
+          },
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get all pending unapproved service providers",
+        "tags": [
+          "service-providers"
+        ]
+      }
+    },
+    "/service-providers/region/{region_id}": {
+      "get": {
+        "operationId": "ServiceProvidersController_findByRegion",
         "parameters": [
           {
-            "name": "unit_id",
+            "name": "region_id",
             "required": true,
             "in": "path",
             "schema": {
@@ -729,9 +475,6 @@
         "responses": {
           "200": {
             "description": "Success"
-          },
-          "403": {
-            "description": "Forbidden"
           }
         },
         "security": [
@@ -742,42 +485,7 @@
             "bearer": []
           }
         ],
-        "summary": "Get service providers by unit ID",
-        "tags": [
-          "service-providers"
-        ]
-      }
-    },
-    "/service-providers/sector/{sector_id}": {
-      "get": {
-        "operationId": "ServiceProvidersController_findBySector",
-        "parameters": [
-          {
-            "name": "sector_id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success"
-          },
-          "403": {
-            "description": "Forbidden"
-          }
-        },
-        "security": [
-          {
-            "x-role": []
-          },
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Get service providers by sector ID",
+        "summary": "Get service providers by region ID",
         "tags": [
           "service-providers"
         ]
@@ -799,12 +507,6 @@
         "responses": {
           "200": {
             "description": "Success"
-          },
-          "403": {
-            "description": "Forbidden"
-          },
-          "404": {
-            "description": "Not found"
           }
         },
         "security": [
@@ -844,13 +546,7 @@
         },
         "responses": {
           "200": {
-            "description": "Success"
-          },
-          "403": {
-            "description": "Forbidden"
-          },
-          "404": {
-            "description": "Not found"
+            "description": "Updated"
           }
         },
         "security": [
@@ -861,7 +557,7 @@
             "bearer": []
           }
         ],
-        "summary": "Update a service provider",
+        "summary": "Update service provider",
         "tags": [
           "service-providers"
         ]
@@ -880,13 +576,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success"
-          },
-          "403": {
-            "description": "Forbidden"
-          },
-          "404": {
-            "description": "Not found"
+            "description": "Deleted"
           }
         },
         "security": [
@@ -897,13 +587,45 @@
             "bearer": []
           }
         ],
-        "summary": "Delete a service provider",
+        "summary": "Delete service provider",
         "tags": [
           "service-providers"
         ]
       }
     },
-    "/service-providers/working-hours/{id}": {
+    "/service-providers/{id}/approve": {
+      "patch": {
+        "operationId": "ServiceProvidersController_approve",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Approved"
+          }
+        },
+        "security": [
+          {
+            "x-role": []
+          },
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Approve provider and assign to region",
+        "tags": [
+          "service-providers"
+        ]
+      }
+    },
+    "/service-providers/{id}/working-hours": {
       "patch": {
         "operationId": "ServiceProvidersController_updateWorkingHours",
         "parameters": [
@@ -928,13 +650,7 @@
         },
         "responses": {
           "200": {
-            "description": "Success"
-          },
-          "403": {
-            "description": "Forbidden"
-          },
-          "404": {
-            "description": "Not found"
+            "description": "Updated"
           }
         },
         "security": [
@@ -945,13 +661,13 @@
             "bearer": []
           }
         ],
-        "summary": "Update working hours of service provider",
+        "summary": "Update working hours",
         "tags": [
           "service-providers"
         ]
       }
     },
-    "/service-providers/profile/{id}": {
+    "/service-providers/{id}/profile": {
       "patch": {
         "operationId": "ServiceProvidersController_updateProfile",
         "parameters": [
@@ -976,13 +692,7 @@
         },
         "responses": {
           "200": {
-            "description": "Success"
-          },
-          "403": {
-            "description": "Forbidden"
-          },
-          "404": {
-            "description": "Not found"
+            "description": "Updated"
           }
         },
         "security": [
@@ -993,13 +703,13 @@
             "bearer": []
           }
         ],
-        "summary": "Update profile of service provider",
+        "summary": "Update provider profile",
         "tags": [
           "service-providers"
         ]
       }
     },
-    "/service-providers/deactivate/{id}": {
+    "/service-providers/{id}/request-deactivation": {
       "patch": {
         "operationId": "ServiceProvidersController_requestDeactivation",
         "parameters": [
@@ -1014,13 +724,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success"
-          },
-          "403": {
-            "description": "Forbidden"
-          },
-          "404": {
-            "description": "Not found"
+            "description": "Updated"
           }
         },
         "security": [
@@ -1031,7 +735,7 @@
             "bearer": []
           }
         ],
-        "summary": "Request deactivation of service provider",
+        "summary": "Request account deactivation",
         "tags": [
           "service-providers"
         ]
@@ -1044,9 +748,6 @@
         "responses": {
           "200": {
             "description": "Success"
-          },
-          "403": {
-            "description": "Forbidden"
           }
         },
         "security": [
@@ -1077,10 +778,7 @@
         },
         "responses": {
           "201": {
-            "description": "Created successfully"
-          },
-          "403": {
-            "description": "Forbidden"
+            "description": "Created"
           }
         },
         "security": [
@@ -1091,42 +789,7 @@
             "bearer": []
           }
         ],
-        "summary": "Create a new customer",
-        "tags": [
-          "customers"
-        ]
-      }
-    },
-    "/customers/sector/{sector_id}": {
-      "get": {
-        "operationId": "CustomersController_findBySector",
-        "parameters": [
-          {
-            "name": "sector_id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success"
-          },
-          "403": {
-            "description": "Forbidden"
-          }
-        },
-        "security": [
-          {
-            "x-role": []
-          },
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Get customers by sector ID",
+        "summary": "Create customer",
         "tags": [
           "customers"
         ]
@@ -1148,12 +811,6 @@
         "responses": {
           "200": {
             "description": "Success"
-          },
-          "403": {
-            "description": "Forbidden"
-          },
-          "404": {
-            "description": "Not found"
           }
         },
         "security": [
@@ -1193,13 +850,7 @@
         },
         "responses": {
           "200": {
-            "description": "Success"
-          },
-          "403": {
-            "description": "Forbidden"
-          },
-          "404": {
-            "description": "Not found"
+            "description": "Updated"
           }
         },
         "security": [
@@ -1210,7 +861,7 @@
             "bearer": []
           }
         ],
-        "summary": "Update a customer",
+        "summary": "Update customer",
         "tags": [
           "customers"
         ]
@@ -1229,13 +880,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success"
-          },
-          "403": {
-            "description": "Forbidden"
-          },
-          "404": {
-            "description": "Not found"
+            "description": "Deleted"
           }
         },
         "security": [
@@ -1246,60 +891,19 @@
             "bearer": []
           }
         ],
-        "summary": "Delete a customer",
+        "summary": "Delete customer",
         "tags": [
           "customers"
         ]
       }
     },
-    "/customers/account/{id}": {
-      "delete": {
-        "operationId": "CustomersController_deleteAccount",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Account deleted successfully"
-          },
-          "403": {
-            "description": "Forbidden"
-          },
-          "404": {
-            "description": "Not found"
-          }
-        },
-        "security": [
-          {
-            "x-role": []
-          },
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Delete customer account",
-        "tags": [
-          "customers"
-        ]
-      }
-    },
-    "/collectives": {
+    "/regions": {
       "get": {
-        "operationId": "CollectivesController_findAll",
+        "operationId": "RegionsController_findAll",
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Returns all collectives"
-          },
-          "403": {
-            "description": "Forbidden"
+            "description": "Success"
           }
         },
         "security": [
@@ -1310,30 +914,27 @@
             "bearer": []
           }
         ],
-        "summary": "List all collectives",
+        "summary": "Get all regions",
         "tags": [
-          "collectives"
+          "regions"
         ]
       },
       "post": {
-        "operationId": "CollectivesController_create",
+        "operationId": "RegionsController_create",
         "parameters": [],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/CreateCollectiveDto"
+                "$ref": "#/components/schemas/CreateRegionDto"
               }
             }
           }
         },
         "responses": {
           "201": {
-            "description": "Collective created"
-          },
-          "403": {
-            "description": "Forbidden"
+            "description": "Created"
           }
         },
         "security": [
@@ -1344,15 +945,15 @@
             "bearer": []
           }
         ],
-        "summary": "Create a new collective",
+        "summary": "Create a new region",
         "tags": [
-          "collectives"
+          "regions"
         ]
       }
     },
-    "/collectives/{id}": {
+    "/regions/{id}": {
       "get": {
-        "operationId": "CollectivesController_findOne",
+        "operationId": "RegionsController_findOne",
         "parameters": [
           {
             "name": "id",
@@ -1365,13 +966,10 @@
         ],
         "responses": {
           "200": {
-            "description": "Returns the collective"
-          },
-          "403": {
-            "description": "Forbidden"
+            "description": "Success"
           },
           "404": {
-            "description": "Collective not found"
+            "description": "Not found"
           }
         },
         "security": [
@@ -1382,13 +980,13 @@
             "bearer": []
           }
         ],
-        "summary": "Get a collective by ID",
+        "summary": "Get region by ID",
         "tags": [
-          "collectives"
+          "regions"
         ]
       },
       "patch": {
-        "operationId": "CollectivesController_update",
+        "operationId": "RegionsController_update",
         "parameters": [
           {
             "name": "id",
@@ -1404,20 +1002,14 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/UpdateCollectiveDto"
+                "$ref": "#/components/schemas/UpdateRegionDto"
               }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "Collective updated"
-          },
-          "403": {
-            "description": "Forbidden"
-          },
-          "404": {
-            "description": "Collective not found"
+            "description": "Updated"
           }
         },
         "security": [
@@ -1428,13 +1020,13 @@
             "bearer": []
           }
         ],
-        "summary": "Update a collective",
+        "summary": "Update region",
         "tags": [
-          "collectives"
+          "regions"
         ]
       },
       "delete": {
-        "operationId": "CollectivesController_remove",
+        "operationId": "RegionsController_remove",
         "parameters": [
           {
             "name": "id",
@@ -1447,13 +1039,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Collective deleted"
-          },
-          "403": {
-            "description": "Forbidden"
-          },
-          "404": {
-            "description": "Collective not found"
+            "description": "Deleted"
           }
         },
         "security": [
@@ -1464,439 +1050,9 @@
             "bearer": []
           }
         ],
-        "summary": "Delete a collective",
+        "summary": "Delete region",
         "tags": [
-          "collectives"
-        ]
-      }
-    },
-    "/sectors": {
-      "get": {
-        "operationId": "SectorsController_findAll",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "Success"
-          },
-          "403": {
-            "description": "Forbidden"
-          }
-        },
-        "security": [
-          {
-            "x-role": []
-          },
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Get all sectors",
-        "tags": [
-          "sectors"
-        ]
-      },
-      "post": {
-        "operationId": "SectorsController_create",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateSectorDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "Created successfully"
-          },
-          "403": {
-            "description": "Forbidden"
-          }
-        },
-        "security": [
-          {
-            "x-role": []
-          },
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Create a new sector",
-        "tags": [
-          "sectors"
-        ]
-      }
-    },
-    "/sectors/collective/{collectiveId}": {
-      "get": {
-        "operationId": "SectorsController_findByCollective",
-        "parameters": [
-          {
-            "name": "collectiveId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success"
-          },
-          "403": {
-            "description": "Forbidden"
-          }
-        },
-        "security": [
-          {
-            "x-role": []
-          },
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Get sectors by collective ID",
-        "tags": [
-          "sectors"
-        ]
-      }
-    },
-    "/sectors/{id}": {
-      "get": {
-        "operationId": "SectorsController_findOne",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success"
-          },
-          "403": {
-            "description": "Forbidden"
-          },
-          "404": {
-            "description": "Not found"
-          }
-        },
-        "security": [
-          {
-            "x-role": []
-          },
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Get sector by ID",
-        "tags": [
-          "sectors"
-        ]
-      },
-      "patch": {
-        "operationId": "SectorsController_update",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateSectorDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Success"
-          },
-          "403": {
-            "description": "Forbidden"
-          },
-          "404": {
-            "description": "Not found"
-          }
-        },
-        "security": [
-          {
-            "x-role": []
-          },
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Update a sector",
-        "tags": [
-          "sectors"
-        ]
-      },
-      "delete": {
-        "operationId": "SectorsController_remove",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success"
-          },
-          "403": {
-            "description": "Forbidden"
-          },
-          "404": {
-            "description": "Not found"
-          }
-        },
-        "security": [
-          {
-            "x-role": []
-          },
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Delete a sector",
-        "tags": [
-          "sectors"
-        ]
-      }
-    },
-    "/units": {
-      "get": {
-        "operationId": "UnitsController_findAll",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "Success"
-          },
-          "403": {
-            "description": "Forbidden"
-          }
-        },
-        "security": [
-          {
-            "x-role": []
-          },
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Get all units",
-        "tags": [
-          "units"
-        ]
-      },
-      "post": {
-        "operationId": "UnitsController_create",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateUnitDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "Created successfully"
-          },
-          "403": {
-            "description": "Forbidden"
-          }
-        },
-        "security": [
-          {
-            "x-role": []
-          },
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Create a new unit",
-        "tags": [
-          "units"
-        ]
-      }
-    },
-    "/units/collective/{collectiveId}": {
-      "get": {
-        "operationId": "UnitsController_findByCollective",
-        "parameters": [
-          {
-            "name": "collectiveId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success"
-          },
-          "403": {
-            "description": "Forbidden"
-          }
-        },
-        "security": [
-          {
-            "x-role": []
-          },
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Get units by collective ID",
-        "tags": [
-          "units"
-        ]
-      }
-    },
-    "/units/{id}": {
-      "get": {
-        "operationId": "UnitsController_findOne",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success"
-          },
-          "403": {
-            "description": "Forbidden"
-          },
-          "404": {
-            "description": "Not found"
-          }
-        },
-        "security": [
-          {
-            "x-role": []
-          },
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Get unit by ID",
-        "tags": [
-          "units"
-        ]
-      },
-      "patch": {
-        "operationId": "UnitsController_update",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateUnitDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Success"
-          },
-          "403": {
-            "description": "Forbidden"
-          },
-          "404": {
-            "description": "Not found"
-          }
-        },
-        "security": [
-          {
-            "x-role": []
-          },
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Update a unit",
-        "tags": [
-          "units"
-        ]
-      },
-      "delete": {
-        "operationId": "UnitsController_remove",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success"
-          },
-          "403": {
-            "description": "Forbidden"
-          },
-          "404": {
-            "description": "Not found"
-          }
-        },
-        "security": [
-          {
-            "x-role": []
-          },
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Delete a unit",
-        "tags": [
-          "units"
+          "regions"
         ]
       }
     },
@@ -3411,13 +2567,7 @@
         },
         "responses": {
           "201": {
-            "description": "Booking created from cart items"
-          },
-          "400": {
-            "description": "Cart empty or not found"
-          },
-          "403": {
-            "description": "Forbidden - customer only"
+            "description": "Booking created"
           }
         },
         "security": [
@@ -3428,7 +2578,7 @@
             "bearer": []
           }
         ],
-        "summary": "Checkout - create booking from cart",
+        "summary": "Checkout cart and create booking",
         "tags": [
           "bookings"
         ]
@@ -3436,14 +2586,11 @@
     },
     "/bookings/my": {
       "get": {
-        "operationId": "BookingsController_getMyBookings",
+        "operationId": "BookingsController_findMyBookings",
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Customer bookings returned"
-          },
-          "403": {
-            "description": "Forbidden - customer only"
+            "description": "List of customer bookings"
           }
         },
         "security": [
@@ -3454,18 +2601,18 @@
             "bearer": []
           }
         ],
-        "summary": "Get my bookings (JWT customer)",
+        "summary": "Get current customer bookings",
         "tags": [
           "bookings"
         ]
       }
     },
-    "/bookings/customer/{customerId}": {
+    "/bookings/provider/{providerId}": {
       "get": {
-        "operationId": "BookingsController_findByCustomer",
+        "operationId": "BookingsController_findByProvider",
         "parameters": [
           {
-            "name": "customerId",
+            "name": "providerId",
             "required": true,
             "in": "path",
             "schema": {
@@ -3475,10 +2622,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Customer bookings returned"
-          },
-          "403": {
-            "description": "Forbidden"
+            "description": ""
           }
         },
         "security": [
@@ -3489,42 +2633,7 @@
             "bearer": []
           }
         ],
-        "summary": "Get bookings by customer ID",
-        "tags": [
-          "bookings"
-        ]
-      }
-    },
-    "/bookings/sector/{sectorId}": {
-      "get": {
-        "operationId": "BookingsController_findBySector",
-        "parameters": [
-          {
-            "name": "sectorId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Sector bookings returned"
-          },
-          "403": {
-            "description": "Forbidden"
-          }
-        },
-        "security": [
-          {
-            "x-role": []
-          },
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Get bookings by sector ID",
+        "summary": "Get bookings assigned to a service provider",
         "tags": [
           "bookings"
         ]
@@ -3537,9 +2646,6 @@
         "responses": {
           "200": {
             "description": "All bookings returned"
-          },
-          "403": {
-            "description": "Forbidden"
           }
         },
         "security": [
@@ -3571,13 +2677,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Booking with services returned"
-          },
-          "403": {
-            "description": "Forbidden"
-          },
-          "404": {
-            "description": "Booking not found"
+            "description": ""
           }
         },
         "security": [
@@ -3588,7 +2688,7 @@
             "bearer": []
           }
         ],
-        "summary": "Get booking by ID (with services)",
+        "summary": "Get booking details by ID",
         "tags": [
           "bookings"
         ]
@@ -3609,16 +2709,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Booking cancelled"
-          },
-          "400": {
-            "description": "Booking already cancelled"
-          },
-          "403": {
-            "description": "Forbidden"
-          },
-          "404": {
-            "description": "Booking not found"
+            "description": ""
           }
         },
         "security": [
@@ -3629,7 +2720,7 @@
             "bearer": []
           }
         ],
-        "summary": "Cancel a booking",
+        "summary": "Cancel booking",
         "tags": [
           "bookings"
         ]
@@ -3842,219 +2933,13 @@
         ]
       }
     },
-    "/job-assignments/assign/{bookingId}": {
-      "post": {
-        "operationId": "JobAssignmentsController_autoAssign",
-        "parameters": [
-          {
-            "name": "bookingId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "201": {
-            "description": "Providers assigned"
-          },
-          "400": {
-            "description": "No qualified provider found"
-          },
-          "403": {
-            "description": "Forbidden"
-          },
-          "404": {
-            "description": "Booking not found"
-          }
-        },
-        "security": [
-          {
-            "x-role": []
-          },
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Auto-assign providers to a booking",
-        "tags": [
-          "job-assignments"
-        ]
-      }
-    },
-    "/job-assignments/booking/{bookingId}": {
-      "get": {
-        "operationId": "JobAssignmentsController_findByBooking",
-        "parameters": [
-          {
-            "name": "bookingId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Assignments for the booking"
-          },
-          "403": {
-            "description": "Forbidden"
-          }
-        },
-        "security": [
-          {
-            "x-role": []
-          },
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Get assignments for a booking",
-        "tags": [
-          "job-assignments"
-        ]
-      }
-    },
-    "/job-assignments/provider/{spId}": {
-      "get": {
-        "operationId": "JobAssignmentsController_findByProvider",
-        "parameters": [
-          {
-            "name": "spId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Assignments for the provider"
-          },
-          "403": {
-            "description": "Forbidden"
-          }
-        },
-        "security": [
-          {
-            "x-role": []
-          },
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Get assignments for a provider",
-        "tags": [
-          "job-assignments"
-        ]
-      }
-    },
-    "/job-assignments/{id}/complete": {
-      "patch": {
-        "operationId": "JobAssignmentsController_markComplete",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CompleteJobDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Assignment marked complete"
-          },
-          "400": {
-            "description": "Already completed"
-          },
-          "403": {
-            "description": "Forbidden - service_provider only"
-          },
-          "404": {
-            "description": "Assignment not found"
-          }
-        },
-        "security": [
-          {
-            "x-role": []
-          },
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Mark assignment as complete (triggers revenue split when all done)",
-        "tags": [
-          "job-assignments"
-        ]
-      }
-    },
-    "/job-assignments/{id}/in-progress": {
-      "patch": {
-        "operationId": "JobAssignmentsController_markInProgress",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Assignment marked in-progress"
-          },
-          "400": {
-            "description": "Invalid status transition"
-          },
-          "403": {
-            "description": "Forbidden - service_provider only"
-          },
-          "404": {
-            "description": "Assignment not found"
-          }
-        },
-        "security": [
-          {
-            "x-role": []
-          },
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Mark assignment as in-progress",
-        "tags": [
-          "job-assignments"
-        ]
-      }
-    },
     "/job-assignments": {
       "get": {
         "operationId": "JobAssignmentsController_findAll",
         "parameters": [],
         "responses": {
           "200": {
-            "description": "All assignments returned"
-          },
-          "403": {
-            "description": "Forbidden"
+            "description": ""
           }
         },
         "security": [
@@ -4065,7 +2950,70 @@
             "bearer": []
           }
         ],
-        "summary": "Get all job assignments (scoped for managers)",
+        "summary": "Get all job assignments",
+        "tags": [
+          "job-assignments"
+        ]
+      },
+      "post": {
+        "operationId": "JobAssignmentsController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateJobAssignmentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "x-role": []
+          },
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create job assignment",
+        "tags": [
+          "job-assignments"
+        ]
+      }
+    },
+    "/job-assignments/provider/{sp_id}": {
+      "get": {
+        "operationId": "JobAssignmentsController_findByProvider",
+        "parameters": [
+          {
+            "name": "sp_id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "x-role": []
+          },
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get job assignments by provider",
         "tags": [
           "job-assignments"
         ]
@@ -4086,13 +3034,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Assignment returned"
-          },
-          "403": {
-            "description": "Forbidden"
-          },
-          "404": {
-            "description": "Assignment not found"
+            "description": ""
           }
         },
         "security": [
@@ -4103,7 +3045,109 @@
             "bearer": []
           }
         ],
-        "summary": "Get assignment by ID",
+        "summary": "Get job assignment by ID",
+        "tags": [
+          "job-assignments"
+        ]
+      },
+      "patch": {
+        "operationId": "JobAssignmentsController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateJobAssignmentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "x-role": []
+          },
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update job assignment",
+        "tags": [
+          "job-assignments"
+        ]
+      },
+      "delete": {
+        "operationId": "JobAssignmentsController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "x-role": []
+          },
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Delete job assignment",
+        "tags": [
+          "job-assignments"
+        ]
+      }
+    },
+    "/job-assignments/{id}/status": {
+      "patch": {
+        "operationId": "JobAssignmentsController_updateStatus",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "x-role": []
+          },
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update job assignment status",
         "tags": [
           "job-assignments"
         ]
@@ -4282,7 +3326,7 @@
             "bearer": []
           }
         ],
-        "summary": "Get transaction by ID — super_user or unit_manager",
+        "summary": "Get transaction by ID - super_user or region_manager",
         "tags": [
           "Transactions"
         ]
@@ -4710,9 +3754,6 @@
         "responses": {
           "200": {
             "description": "total / pending / disbursed platform amounts"
-          },
-          "403": {
-            "description": "Forbidden"
           }
         },
         "security": [
@@ -4787,10 +3828,7 @@
         ],
         "responses": {
           "200": {
-            "description": "{ pending, disbursed, rows }"
-          },
-          "403": {
-            "description": "Forbidden"
+            "description": ""
           }
         },
         "security": [
@@ -4801,15 +3839,15 @@
             "bearer": []
           }
         ],
-        "summary": "Provider earnings summary — SP (own) or super_user",
+        "summary": "Provider earnings summary — SP (own), RM, or super_user",
         "tags": [
           "Revenue Ledger"
         ]
       }
     },
-    "/revenue-ledger/unit-manager/{umId}": {
+    "/revenue-ledger/region-manager/{rmId}": {
       "get": {
-        "operationId": "RevenueLedgerController_getUmEarnings",
+        "operationId": "RevenueLedgerController_getRmEarnings",
         "parameters": [
           {
             "name": "x-id",
@@ -4821,10 +3859,10 @@
             }
           },
           {
-            "name": "umId",
+            "name": "rmId",
             "required": true,
             "in": "path",
-            "description": "um_id UUID",
+            "description": "rm_id UUID",
             "schema": {
               "type": "string"
             }
@@ -4832,10 +3870,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Unit manager earnings returned"
-          },
-          "403": {
-            "description": "Forbidden"
+            "description": ""
           }
         },
         "security": [
@@ -4846,52 +3881,7 @@
             "bearer": []
           }
         ],
-        "summary": "Unit Manager earnings — UM (own) or super_user",
-        "tags": [
-          "Revenue Ledger"
-        ]
-      }
-    },
-    "/revenue-ledger/collective/{cmId}": {
-      "get": {
-        "operationId": "RevenueLedgerController_getCmEarnings",
-        "parameters": [
-          {
-            "name": "x-id",
-            "in": "header",
-            "description": "Caller user ID (UUID)",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "cmId",
-            "required": true,
-            "in": "path",
-            "description": "cm_id UUID",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Collective manager earnings returned"
-          },
-          "403": {
-            "description": "Forbidden"
-          }
-        },
-        "security": [
-          {
-            "x-role": []
-          },
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Collective Manager earnings — CM (own) or super_user",
+        "summary": "Region Manager earnings — RM (own) or super_user",
         "tags": [
           "Revenue Ledger"
         ]
@@ -4922,16 +3912,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Payout disbursed; paid_at stamped"
-          },
-          "400": {
-            "description": "Entry not in PENDING state"
-          },
-          "403": {
-            "description": "Forbidden"
-          },
-          "404": {
-            "description": "Ledger entry not found"
+            "description": ""
           }
         },
         "security": [
@@ -4973,13 +3954,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Ledger entry returned"
-          },
-          "403": {
-            "description": "Forbidden"
-          },
-          "404": {
-            "description": "Not found"
+            "description": ""
           }
         },
         "security": [
@@ -5019,13 +3994,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Entry deleted"
-          },
-          "403": {
-            "description": "Forbidden"
-          },
-          "404": {
-            "description": "Not found"
+            "description": ""
           }
         },
         "security": [
@@ -5036,7 +4005,7 @@
             "bearer": []
           }
         ],
-        "summary": "Hard delete a ledger entry — super_user only (admin correction)",
+        "summary": "Hard delete a ledger entry — super_user only",
         "tags": [
           "Revenue Ledger"
         ]
@@ -5068,10 +4037,7 @@
         },
         "responses": {
           "201": {
-            "description": "Ledger entry created"
-          },
-          "403": {
-            "description": "Forbidden"
+            "description": ""
           }
         },
         "security": [
@@ -5082,7 +4048,7 @@
             "bearer": []
           }
         ],
-        "summary": "Manually create ledger entry — super_user only (admin correction)",
+        "summary": "Manually create ledger entry — super_user only",
         "tags": [
           "Revenue Ledger"
         ]
@@ -5102,10 +4068,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Array of RevenueLedger rows"
-          },
-          "403": {
-            "description": "Forbidden"
+            "description": ""
           }
         },
         "security": [
@@ -5598,7 +4561,7 @@
         "type": "apiKey",
         "in": "header",
         "name": "x-role",
-        "description": "Role header required by RolesGuard. Allowed values: super_user, collective_manager, unit_manager, service_provider, customer"
+        "description": "Role header required by RolesGuard. Allowed values: super_user, region_manager, service_provider, customer"
       }
     },
     "schemas": {
@@ -5658,149 +4621,68 @@
           }
         }
       },
-      "CreateCollectiveManagerDto": {
+      "CreateRegionManagerDto": {
         "type": "object",
         "properties": {
+          "name": {
+            "type": "string",
+            "description": "Full name"
+          },
           "email": {
             "type": "string",
-            "example": "manager@tatku.com"
+            "description": "Email"
           },
           "password": {
             "type": "string",
-            "example": "Password@123"
-          },
-          "name": {
-            "type": "string",
-            "example": "Jane Doe"
+            "description": "Password"
           },
           "phone": {
             "type": "string",
-            "example": "9876543210"
+            "description": "Phone number"
           },
-          "collective_id": {
+          "region_id": {
             "type": "string",
-            "example": "collective-uuid"
+            "description": "Assigned region ID"
           },
           "is_active": {
             "type": "boolean",
-            "example": true
+            "default": true
           }
         },
         "required": [
+          "name",
           "email",
           "password",
-          "name",
           "phone",
-          "is_active"
+          "region_id"
         ]
       },
-      "UpdateCollectiveManagerDto": {
+      "UpdateRegionManagerDto": {
         "type": "object",
         "properties": {
+          "name": {
+            "type": "string",
+            "description": "Full name"
+          },
           "email": {
             "type": "string",
-            "example": "manager@tatku.com"
+            "description": "Email"
           },
           "password": {
             "type": "string",
-            "example": "Password@123"
-          },
-          "name": {
-            "type": "string",
-            "example": "Jane Doe"
+            "description": "Password"
           },
           "phone": {
             "type": "string",
-            "example": "9876543210"
+            "description": "Phone number"
           },
-          "collective_id": {
+          "region_id": {
             "type": "string",
-            "example": "collective-uuid"
+            "description": "Assigned region ID"
           },
           "is_active": {
             "type": "boolean",
-            "example": true
-          }
-        }
-      },
-      "CreateUnitManagerDto": {
-        "type": "object",
-        "properties": {
-          "email": {
-            "type": "string",
-            "example": "unitmanager@tatku.com"
-          },
-          "password": {
-            "type": "string",
-            "example": "Password@123"
-          },
-          "name": {
-            "type": "string",
-            "example": "Jane Unit"
-          },
-          "phone": {
-            "type": "string",
-            "example": "9876543210"
-          },
-          "unit_id": {
-            "type": "string",
-            "example": "unit-uuid"
-          },
-          "is_active": {
-            "type": "boolean",
-            "example": true
-          },
-          "dob": {
-            "type": "string",
-            "example": "1990-01-01"
-          },
-          "pfp_url": {
-            "type": "string",
-            "example": "data:image/png;base64,..."
-          }
-        },
-        "required": [
-          "email",
-          "password",
-          "name",
-          "phone",
-          "is_active"
-        ]
-      },
-      "UpdateUnitManagerDto": {
-        "type": "object",
-        "properties": {
-          "email": {
-            "type": "string",
-            "example": "unitmanager@tatku.com"
-          },
-          "password": {
-            "type": "string",
-            "example": "Password@123"
-          },
-          "name": {
-            "type": "string",
-            "example": "Jane Unit"
-          },
-          "phone": {
-            "type": "string",
-            "example": "9876543210"
-          },
-          "unit_id": {
-            "type": "string",
-            "example": "unit-uuid"
-          },
-          "is_active": {
-            "type": "boolean",
-            "example": true
-          },
-          "dob": {
-            "type": "string",
-            "example": "1990-01-01"
-          },
-          "pfp_url": {
-            "type": "string",
-            "example": "data:image/png;base64,..."
+            "default": true
           }
         }
       },
@@ -5823,13 +4705,13 @@
             "type": "string",
             "example": "9876543210"
           },
-          "unit_id": {
+          "city": {
             "type": "string",
-            "example": "unit-uuid"
+            "example": "Chennai"
           },
-          "sector_id": {
+          "region_id": {
             "type": "string",
-            "example": "sector-uuid"
+            "example": "region-uuid"
           },
           "is_active": {
             "type": "boolean",
@@ -5857,10 +4739,7 @@
           "email",
           "password",
           "full_name",
-          "phone",
-          "unit_id",
-          "sector_id",
-          "is_active"
+          "phone"
         ]
       },
       "UpdateServiceProviderDto": {
@@ -5882,13 +4761,13 @@
             "type": "string",
             "example": "9876543210"
           },
-          "unit_id": {
+          "city": {
             "type": "string",
-            "example": "unit-uuid"
+            "example": "Chennai"
           },
-          "sector_id": {
+          "region_id": {
             "type": "string",
-            "example": "sector-uuid"
+            "example": "region-uuid"
           },
           "is_active": {
             "type": "boolean",
@@ -5960,54 +4839,34 @@
         "properties": {
           "email": {
             "type": "string",
-            "example": "customer@tatku.com"
-          },
-          "name": {
-            "type": "string",
-            "example": "John Doe"
+            "example": "customer@mail.com"
           },
           "password": {
             "type": "string",
             "example": "Password@123"
           },
+          "name": {
+            "type": "string",
+            "example": "Aditya Verma"
+          },
           "phone": {
             "type": "string",
-            "example": "9876543210"
+            "example": "9812345678"
+          },
+          "city": {
+            "type": "string",
+            "example": "Chennai"
           },
           "is_active": {
             "type": "boolean",
             "example": true
-          },
-          "address": {
-            "type": "string",
-            "example": "123 Main St, Chennai"
-          },
-          "home_sector_id": {
-            "type": "string",
-            "example": "sector-uuid"
-          },
-          "saved_addresses": {
-            "example": [
-              {
-                "id": 1,
-                "tag": "Home",
-                "text": "123 Main St"
-              }
-            ],
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
           }
         },
         "required": [
           "email",
-          "name",
           "password",
-          "phone",
-          "is_active",
-          "address",
-          "home_sector_id"
+          "name",
+          "phone"
         ]
       },
       "UpdateCustomerDto": {
@@ -6015,224 +4874,60 @@
         "properties": {
           "email": {
             "type": "string",
-            "example": "customer@tatku.com"
-          },
-          "name": {
-            "type": "string",
-            "example": "John Doe"
+            "example": "customer@mail.com"
           },
           "password": {
             "type": "string",
             "example": "Password@123"
           },
+          "name": {
+            "type": "string",
+            "example": "Aditya Verma"
+          },
           "phone": {
             "type": "string",
-            "example": "9876543210"
+            "example": "9812345678"
+          },
+          "city": {
+            "type": "string",
+            "example": "Chennai"
           },
           "is_active": {
             "type": "boolean",
             "example": true
-          },
-          "address": {
-            "type": "string",
-            "example": "123 Main St, Chennai"
-          },
-          "home_sector_id": {
-            "type": "string",
-            "example": "sector-uuid"
-          },
-          "saved_addresses": {
-            "example": [
-              {
-                "id": 1,
-                "tag": "Home",
-                "text": "123 Main St"
-              }
-            ],
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
           }
         }
       },
-      "CreateCollectiveDto": {
+      "CreateRegionDto": {
         "type": "object",
         "properties": {
-          "collective_name": {
+          "region_name": {
             "type": "string",
-            "example": "South Chennai Collective"
+            "description": "Region name",
+            "example": "Chennai North"
           },
           "is_active": {
             "type": "boolean",
-            "example": true
-          },
-          "sector_ids": {
-            "example": [
-              "sector-uuid-1",
-              "sector-uuid-2"
-            ],
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "description": "Is active flag",
+            "default": true
           }
         },
         "required": [
-          "collective_name",
-          "is_active"
+          "region_name"
         ]
       },
-      "UpdateCollectiveDto": {
+      "UpdateRegionDto": {
         "type": "object",
         "properties": {
-          "collective_name": {
+          "region_name": {
             "type": "string",
-            "example": "South Chennai Collective"
+            "description": "Region name",
+            "example": "Chennai North"
           },
           "is_active": {
             "type": "boolean",
-            "example": true
-          },
-          "sector_ids": {
-            "example": [
-              "sector-uuid-1",
-              "sector-uuid-2"
-            ],
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          }
-        }
-      },
-      "CreateSectorDto": {
-        "type": "object",
-        "properties": {
-          "sector_name": {
-            "type": "string",
-            "example": "Adyar East"
-          },
-          "state": {
-            "type": "string",
-            "example": "Tamil Nadu"
-          },
-          "region": {
-            "type": "string",
-            "example": "South"
-          },
-          "density_tier": {
-            "type": "string",
-            "example": "HIGH",
-            "enum": [
-              "HIGH",
-              "MEDIUM",
-              "LOW"
-            ]
-          },
-          "is_active": {
-            "type": "boolean",
-            "example": true
-          },
-          "collective_id": {
-            "type": "string",
-            "example": "uuid-of-collective"
-          }
-        },
-        "required": [
-          "sector_name",
-          "state",
-          "region",
-          "density_tier",
-          "is_active"
-        ]
-      },
-      "UpdateSectorDto": {
-        "type": "object",
-        "properties": {
-          "sector_name": {
-            "type": "string",
-            "example": "Adyar East"
-          },
-          "state": {
-            "type": "string",
-            "example": "Tamil Nadu"
-          },
-          "region": {
-            "type": "string",
-            "example": "South"
-          },
-          "density_tier": {
-            "type": "string",
-            "example": "HIGH",
-            "enum": [
-              "HIGH",
-              "MEDIUM",
-              "LOW"
-            ]
-          },
-          "is_active": {
-            "type": "boolean",
-            "example": true
-          },
-          "collective_id": {
-            "type": "string",
-            "example": "uuid-of-collective"
-          }
-        }
-      },
-      "CreateUnitDto": {
-        "type": "object",
-        "properties": {
-          "unit_name": {
-            "type": "string",
-            "example": "Cleaning & Pest Control"
-          },
-          "is_active": {
-            "type": "boolean",
-            "example": true
-          },
-          "collective_id": {
-            "type": "string",
-            "example": "uuid-of-collective"
-          },
-          "category": {
-            "type": "string",
-            "example": "Appliances"
-          },
-          "zone": {
-            "type": "string",
-            "example": "Zone A"
-          }
-        },
-        "required": [
-          "unit_name",
-          "is_active",
-          "collective_id"
-        ]
-      },
-      "UpdateUnitDto": {
-        "type": "object",
-        "properties": {
-          "unit_name": {
-            "type": "string",
-            "example": "Cleaning & Pest Control"
-          },
-          "is_active": {
-            "type": "boolean",
-            "example": true
-          },
-          "collective_id": {
-            "type": "string",
-            "example": "uuid-of-collective"
-          },
-          "category": {
-            "type": "string",
-            "example": "Appliances"
-          },
-          "zone": {
-            "type": "string",
-            "example": "Zone A"
+            "description": "Is active flag",
+            "default": true
           }
         }
       },
@@ -6681,13 +5376,63 @@
           }
         }
       },
-      "CompleteJobDto": {
+      "CreateJobAssignmentDto": {
         "type": "object",
         "properties": {
+          "booking_id": {
+            "type": "string"
+          },
+          "service_id": {
+            "type": "string"
+          },
+          "sp_id": {
+            "type": "string"
+          },
+          "scheduled_date": {
+            "type": "string"
+          },
+          "hour_start": {
+            "type": "string"
+          },
+          "hour_end": {
+            "type": "string"
+          },
           "notes": {
-            "type": "string",
-            "description": "Optional completion notes",
-            "example": "Work completed satisfactorily"
+            "type": "string"
+          }
+        },
+        "required": [
+          "booking_id",
+          "service_id",
+          "sp_id",
+          "scheduled_date",
+          "hour_start",
+          "hour_end"
+        ]
+      },
+      "UpdateJobAssignmentDto": {
+        "type": "object",
+        "properties": {
+          "booking_id": {
+            "type": "string"
+          },
+          "service_id": {
+            "type": "string"
+          },
+          "sp_id": {
+            "type": "string"
+          },
+          "scheduled_date": {
+            "type": "string"
+          },
+          "hour_start": {
+            "type": "string"
+          },
+          "hour_end": {
+            "type": "string"
+          },
+          "notes": {
+            "type": "string"
           }
         }
       },
@@ -6883,70 +5628,40 @@
         "properties": {
           "booking_id": {
             "type": "string",
-            "example": "b123-uuid",
-            "description": "Associated booking ID"
+            "example": "bkg-123"
           },
           "service_id": {
             "type": "string",
-            "example": "svc-uuid",
-            "description": "Associated service ID"
+            "example": "svc-123"
           },
           "sp_id": {
             "type": "string",
-            "example": "sp123-uuid",
-            "description": "Service Provider ID"
+            "example": "sp-123"
           },
-          "um_id": {
+          "rm_id": {
             "type": "string",
-            "example": "um123-uuid",
-            "description": "Unit Manager ID"
-          },
-          "cm_id": {
-            "type": "string",
-            "example": "cm123-uuid",
-            "description": "Collective Manager ID"
+            "example": "rm-123"
           },
           "provider_amount": {
             "type": "number",
-            "example": 1013.22,
-            "description": "Provider amount"
-          },
-          "um_amount": {
-            "type": "number",
-            "example": 103.92,
-            "description": "Unit Manager amount"
-          },
-          "cm_amount": {
-            "type": "number",
-            "example": 51.96,
-            "description": "Collective Manager amount"
+            "example": 850
           },
           "platform_amount": {
             "type": "number",
-            "example": 129.9,
-            "description": "Platform amount"
+            "example": 150
           },
           "payout_status": {
             "type": "string",
             "example": "PENDING",
-            "enum": [
-              "PENDING",
-              "DISBURSED",
-              "FAILED",
-              "HELD"
-            ],
-            "description": "Payout status"
+            "default": "PENDING"
           }
         },
         "required": [
           "booking_id",
           "service_id",
           "sp_id",
-          "um_id",
-          "cm_id",
+          "rm_id",
           "provider_amount",
-          "um_amount",
-          "cm_amount",
           "platform_amount"
         ]
       },
@@ -6974,8 +5689,7 @@
             "example": "customer",
             "enum": [
               "super_user",
-              "collective_manager",
-              "unit_manager",
+              "region_manager",
               "service_provider",
               "customer"
             ],

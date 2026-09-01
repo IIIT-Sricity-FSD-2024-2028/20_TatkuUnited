@@ -10,8 +10,8 @@
     var roleLabels = {
       customer: 'Customer',
       service_provider: 'Service Provider',
-      unit_manager: 'Unit Manager',
-      collective_manager: 'Collective Manager',
+      region_manager: 'Region Manager',
+      region_manager: 'Region Manager',
       super_user: 'Super User'
     };
     var label = roleLabels[role] || role;

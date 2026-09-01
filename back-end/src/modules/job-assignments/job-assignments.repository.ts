@@ -1,8 +1,5 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import {
-  DatabaseService,
-  JobAssignment,
-} from '../../common/database/database.service';
+import { Injectable } from '@nestjs/common';
+import { DatabaseService, JobAssignment } from '../../common/database/database.service';
 
 @Injectable()
 export class JobAssignmentsRepository {
@@ -59,5 +56,15 @@ export class JobAssignmentsRepository {
     };
     this.db.save();
     return this.db.jobAssignments[idx];
+  }
+
+  delete(assignmentId: string): boolean {
+    const idx = this.db.jobAssignments.findIndex(
+      (ja) => ja.assignment_id === assignmentId,
+    );
+    if (idx === -1) return false;
+    this.db.jobAssignments.splice(idx, 1);
+    this.db.save();
+    return true;
   }
 }

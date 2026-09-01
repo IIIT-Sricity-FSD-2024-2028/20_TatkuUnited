@@ -16,23 +16,23 @@
   function renderRevenue() {
     const roleOrder = [
       { role: "provider", label: "Providers (78%)" },
-      { role: "unit_manager", label: "Unit Managers (8%)" },
-      { role: "collective_manager", label: "Collective Managers (4%)" },
+      { role: "region_manager", label: "Region Managers (8%)" },
+      { role: "region_manager", label: "Region Managers (4%)" },
       { role: "super_user", label: "Platform / Super User (10%)" },
     ];
 
     const revenueByRole = {
       provider: { amount: 0 },
-      unit_manager: { amount: 0 },
-      collective_manager: { amount: 0 },
+      region_manager: { amount: 0 },
+      region_manager: { amount: 0 },
       super_user: { amount: 0 },
     };
 
     allLedger.forEach((entry) => {
       if (entry.payout_status === "DISBURSED") {
         revenueByRole.provider.amount += Number(entry.provider_amount || 0);
-        revenueByRole.unit_manager.amount += Number(entry.um_amount || 0);
-        revenueByRole.collective_manager.amount += Number(entry.cm_amount || 0);
+        revenueByRole.region_manager.amount += Number(entry.um_amount || 0);
+        revenueByRole.region_manager.amount += Number(entry.cm_amount || 0);
         revenueByRole.super_user.amount += Number(entry.platform_amount || 0);
       }
     });

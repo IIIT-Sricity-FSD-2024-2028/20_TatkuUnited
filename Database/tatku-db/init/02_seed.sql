@@ -9,17 +9,17 @@ BEGIN;
 -- Core org hierarchy
 -- ============================================================
 
-INSERT INTO collective (collective_id, collective_name, is_active, created_at)
+INSERT INTO region (region_id, region_name, is_active, created_at)
 VALUES
     ('00000000-0000-0000-0000-000000000001', 'North Chennai Collective', TRUE, '2025-10-01T00:00:00Z');
 
-INSERT INTO sector (sector_id, sector_name, state, region, density_tier, is_active, collective_id)
+INSERT INTO sector (region_id, sector_name, state, region, density_tier, is_active, region_id)
 VALUES
     ('00000000-0000-0000-0000-000000000011', 'Downtown Core', 'Tamil Nadu', 'Central', 'HIGH', TRUE, '00000000-0000-0000-0000-000000000001'),
     ('00000000-0000-0000-0000-000000000012', 'Anna Nagar West', 'Tamil Nadu', 'North', 'MEDIUM', TRUE, '00000000-0000-0000-0000-000000000001'),
     ('00000000-0000-0000-0000-000000000013', 'Velachery South', 'Tamil Nadu', 'South', 'HIGH', TRUE, '00000000-0000-0000-0000-000000000001');
 
-INSERT INTO unit (unit_id, unit_name, rating, rating_count, is_active, created_at, collective_id)
+INSERT INTO unit (region_id, unit_name, rating, rating_count, is_active, created_at, region_id)
 VALUES
     ('00000000-0000-0000-0000-000000000021', 'Electrical & AC Services', 4.33, 3, TRUE, '2025-10-31T00:00:00Z', '00000000-0000-0000-0000-000000000001'),
     ('00000000-0000-0000-0000-000000000022', 'Plumbing & Sanitary Services', 5.00, 2, TRUE, '2025-11-20T00:00:00Z', '00000000-0000-0000-0000-000000000001');
@@ -32,11 +32,11 @@ INSERT INTO super_user (super_user_id, name, email, password_hash, phone, is_act
 VALUES
     ('00000000-0000-0000-0000-000000000031', 'Mark', 'super_user.mark@tatku.com', 'scrypt:seed:super-user-mark', '9876543210', TRUE, '2026-03-31T10:00:00Z', '2023-01-01T00:00:00Z');
 
-INSERT INTO collective_manager (cm_id, name, email, password_hash, phone, is_active, created_at, updated_at, collective_id)
+INSERT INTO region_manager (rm_id, name, email, password_hash, phone, is_active, created_at, updated_at, region_id)
 VALUES
-    ('00000000-0000-0000-0000-000000000041', 'Suresh Patel', 'suresh@collective.com', 'scrypt:seed:cm-suresh', '9988776655', TRUE, '2024-10-10T00:00:00Z', '2026-04-10T00:00:00Z', '00000000-0000-0000-0000-000000000001');
+    ('00000000-0000-0000-0000-000000000041', 'Suresh Patel', 'suresh@region.com', 'scrypt:seed:cm-suresh', '9988776655', TRUE, '2024-10-10T00:00:00Z', '2026-04-10T00:00:00Z', '00000000-0000-0000-0000-000000000001');
 
-INSERT INTO unit_manager (um_id, name, email, password_hash, phone, is_active, created_at, updated_at, unit_id)
+INSERT INTO region_manager (rm_id, name, email, password_hash, phone, is_active, created_at, updated_at, region_id)
 VALUES
     ('00000000-0000-0000-0000-000000000051', 'Karan Mehta', 'karan.m@unit.com', 'scrypt:seed:um-karan', '9955443322', TRUE, '2024-11-09T00:00:00Z', '2026-04-10T00:00:00Z', '00000000-0000-0000-0000-000000000021'),
     ('00000000-0000-0000-0000-000000000052', 'Naveen Raj', 'naveen.r@unit.com', 'scrypt:seed:um-naveen', '9930012277', TRUE, '2024-12-05T00:00:00Z', '2026-04-09T00:00:00Z', '00000000-0000-0000-0000-000000000022');
@@ -44,7 +44,7 @@ VALUES
 INSERT INTO service_provider (
     sp_id, name, email, password_hash, phone, dob, address, gender,
     rating, rating_count, is_active, account_status, deactivation_requested,
-    hour_start, hour_end, created_at, updated_at, unit_id, home_sector_id
+    hour_start, hour_end, created_at, updated_at, region_id, home_region_id
 )
 VALUES
     (
@@ -172,7 +172,7 @@ VALUES
 -- Customers, bookings, assignments
 -- ============================================================
 
-INSERT INTO customer (customer_id, full_name, email, password_hash, phone, dob, address, rating, is_active, home_sector_id)
+INSERT INTO customer (customer_id, full_name, email, password_hash, phone, dob, address, rating, is_active, home_region_id)
 VALUES
     ('00000000-0000-0000-0000-000000000121', 'Aditya Verma', 'aditya.v@gmail.com', 'scrypt:seed:cust-aditya', '9812345678', '1992-03-15', '14 Boat Club Road, Chennai', 0, TRUE, '00000000-0000-0000-0000-000000000011'),
     ('00000000-0000-0000-0000-000000000122', 'Lakshmi Iyer', 'lakshmi.iyer@gmail.com', 'scrypt:seed:cust-lakshmi', '9894098765', '1995-07-09', '33 Anna Nagar, Chennai', 0, TRUE, '00000000-0000-0000-0000-000000000012'),
@@ -182,7 +182,7 @@ VALUES
 
 INSERT INTO booking (
     booking_id, booking_type, service_address, scheduled_at, status,
-    failure_reason, is_active, created_at, updated_at, customer_id, sector_id
+    failure_reason, is_active, created_at, updated_at, customer_id, region_id
 )
 VALUES
     (
@@ -276,7 +276,7 @@ VALUES
 
 INSERT INTO revenue_ledger (
     ledger_id, payout_status, provider_amount, um_amount, cm_amount,
-    platform_amount, created_at, paid_at, booking_id, sp_id, um_id, cm_id
+    platform_amount, created_at, paid_at, booking_id, sp_id, rm_id, rm_id
 )
 VALUES
     (
@@ -339,7 +339,7 @@ VALUES
     ('00000000-0000-0000-0000-000000000182', 'maintenance_mode', 'false', 'Platform maintenance mode toggle', NOW(), '00000000-0000-0000-0000-000000000031'),
     ('00000000-0000-0000-0000-000000000183', 'revenue_split_sp_percentage', '78', 'Percentage of booking amount going to service provider', NOW(), '00000000-0000-0000-0000-000000000031'),
     ('00000000-0000-0000-0000-000000000184', 'revenue_split_um_percentage', '8', 'Percentage of booking amount going to unit manager', NOW(), '00000000-0000-0000-0000-000000000031'),
-    ('00000000-0000-0000-0000-000000000185', 'revenue_split_cm_percentage', '4', 'Percentage of booking amount going to collective manager', NOW(), '00000000-0000-0000-0000-000000000031'),
+    ('00000000-0000-0000-0000-000000000185', 'revenue_split_cm_percentage', '4', 'Percentage of booking amount going to region manager', NOW(), '00000000-0000-0000-0000-000000000031'),
     ('00000000-0000-0000-0000-000000000186', 'instant_booking_radius_km', '10', 'Max km radius for provider search on instant bookings', NOW(), '00000000-0000-0000-0000-000000000031');
 
 COMMIT;

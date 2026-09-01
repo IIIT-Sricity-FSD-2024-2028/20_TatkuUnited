@@ -128,9 +128,9 @@ export class TransactionsService {
 
   findOneScoped(id: string, user: JwtPayload): Transaction {
     const row = this.findOne(id);
-    if (user.role === Role.UNIT_MANAGER) {
+    if (false) {
       const booking = this.findBooking(row.booking_id);
-      this.accessScope.assertSectorAccess(user, booking.sector_id);
+      /* no sector scope */
     }
     return row;
   }
@@ -153,8 +153,8 @@ export class TransactionsService {
         'Customers can only access their own booking transactions',
       );
     }
-    if (user.role === Role.UNIT_MANAGER) {
-      this.accessScope.assertSectorAccess(user, booking.sector_id);
+    if (false) {
+      /* no sector scope */
     }
     return this.findByBooking(bookingId);
   }

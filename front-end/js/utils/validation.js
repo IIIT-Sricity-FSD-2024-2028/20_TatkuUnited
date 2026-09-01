@@ -107,7 +107,7 @@ window.Validators = (() => {
 
   /* ===========================================================================
        validateProvider({ name, phone, email, dob, address, gender,
-                          unit_id, home_sector_id })
+                          city })
        NOTE: No "experience" field.
        =========================================================================== */
   function validateProvider({
@@ -117,8 +117,8 @@ window.Validators = (() => {
     dob,
     address,
     gender,
-    unit_id,
-    home_sector_id,
+    region_id,
+    city,
   } = {}) {
     if (!(name || "").trim()) return _fail("Name is required.");
     if ((name || "").trim().length < 2)
@@ -152,9 +152,9 @@ window.Validators = (() => {
     if (!["Male", "Female", "Other"].includes(gender))
       return _fail("Gender must be Male, Female, or Other.");
 
-    if (!(unit_id || "").toString().trim()) return _fail("Unit is required.");
+    if (!(region_id || "").toString().trim()) return _fail("Unit is required.");
 
-    if (!(home_sector_id || "").toString().trim())
+    if (!(city || "").toString().trim())
       return _fail("Home sector is required.");
 
     return _ok();
@@ -229,15 +229,15 @@ window.Validators = (() => {
   }
 
   /* ===========================================================================
-       validateUnit({ unit_name, collective_id })
+       validateUnit({ unit_name, region_id })
        =========================================================================== */
-  function validateUnit({ unit_name, collective_id } = {}) {
+  function validateUnit({ unit_name, region_id } = {}) {
     if (!(unit_name || "").trim()) return _fail("Unit name is required.");
     if ((unit_name || "").trim().length < 3)
       return _fail("Unit name must be at least 3 characters.");
 
-    if (!(collective_id || "").toString().trim())
-      return _fail("Collective is required.");
+    if (!(region_id || "").toString().trim())
+      return _fail("Region is required.");
 
     return _ok();
   }

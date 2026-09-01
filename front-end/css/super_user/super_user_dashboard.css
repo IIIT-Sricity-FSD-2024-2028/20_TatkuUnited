@@ -629,11 +629,11 @@ body {
   background: var(--green);
 }
 
-.revenue-role-fill--unit_manager {
+.revenue-role-fill--region_manager {
   background: var(--blue);
 }
 
-.revenue-role-fill--collective_manager {
+.revenue-role-fill--platform {
   background: var(--amber);
 }
 

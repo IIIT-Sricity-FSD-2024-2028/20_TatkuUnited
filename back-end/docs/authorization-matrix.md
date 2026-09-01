@@ -5,14 +5,14 @@ This document defines who can do what at the API layer.
 ## Roles
 
 - `super_user`
-- `collective_manager`
-- `unit_manager`
+- `region_manager`
+- `region_manager`
 - `service_provider`
 - `customer`
 
 Role hierarchy (broad authority intent):
 
-`super_user > collective_manager > unit_manager > service_provider > customer`
+`super_user > region_manager > region_manager > service_provider > customer`
 
 Important: hierarchy is a domain concept, not automatic code behavior. Endpoint access must still be declared explicitly using `@Roles(...)`.
 
@@ -21,7 +21,7 @@ Important: hierarchy is a domain concept, not automatic code behavior. Endpoint 
 Current guard reads role from request header:
 
 - Header: `x-role`
-- Example: `x-role: unit_manager`
+- Example: `x-role: region_manager`
 
 When JWT is present, guard may also read role from token payload depending on implementation. During team integration, continue documenting endpoint permissions in terms of the five canonical roles above.
 
@@ -39,7 +39,7 @@ Legend:
 
 ### Accounts and Identity
 
-| Resource / Action | super_user | collective_manager | unit_manager | service_provider | customer |
+| Resource / Action | super_user | region_manager | region_manager | service_provider | customer |
 |---|---|---|---|---|---|
 | Super user accounts | CRUD | - | - | - | - |
 | Collective manager accounts | CRUD | R (self) U (self) | - | - | - |
@@ -50,7 +50,7 @@ Legend:
 
 ### Geography and Organization
 
-| Resource / Action | super_user | collective_manager | unit_manager | service_provider | customer |
+| Resource / Action | super_user | region_manager | region_manager | service_provider | customer |
 |---|---|---|---|---|---|
 | Sectors | CRUD | M (manage sectors in collective scope) | R | R | R |
 | Collectives | CRUD | R (own) U (own profile/settings) | R (related) | R (related) | R (public metadata if exposed) |
@@ -58,7 +58,7 @@ Legend:
 
 ### Service Catalog
 
-| Resource / Action | super_user | collective_manager | unit_manager | service_provider | customer |
+| Resource / Action | super_user | region_manager | region_manager | service_provider | customer |
 |---|---|---|---|---|---|
 | Categories | CRUD | R | R | R | R |
 | Services | CRUD | R | R | R | R |
@@ -67,7 +67,7 @@ Legend:
 
 ### Availability, Booking, and Fulfillment
 
-| Resource / Action | super_user | collective_manager | unit_manager | service_provider | customer |
+| Resource / Action | super_user | region_manager | region_manager | service_provider | customer |
 |---|---|---|---|---|---|
 | Provider unavailability | CRUD | R (providers in scope) | R (providers in unit) | CRUD (self) | - |
 | Cart | CRUD (support/debug) | - | - | - | CRUD (self) |
@@ -76,7 +76,7 @@ Legend:
 
 ### Payments, Revenue, and Reviews
 
-| Resource / Action | super_user | collective_manager | unit_manager | service_provider | customer |
+| Resource / Action | super_user | region_manager | region_manager | service_provider | customer |
 |---|---|---|---|---|---|
 | Transactions | CRUD | R (in collective scope) | R (in unit scope) | R (own jobs if exposed) | C/R (self) |
 | Revenue ledger | CRUD | R (own collective share/charts) | R (own unit share/charts) | R (own share/charts) | - |

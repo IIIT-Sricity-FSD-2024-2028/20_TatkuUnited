@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Collective & Unit – Tatku United</title>
+    <title>Region Management – Tatku United</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -59,7 +59,7 @@
             <path d="M16 3H8" />
             <path d="M12 3v4" />
           </svg>
-          Collective &amp; Unit
+          Region Management
         </a>
         <a href="manage_skills.html" class="nav-item">
           <svg
@@ -191,15 +191,15 @@
         <!-- Page Header -->
         <div class="page-header-row">
           <div>
-            <h1 class="page-title">Collective &amp; Unit Management</h1>
+            <h1 class="page-title">Region Management Management</h1>
             <p class="page-subtitle">
-              Manage provider groups and organizational units across regions.
+              Manage regions and their assigned Region Managers across the platform.
             </p>
           </div>
           <div class="header-btns">
-            <button class="btn-secondary" id="btn-create-unit">
-              + Create Unit
-            </button>
+            <button class="btn-secondary" id="btn-create-region">
+              + Create Region
+              </button>
             <button class="btn-primary" id="btn-create-collective">
               <svg
                 viewBox="0 0 24 24"
@@ -211,7 +211,7 @@
                 <line x1="12" y1="8" x2="12" y2="16" />
                 <line x1="8" y1="12" x2="16" y2="12" />
               </svg>
-              Create Collective
+              Create Region
             </button>
           </div>
         </div>
@@ -234,7 +234,7 @@
               <input
                 type="text"
                 id="quick-search"
-                placeholder="Filter by collective, unit, or ID..."
+                placeholder="Filter by region name or manager..."
               />
             </div>
           </div>
@@ -245,7 +245,7 @@
             </select>
           </div>
           <div class="filter-group">
-            <label class="filter-label">UNIT MANAGER</label>
+            <label class="filter-label">REGION MANAGER</label>
             <select class="filter-select" id="manager-filter">
               <option>All Managers</option>
             </select>
@@ -258,20 +258,20 @@
           </div>
         </div>
 
-        <!-- Collectives Grid -->
-        <div class="collectives-grid" id="collectives-grid"></div>
+        <!-- Regions Grid -->
+        <div class="regions-grid" id="regions-grid"></div>
 
-        <!-- Collectives Pagination -->
+        <!-- Regions Pagination -->
         <div class="table-footer">
-          <span class="table-info" id="collectives-table-info">Showing 0-0 of 0 collectives</span>
-          <div class="pagination" id="collectives-pagination-container">
-            <button class="page-arrow" id="collectives-prev-page" type="button">
+          <span class="table-info" id="regions-table-info">Showing 0-0 of 0 regions</span>
+          <div class="pagination" id="regions-pagination-container">
+            <button class="page-arrow" id="regions-prev-page" type="button">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <polyline points="15 18 9 12 15 6" />
               </svg>
             </button>
-            <div id="collectives-pages" class="page-numbers" style="display: flex; gap: 0.5rem;"></div>
-            <button class="page-arrow" id="collectives-next-page" type="button">
+            <div id="regions-pages" class="page-numbers" style="display: flex; gap: 0.5rem;"></div>
+            <button class="page-arrow" id="regions-next-page" type="button">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <polyline points="9 18 15 12 9 6" />
               </svg>
@@ -291,7 +291,7 @@
         aria-labelledby="collective-modal-title"
       >
         <div class="form-modal-header">
-          <h3 id="collective-modal-title">Create New Collective</h3>
+          <h3 id="collective-modal-title">Create New Region</h3>
           <button
             type="button"
             class="modal-close"
@@ -304,7 +304,7 @@
         <form id="collective-form" novalidate>
           <div class="form-grid">
             <div class="form-field form-field--full">
-              <label for="collective-name-input">Collective Name</label>
+              <label for="collective-name-input">Region Name</label>
               <input
                 id="collective-name-input"
                 type="text"
@@ -331,7 +331,7 @@
             </div>
 
             <div class="form-field form-field--full" style="position: relative;">
-              <label for="collective-manager-input">Collective Manager</label>
+              <label for="collective-manager-input">Region Manager</label>
               <input
                 id="collective-manager-input"
                 type="text"
@@ -351,31 +351,31 @@
             >
               Cancel
             </button>
-            <button type="submit" class="btn-primary">Create Collective</button>
+            <button type="submit" class="btn-primary">Create Region</button>
           </div>
         </form>
       </div>
     </div>
 
-    <div class="modal-overlay" id="unit-modal" aria-hidden="true">
+    <div class="modal-overlay" id="region-modal" aria-hidden="true">
       <div
         class="form-modal"
         role="dialog"
         aria-modal="true"
-        aria-labelledby="unit-modal-title"
+        aria-labelledby="region-modal-title"
       >
         <div class="form-modal-header">
-          <h3 id="unit-modal-title">Create New Unit</h3>
+          <h3 id="region-modal-title">Create New Region</h3>
           <button
             type="button"
             class="modal-close"
-            id="unit-modal-close"
+            id="region-modal-close"
             aria-label="Close form"
           >
             ×
           </button>
         </div>
-        <form id="unit-form" novalidate>
+        <form id="region-form" novalidate>
           <div class="form-grid">
             <div class="form-field form-field--full">
               <label for="unit-name-input">Unit Name</label>
@@ -389,13 +389,13 @@
             </div>
 
             <div class="form-field">
-              <label for="unit-collective-select">Collective</label>
+              <label for="unit-collective-select">Region</label>
               <select id="unit-collective-select"></select>
               <small class="field-error" id="unit-collective-error"></small>
             </div>
 
             <div class="form-field">
-              <label for="unit-manager-select">Unit Manager (optional)</label>
+              <label for="unit-manager-select">Region Manager (optional)</label>
               <select id="unit-manager-select"></select>
               <small class="field-error" id="unit-manager-error"></small>
             </div>
@@ -501,7 +501,7 @@
         aria-labelledby="reassign-cm-modal-title"
       >
         <div class="form-modal-header">
-          <h3 id="reassign-cm-modal-title">Reassign Collective Manager</h3>
+          <h3 id="reassign-cm-modal-title">Reassign Region Manager</h3>
           <button
             type="button"
             class="modal-close"
@@ -514,7 +514,7 @@
         <form id="reassign-cm-form" novalidate>
           <div class="form-grid">
             <div class="form-field form-field--full" style="position: relative;">
-              <label for="reassign-cm-input">Search Collective Manager</label>
+              <label for="reassign-cm-input">Search Region Manager</label>
               <input
                 id="reassign-cm-input"
                 type="text"
@@ -549,7 +549,7 @@
         aria-labelledby="edit-collective-modal-title"
       >
         <div class="form-modal-header">
-          <h3 id="edit-collective-modal-title">Edit Collective</h3>
+          <h3 id="edit-collective-modal-title">Edit Region</h3>
           <button
             type="button"
             class="modal-close"
@@ -562,7 +562,7 @@
         <form id="edit-collective-form" novalidate>
           <div class="form-grid">
             <div class="form-field form-field--full" style="position: relative;">
-              <label for="edit-collective-cm-input">Collective Manager</label>
+              <label for="edit-collective-cm-input">Region Manager</label>
               <input
                 id="edit-collective-cm-input"
                 type="text"

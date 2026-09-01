@@ -41,178 +41,129 @@ export class ServiceProvidersController {
   ) {}
 
   @Get()
-  @Roles(Role.SUPER_USER, Role.COLLECTIVE_MANAGER, Role.UNIT_MANAGER)
-  @ApiOperation({ summary: 'Get all service providers (scoped for managers)' })
-  @ApiResponse({ status: 200, description: 'Success - returns list of providers' })
-  @ApiResponse({ status: 403, description: 'Forbidden' })
+  @Roles(Role.SUPER_USER, Role.REGION_MANAGER)
+  @ApiOperation({ summary: 'Get service providers (scoped for region managers)' })
+  @ApiResponse({ status: 200, description: 'Success' })
   findAll(@Request() req: { user: JwtPayload }) {
-    if (req.user.role === Role.COLLECTIVE_MANAGER) {
-      const manager = this.accessScope.getCollectiveManager(req.user.sub);
-      return this.serviceProvidersService.findAll().filter((sp) => {
-        if (!sp.unit_id) {
-          if (!sp.home_sector_id) return false;
-          try {
-            const sector = this.accessScope.getSector(sp.home_sector_id);
-            return sector.collective_id === manager.collective_id;
-          } catch {
-            return false;
-          }
-        }
-        const unit = this.accessScope.getUnit(sp.unit_id);
-        return unit.collective_id === manager.collective_id;
-      });
-    }
-    if (req.user.role === Role.UNIT_MANAGER) {
-      const manager = this.accessScope.getUnitManager(req.user.sub);
-      return this.serviceProvidersService.findByUnit(manager.unit_id);
+    if (req.user.role === Role.REGION_MANAGER) {
+      const manager = this.accessScope.getRegionManager(req.user.sub);
+      const all = this.serviceProvidersService.findAll();
+      // Return assigned providers to region OR pending/unassigned providers
+      return all.filter((sp) => sp.region_id === manager.region_id || !sp.region_id || sp.account_status === 'pending');
     }
     return this.serviceProvidersService.findAll();
-
   }
 
-  @Get('unit/:unit_id')
-  @Roles(Role.SUPER_USER, Role.COLLECTIVE_MANAGER, Role.UNIT_MANAGER)
-  @ApiOperation({ summary: 'Get service providers by unit ID' })
+  @Get('pending')
+  @Roles(Role.SUPER_USER, Role.REGION_MANAGER)
+  @ApiOperation({ summary: 'Get all pending unapproved service providers' })
   @ApiResponse({ status: 200, description: 'Success' })
-  @ApiResponse({ status: 403, description: 'Forbidden' })
-  findByUnit(
-    @Param('unit_id') unitId: string,
-    @Request() req: { user: JwtPayload },
-  ) {
-    this.accessScope.assertUnitAccess(req.user, unitId);
-    return this.serviceProvidersService.findByUnit(unitId);
+  findPending() {
+    return this.serviceProvidersService.findPending();
   }
 
-  @Get('sector/:sector_id')
-  @Roles(Role.SUPER_USER, Role.COLLECTIVE_MANAGER, Role.UNIT_MANAGER)
-  @ApiOperation({ summary: 'Get service providers by sector ID' })
+  @Get('region/:region_id')
+  @Roles(Role.SUPER_USER, Role.REGION_MANAGER)
+  @ApiOperation({ summary: 'Get service providers by region ID' })
   @ApiResponse({ status: 200, description: 'Success' })
-  @ApiResponse({ status: 403, description: 'Forbidden' })
-  findBySector(
-    @Param('sector_id') sectorId: string,
+  findByRegion(
+    @Param('region_id') regionId: string,
     @Request() req: { user: JwtPayload },
   ) {
-    this.accessScope.assertSectorAccess(req.user, sectorId);
-    return this.serviceProvidersService.findBySector(sectorId);
+    this.accessScope.assertRegionAccess(req.user, regionId);
+    return this.serviceProvidersService.findByRegion(regionId);
   }
 
   @Get(':id')
-  @Roles(Role.SUPER_USER, Role.SERVICE_PROVIDER, Role.UNIT_MANAGER, Role.COLLECTIVE_MANAGER)
+  @Roles(Role.SUPER_USER, Role.SERVICE_PROVIDER, Role.REGION_MANAGER)
   @ApiOperation({ summary: 'Get service provider by ID' })
   @ApiResponse({ status: 200, description: 'Success' })
-  @ApiResponse({ status: 404, description: 'Not found' })
-  @ApiResponse({ status: 403, description: 'Forbidden' })
   findOne(@Param('id') id: string, @Request() req: { user: JwtPayload }) {
-    if (req.user.role === Role.SERVICE_PROVIDER && req.user.sub !== id) {
-      throw new ForbiddenException('Providers can only access their own account');
-    }
-    if (req.user.role === Role.UNIT_MANAGER || req.user.role === Role.COLLECTIVE_MANAGER) {
-      this.accessScope.assertProviderAccess(req.user, id);
-    }
+    this.accessScope.assertProviderAccess(req.user, id);
     return this.serviceProvidersService.findOne(id);
   }
 
   @Post()
-  @Roles(Role.SUPER_USER, Role.COLLECTIVE_MANAGER, Role.UNIT_MANAGER)
-  @ApiOperation({ summary: 'Create a new service provider' })
-  @ApiResponse({ status: 201, description: 'Created successfully' })
-  @ApiResponse({ status: 403, description: 'Forbidden' })
-  create(@Body() dto: CreateServiceProviderDto, @Request() req: { user: JwtPayload }) {
-    if (req.user.role === Role.COLLECTIVE_MANAGER) {
-      this.accessScope.assertUnitAccess(req.user, dto.unit_id);
-      this.accessScope.assertSectorAccess(req.user, dto.sector_id);
-    }
-    this.accessScope.assertUnitAndSectorCompatible(dto.unit_id, dto.sector_id);
+  @Roles(Role.SUPER_USER, Role.REGION_MANAGER)
+  @ApiOperation({ summary: 'Create service provider' })
+  @ApiResponse({ status: 201, description: 'Created' })
+  create(@Body() dto: CreateServiceProviderDto) {
     return this.serviceProvidersService.create(dto);
   }
 
+  @Patch(':id/approve')
+  @Roles(Role.SUPER_USER, Role.REGION_MANAGER)
+  @ApiOperation({ summary: 'Approve provider and assign to region' })
+  @ApiResponse({ status: 200, description: 'Approved' })
+  approve(
+    @Param('id') id: string,
+    @Body('region_id') regionId: string,
+    @Request() req: { user: JwtPayload },
+  ) {
+    let targetRegionId = regionId;
+    if (req.user.role === Role.REGION_MANAGER) {
+      const manager = this.accessScope.getRegionManager(req.user.sub);
+      targetRegionId = manager.region_id;
+    }
+    return this.serviceProvidersService.approve(id, targetRegionId);
+  }
+
   @Patch(':id')
-  @Roles(Role.SUPER_USER, Role.SERVICE_PROVIDER, Role.UNIT_MANAGER, Role.COLLECTIVE_MANAGER)
-  @ApiOperation({ summary: 'Update a service provider' })
-  @ApiResponse({ status: 200, description: 'Success' })
-  @ApiResponse({ status: 404, description: 'Not found' })
-  @ApiResponse({ status: 403, description: 'Forbidden' })
+  @Roles(Role.SUPER_USER, Role.SERVICE_PROVIDER, Role.REGION_MANAGER)
+  @ApiOperation({ summary: 'Update service provider' })
+  @ApiResponse({ status: 200, description: 'Updated' })
   update(
     @Param('id') id: string,
     @Body() dto: UpdateServiceProviderDto,
     @Request() req: { user: JwtPayload },
   ) {
-    if (req.user.role === Role.SERVICE_PROVIDER && req.user.sub !== id) {
-      throw new ForbiddenException('Providers can only update their own account');
-    }
-    if (req.user.role === Role.UNIT_MANAGER || req.user.role === Role.COLLECTIVE_MANAGER) {
-      this.accessScope.assertProviderAccess(req.user, id);
-    }
-    if (dto.unit_id !== undefined || dto.sector_id !== undefined) {
-      const provider = this.serviceProvidersService.findOne(id);
-      const nextUnitId = dto.unit_id ?? provider.unit_id;
-      const nextSectorId = dto.sector_id ?? provider.home_sector_id;
-      this.accessScope.assertUnitAndSectorCompatible(nextUnitId, nextSectorId);
-      if (req.user.role === Role.UNIT_MANAGER || req.user.role === Role.COLLECTIVE_MANAGER) {
-        this.accessScope.assertUnitAccess(req.user, nextUnitId);
-        this.accessScope.assertSectorAccess(req.user, nextSectorId);
-      }
-    }
+    this.accessScope.assertProviderAccess(req.user, id);
     return this.serviceProvidersService.update(id, dto);
   }
 
-  @Patch('working-hours/:id')
+  @Patch(':id/working-hours')
   @Roles(Role.SUPER_USER, Role.SERVICE_PROVIDER)
-  @ApiOperation({ summary: 'Update working hours of service provider' })
-  @ApiResponse({ status: 200, description: 'Success' })
-  @ApiResponse({ status: 404, description: 'Not found' })
-  @ApiResponse({ status: 403, description: 'Forbidden' })
+  @ApiOperation({ summary: 'Update working hours' })
+  @ApiResponse({ status: 200, description: 'Updated' })
   updateWorkingHours(
     @Param('id') id: string,
     @Body() dto: UpdateWorkingHoursDto,
     @Request() req: { user: JwtPayload },
   ) {
-    if (req.user.role === Role.SERVICE_PROVIDER && req.user.sub !== id) {
-      throw new ForbiddenException('Providers can only update their own working hours');
-    }
+    this.accessScope.assertProviderAccess(req.user, id);
     return this.serviceProvidersService.updateWorkingHours(id, dto);
   }
 
-  @Patch('profile/:id')
+  @Patch(':id/profile')
   @Roles(Role.SUPER_USER, Role.SERVICE_PROVIDER)
-  @ApiOperation({ summary: 'Update profile of service provider' })
-  @ApiResponse({ status: 200, description: 'Success' })
-  @ApiResponse({ status: 404, description: 'Not found' })
-  @ApiResponse({ status: 403, description: 'Forbidden' })
+  @ApiOperation({ summary: 'Update provider profile' })
+  @ApiResponse({ status: 200, description: 'Updated' })
   updateProfile(
     @Param('id') id: string,
     @Body() dto: UpdateProviderProfileDto,
     @Request() req: { user: JwtPayload },
   ) {
-    if (req.user.role === Role.SERVICE_PROVIDER && req.user.sub !== id) {
-      throw new ForbiddenException('Providers can only update their own profile');
-    }
+    this.accessScope.assertProviderAccess(req.user, id);
     return this.serviceProvidersService.updateProfile(id, dto);
   }
 
-  @Patch('deactivate/:id')
+  @Patch(':id/request-deactivation')
   @Roles(Role.SUPER_USER, Role.SERVICE_PROVIDER)
-  @ApiOperation({ summary: 'Request deactivation of service provider' })
-  @ApiResponse({ status: 200, description: 'Success' })
-  @ApiResponse({ status: 404, description: 'Not found' })
-  @ApiResponse({ status: 403, description: 'Forbidden' })
-  requestDeactivation(@Param('id') id: string, @Request() req: { user: JwtPayload }) {
-    if (req.user.role === Role.SERVICE_PROVIDER && req.user.sub !== id) {
-      throw new ForbiddenException('Providers can only request their own deactivation');
-    }
+  @ApiOperation({ summary: 'Request account deactivation' })
+  @ApiResponse({ status: 200, description: 'Updated' })
+  requestDeactivation(
+    @Param('id') id: string,
+    @Request() req: { user: JwtPayload },
+  ) {
+    this.accessScope.assertProviderAccess(req.user, id);
     return this.serviceProvidersService.requestDeactivation(id);
   }
 
   @Delete(':id')
-  @Roles(Role.SUPER_USER, Role.COLLECTIVE_MANAGER, Role.UNIT_MANAGER)
-  @ApiOperation({ summary: 'Delete a service provider' })
-  @ApiResponse({ status: 200, description: 'Success' })
-  @ApiResponse({ status: 404, description: 'Not found' })
-  @ApiResponse({ status: 403, description: 'Forbidden' })
-  remove(@Param('id') id: string, @Request() req: { user: JwtPayload }) {
-    if (req.user.role === Role.COLLECTIVE_MANAGER || req.user.role === Role.UNIT_MANAGER) {
-      this.accessScope.assertProviderAccess(req.user, id);
-    }
+  @Roles(Role.SUPER_USER)
+  @ApiOperation({ summary: 'Delete service provider' })
+  @ApiResponse({ status: 200, description: 'Deleted' })
+  remove(@Param('id') id: string) {
     return this.serviceProvidersService.remove(id);
   }
 }

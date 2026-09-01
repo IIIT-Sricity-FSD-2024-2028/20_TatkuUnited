@@ -90,7 +90,7 @@
 
     // Render Managers
     if (matchedManagers.length) {
-      dropdown.appendChild(createHeader('Unit Managers'));
+      dropdown.appendChild(createHeader('Region Managers'));
       matchedManagers.forEach(m => {
         dropdown.appendChild(createItem(`manage_units.html?manager_id=${m.name}`, m.name, 'Manager', 'manager'));
       });
