@@ -1,14 +1,14 @@
 /* collective_unit.js — API-backed */
 
 var _cache = {
-  regions: [], units: [], sectors: [], regionManagers: [], regionManagers: [],
+  regions: [], units: [], sectors: [], regionManagers: [],
   providers: [], providerSkills: [], skills: [], assignments: []
 };
 
 async function _loadCache() {
   const endpoints = [
     ["/regions", "regions"], ["/regions", "units"], ["/regions", "sectors"],
-    ["/unit-managers", "regionManagers"], ["/collective-managers", "regionManagers"],
+    ["/region-managers", "regionManagers"],
     ["/service-providers", "providers"], ["/provider-skills", "providerSkills"],
     ["/skills", "skills"], ["/job-assignments", "assignments"]
   ];
@@ -502,7 +502,7 @@ async function _loadCache() {
         var isCurrentAssigned = includeRegionId && m.region_id === includeRegionId;
 
         if (!isUnassigned && !isCurrentAssigned) return false;
-        if (q && m.name.toLowerCase().indexOf(q) === -1 && m.cm_id.toLowerCase().indexOf(q) === -1) {
+        if (q && m.name.toLowerCase().indexOf(q) === -1 && m.rm_id.toLowerCase().indexOf(q) === -1) {
           return false;
         }
         return true;
@@ -515,8 +515,8 @@ async function _loadCache() {
       }
 
       dropdownEl.innerHTML = options.map(function (m) {
-        return '<div class="cm-option" style="padding: 8px; cursor: pointer; border-bottom: 1px solid #f3f4f6; font-size: 14px;" data-id="' + escapeHtml(m.cm_id) + '" data-name="' + escapeHtml(m.name) + '">' +
-          escapeHtml(m.name) + ' <span style="color:#9ca3af; font-size:12px;">(' + escapeHtml(m.cm_id) + ')</span>' +
+        return '<div class="cm-option" style="padding: 8px; cursor: pointer; border-bottom: 1px solid #f3f4f6; font-size: 14px;" data-id="' + escapeHtml(m.rm_id) + '" data-name="' + escapeHtml(m.name) + '">' +
+          escapeHtml(m.name) + ' <span style="color:#9ca3af; font-size:12px;">(' + escapeHtml(m.rm_id) + ')</span>' +
           '</div>';
       }).join('');
       dropdownEl.style.display = "block";
@@ -1112,7 +1112,7 @@ async function _loadCache() {
       setFieldError(el.regionManagerInput, el.regionManagerError, "A valid unassigned collective manager must be selected.");
       valid = false;
     } else {
-      var managerRef = tables.regionManagers.find(function (m) { return m.cm_id === state.selectedCmId; });
+      var managerRef = tables.regionManagers.find(function (m) { return m.rm_id === state.selectedCmId; });
       if (!managerRef || managerRef.region_id) {
         setFieldError(el.regionManagerInput, el.regionManagerError, "The selected manager is not available.");
         valid = false;
@@ -1144,9 +1144,9 @@ async function _loadCache() {
 
       // Assign CM
       if (result.cmId) {
-        await Api.patch("/collective-managers/" + result.cmId, { region_id: newRegion.region_id });
+        await Api.patch("/region-managers/" + result.cmId, { region_id: newRegion.region_id });
         _cache.regionManagers.forEach(function (m) {
-          if (m.cm_id === result.cmId) {
+          if (m.rm_id === result.cmId) {
             m.region_id = newRegion.region_id;
             m.updated_at = new Date().toISOString();
           }
@@ -1179,7 +1179,7 @@ async function _loadCache() {
     var currentMgr = tables.regionManagers.find(function (m) { return m.region_id === collectiveId; });
     if (currentMgr && el.reassignCmInput) {
       el.reassignCmInput.value = currentMgr.name;
-      state.reassignCmId = currentMgr.cm_id;
+      state.reassignCmId = currentMgr.rm_id;
     }
 
     openModal(el.reassignCmModal);
@@ -1198,7 +1198,7 @@ async function _loadCache() {
     var collectiveId = state.reassignRegionId;
     var chosenId = state.reassignCmId;
 
-    var chosenManager = managers.find(function (m) { return m.cm_id === chosenId; });
+    var chosenManager = managers.find(function (m) { return m.rm_id === chosenId; });
     if (!chosenManager || (chosenManager.region_id && chosenManager.region_id !== collectiveId)) {
       setFieldError(el.reassignCmInput, el.reassignCmError, "This manager is not available.");
       return;
@@ -1206,9 +1206,13 @@ async function _loadCache() {
 
     try {
       // Unassign old
-      managers.forEach(function (m) { if (m.region_id === collectiveId) m.region_id = null; });
+      var oldManagers = managers.filter(function (m) { return m.region_id === collectiveId; });
+      for (var i = 0; i < oldManagers.length; i++) {
+        oldManagers[i].region_id = "";
+        await Api.patch("/region-managers/" + oldManagers[i].rm_id, { region_id: "" });
+      }
       // Assign new
-      await Api.patch("/collective-managers/" + chosenId, { region_id: collectiveId });
+      await Api.patch("/region-managers/" + chosenId, { region_id: collectiveId });
       chosenManager.region_id = collectiveId;
       chosenManager.updated_at = new Date().toISOString();
     } catch (_) {}
@@ -1244,7 +1248,7 @@ async function _loadCache() {
     });
     if (currentMgr && el.editRegionCmInput) {
       el.editRegionCmInput.value = currentMgr.name;
-      state.editCmId = currentMgr.cm_id;
+      state.editCmId = currentMgr.rm_id;
     }
 
     // Populate sector multi-select (mark taken sectors from OTHER regions as disabled)
@@ -1303,7 +1307,7 @@ async function _loadCache() {
     openModal(el.editRegionModal);
   }
 
-  function submitEditRegion() {
+  async function submitEditRegion() {
     var collectiveId = state.editingRegionId;
     if (!collectiveId) {
       closeModal(el.editRegionModal);
@@ -1332,7 +1336,7 @@ async function _loadCache() {
       valid = false;
     } else {
       var chosenMgr = tables.regionManagers.find(function (m) {
-        return m.cm_id === state.editCmId;
+        return m.rm_id === state.editCmId;
       });
       if (
         !chosenMgr ||
@@ -1391,18 +1395,22 @@ async function _loadCache() {
     // Apply CM change
     var managers = _cache.regionManagers;
     // Unassign old manager from this collective
-    managers.forEach(function (m) { if (m.region_id === collectiveId) m.region_id = null; });
+    var oldManagers = managers.filter(function (m) { return m.region_id === collectiveId; });
+    for (var i = 0; i < oldManagers.length; i++) {
+      oldManagers[i].region_id = "";
+      try { await Api.patch("/region-managers/" + oldManagers[i].rm_id, { region_id: "" }); } catch (_) {}
+    }
     // Assign new manager
-    var newMgr = managers.find(function (m) { return m.cm_id === state.editCmId; });
+    var newMgr = managers.find(function (m) { return m.rm_id === state.editCmId; });
     if (newMgr) {
       newMgr.region_id = collectiveId;
       newMgr.updated_at = new Date().toISOString();
-      try { Api.patch("/collective-managers/" + state.editCmId, { region_id: collectiveId }); } catch (_) {}
+      try { await Api.patch("/region-managers/" + state.editCmId, { region_id: collectiveId }); } catch (_) {}
     }
 
     // Apply sector changes
     collective.region_ids = sectorIds;
-    try { Api.patch("/regions/" + collectiveId, { region_ids: sectorIds }); } catch (_) {}
+    try { await Api.patch("/regions/" + collectiveId, { region_ids: sectorIds }); } catch (_) {}
     closeModal(el.editRegionModal);
     populateFilters();
     renderRegions();

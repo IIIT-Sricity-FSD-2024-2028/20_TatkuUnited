@@ -29,6 +29,12 @@
       "region_name": "Coimbatore",
       "is_active": true,
       "created_at": "2025-10-01T00:00:00Z"
+    },
+    {
+      "region_id": "5e8ca563-6c47-404c-938e-5254bcf04786",
+      "region_name": "eewewg",
+      "is_active": true,
+      "created_at": "2026-09-02T02:37:28.750"
     }
   ],
   "superUsers": [
@@ -41,6 +47,16 @@
       "is_active": true,
       "last_login": "2026-03-31T10:00:00Z",
       "created_at": "2023-01-01T00:00:00Z"
+    },
+    {
+      "super_user_id": "088ddf74-a95a-4d71-84f5-5a3030ee092b",
+      "name": "sfsdgfsdgfegewg",
+      "email": "vasudeev.m24@iiits.in",
+      "password_hash": "scrypt:28ae2297d8f9540120bec76ced2a9f89:c6f442200db2002148e58aa5093938c33ce43b786dc5d280f14d40f23b0314bcbb3a087d0e09f1777bc942320d4976359988530392de814026cf93b4c178ed0d",
+      "phone": "+911234564890",
+      "is_active": true,
+      "last_login": "",
+      "created_at": "2026-09-01T20:24:48.130Z"
     }
   ],
   "regionManagers": [
@@ -52,8 +68,8 @@
       "phone": "9988776655",
       "is_active": true,
       "created_at": "2024-10-10T00:00:00Z",
-      "updated_at": "2026-04-10T00:00:00Z",
-      "region_id": "b2b636cc-a295-445c-844f-eed968905d91"
+      "updated_at": "2026-09-02T02:37:54.508",
+      "region_id": ""
     },
     {
       "rm_id": "rm-chennai-south-002",
@@ -63,8 +79,8 @@
       "phone": "9988776656",
       "is_active": true,
       "created_at": "2024-11-01T00:00:00Z",
-      "updated_at": "2026-04-10T00:00:00Z",
-      "region_id": "r2b636cc-a295-445c-844f-eed968905d92"
+      "updated_at": "2026-09-02T02:37:54.512",
+      "region_id": "b2b636cc-a295-445c-844f-eed968905d91"
     },
     {
       "rm_id": "rm-trichy-003",
@@ -98,6 +114,50 @@
       "created_at": "2025-02-01T00:00:00Z",
       "updated_at": "2026-04-10T00:00:00Z",
       "region_id": "r5b636cc-a295-445c-844f-eed968905d95"
+    },
+    {
+      "rm_id": "daddccc2-a600-4cb4-bf20-2f656c5698f2",
+      "name": "fgfgfgffgfgf",
+      "email": "vaasudev.m24@iiits.in",
+      "password_hash": "scrypt:c92db8704e4e056cc716c744e89d9fa3:f78c74f047627f010280526e038231b42931cf4cc316dc48f7ee2f9f8e6d4d6ddd9270929db47f81d73e02018afcf762e1edd40183d7a5e9616405da37b92a8d",
+      "phone": "+911237567890",
+      "is_active": true,
+      "created_at": "2026-09-02T02:04:54.873",
+      "updated_at": "2026-09-02T02:04:54.873",
+      "region_id": "REG-001"
+    },
+    {
+      "rm_id": "e25dafba-5ee0-4aa2-a20d-bbef459fee1d",
+      "name": "shricharan",
+      "email": "vasudevvvv.m24@iiits.in",
+      "password_hash": "scrypt:c86e520ace424a80660628ce7d31f152:d82f507545b18074b2cc83c8bb399c49fabc42326a590b272362f6e3feb251440376a831be0129a608fb3b915f2816be183b7864ac69cf75c59e46d771b04ed4",
+      "phone": "+911234567890",
+      "is_active": true,
+      "created_at": "2026-09-02T02:15:09.973",
+      "updated_at": "2026-09-02T02:37:28.755",
+      "region_id": "5e8ca563-6c47-404c-938e-5254bcf04786"
+    },
+    {
+      "rm_id": "bf651530-5cbb-4e13-b391-84213cf77575",
+      "name": "prajwal",
+      "email": "vasudeeeev.m24@iiits.in",
+      "password_hash": "scrypt:18a7c6bc3dca429ff402e1c847ba1e15:f4f1de2648780dae368f6847bc062bd25ec0d085ea0a6740e0d6798668276272bfbdc72a8a1eaf04c47115adffdb7ea39b88601b1782148826270d5ef90a2f98",
+      "phone": "+911234567899",
+      "is_active": true,
+      "created_at": "2026-09-02T02:15:27.445",
+      "updated_at": "2026-09-02T02:15:27.445",
+      "region_id": "REG-000"
+    },
+    {
+      "rm_id": "df1eb9d4-ec11-4443-ac3c-39160e64b3f2",
+      "name": "warshit",
+      "email": "vassudev.m24@iiits.in",
+      "password_hash": "scrypt:8d45b165bc0508b75b686032ca32d551:37cccb4aeb5be73594f9deabe9a9d35d255f61e8afec0bd6dd0906feb6f49a86c759cd5dff79233500ef1649d083d1191c4854a367a57e661bc9c5cfb6f943dd",
+      "phone": "+911234567890",
+      "is_active": true,
+      "created_at": "2026-09-02T02:25:45.035",
+      "updated_at": "2026-09-02T02:37:41.796",
+      "region_id": "r2b636cc-a295-445c-844f-eed968905d92"
     }
   ],
   "serviceProviders": [
@@ -348,6 +408,12 @@
       "skill_id": "74c767ff-1538-49c7-a577-f1a7d2a3da29",
       "skill_name": "Pest Control",
       "description": "Chemical and non-chemical pest management services"
+    },
+    {
+      "skill_id": "424b23cc-f8d3-4069-8127-091757cf8bfa",
+      "skill_name": "tyhryh",
+      "description": "rthrth",
+      "created_at": "2026-09-01T20:26:41.619Z"
     }
   ],
   "providerSkills": [
@@ -468,7 +534,7 @@
       "service_address": "14 Boat Club Road, Chennai",
       "cart_id": "95a5cee7-273b-467c-8d28-b01343cea8e4",
       "created_at": "2026-05-04T11:42:02.699",
-      "updated_at": "2026-05-04T12:58:35.870"
+      "updated_at": "2026-09-02T01:48:00.063"
     }
   ],
   "cartItems": [],
@@ -519,6 +585,16 @@
       "description": "Safe and effective pest management",
       "icon": "🐜",
       "image_url": "https://images.unsplash.com/photo-1618477461853-cf6ed80faba5?auto=format&fit=crop&w=800&q=80",
+      "average_rating": 0,
+      "rating_count": 0,
+      "is_available": true
+    },
+    {
+      "category_id": "6b8b70d7-551c-4b19-bbf3-1d32a7160b96",
+      "category_name": "rthjnrtjhn",
+      "description": "rtjnrtjhnrt",
+      "icon": "",
+      "image_url": "",
       "average_rating": 0,
       "rating_count": 0,
       "is_available": true
@@ -632,6 +708,19 @@
         "https://res.cloudinary.com/ddwqapdwe/image/upload/v1788275197/Pest_Control-2_r61mjv.jpg",
         "https://res.cloudinary.com/ddwqapdwe/image/upload/v1788275197/Pest_Control-1_ugqzyd.jpg"
       ]
+    },
+    {
+      "service_id": "f15265de-9b38-4534-9990-ec604d4c0dc9",
+      "service_name": "thrthjrtjhn",
+      "description": "rtjhrtjhrt",
+      "image_url": "",
+      "photos": [],
+      "base_price": 4545,
+      "estimated_duration_min": 454,
+      "average_rating": 0,
+      "rating_count": 0,
+      "is_available": true,
+      "category_id": "baf467f1-dfad-493a-9995-dfce7f14cb50"
     }
   ],
   "serviceSkills": [
@@ -973,13 +1062,13 @@
     },
     {
       "service_address": "14 Boat Club Road, Chennai",
-      "status": "ASSIGNED",
+      "status": "COMPLETED",
       "failure_reason": null,
       "is_active": true,
       "customer_id": "1e541f38-cc88-4668-9495-bb41dea2aa76",
       "booking_id": "cc21e108-7967-46a8-8f37-0cea27bd1d79",
       "created_at": "2026-05-04T11:42:21.776",
-      "updated_at": "2026-05-04T11:42:21.783"
+      "updated_at": "2026-09-02T01:49:21.960"
     },
     {
       "service_address": "14 Boat Club Road, Chennai",
@@ -1080,6 +1169,86 @@
       "booking_id": "41ae27b9-7ef1-46aa-94f4-4026c7925be0",
       "created_at": "2026-05-04T12:58:38.094",
       "updated_at": "2026-05-04T12:59:03.933"
+    },
+    {
+      "service_address": "14 Boat Club Road, Chennai",
+      "status": "CANCELLED",
+      "failure_reason": "Customer cancelled",
+      "is_active": false,
+      "customer_id": "1e541f38-cc88-4668-9495-bb41dea2aa76",
+      "booking_id": "a5e08313-3d98-45d0-86db-2950d5f1e428",
+      "created_at": "2026-09-02T01:02:32.903",
+      "updated_at": "2026-09-02T01:21:51.553"
+    },
+    {
+      "service_address": "14 Boat Club Road, Chennai",
+      "status": "CANCELLED",
+      "failure_reason": "Customer cancelled",
+      "is_active": false,
+      "customer_id": "1e541f38-cc88-4668-9495-bb41dea2aa76",
+      "booking_id": "1bf1d2a1-40f4-4297-818f-e90c0e95f6eb",
+      "created_at": "2026-09-02T01:02:32.910",
+      "updated_at": "2026-09-02T01:21:55.323"
+    },
+    {
+      "service_address": "14 Boat Club Road, Chennai",
+      "status": "CANCELLED",
+      "failure_reason": "Customer cancelled",
+      "is_active": false,
+      "customer_id": "1e541f38-cc88-4668-9495-bb41dea2aa76",
+      "booking_id": "da8c088a-a0e0-4c30-bdb0-15d8695f2379",
+      "created_at": "2026-09-02T01:03:11.594",
+      "updated_at": "2026-09-02T01:21:53.495"
+    },
+    {
+      "service_address": "14 Boat Club Road, Chennai",
+      "status": "CANCELLED",
+      "failure_reason": "Customer cancelled",
+      "is_active": false,
+      "customer_id": "1e541f38-cc88-4668-9495-bb41dea2aa76",
+      "booking_id": "e71d4c6a-84b0-4bb3-905f-47a5008d103b",
+      "created_at": "2026-09-02T01:21:09.477",
+      "updated_at": "2026-09-02T01:38:43.651"
+    },
+    {
+      "service_address": "14 Boat Club Road, Chennai",
+      "status": "ASSIGNED",
+      "failure_reason": null,
+      "is_active": true,
+      "customer_id": "1e541f38-cc88-4668-9495-bb41dea2aa76",
+      "booking_id": "37f523c5-3e75-48c0-9984-6ec38e1efa19",
+      "created_at": "2026-09-02T01:22:07.010",
+      "updated_at": "2026-09-02T01:22:07.015"
+    },
+    {
+      "service_address": "14 Boat Club Road, Chennai",
+      "status": "COMPLETED",
+      "failure_reason": null,
+      "is_active": true,
+      "customer_id": "1e541f38-cc88-4668-9495-bb41dea2aa76",
+      "booking_id": "e88241c5-626c-4208-81c9-b111597344b6",
+      "created_at": "2026-09-02T01:22:40.587",
+      "updated_at": "2026-09-02T01:50:51.251"
+    },
+    {
+      "service_address": "14 Boat Club Road, Chennai",
+      "status": "ASSIGNED",
+      "failure_reason": null,
+      "is_active": true,
+      "customer_id": "1e541f38-cc88-4668-9495-bb41dea2aa76",
+      "booking_id": "5e10866f-e7b1-4527-a0bb-e545e70ff575",
+      "created_at": "2026-09-02T01:40:54.986",
+      "updated_at": "2026-09-02T01:40:54.994"
+    },
+    {
+      "service_address": "14 Boat Club Road, Chennai",
+      "status": "ASSIGNED",
+      "failure_reason": null,
+      "is_active": true,
+      "customer_id": "1e541f38-cc88-4668-9495-bb41dea2aa76",
+      "booking_id": "d63712ed-3255-4c45-845c-9ef6954a7ffa",
+      "created_at": "2026-09-02T01:48:02.285",
+      "updated_at": "2026-09-02T01:48:02.294"
     }
   ],
   "bookingServices": [
@@ -1214,6 +1383,70 @@
       "price_at_booking": 999,
       "booking_type": "INSTANT",
       "scheduled_at": null
+    },
+    {
+      "booking_id": "a5e08313-3d98-45d0-86db-2950d5f1e428",
+      "service_id": "916bc5fc-12b4-4a1e-aac1-c9003d9ad1ca",
+      "quantity": 1,
+      "price_at_booking": 499,
+      "booking_type": "SCHEDULED",
+      "scheduled_at": "2026-09-10T04:40:00.000Z"
+    },
+    {
+      "booking_id": "1bf1d2a1-40f4-4297-818f-e90c0e95f6eb",
+      "service_id": "cfdfe0ab-afec-445f-82d8-4e6810a6f903",
+      "quantity": 1,
+      "price_at_booking": 1599,
+      "booking_type": "INSTANT",
+      "scheduled_at": null
+    },
+    {
+      "booking_id": "da8c088a-a0e0-4c30-bdb0-15d8695f2379",
+      "service_id": "6f1c5ae3-d507-4b07-80f6-db26c7a1ef3c",
+      "quantity": 1,
+      "price_at_booking": 899,
+      "booking_type": "SCHEDULED",
+      "scheduled_at": "2026-09-04T08:40:00.000Z"
+    },
+    {
+      "booking_id": "e71d4c6a-84b0-4bb3-905f-47a5008d103b",
+      "service_id": "15dab8e7-1465-4461-a9df-28798195b97a",
+      "quantity": 1,
+      "price_at_booking": 1299,
+      "booking_type": "SCHEDULED",
+      "scheduled_at": "2026-09-22T08:54:00.000Z"
+    },
+    {
+      "booking_id": "37f523c5-3e75-48c0-9984-6ec38e1efa19",
+      "service_id": "074e6b61-ab44-4948-a365-ad0ef50e92e9",
+      "quantity": 1,
+      "price_at_booking": 699,
+      "booking_type": "INSTANT",
+      "scheduled_at": null
+    },
+    {
+      "booking_id": "e88241c5-626c-4208-81c9-b111597344b6",
+      "service_id": "4d97f6a2-3ddb-4dfd-88ed-1837e390ddfa",
+      "quantity": 1,
+      "price_at_booking": 999,
+      "booking_type": "INSTANT",
+      "scheduled_at": null
+    },
+    {
+      "booking_id": "5e10866f-e7b1-4527-a0bb-e545e70ff575",
+      "service_id": "4d97f6a2-3ddb-4dfd-88ed-1837e390ddfa",
+      "quantity": 1,
+      "price_at_booking": 999,
+      "booking_type": "SCHEDULED",
+      "scheduled_at": "2026-09-10T09:12:00.000Z"
+    },
+    {
+      "booking_id": "d63712ed-3255-4c45-845c-9ef6954a7ffa",
+      "service_id": "916bc5fc-12b4-4a1e-aac1-c9003d9ad1ca",
+      "quantity": 1,
+      "price_at_booking": 499,
+      "booking_type": "SCHEDULED",
+      "scheduled_at": "2026-09-18T07:19:00.000Z"
     }
   ],
   "jobAssignments": [
@@ -1312,15 +1545,15 @@
       "scheduled_date": "2026-05-04",
       "hour_start": "11:42",
       "hour_end": "13:12",
-      "status": "ASSIGNED",
+      "status": "COMPLETED",
       "assignment_score": 0.85,
-      "notes": null,
+      "notes": "Completed by provider",
       "assigned_at": "2026-05-04T11:42:21.781",
       "booking_id": "cc21e108-7967-46a8-8f37-0cea27bd1d79",
       "sp_id": "89b3386b-aea4-4602-a2f8-1199b5c14303",
       "assignment_id": "366760d3-806f-4a5f-a01b-853a29d326b7",
       "created_at": "2026-05-04T11:42:21.781",
-      "updated_at": "2026-05-04T11:42:21.781"
+      "updated_at": "2026-09-02T01:49:21.957"
     },
     {
       "service_id": "074e6b61-ab44-4948-a365-ad0ef50e92e9",
@@ -1411,6 +1644,81 @@
       "assignment_id": "d534d24b-a864-4159-bd3a-f7c27d1cda69",
       "created_at": "2026-05-04T12:58:38.105",
       "updated_at": "2026-05-04T12:59:03.930"
+    },
+    {
+      "service_id": "15dab8e7-1465-4461-a9df-28798195b97a",
+      "scheduled_date": "2026-09-22",
+      "hour_start": "07:00",
+      "hour_end": "08:30",
+      "status": "CANCELLED",
+      "assignment_score": null,
+      "notes": null,
+      "assigned_at": "2026-09-02T01:21:09.482",
+      "booking_id": "e71d4c6a-84b0-4bb3-905f-47a5008d103b",
+      "sp_id": "89b3386b-aea4-4602-a2f8-1199b5c14303",
+      "assignment_id": "96d228f2-aa74-48ec-ba9b-312eab5255ee",
+      "created_at": "2026-09-02T01:21:09.482",
+      "updated_at": "2026-09-02T01:38:43.653"
+    },
+    {
+      "service_id": "074e6b61-ab44-4948-a365-ad0ef50e92e9",
+      "scheduled_date": "2026-09-02",
+      "hour_start": "07:00",
+      "hour_end": "08:15",
+      "status": "ASSIGNED",
+      "assignment_score": null,
+      "notes": null,
+      "assigned_at": "2026-09-02T01:22:07.014",
+      "booking_id": "37f523c5-3e75-48c0-9984-6ec38e1efa19",
+      "sp_id": "02ded170-f08e-4870-8877-83566238dad9",
+      "assignment_id": "66e3df3d-0713-4b4e-b9ec-b45e8cb2ff97",
+      "created_at": "2026-09-02T01:22:07.014",
+      "updated_at": "2026-09-02T01:22:07.014"
+    },
+    {
+      "service_id": "4d97f6a2-3ddb-4dfd-88ed-1837e390ddfa",
+      "scheduled_date": "2026-09-02",
+      "hour_start": "07:00",
+      "hour_end": "09:00",
+      "status": "COMPLETED",
+      "assignment_score": null,
+      "notes": "Completed by provider",
+      "assigned_at": "2026-09-02T01:22:40.591",
+      "booking_id": "e88241c5-626c-4208-81c9-b111597344b6",
+      "sp_id": "f0b571d2-60d4-4368-bab7-4aa86846bb96",
+      "assignment_id": "bab8968b-c204-4de9-a62d-71df562e49ec",
+      "created_at": "2026-09-02T01:22:40.591",
+      "updated_at": "2026-09-02T01:50:51.250"
+    },
+    {
+      "service_id": "4d97f6a2-3ddb-4dfd-88ed-1837e390ddfa",
+      "scheduled_date": "2026-09-10",
+      "hour_start": "09:12",
+      "hour_end": "11:12",
+      "status": "ASSIGNED",
+      "assignment_score": 0,
+      "notes": null,
+      "assigned_at": "2026-09-02T01:40:54.991",
+      "booking_id": "5e10866f-e7b1-4527-a0bb-e545e70ff575",
+      "sp_id": "f0b571d2-60d4-4368-bab7-4aa86846bb96",
+      "assignment_id": "ba66b0ef-6808-4ef2-8187-a532464a90b2",
+      "created_at": "2026-09-02T01:40:54.991",
+      "updated_at": "2026-09-02T01:40:54.991"
+    },
+    {
+      "service_id": "916bc5fc-12b4-4a1e-aac1-c9003d9ad1ca",
+      "scheduled_date": "2026-09-18",
+      "hour_start": "07:19",
+      "hour_end": "09:19",
+      "status": "ASSIGNED",
+      "assignment_score": 4.33,
+      "notes": null,
+      "assigned_at": "2026-09-02T01:48:02.290",
+      "booking_id": "d63712ed-3255-4c45-845c-9ef6954a7ffa",
+      "sp_id": "89b3386b-aea4-4602-a2f8-1199b5c14303",
+      "assignment_id": "f813ca6b-ee1e-4dc9-9d73-89a5ff3366ae",
+      "created_at": "2026-09-02T01:48:02.291",
+      "updated_at": "2026-09-02T01:48:02.291"
     }
   ],
   "transactions": [
@@ -1637,6 +1945,118 @@
       "transaction_at": "2026-05-04T12:58:38.102",
       "verified_at": "2026-05-04T12:58:38.102",
       "booking_id": "41ae27b9-7ef1-46aa-94f4-4026c7925be0"
+    },
+    {
+      "transaction_id": "6d1576d1-14b1-4cc5-9ae4-33b41ebedeb5",
+      "payment_gateway_ref": "PGR-a5e08313-3d98-45d0-86db-2950d5f1e428",
+      "payment_method": "CARD",
+      "idempotency_key": "idem-checkout-a5e08313-3d98-45d0-86db-2950d5f1e428",
+      "payment_status": "SUCCESS",
+      "amount": 499,
+      "currency": "INR",
+      "refund_amount": 0,
+      "refund_reason": null,
+      "transaction_at": "2026-09-02T01:02:32.908",
+      "verified_at": "2026-09-02T01:02:32.908",
+      "booking_id": "a5e08313-3d98-45d0-86db-2950d5f1e428"
+    },
+    {
+      "transaction_id": "cf55e738-73bc-4812-89d7-bf1bc9efbd1c",
+      "payment_gateway_ref": "PGR-1bf1d2a1-40f4-4297-818f-e90c0e95f6eb",
+      "payment_method": "CARD",
+      "idempotency_key": "idem-checkout-1bf1d2a1-40f4-4297-818f-e90c0e95f6eb",
+      "payment_status": "SUCCESS",
+      "amount": 1599,
+      "currency": "INR",
+      "refund_amount": 0,
+      "refund_reason": null,
+      "transaction_at": "2026-09-02T01:02:32.915",
+      "verified_at": "2026-09-02T01:02:32.915",
+      "booking_id": "1bf1d2a1-40f4-4297-818f-e90c0e95f6eb"
+    },
+    {
+      "transaction_id": "15dcb680-96e0-4a04-9756-2ccf556d84c1",
+      "payment_gateway_ref": "PGR-da8c088a-a0e0-4c30-bdb0-15d8695f2379",
+      "payment_method": "UPI",
+      "idempotency_key": "idem-checkout-da8c088a-a0e0-4c30-bdb0-15d8695f2379",
+      "payment_status": "SUCCESS",
+      "amount": 899,
+      "currency": "INR",
+      "refund_amount": 0,
+      "refund_reason": null,
+      "transaction_at": "2026-09-02T01:03:11.597",
+      "verified_at": "2026-09-02T01:03:11.597",
+      "booking_id": "da8c088a-a0e0-4c30-bdb0-15d8695f2379"
+    },
+    {
+      "transaction_id": "35da4d68-3a0a-402d-bcf3-9798eb881fd2",
+      "payment_gateway_ref": "PGR-e71d4c6a-84b0-4bb3-905f-47a5008d103b",
+      "payment_method": "UPI",
+      "idempotency_key": "idem-checkout-e71d4c6a-84b0-4bb3-905f-47a5008d103b",
+      "payment_status": "SUCCESS",
+      "amount": 1299,
+      "currency": "INR",
+      "refund_amount": 0,
+      "refund_reason": null,
+      "transaction_at": "2026-09-02T01:21:09.480",
+      "verified_at": "2026-09-02T01:21:09.480",
+      "booking_id": "e71d4c6a-84b0-4bb3-905f-47a5008d103b"
+    },
+    {
+      "transaction_id": "a12a6a9a-9471-438f-a38e-e2661b529d63",
+      "payment_gateway_ref": "PGR-37f523c5-3e75-48c0-9984-6ec38e1efa19",
+      "payment_method": "UPI",
+      "idempotency_key": "idem-checkout-37f523c5-3e75-48c0-9984-6ec38e1efa19",
+      "payment_status": "SUCCESS",
+      "amount": 699,
+      "currency": "INR",
+      "refund_amount": 0,
+      "refund_reason": null,
+      "transaction_at": "2026-09-02T01:22:07.013",
+      "verified_at": "2026-09-02T01:22:07.013",
+      "booking_id": "37f523c5-3e75-48c0-9984-6ec38e1efa19"
+    },
+    {
+      "transaction_id": "d0458326-483d-426b-add2-79e419b79b73",
+      "payment_gateway_ref": "PGR-e88241c5-626c-4208-81c9-b111597344b6",
+      "payment_method": "UPI",
+      "idempotency_key": "idem-checkout-e88241c5-626c-4208-81c9-b111597344b6",
+      "payment_status": "SUCCESS",
+      "amount": 999,
+      "currency": "INR",
+      "refund_amount": 0,
+      "refund_reason": null,
+      "transaction_at": "2026-09-02T01:22:40.589",
+      "verified_at": "2026-09-02T01:22:40.589",
+      "booking_id": "e88241c5-626c-4208-81c9-b111597344b6"
+    },
+    {
+      "transaction_id": "9e716263-a1ec-4ace-817c-a4989be64846",
+      "payment_gateway_ref": "PGR-5e10866f-e7b1-4527-a0bb-e545e70ff575",
+      "payment_method": "UPI",
+      "idempotency_key": "idem-checkout-5e10866f-e7b1-4527-a0bb-e545e70ff575",
+      "payment_status": "SUCCESS",
+      "amount": 999,
+      "currency": "INR",
+      "refund_amount": 0,
+      "refund_reason": null,
+      "transaction_at": "2026-09-02T01:40:54.990",
+      "verified_at": "2026-09-02T01:40:54.989",
+      "booking_id": "5e10866f-e7b1-4527-a0bb-e545e70ff575"
+    },
+    {
+      "transaction_id": "b414e144-8e6c-4068-8053-62e1f19db29e",
+      "payment_gateway_ref": "PGR-d63712ed-3255-4c45-845c-9ef6954a7ffa",
+      "payment_method": "UPI",
+      "idempotency_key": "idem-checkout-d63712ed-3255-4c45-845c-9ef6954a7ffa",
+      "payment_status": "SUCCESS",
+      "amount": 499,
+      "currency": "INR",
+      "refund_amount": 0,
+      "refund_reason": null,
+      "transaction_at": "2026-09-02T01:48:02.288",
+      "verified_at": "2026-09-02T01:48:02.288",
+      "booking_id": "d63712ed-3255-4c45-845c-9ef6954a7ffa"
     }
   ],
   "revenueLedger": [
@@ -1709,9 +2129,9 @@
     },
     {
       "ledger_id": "0c6ede95-ff0d-424d-ba93-14cc02540384",
-      "payout_status": "PENDING",
+      "payout_status": "DISBURSED",
       "created_at": "2026-05-04T11:42:21.782",
-      "paid_at": null,
+      "paid_at": "2026-09-02T01:49:21.959",
       "booking_id": "cc21e108-7967-46a8-8f37-0cea27bd1d79",
       "service_id": "15dab8e7-1465-4461-a9df-28798195b97a",
       "sp_id": "89b3386b-aea4-4602-a2f8-1199b5c14303",
@@ -1790,6 +2210,30 @@
       "provider_amount": 849.15,
       "platform_amount": 149.85,
       "rm_id": "895cfdc6-a51b-41f4-8a19-e14be2941c22"
+    },
+    {
+      "ledger_id": "d9d05105-8232-4f50-867c-06dbc1acdcd4",
+      "payout_status": "PENDING",
+      "created_at": "2026-09-02T01:40:54.993",
+      "paid_at": null,
+      "booking_id": "5e10866f-e7b1-4527-a0bb-e545e70ff575",
+      "service_id": "4d97f6a2-3ddb-4dfd-88ed-1837e390ddfa",
+      "sp_id": "f0b571d2-60d4-4368-bab7-4aa86846bb96",
+      "rm_id": "895cfdc6-a51b-41f4-8a19-e14be2941c22",
+      "provider_amount": 849.15,
+      "platform_amount": 149.85
+    },
+    {
+      "ledger_id": "f6e1f9b0-5519-4926-8596-a16856654855",
+      "payout_status": "PENDING",
+      "created_at": "2026-09-02T01:48:02.292",
+      "paid_at": null,
+      "booking_id": "d63712ed-3255-4c45-845c-9ef6954a7ffa",
+      "service_id": "916bc5fc-12b4-4a1e-aac1-c9003d9ad1ca",
+      "sp_id": "89b3386b-aea4-4602-a2f8-1199b5c14303",
+      "rm_id": "895cfdc6-a51b-41f4-8a19-e14be2941c22",
+      "provider_amount": 424.15,
+      "platform_amount": 74.85
     }
   ],
   "reviews": [

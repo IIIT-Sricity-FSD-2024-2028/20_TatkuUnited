@@ -33,7 +33,7 @@ export class RegionManagersRepository {
       is_active: dto.is_active ?? true,
       created_at: this.db.now(),
       updated_at: this.db.now(),
-      region_id: dto.region_id,
+      region_id: dto.region_id || '',
     };
     this.db.regionManagers.push(rm);
     this.db.save();

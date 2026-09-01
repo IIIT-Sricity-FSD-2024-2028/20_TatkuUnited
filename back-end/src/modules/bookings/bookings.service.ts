@@ -60,6 +60,31 @@ export class BookingsService {
       throw new BadRequestException('Service address is required for checkout.');
     }
 
+    // 2.7. Pre-flight Availability Check
+    const unavailableServices: string[] = [];
+    const pendingAssignments: any[] = [];
+
+    for (const item of cartItems) {
+      const availability = this.jobAssignmentsService.checkAvailability(
+        item.service_id,
+        item.scheduled_at || null,
+        pendingAssignments,
+      );
+
+      if (!availability.available) {
+        unavailableServices.push(availability.serviceName);
+      } else if (availability.simulatedAssignment) {
+        pendingAssignments.push(availability.simulatedAssignment);
+      }
+    }
+
+    if (unavailableServices.length > 0) {
+      const serviceList = unavailableServices.join(', ');
+      throw new BadRequestException(
+        `Could not assign providers for: ${serviceList}. Please try a different time or remove these services from your cart. No bookings have been created.`,
+      );
+    }
+
     // 3. Look up customer's sector
     const customer = this.db.customers.find(
       (c) => c.customer_id === customerId,
@@ -116,15 +141,18 @@ export class BookingsService {
       );
 
       // Auto-assign provider for this booking
-      const assignmentResult = this.jobAssignmentsService.findByBooking(
+      const assignmentResult = this.jobAssignmentsService.autoAssign(
         booking.booking_id,
       );
 
+      // Re-fetch booking to get updated status
+      const updatedBooking = this.bookingsRepo.findById(booking.booking_id);
+
       createdBookings.push({
-        ...booking,
+        ...updatedBooking,
         services: [bs],
         transaction,
-        assignments: [],
+        assignments: assignmentResult.assignments || [],
       });
     }
 

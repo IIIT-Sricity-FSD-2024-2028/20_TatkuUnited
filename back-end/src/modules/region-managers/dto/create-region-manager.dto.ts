@@ -22,10 +22,10 @@ export class CreateRegionManagerDto {
   @IsNotEmpty()
   phone: string;
 
-  @ApiProperty({ description: 'Assigned region ID' })
+  @ApiProperty({ description: 'Assigned region ID', required: false })
   @IsString()
-  @IsNotEmpty()
-  region_id: string;
+  @IsOptional()
+  region_id?: string;
 
   @ApiPropertyOptional({ default: true })
   @IsBoolean()
