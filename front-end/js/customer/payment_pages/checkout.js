@@ -172,7 +172,7 @@ confirmBtn.addEventListener("click", async () => {
     // 5. Clears the cart
     const result = await Api.post("/bookings/checkout", {
       payment_method: selectedPayment,
-    });
+    }, { silent: true });
 
     // Store checkout meta for payment success page
     try {
@@ -190,7 +190,28 @@ confirmBtn.addEventListener("click", async () => {
   } catch (err) {
     confirmBtn.textContent = "Confirm Booking";
     confirmBtn.disabled = false;
-    // Error toast already shown by Api interceptor
+
+    // Parse the backend error to show a helpful message
+    let errorMsg = "";
+    try {
+      const errBody = err?.response?.data || err?.data || err;
+      const rawMsg = typeof errBody === "string" ? errBody : errBody?.message || "";
+
+      if (rawMsg.includes("Could not assign providers for:")) {
+        // Extract service names from the atomic checkout error
+        const match = rawMsg.match(/Could not assign providers for:\s*(.+?)\.\s*Please/);
+        const failedServices = match ? match[1] : "some services";
+        errorMsg = `⚠️ Unable to find providers for: ${failedServices}. Try a different time or remove those services. Your cart has not been charged.`;
+      } else if (rawMsg.includes("No qualified provider")) {
+        errorMsg = `⚠️ ${rawMsg}`;
+      } else if (rawMsg) {
+        errorMsg = `⚠️ ${rawMsg}`;
+      }
+    } catch (_) {}
+
+    if (errorMsg) {
+      showCheckoutToast(errorMsg);
+    }
     console.error("[checkout] Checkout failed:", err);
   }
 });

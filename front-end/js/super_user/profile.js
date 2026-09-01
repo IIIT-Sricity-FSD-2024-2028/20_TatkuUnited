@@ -24,14 +24,11 @@
 
   let totalUsers = 0;
   try {
-    const [customers, providers, ums, cms] = await Promise.all([
+    const [customers, providers] = await Promise.all([
       Api.get("/customers"),
       Api.get("/service-providers"),
-      Api.get("/unit-managers"),
-      Api.get("/collective-managers"),
     ]);
-    totalUsers = (customers || []).length + (providers || []).length +
-                 (ums || []).length + (cms || []).length + 1;
+    totalUsers = (customers || []).length + (providers || []).length + 1;
   } catch (_) {}
 
   const permissions = [

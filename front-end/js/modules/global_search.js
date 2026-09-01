@@ -2,13 +2,12 @@
 // Hooks into the topbar search input to provide site-wide quick navigation.
 
 (function() {
-  let _providers = null, _units = null, _managers = null;
+  let _providers = null, _units = null;
 
   async function loadSearchData() {
     if (_providers !== null) return; // already loaded
     _providers  = await Api.get('/service-providers');
     _units  = await Api.get('/units');
-    _managers  = await Api.get('/unit-managers');
   }
 
   function initGlobalSearch() {
@@ -52,7 +51,6 @@
 
     const allProviders = _providers || [];
     const allUnits     = _units || [];
-    const allManagers  = _managers || [];
 
     // Filter
     const matchedProviders = allProviders.filter(p => 
@@ -63,11 +61,7 @@
       u.unit_name.toLowerCase().includes(query) || (u.category || '').toLowerCase().includes(query)
     ).slice(0, 3);
 
-    const matchedManagers = allManagers.filter(m => 
-      m.name.toLowerCase().includes(query)
-    ).slice(0, 3);
-
-    if (!matchedProviders.length && !matchedUnits.length && !matchedManagers.length) {
+    if (!matchedProviders.length && !matchedUnits.length) {
       dropdown.innerHTML = '<div class="search-empty">No results found for "' + query + '"</div>';
       return;
     }
@@ -85,14 +79,6 @@
       dropdown.appendChild(createHeader('Service Providers'));
       matchedProviders.forEach(p => {
         dropdown.appendChild(createItem(`provider_profile.html?id=${p.service_provider_id}`, p.name, p.service_provider_id, 'provider'));
-      });
-    }
-
-    // Render Managers
-    if (matchedManagers.length) {
-      dropdown.appendChild(createHeader('Unit Managers'));
-      matchedManagers.forEach(m => {
-        dropdown.appendChild(createItem(`manage_units.html?manager_id=${m.name}`, m.name, 'Manager', 'manager'));
       });
     }
   }
