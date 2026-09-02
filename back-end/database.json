@@ -617,7 +617,7 @@
       "service_id": "916bc5fc-12b4-4a1e-aac1-c9003d9ad1ca",
       "service_name": "Standard Home Clean",
       "description": "Complete standard clean for up to 3BHK homes.",
-      "image_url": "https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=800&q=80",
+      "image_url": "https://res.cloudinary.com/ddwqapdwe/image/upload/v1788275198/Home_Clean_rs9yxq.jpg",
       "base_price": 499,
       "estimated_duration_min": 120,
       "average_rating": 4,
@@ -625,86 +625,114 @@
       "is_available": true,
       "category_id": "9d70ce12-ec1a-4a6b-b27d-9b163a2bf1d9",
       "photos": [
-        "https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=800&q=80"
+        "https://res.cloudinary.com/ddwqapdwe/image/upload/v1788275198/Home_Clean_rs9yxq.jpg"
       ]
     },
     {
       "service_id": "6f1c5ae3-d507-4b07-80f6-db26c7a1ef3c",
       "service_name": "Deep Home Clean",
       "description": "Deep cleaning for kitchen, bathrooms, and living areas.",
-      "image_url": "https://images.unsplash.com/photo-1527515637462-cff94eecc1ac?auto=format&fit=crop&w=800&q=80",
+      "image_url": "https://res.cloudinary.com/ddwqapdwe/image/upload/v1788275197/Deep_Clean_ygwxxj.jpg",
       "base_price": 899,
       "estimated_duration_min": 180,
       "average_rating": 0,
       "rating_count": 0,
       "is_available": true,
       "category_id": "9d70ce12-ec1a-4a6b-b27d-9b163a2bf1d9",
-      "photos": []
+      "photos": [
+        "https://res.cloudinary.com/ddwqapdwe/image/upload/v1788275197/Deep_Clean_ygwxxj.jpg"
+      ]
     },
     {
       "service_id": "15dab8e7-1465-4461-a9df-28798195b97a",
       "service_name": "Split AC Repair",
       "description": "Inspection and repair for common split AC faults.",
-      "image_url": "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&w=800&q=80",
+      "image_url": "https://res.cloudinary.com/ddwqapdwe/image/upload/v1788275196/AC_Repair-1_cdlpiy.jpg",
       "base_price": 1299,
       "estimated_duration_min": 90,
       "average_rating": 4.5,
       "rating_count": 2,
       "is_available": true,
       "category_id": "baf467f1-dfad-493a-9995-dfce7f14cb50",
-      "photos": []
+      "photos": [
+        "https://res.cloudinary.com/ddwqapdwe/image/upload/v1788275196/AC_Repair-1_cdlpiy.jpg",
+        "https://res.cloudinary.com/ddwqapdwe/image/upload/v1788275196/AC_Repair-2_jhaesn.jpg"
+      ]
     },
     {
       "service_id": "074e6b61-ab44-4948-a365-ad0ef50e92e9",
       "service_name": "Kitchen Sink Leak Fix",
       "description": "Leak detection and repair for kitchen sink pipelines.",
-      "image_url": "https://images.unsplash.com/photo-1607472586893-edb57bdc0e39?auto=format&fit=crop&w=800&q=80",
+      "image_url": "https://res.cloudinary.com/ddwqapdwe/image/upload/v1788275197/Kitchen_Sink_Leak_wldn35.jpg",
       "base_price": 699,
       "estimated_duration_min": 75,
       "average_rating": 5,
       "rating_count": 2,
       "is_available": true,
       "category_id": "7991c5d3-ba82-47c5-970c-1a3d429d0eb8",
-      "photos": []
+      "photos": [
+        "https://res.cloudinary.com/ddwqapdwe/image/upload/v1788275197/Kitchen_Sink_Leak_wldn35.jpg"
+      ]
     },
     {
       "service_id": "4d97f6a2-3ddb-4dfd-88ed-1837e390ddfa",
       "service_name": "Bed Assembly",
       "description": "Expert assembly of all types of beds.",
-      "image_url": "https://images.unsplash.com/photo-1505798577917-a671540f0afe?auto=format&fit=crop&w=800&q=80",
+      "image_url": "https://res.cloudinary.com/ddwqapdwe/image/upload/v1788275196/Bed_Assembly_mhl6vp.webp",
       "base_price": 999,
       "estimated_duration_min": 120,
       "average_rating": 0,
       "rating_count": 0,
       "is_available": true,
       "category_id": "388e5317-5de7-4f3d-a802-eeb72670491a",
-      "photos": []
+      "photos": [
+        "https://res.cloudinary.com/ddwqapdwe/image/upload/v1788275196/Bed_Assembly_mhl6vp.webp"
+      ]
     },
     {
       "service_id": "5c5ee42e-0a18-41e0-a327-a788069d75dd",
       "service_name": "Door Lock Repair",
       "description": "Repair and replacement of door locks and handles.",
-      "image_url": "https://images.unsplash.com/photo-1538688525198-9b88f6f53126?auto=format&fit=crop&w=800&q=80",
+      "image_url": "https://res.cloudinary.com/ddwqapdwe/image/upload/v1788275196/Door_Lock_Repair-2_tpt7wk.jpg",
       "base_price": 499,
       "estimated_duration_min": 60,
       "average_rating": 0,
       "rating_count": 0,
       "is_available": true,
       "category_id": "388e5317-5de7-4f3d-a802-eeb72670491a",
-      "photos": []
+      "photos": [
+        "https://res.cloudinary.com/ddwqapdwe/image/upload/v1788275196/Door_Lock_Repair-2_tpt7wk.jpg",
+        "https://res.cloudinary.com/ddwqapdwe/image/upload/v1788275196/Door_Lock_Repair-1_zbos6r.avif"
+      ]
     },
     {
       "service_id": "cfdfe0ab-afec-445f-82d8-4e6810a6f903",
       "service_name": "General Pest Control",
       "description": "Treatment for cockroaches, ants, and other common pests.",
-      "image_url": "https://images.unsplash.com/photo-1618477461853-cf6ed80faba5?auto=format&fit=crop&w=800&q=80",
+      "image_url": "https://res.cloudinary.com/ddwqapdwe/image/upload/v1788275197/Pest_Control-2_r61mjv.jpg",
       "base_price": 1599,
       "estimated_duration_min": 90,
       "average_rating": 0,
       "rating_count": 0,
       "is_available": true,
       "category_id": "0f8373f8-e3a6-4c18-9f46-816f86c3f8f2",
-      "photos": []
+      "photos": [
+        "https://res.cloudinary.com/ddwqapdwe/image/upload/v1788275197/Pest_Control-2_r61mjv.jpg",
+        "https://res.cloudinary.com/ddwqapdwe/image/upload/v1788275197/Pest_Control-1_ugqzyd.jpg"
+      ]
+    },
+    {
+      "service_id": "f15265de-9b38-4534-9990-ec604d4c0dc9",
+      "service_name": "thrthjrtjhn",
+      "description": "rtjhrtjhrt",
+      "image_url": "",
+      "photos": [],
+      "base_price": 4545,
+      "estimated_duration_min": 454,
+      "average_rating": 0,
+      "rating_count": 0,
+      "is_available": true,
+      "category_id": "baf467f1-dfad-493a-9995-dfce7f14cb50"
     }
   ],
   "serviceSkills": [
