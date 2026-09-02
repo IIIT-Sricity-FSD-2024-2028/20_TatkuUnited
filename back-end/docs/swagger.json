@@ -3153,6 +3153,70 @@
         ]
       }
     },
+    "/job-assignments/{id}/in-progress": {
+      "patch": {
+        "operationId": "JobAssignmentsController_markInProgress",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "x-role": []
+          },
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Mark job assignment as in progress",
+        "tags": [
+          "job-assignments"
+        ]
+      }
+    },
+    "/job-assignments/{id}/complete": {
+      "patch": {
+        "operationId": "JobAssignmentsController_markComplete",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "x-role": []
+          },
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Mark job assignment as completed",
+        "tags": [
+          "job-assignments"
+        ]
+      }
+    },
     "/transactions": {
       "post": {
         "operationId": "TransactionsController_create",
@@ -4653,8 +4717,7 @@
           "name",
           "email",
           "password",
-          "phone",
-          "region_id"
+          "phone"
         ]
       },
       "UpdateRegionManagerDto": {
@@ -5002,11 +5065,7 @@
             "description": "Step description",
             "example": "Choose a convenient time"
           }
-        },
-        "required": [
-          "step_title",
-          "step_description"
-        ]
+        }
       },
       "UpsertServiceContentDto": {
         "type": "object",

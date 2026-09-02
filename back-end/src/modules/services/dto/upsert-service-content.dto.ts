@@ -3,14 +3,14 @@ import { IsArray, IsOptional, ValidateNested, IsString, IsNotEmpty } from 'class
 import { Type } from 'class-transformer';
 
 class HowItWorksStep {
-  @ApiProperty({ description: 'Step title', example: 'Book a slot' })
+  @ApiProperty({ description: 'Step title', example: 'Book a slot', required: false })
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   step_title: string;
 
-  @ApiProperty({ description: 'Step description', example: 'Choose a convenient time' })
+  @ApiProperty({ description: 'Step description', example: 'Choose a convenient time', required: false })
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   step_description: string;
 }
 

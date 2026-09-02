@@ -91,6 +91,20 @@ export class JobAssignmentsController {
     return this.service.updateStatus(id, status, score);
   }
 
+  @Patch(':id/in-progress')
+  @Roles(Role.SUPER_USER, Role.REGION_MANAGER, Role.SERVICE_PROVIDER)
+  @ApiOperation({ summary: 'Mark job assignment as in progress' })
+  markInProgress(@Param('id') id: string) {
+    return this.service.markInProgress(id);
+  }
+
+  @Patch(':id/complete')
+  @Roles(Role.SUPER_USER, Role.REGION_MANAGER, Role.SERVICE_PROVIDER)
+  @ApiOperation({ summary: 'Mark job assignment as completed' })
+  markComplete(@Param('id') id: string, @Body() dto: any) {
+    return this.service.markComplete(id, dto);
+  }
+
   @Delete(':id')
   @Roles(Role.SUPER_USER)
   @ApiOperation({ summary: 'Delete job assignment' })

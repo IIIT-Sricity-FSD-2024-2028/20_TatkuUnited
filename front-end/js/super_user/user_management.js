@@ -14,8 +14,7 @@
 
   allCustomers  = await Api.get("/customers");
   allProviders  = await Api.get("/service-providers");
-  allRegionManagers  = await Api.get("/collective-managers");
-  allUnitManagers  = await Api.get("/unit-managers");
+  allRegionManagers  = await Api.get("/region-managers");
   allSuperUsers  = await Api.get("/super-users");
 
   function formatDate(value) {
@@ -63,9 +62,8 @@
       ...allCustomers.map((c) => mapUser(c, "Customer", "customer_id", "full_name")),
       ...allProviders.map((p) => mapUser(p, "Provider", "service_provider_id", "name")),
       ...allRegionManagers.map((m) =>
-        mapUser(m, "Region Manager", "cm_id", "name"),
+        mapUser(m, "Region Manager", "rm_id", "name"),
       ),
-      ...allUnitManagers.map((m) => mapUser(m, "Region Manager", "um_id", "name")),
       ...allSuperUsers.map((u) => mapUser(u, "Super User", "super_user_id", "name")),
     ];
 
@@ -106,7 +104,6 @@
       Customer: { bg: "#eff6ff", color: "#2563eb" },
       Provider: { bg: "#ecfeff", color: "#0e7490" },
       "Region Manager": { bg: "#fef3c7", color: "#92400e" },
-      "Region Manager": { bg: "#f5f3ff", color: "#6d28d9" },
       "Super User": { bg: "#f0fdf4", color: "#15803d" },
     };
     return map[role] || { bg: "#f3f4f6", color: "#374151" };
@@ -337,11 +334,8 @@
           endpoint = "/service-providers/" + id;
           targetUser = allProviders.find((u) => u.service_provider_id === id);
         } else if (role === "Region Manager") {
-          endpoint = "/collective-managers/" + id;
-          targetUser = allRegionManagers.find((u) => u.cm_id === id);
-        } else if (role === "Region Manager") {
-          endpoint = "/unit-managers/" + id;
-          targetUser = allUnitManagers.find((u) => u.um_id === id);
+          endpoint = "/region-managers/" + id;
+          targetUser = allRegionManagers.find((u) => u.rm_id === id);
         } else if (role === "Super User") {
           endpoint = "/super-users/" + id;
           targetUser = allSuperUsers.find((u) => u.super_user_id === id);
@@ -408,9 +402,7 @@
 
         let endpoint = "";
         if (role === "Region Manager") {
-          endpoint = "/unit-managers";
-        } else if (role === "Region Manager") {
-          endpoint = "/collective-managers";
+          endpoint = "/region-managers";
         } else if (role === "Super User") {
           endpoint = "/super-users";
         }
@@ -424,9 +416,7 @@
           const created = await Api.post(endpoint, newRecord);
           // Refresh the list from API
           if (role === "Region Manager") {
-            allUnitManagers = await Api.get("/unit-managers", { silent: true }) || [];
-          } else if (role === "Region Manager") {
-            allRegionManagers = await Api.get("/collective-managers", { silent: true }) || [];
+            allRegionManagers = await Api.get("/region-managers", { silent: true }) || [];
           } else if (role === "Super User") {
             allSuperUsers = await Api.get("/super-users", { silent: true }) || [];
           }
