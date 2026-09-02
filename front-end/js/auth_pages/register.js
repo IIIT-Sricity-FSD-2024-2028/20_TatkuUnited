@@ -22,6 +22,7 @@
   var fullnameInput = document.getElementById("fullname");
   var emailInput = document.getElementById("email");
   var phoneInput = document.getElementById("phone");
+  var regionInput = document.getElementById("region");
   var passwordInput = document.getElementById("password");
   var confirmInput = document.getElementById("confirm-password");
   var termsCheck = document.getElementById("terms");
@@ -57,6 +58,7 @@
       "fullname-error",
       "email-error",
       "phone-error",
+      "region-error",
       "password-error",
       "confirm-error",
       "terms-error",
@@ -139,8 +141,29 @@
       card.classList.add("selected");
       selectedRole = card.getAttribute("data-role");
       roleValue.value = selectedRole;
+      if (regionInput) regionInput.required = selectedRole === "service_provider";
     });
   });
+
+  async function loadRegions() {
+    if (!regionInput) return;
+    try {
+      var regions = await Api.get("/regions", { silent: true });
+      regionInput.innerHTML = '<option value="">Select your region</option>';
+      (regions || []).filter(function (region) { return region.is_active; }).forEach(function (region) {
+        var option = document.createElement("option");
+        option.value = region.region_id;
+        option.textContent = region.region_name;
+        regionInput.appendChild(option);
+      });
+      regionInput.disabled = false;
+    } catch (_) {
+      regionInput.innerHTML = '<option value="">Regions unavailable</option>';
+      setError("region-error", "Could not load regions. Please try again.");
+    }
+  }
+
+  loadRegions();
 
   toggleBtns.forEach(function (btn) {
     btn.addEventListener("click", function () {
@@ -254,6 +277,12 @@
       valid = false;
     }
 
+    if (selectedRole === "service_provider" && !regionInput.value) {
+      setError("region-error", "Please select a region.");
+      regionInput.classList.add("invalid");
+      valid = false;
+    }
+
     if (valid) goToStep(3);
   });
 
@@ -304,6 +333,7 @@
         password: password,
         role: selectedRole,
         providerType: selectedProviderType,
+        regionId: selectedRole === "service_provider" ? regionInput.value : undefined,
       });
 
       if (selectedRole === "service_provider") {

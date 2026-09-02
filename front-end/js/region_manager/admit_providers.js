@@ -19,6 +19,10 @@
   await loadProviders(region);
 })();
 
+let displayedProviders = [];
+let displayedRegion = null;
+let selectedProvider = null;
+
 async function loadProviders(region) {
   let providers = [];
   let assignments = [];
@@ -67,6 +71,9 @@ async function loadProviders(region) {
 
   renderPendingTable(pendingList, region);
   renderActiveTable(activeList);
+  displayedProviders = regionProviders;
+  displayedRegion = region;
+  renderProviders(regionProviders);
 }
 
 
@@ -82,28 +89,27 @@ function setText(id, text) {
 }
 
 function renderPendingTable(pendingList, region) {
-  const tbody = document.getElementById('pending-providers-tbody');
-  const countEl = document.getElementById('pending-count');
-  if (countEl) countEl.textContent = pendingList.length;
-
-  if (!tbody) return;
+  const list = document.getElementById('admissionRequestsList');
+  if (!list) return;
   if (pendingList.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:24px;color:#64748b;">No pending providers awaiting approval for this region.</td></tr>';
+    list.innerHTML = '<div class="admissions-empty">No pending providers awaiting approval for this region.</div>';
     return;
   }
 
-  tbody.innerHTML = pendingList.map(p => `
-    <tr>
-      <td style="padding:12px;"><strong>${p.name || p.full_name || 'Provider'}</strong><br><span style="font-size:0.8rem;color:#64748b;">${p.email}</span></td>
-      <td style="padding:12px;">${p.phone || 'N/A'}</td>
-      <td style="padding:12px;">${p.city || p.address || 'Chennai'}</td>
-      <td style="padding:12px;"><span style="background:rgba(234,179,8,0.15);color:#ca8a04;padding:4px 8px;border-radius:4px;font-size:0.8rem;font-weight:600;">Pending</span></td>
-      <td style="padding:12px;">
-        <button class="btn-primary" onclick="approveProvider('${p.sp_id || p.service_provider_id}', '${region.region_id}')" style="background:#22c55e;color:#fff;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-weight:600;">
-          Approve & Add to ${region.region_name || 'Region'}
+  list.innerHTML = pendingList.map(p => `
+    <div class="applicant-card">
+      <div class="applicant-avatar" style="background:#2563eb;">${(p.name || 'P').slice(0, 1).toUpperCase()}</div>
+      <div class="applicant-main">
+        <div class="applicant-name">${p.name || p.full_name || 'Provider'}</div>
+        <div class="applicant-meta">${p.email || ''} · ${p.phone || 'No phone'} · ${p.city || p.address || region.region_name}</div>
+        <div class="skill-tags"><span class="skill-tag">Pending admission</span></div>
+      </div>
+      <div class="applicant-actions">
+        <button class="btn-verify" onclick="approveProvider('${p.sp_id || p.service_provider_id}', '${region.region_id}')">
+          Admit to ${region.region_name || 'Region'}
         </button>
-      </td>
-    </tr>
+      </div>
+    </div>
   `).join('');
 }
 
@@ -126,6 +132,87 @@ function renderActiveTable(activeList) {
       <td style="padding:12px;"><span style="background:rgba(34,197,94,0.15);color:#16a34a;padding:4px 8px;border-radius:4px;font-size:0.8rem;font-weight:600;">Active</span></td>
     </tr>
   `).join('');
+}
+
+function renderProviders(providers) {
+  const list = document.getElementById('rankedProvidersList');
+  const search = document.getElementById('rankedProviderSearch');
+  if (!list) return;
+
+  const render = () => {
+    const query = (search?.value || '').trim().toLowerCase();
+    const filtered = providers
+      .filter(p => [p.name, p.email, p.phone, p.city].some(value =>
+        String(value || '').toLowerCase().includes(query)
+      ));
+
+    list.innerHTML = filtered.length ? filtered.map(p => `
+      <div class="ranked-provider-item" data-provider-id="${p.sp_id || p.service_provider_id}">
+        <strong>${p.name || 'Provider'}</strong>
+        <span>${p.email || ''}</span>
+        <span class="ranked-provider-status ${p.is_active ? 'active' : 'inactive'}">${p.is_active ? 'Active' : 'Deactivated'}</span>
+      </div>
+    `).join('') : '<div class="empty-notif">No providers found.</div>';
+
+    list.querySelectorAll('[data-provider-id]').forEach(card => {
+      card.addEventListener('click', () => openProviderDetails(
+        providers.find(p => (p.sp_id || p.service_provider_id) === card.dataset.providerId)
+      ));
+    });
+  };
+
+  if (search && !search.dataset.filterBound) {
+    search.addEventListener('input', render);
+    search.dataset.filterBound = 'true';
+  }
+  render();
+}
+
+function openProviderDetails(provider) {
+  if (!provider) return;
+  selectedProvider = provider;
+  setText('detailsAvatar', (provider.name || 'P').slice(0, 1).toUpperCase());
+  setText('detailsName', provider.name || 'Provider');
+  setText('detailsSkillBadge', provider.is_active ? 'Active account' : 'Deactivated account');
+  setText('detailsPhone', provider.phone || 'No phone number');
+  setText('detailsEmail', provider.email || 'No email address');
+  setText('detailsLocation', provider.address || provider.city || 'No location provided');
+  setText('detailsDocs', provider.account_status === 'pending' ? 'Pending admission' : 'No documents available');
+  const action = document.getElementById('detailsStatusAction');
+  if (action) {
+    action.textContent = provider.is_active ? 'Deactivate Account' : 'Reactivate Account';
+    action.className = 'btn-verify ' + (provider.is_active ? 'deactivate' : 'reactivate');
+    action.disabled = false;
+    action.onclick = toggleProviderStatus;
+  }
+  document.getElementById('detailsOverlay')?.classList.add('open');
+}
+
+function closeDetailsModalBtn() {
+  document.getElementById('detailsOverlay')?.classList.remove('open');
+  selectedProvider = null;
+}
+
+function closeDetailsModal(event) {
+  if (event.target === event.currentTarget) closeDetailsModalBtn();
+}
+
+async function toggleProviderStatus() {
+  if (!selectedProvider) return;
+  const providerId = selectedProvider.sp_id || selectedProvider.service_provider_id;
+  const nextIsActive = !selectedProvider.is_active;
+  const action = document.getElementById('detailsStatusAction');
+  if (action) action.disabled = true;
+  try {
+    await Api.patch('/service-providers/' + encodeURIComponent(providerId), { is_active: nextIsActive });
+    selectedProvider.is_active = nextIsActive;
+    selectedProvider.account_status = nextIsActive ? 'active' : 'inactive';
+    closeDetailsModalBtn();
+    await loadProviders(displayedRegion);
+  } catch (err) {
+    if (action) action.disabled = false;
+    alert('Could not update account status: ' + (err.message || 'Error updating provider'));
+  }
 }
 
 window.approveProvider = async function(spId, regionId) {

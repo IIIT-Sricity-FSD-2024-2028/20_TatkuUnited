@@ -79,6 +79,14 @@ body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); co
 .ranked-card { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border: 1px solid #f1f5f9; border-radius: 10px; transition: transform .1s, box-shadow .1s; cursor: pointer; }
 .ranked-card:hover { transform: translateY(-1px); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); background: #f8fafc; }
 
+.ranked-provider-item { display: flex; align-items: center; gap: 14px; padding: 14px 16px; border: 1px solid #f1f5f9; border-radius: 10px; cursor: pointer; transition: transform .1s, box-shadow .1s, background .1s; }
+.ranked-provider-item:hover { transform: translateY(-1px); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); background: #f8fafc; }
+.ranked-provider-item strong { flex: 1; color: #111827; font-size: 14px; }
+.ranked-provider-item span { color: #6b7280; font-size: 12px; }
+.ranked-provider-status { padding: 4px 8px; border-radius: 999px; font-weight: 600; }
+.ranked-provider-status.active { color: #15803d; background: #f0fdf4; }
+.ranked-provider-status.inactive { color: #b91c1c; background: #fef2f2; }
+
 .r-provider-info { display: flex; align-items: center; gap: 14px; }
 .r-avatar { width: 40px; height: 40px; border-radius: 50%; background: #eff6ff; color: var(--accent); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; }
 .r-name { font-weight: 600; font-size: 14px; color: #111827; }
@@ -341,6 +349,10 @@ body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); co
 .details-field svg { width: 18px; height: 18px; fill: none; stroke: #9ca3af; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; margin-top: 2px; }
 
 .details-docs { display: flex; flex-direction: column; gap: 10px; }
+.details-actions { display: flex; justify-content: flex-end; margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--border); }
+.details-actions .btn-verify { border: none; border-radius: 8px; padding: 10px 16px; font-size: 13px; font-weight: 700; cursor: pointer; }
+.details-actions .btn-verify.deactivate { background: #dc2626; }
+.details-actions .btn-verify.reactivate { background: #16a34a; }
 .details-doc-item { display: flex; align-items: center; gap: 10px; padding: 12px 16px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px; font-weight: 500; color: #1e293b; transition: border-color 0.15s, background 0.15s; }
 .details-doc-item:hover { border-color: #cbd5e1; background: #f1f5f9; }
 .details-doc-item svg { width: 18px; height: 18px; stroke: var(--accent); stroke-width: 2; fill: none; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }

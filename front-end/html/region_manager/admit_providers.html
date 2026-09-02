@@ -310,17 +310,17 @@
             <input
               type="text"
               id="rankedProviderSearch"
-              placeholder="Search and filter active providers by name, unit, or skill..."
+              placeholder="Search service providers by name, email, or city..."
             />
           </div>
         </div>
 
         <div class="providers-dash-grid">
-          <!-- LEFT: RANKED PROVIDERS -->
+          <!-- LEFT: SERVICE PROVIDERS -->
           <div class="grid-col-ranked card">
             <div class="grid-header">
-              <h2 class="sub-section-title">Ranked Service Providers</h2>
-              <span class="helper-text">Sorted by rating (High to Low)</span>
+              <h2 class="sub-section-title">Service Providers</h2>
+              <span class="helper-text">Select a provider to view details</span>
             </div>
             <div id="rankedProvidersList" class="ranked-list">
               <!-- Populated via JS -->
@@ -491,6 +491,13 @@
             Uploaded Documents
           </div>
           <div id="detailsDocs" class="details-docs"></div>
+          <div class="details-actions">
+            <button
+              type="button"
+              id="detailsStatusAction"
+              class="btn-verify"
+            ></button>
+          </div>
         </div>
       </div>
     </div>

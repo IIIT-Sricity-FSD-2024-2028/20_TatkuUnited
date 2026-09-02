@@ -19,6 +19,7 @@ import { Roles } from '../../common/decorators/roles.decorator';
 import { Role } from '../../common/enums/role.enum';
 import { JwtPayload } from '../auth/interfaces/jwt-payload.interface';
 import { ApiRoleHeader } from '../../common/decorators/api-role-header.decorator';
+import { Public } from '../../common/decorators/public.decorator';
 
 @ApiTags('regions')
 @ApiBearerAuth('bearer')
@@ -29,6 +30,7 @@ export class RegionsController {
   constructor(private readonly service: RegionsService) {}
 
   @Get()
+  @Public()
   @Roles(Role.SUPER_USER, Role.REGION_MANAGER)
   @ApiOperation({ summary: 'Get all regions' })
   @ApiResponse({ status: 200, description: 'Success' })

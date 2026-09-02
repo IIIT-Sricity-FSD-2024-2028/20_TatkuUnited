@@ -89,7 +89,29 @@ export class RevenueLedgerService {
   }
 
   getRmEarnings(rmId: string) {
-    const rows = this.repo.findByRm(rmId);
+    const rows = this.repo.findByRm(rmId).map((row) => {
+      const assignment = this.db.jobAssignments.find(
+        (item) => item.booking_id === row.booking_id && item.sp_id === row.sp_id,
+      );
+      const serviceId = row.service_id || assignment?.service_id;
+      const service = this.db.services.find((item) => item.service_id === serviceId);
+      const category = this.db.categories.find(
+        (item) => item.category_id === service?.category_id,
+      );
+      const booking = this.db.bookings.find(
+        (item) => item.booking_id === row.booking_id,
+      );
+      const customer = this.db.customers.find(
+        (item) => item.customer_id === booking?.customer_id,
+      );
+      return {
+        ...row,
+        service_id: serviceId,
+        category_id: category?.category_id,
+        category_name: category?.category_name,
+        customer_name: customer?.full_name,
+      };
+    });
     return {
       pending: rows
         .filter((r) => r.payout_status === 'PENDING')

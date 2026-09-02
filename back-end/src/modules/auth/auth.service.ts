@@ -96,6 +96,24 @@ export class AuthService {
       );
     }
 
+    if (role === Role.SERVICE_PROVIDER) {
+      if (!dto.region_id) {
+        throw new BadRequestException('Region is required for service provider registration');
+      }
+      const region = this.databaseService.regions.find(
+        (item) => item.region_id === dto.region_id && item.is_active,
+      );
+      if (!region) {
+        throw new BadRequestException('Selected region is invalid');
+      }
+      const manager = this.databaseService.regionManagers.find(
+        (item) => item.region_id === region.region_id && item.is_active,
+      );
+      if (!manager) {
+        throw new BadRequestException('Selected region is not currently supported');
+      }
+    }
+
     const duplicate = this.resolvePrincipal(normalizedEmail);
     if (duplicate) {
       throw new BadRequestException('An account with this email already exists');
@@ -151,7 +169,7 @@ export class AuthService {
       hour_end: '18:00',
       created_at: now,
       updated_at: now,
-      region_id: null,
+      region_id: dto.region_id as string,
     };
     this.databaseService.serviceProviders.push(record);
 

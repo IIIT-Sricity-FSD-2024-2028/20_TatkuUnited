@@ -44,7 +44,8 @@
   const aov = ledgerRows.length > 0 ? Math.round(totalGMV / ledgerRows.length) : 0;
   setText('stat-aov', '₹' + aov.toLocaleString('en-IN'));
 
-  renderLedgerTable(ledgerRows);
+  renderRevenueTable(ledgerRows);
+  renderCharts(ledgerRows);
 })();
 
 function setText(id, text) {
@@ -52,20 +53,39 @@ function setText(id, text) {
   if (el) el.textContent = text;
 }
 
-function renderLedgerTable(rows) {
-  const tbody = document.getElementById('ledger-tbody') || document.querySelector('tbody');
+function renderRevenueTable(rows) {
+  const tbody = document.getElementById('revTableBody');
   if (!tbody) return;
   if (!rows || rows.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:24px;color:#64748b;">No revenue transactions found for this region.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:24px;color:#64748b;">No revenue transactions found for this region.</td></tr>';
     return;
   }
   tbody.innerHTML = rows.map(r => `
     <tr>
-      <td style="padding:12px;">${(r.ledger_id || r.id || '').substring(0, 10)}</td>
-      <td style="padding:12px;">${r.booking_id || 'BKG-101'}</td>
-      <td style="padding:12px;font-weight:600;color:#16a34a;">₹${r.provider_amount || 0} (85%)</td>
-      <td style="padding:12px;font-weight:600;color:#2563eb;">₹${r.platform_amount || 0} (15%)</td>
-      <td style="padding:12px;"><span style="background:rgba(34,197,94,0.15);color:#16a34a;padding:4px 8px;border-radius:4px;font-size:0.8rem;font-weight:600;">${r.payout_status || 'DISBURSED'}</span></td>
+      <td style="padding:12px;">${r.customer_name || 'Unknown customer'}</td>
+      <td style="padding:12px;">${r.category_name || 'Unknown category'}</td>
+      <td style="padding:12px;font-weight:600;color:#16a34a;">₹${Math.round((r.provider_amount || 0) + (r.platform_amount || 0)).toLocaleString('en-IN')}</td>
+      <td style="padding:12px;">${r.payout_status || '—'}</td>
     </tr>
   `).join('');
+}
+
+function renderCharts(rows) {
+  if (typeof Chart === 'undefined') return;
+  const bookingLabels = rows.map(r => r.customer_name || 'Unknown customer');
+  const bookingRevenue = rows.map(r => (r.provider_amount || 0) + (r.platform_amount || 0));
+  const categoryLabels = [...new Set(rows.map(r => r.category_name || 'Unknown category'))];
+  const categoryBookings = categoryLabels.map(categoryName => rows.filter(r => (r.category_name || 'Unknown category') === categoryName).length);
+  const categoryRevenue = categoryLabels.map(categoryName => rows
+    .filter(r => (r.category_name || 'Unknown category') === categoryName)
+    .reduce((sum, r) => sum + (r.provider_amount || 0) + (r.platform_amount || 0), 0));
+  const configs = [
+    ['lineChart', { type: 'line', data: { labels: bookingLabels, datasets: [{ label: 'Revenue by Customer', data: bookingRevenue, borderColor: '#2563eb', backgroundColor: 'rgba(37,99,235,.12)', fill: true, tension: .3 }] }, options: { responsive: true, maintainAspectRatio: false } }],
+    ['barChart', { type: 'bar', data: { labels: categoryLabels, datasets: [{ label: 'Bookings by Service Category', data: categoryBookings, backgroundColor: '#22c55e' }] }, options: { responsive: true, maintainAspectRatio: false } }],
+    ['donutChart', { type: 'doughnut', data: { labels: categoryLabels, datasets: [{ label: 'Revenue by Service Category', data: categoryRevenue, backgroundColor: ['#22c55e', '#2563eb', '#f59e0b', '#8b5cf6', '#ef4444'] }] }, options: { responsive: true, maintainAspectRatio: false } }],
+  ];
+  configs.forEach(([id, config]) => {
+    const canvas = document.getElementById(id);
+    if (canvas) new Chart(canvas, config);
+  });
 }

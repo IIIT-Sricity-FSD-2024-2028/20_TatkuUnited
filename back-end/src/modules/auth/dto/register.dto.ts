@@ -42,4 +42,9 @@ export class RegisterDto {
   @IsOptional()
   @IsString()
   providerType?: string;
+
+  @ApiProperty({ required: false, description: 'Selected region for service_provider registration' })
+  @IsOptional()
+  @IsString()
+  region_id?: string;
 }

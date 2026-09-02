@@ -5735,6 +5735,10 @@
               "company"
             ],
             "description": "Only used for service_provider registration"
+          },
+          "region_id": {
+            "type": "string",
+            "description": "Selected region for service_provider registration"
           }
         },
         "required": [

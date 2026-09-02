@@ -155,6 +155,7 @@ window.Auth = (() => {
       password: payload.password,
       role: toApiRole(payload.role),
       providerType: payload.providerType,
+      region_id: payload.regionId || undefined,
     };
 
     const data = await apiRequest("/auth/register", {

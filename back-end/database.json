@@ -118,7 +118,7 @@
       "hour_start": "07:00",
       "hour_end": "23:00",
       "created_at": "2024-10-31T08:00:00Z",
-      "updated_at": "2026-04-10T11:30:00Z",
+      "updated_at": "2026-09-02T10:14:41.563",
       "city": "Chennai",
       "region_id": "b2b636cc-a295-445c-844f-eed968905d91"
     },
@@ -289,6 +289,27 @@
       "updated_at": "2026-05-04T07:10:47.246Z",
       "city": "Trichy",
       "region_id": "r3b636cc-a295-445c-844f-eed968905d93"
+    },
+    {
+      "sp_id": "90ba635e-6e34-43f9-829a-5204dc32df8f",
+      "name": "testa",
+      "email": "testa@gmail.com",
+      "password_hash": "scrypt:45cf1ab0df3ba69c56e0cccd073732f6:0e4afe68b9dbea648af84d1b95225e1ab8dd40ef90966569ece6beca95ef37c1c81468f195427f4a4d232bc62f62fa9c4b475b9cdfb471f2787cff74f8c79ec6",
+      "phone": "9876543210",
+      "dob": "",
+      "address": "",
+      "city": "Chennai",
+      "gender": "",
+      "rating": 0,
+      "rating_count": 0,
+      "is_active": true,
+      "account_status": "active",
+      "deactivation_requested": false,
+      "hour_start": "08:00",
+      "hour_end": "18:00",
+      "created_at": "2026-09-02T09:17:55.285",
+      "updated_at": "2026-09-02T10:15:56.188",
+      "region_id": "b2b636cc-a295-445c-844f-eed968905d91"
     }
   ],
   "providerUnavailability": [
