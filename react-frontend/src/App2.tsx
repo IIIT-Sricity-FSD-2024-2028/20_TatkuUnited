@@ -1,6 +1,4 @@
-import { useState } from "react";
-
-import Layout from "./components/layout";
+import Layout from "./components2/layout";
 
 export default function App(){
   return <Layout />;

@@ -1,3 +1,5 @@
+import AssignedJobs from "./Sp_dashboard_body";
+
 type BodyProps = {
     activePage: string;
 };
@@ -29,6 +31,9 @@ export default function Body({activePage}: BodyProps) {
 
     return (
     <main className="flex-1 border-2 border-yellow-400 p-8">
+        <div>
+            <AssignedJobs spId="89b3386b-aea4-4602-a2f8-1199b5c14303" />
+        </div>
         {content}
     </main>
     );
