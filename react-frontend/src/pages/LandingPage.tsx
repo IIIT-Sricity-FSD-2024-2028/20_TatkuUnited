@@ -16,7 +16,7 @@ function LandingPage() {
     };
 
     return (
-        <>
+        <div className="pt-17">
             <PublicNavbar
                 brandName={brandName}
                 brandInitials={brandInitials}
@@ -24,7 +24,7 @@ function LandingPage() {
             />
             <Hero onNavigate={handleNavigate} />
             <CTA onNavigate={handleNavigate} />
-        </>
+        </div>
     )
 }
 
