@@ -56,18 +56,10 @@ export class RevenueLedgerController {
   }
 
   @Get('my')
-  @Roles(Role.SUPER_USER, Role.COLLECTIVE_MANAGER, Role.UNIT_MANAGER, Role.SERVICE_PROVIDER)
+  @Roles(Role.SUPER_USER, Role.SERVICE_PROVIDER)
   @ApiOperation({ summary: 'Get current user earnings' })
   getMyEarnings(@Request() req: { user: JwtPayload }) {
     console.log(`RevenueLedgerController: getMyEarnings for ${req.user.sub} (${req.user.role})`);
-    if (req.user.role === Role.COLLECTIVE_MANAGER) {
-      const res = this.revenueLedgerService.getCmEarningsScoped(req.user.sub, req.user);
-      console.log(`RevenueLedgerController: Found ${res.rows.length} rows for CM`);
-      return res;
-    }
-    if (req.user.role === Role.UNIT_MANAGER) {
-      return this.revenueLedgerService.getUmEarningsScoped(req.user.sub, req.user);
-    }
     if (req.user.role === Role.SERVICE_PROVIDER) {
       return this.revenueLedgerService.getProviderEarningsScoped(req.user.sub, req.user);
     }
@@ -77,7 +69,7 @@ export class RevenueLedgerController {
   // ── GET /revenue-ledger/provider/:spId ──────────────────────────────────
 
   @Get('provider/:spId')
-  @Roles(Role.SERVICE_PROVIDER, Role.SUPER_USER, Role.UNIT_MANAGER, Role.COLLECTIVE_MANAGER)
+  @Roles(Role.SERVICE_PROVIDER, Role.SUPER_USER)
   @ApiOperation({ summary: 'Provider earnings summary — SP (own) or super_user' })
   @ApiParam({ name: 'spId', description: 'sp_id UUID' })
   @ApiResponse({ status: 200, description: '{ pending, disbursed, rows }' })
@@ -87,36 +79,6 @@ export class RevenueLedgerController {
     @Request() req: { user: JwtPayload },
   ) {
     return this.revenueLedgerService.getProviderEarningsScoped(spId, req.user);
-  }
-
-  // ── GET /revenue-ledger/unit-manager/:umId ──────────────────────────────
-
-  @Get('unit-manager/:umId')
-  @Roles(Role.UNIT_MANAGER, Role.SUPER_USER)
-  @ApiOperation({ summary: 'Unit Manager earnings — UM (own) or super_user' })
-  @ApiParam({ name: 'umId', description: 'um_id UUID' })
-  @ApiResponse({ status: 200, description: 'Unit manager earnings returned' })
-  @ApiResponse({ status: 403, description: 'Forbidden' })
-  getUmEarnings(
-    @Param('umId') umId: string,
-    @Request() req: { user: JwtPayload },
-  ) {
-    return this.revenueLedgerService.getUmEarningsScoped(umId, req.user);
-  }
-
-  // ── GET /revenue-ledger/collective/:cmId ────────────────────────────────
-
-  @Get('collective/:cmId')
-  @Roles(Role.COLLECTIVE_MANAGER, Role.SUPER_USER)
-  @ApiOperation({ summary: 'Collective Manager earnings — CM (own) or super_user' })
-  @ApiParam({ name: 'cmId', description: 'cm_id UUID' })
-  @ApiResponse({ status: 200, description: 'Collective manager earnings returned' })
-  @ApiResponse({ status: 403, description: 'Forbidden' })
-  getCmEarnings(
-    @Param('cmId') cmId: string,
-    @Request() req: { user: JwtPayload },
-  ) {
-    return this.revenueLedgerService.getCmEarningsScoped(cmId, req.user);
   }
 
   // ── PATCH /revenue-ledger/:id/payout ────────────────────────────────────
@@ -161,21 +123,12 @@ export class RevenueLedgerController {
   // ── GET /revenue-ledger ─────────────────────────────────────────────────
 
   @Get()
-  @Roles(Role.SUPER_USER, Role.COLLECTIVE_MANAGER, Role.UNIT_MANAGER)
-  @ApiOperation({ summary: 'List all ledger entries (scoped for managers)' })
+  @Roles(Role.SUPER_USER)
+  @ApiOperation({ summary: 'List all ledger entries (super_user only)' })
   @ApiResponse({ status: 200, description: 'Array of RevenueLedger rows' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
   findAll(@Request() req: { user: JwtPayload }) {
-    if (req.user.role === Role.COLLECTIVE_MANAGER) {
-      const manager = this.accessScope.getCollectiveManager(req.user.sub);
-      return this.revenueLedgerService.findAll().filter((row) => row.cm_id === manager.cm_id);
-    }
-    if (req.user.role === Role.UNIT_MANAGER) {
-      const manager = this.accessScope.getUnitManager(req.user.sub);
-      return this.revenueLedgerService.findAll().filter((row) => row.um_id === manager.um_id);
-    }
     return this.revenueLedgerService.findAll();
-
   }
 
   // ── DELETE /revenue-ledger/:id ──────────────────────────────────────────

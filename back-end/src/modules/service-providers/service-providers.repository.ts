@@ -30,18 +30,6 @@ export class ServiceProvidersRepository {
     );
   }
 
-  findByUnit(unitId: string): ServiceProvider[] {
-    return this.databaseService.serviceProviders.filter(
-      (row) => row.unit_id === unitId,
-    );
-  }
-
-  findBySector(sectorId: string): ServiceProvider[] {
-    return this.databaseService.serviceProviders.filter(
-      (row) => row.home_sector_id === sectorId,
-    );
-  }
-
   create(dto: CreateServiceProviderDto): ServiceProvider {
     const provider = {
       sp_id: randomUUID(),
@@ -61,8 +49,6 @@ export class ServiceProvidersRepository {
       hour_end: '',
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
-      unit_id: dto.unit_id,
-      home_sector_id: dto.sector_id,
     } as unknown as ServiceProvider;
     
     this.databaseService.serviceProviders.push(provider);
@@ -79,8 +65,6 @@ export class ServiceProvidersRepository {
     if (dto.full_name !== undefined) provider.name = dto.full_name;
     if (dto.email !== undefined) provider.email = dto.email;
     if (dto.phone !== undefined) provider.phone = dto.phone;
-    if (dto.unit_id !== undefined) provider.unit_id = dto.unit_id;
-    if (dto.sector_id !== undefined) provider.home_sector_id = dto.sector_id;
     if (dto.is_active !== undefined) {
       provider.is_active = dto.is_active;
       provider.account_status = dto.is_active ? 'active' : 'inactive';

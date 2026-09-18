@@ -72,20 +72,4 @@ describe('Revenue Ledger Workflow (e2e)', () => {
       
     expect(response.body).toBeDefined();
   });
-
-  it('unit manager should be able to view all their revenue ledger entries', async () => {
-    const umRes = await request(app.getHttpServer())
-      .post('/auth/login')
-      .send({ email: 'karan.m@unit.com', password: 'Password@123', role: Role.UNIT_MANAGER })
-      .expect(201);
-    const umToken = umRes.body.access_token;
-
-    const response = await request(app.getHttpServer())
-      .get('/revenue-ledger')
-      .set('Authorization', `Bearer ${umToken}`)
-      .set('x-role', Role.UNIT_MANAGER)
-      .expect(200);
-      
-    expect(Array.isArray(response.body)).toBe(true);
-  });
 });

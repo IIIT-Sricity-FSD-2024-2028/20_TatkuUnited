@@ -37,28 +37,17 @@ export class ProviderUnavailabilityController {
   ) {}
 
   @Get()
-  @Roles(Role.SUPER_USER, Role.UNIT_MANAGER, Role.COLLECTIVE_MANAGER)
+  @Roles(Role.SUPER_USER)
   @ApiOperation({ summary: 'Get all provider unavailabilities' })
-  
   @ApiResponse({ status: 200, description: 'Success' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
   findAll(@Request() req: { user: JwtPayload }) {
-    const rows = this.providerUnavailabilityService.findAll();
-    if (req.user.role === Role.SUPER_USER) return rows;
-    return rows.filter((row) => {
-      try {
-        this.accessScope.assertProviderAccess(req.user, row.sp_id);
-        return true;
-      } catch {
-        return false;
-      }
-    });
+    return this.providerUnavailabilityService.findAll();
   }
 
   @Get('provider/:provider_id')
-  @Roles(Role.SUPER_USER, Role.SERVICE_PROVIDER, Role.UNIT_MANAGER, Role.COLLECTIVE_MANAGER)
+  @Roles(Role.SUPER_USER, Role.SERVICE_PROVIDER)
   @ApiOperation({ summary: 'Get provider unavailabilities by provider ID' })
-  
   @ApiResponse({ status: 200, description: 'Success' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
   findByProvider(
@@ -68,16 +57,12 @@ export class ProviderUnavailabilityController {
     if (req.user.role === Role.SERVICE_PROVIDER && req.user.sub !== providerId) {
       throw new ForbiddenException('Providers can only access their own unavailability');
     }
-    if (req.user.role === Role.COLLECTIVE_MANAGER || req.user.role === Role.UNIT_MANAGER) {
-      this.accessScope.assertProviderAccess(req.user, providerId);
-    }
     return this.providerUnavailabilityService.findByProvider(providerId);
   }
 
   @Get(':id')
-  @Roles(Role.SUPER_USER, Role.SERVICE_PROVIDER, Role.UNIT_MANAGER, Role.COLLECTIVE_MANAGER)
+  @Roles(Role.SUPER_USER, Role.SERVICE_PROVIDER)
   @ApiOperation({ summary: 'Get provider unavailability by ID' })
-  
   @ApiResponse({ status: 200, description: 'Success' })
   @ApiResponse({ status: 404, description: 'Not found' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
@@ -85,9 +70,6 @@ export class ProviderUnavailabilityController {
     const record = this.providerUnavailabilityService.findOne(id);
     if (req.user.role === Role.SERVICE_PROVIDER && req.user.sub !== record.sp_id) {
       throw new ForbiddenException('Providers can only access their own unavailability');
-    }
-    if (req.user.role === Role.COLLECTIVE_MANAGER || req.user.role === Role.UNIT_MANAGER) {
-      this.accessScope.assertProviderAccess(req.user, record.sp_id);
     }
     return record;
   }

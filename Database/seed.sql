@@ -1,69 +1,32 @@
--- ============================================================
--- TATKU UNITED - Seed Data (New Design)
--- Source of truth: back-end/src/common/database/database.service.ts
--- ============================================================
-
-BEGIN;
-
--- ============================================================
--- Core org hierarchy
--- ============================================================
-
-INSERT INTO collective (collective_id, collective_name, is_active, created_at)
-VALUES
-    ('00000000-0000-0000-0000-000000000001', 'North Chennai Collective', TRUE, '2025-10-01T00:00:00Z');
-
-INSERT INTO sector (sector_id, sector_name, state, region, density_tier, is_active, collective_id)
-VALUES
-    ('00000000-0000-0000-0000-000000000011', 'Downtown Core', 'Tamil Nadu', 'Central', 'HIGH', TRUE, '00000000-0000-0000-0000-000000000001'),
-    ('00000000-0000-0000-0000-000000000012', 'Anna Nagar West', 'Tamil Nadu', 'North', 'MEDIUM', TRUE, '00000000-0000-0000-0000-000000000001'),
-    ('00000000-0000-0000-0000-000000000013', 'Velachery South', 'Tamil Nadu', 'South', 'HIGH', TRUE, '00000000-0000-0000-0000-000000000001');
-
-INSERT INTO unit (unit_id, unit_name, rating, rating_count, is_active, created_at, collective_id)
-VALUES
-    ('00000000-0000-0000-0000-000000000021', 'Electrical & AC Services', 4.33, 3, TRUE, '2025-10-31T00:00:00Z', '00000000-0000-0000-0000-000000000001'),
-    ('00000000-0000-0000-0000-000000000022', 'Plumbing & Sanitary Services', 5.00, 2, TRUE, '2025-11-20T00:00:00Z', '00000000-0000-0000-0000-000000000001');
-
--- ============================================================
 -- Auth / users
--- ============================================================
 
 INSERT INTO super_user (super_user_id, name, email, password_hash, phone, is_active, last_login, created_at)
 VALUES
     ('00000000-0000-0000-0000-000000000031', 'Mark', 'super_user.mark@tatku.com', 'scrypt:seed:super-user-mark', '9876543210', TRUE, '2026-03-31T10:00:00Z', '2023-01-01T00:00:00Z');
 
-INSERT INTO collective_manager (cm_id, name, email, password_hash, phone, is_active, created_at, updated_at, collective_id)
-VALUES
-    ('00000000-0000-0000-0000-000000000041', 'Suresh Patel', 'suresh@collective.com', 'scrypt:seed:cm-suresh', '9988776655', TRUE, '2024-10-10T00:00:00Z', '2026-04-10T00:00:00Z', '00000000-0000-0000-0000-000000000001');
-
-INSERT INTO unit_manager (um_id, name, email, password_hash, phone, is_active, created_at, updated_at, unit_id)
-VALUES
-    ('00000000-0000-0000-0000-000000000051', 'Karan Mehta', 'karan.m@unit.com', 'scrypt:seed:um-karan', '9955443322', TRUE, '2024-11-09T00:00:00Z', '2026-04-10T00:00:00Z', '00000000-0000-0000-0000-000000000021'),
-    ('00000000-0000-0000-0000-000000000052', 'Naveen Raj', 'naveen.r@unit.com', 'scrypt:seed:um-naveen', '9930012277', TRUE, '2024-12-05T00:00:00Z', '2026-04-09T00:00:00Z', '00000000-0000-0000-0000-000000000022');
-
 INSERT INTO service_provider (
     sp_id, name, email, password_hash, phone, dob, address, gender,
     rating, rating_count, is_active, account_status, deactivation_requested,
-    hour_start, hour_end, created_at, updated_at, unit_id, home_sector_id
+    hour_start, hour_end, created_at, updated_at
 )
 VALUES
     (
         '00000000-0000-0000-0000-000000000061', 'Ravi Kumar', 'ravi.kumar@mail.com', 'scrypt:seed:sp-ravi', '9000000001',
         '1990-04-12', '12 Anna Nagar, Chennai', 'Male',
         4.33, 3, TRUE, 'active', FALSE,
-        '08:00', '18:00', '2024-10-31T08:00:00Z', '2026-04-10T11:30:00Z', '00000000-0000-0000-0000-000000000021', '00000000-0000-0000-0000-000000000011'
+        '08:00', '18:00', '2024-10-31T08:00:00Z', '2026-04-10T11:30:00Z'
     ),
     (
         '00000000-0000-0000-0000-000000000062', 'Manoj Selvam', 'manoj.selvam@mail.com', 'scrypt:seed:sp-manoj', '9000000002',
         '1988-11-28', '22 Mogappair, Chennai', 'Male',
         5.00, 2, TRUE, 'active', FALSE,
-        '09:00', '18:00', '2024-11-22T08:00:00Z', '2026-04-10T09:20:00Z', '00000000-0000-0000-0000-000000000022', '00000000-0000-0000-0000-000000000012'
+        '09:00', '18:00', '2024-11-22T08:00:00Z', '2026-04-10T09:20:00Z'
     ),
     (
         '00000000-0000-0000-0000-000000000063', 'Priya Nair', 'priya.nair@mail.com', 'scrypt:seed:sp-priya', '9000000003',
         '1994-02-10', '18 Velachery, Chennai', 'Female',
         0.00, 0, TRUE, 'active', FALSE,
-        '08:00', '17:00', '2025-01-06T08:00:00Z', '2026-04-01T10:00:00Z', '00000000-0000-0000-0000-000000000021', '00000000-0000-0000-0000-000000000013'
+        '08:00', '17:00', '2025-01-06T08:00:00Z', '2026-04-01T10:00:00Z'
     );
 
 INSERT INTO provider_unavailability (unavailability_id, date, hour_start, hour_end, reason, is_recurring, created_at, sp_id)
@@ -172,11 +135,11 @@ VALUES
 -- Customers, bookings, assignments
 -- ============================================================
 
-INSERT INTO customer (customer_id, full_name, email, password_hash, phone, dob, address, rating, is_active, home_sector_id)
+INSERT INTO customer (customer_id, full_name, email, password_hash, phone, dob, address, rating, is_active)
 VALUES
     ('00000000-0000-0000-0000-000000000121', 'Aditya Verma', 'aditya.v@gmail.com', 'scrypt:seed:cust-aditya', '9812345678', '1992-03-15', '14 Boat Club Road, Chennai', 0, TRUE, '00000000-0000-0000-0000-000000000011'),
     ('00000000-0000-0000-0000-000000000122', 'Lakshmi Iyer', 'lakshmi.iyer@gmail.com', 'scrypt:seed:cust-lakshmi', '9894098765', '1995-07-09', '33 Anna Nagar, Chennai', 0, TRUE, '00000000-0000-0000-0000-000000000012'),
-    ('00000000-0000-0000-0000-000000000123', 'Arjun N', 'arjun.n@gmail.com', 'scrypt:seed:cust-arjun', '9900023456', '1998-01-18', '77 Velachery Main Road, Chennai', 0, TRUE, '00000000-0000-0000-0000-000000000013');
+    ('00000000-0000-0000-0000-000000000123', 'Arjun N', 'arjun.n@gmail.com', 'scrypt:seed:cust-arjun', '9900023456', '1998-01-18', '77 Velachery Main Road, Chennai', 0, TRUE);
 
 -- carts/cart_items intentionally empty (as in source seed)
 
@@ -275,7 +238,7 @@ VALUES
     );
 
 INSERT INTO revenue_ledger (
-    ledger_id, payout_status, provider_amount, um_amount, cm_amount,
+    ledger_id, payout_status, provider_amount,
     platform_amount, created_at, paid_at, booking_id, sp_id, um_id, cm_id
 )
 VALUES
