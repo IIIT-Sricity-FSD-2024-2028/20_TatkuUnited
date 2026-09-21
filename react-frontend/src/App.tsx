@@ -1,19 +1,23 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Landing from "./pages/LandingPage"
-import Register from "./pages/RegisterPage"
-import Login from "./pages/LoginPage"
+import Landing from "./pages/LandingPage";
+import Register from "./pages/RegisterPage";
+import Login from "./pages/LoginPage";
+import Provider from "./pages/Provider";
 
 function App() {
-  return (<BrowserRouter>
-    <Routes>
-      <Route path="/" element={<Landing />} />
-      <Route path="/auth">
-        <Route path="register" element={<Register />} />
-        <Route path="login" element={<Login />} />
-      </Route>
-      <Route path="*" element={<div>404! Page Not Found.</div>} />
-    </Routes>
-  </BrowserRouter>);
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Landing />} />
+        <Route path="/auth">
+          <Route path="register" element={<Register />} />
+          <Route path="login" element={<Login />} />
+        </Route>
+        <Route path="/provider" element={<Provider />} />
+        <Route path="*" element={<div>404! Page Not Found.</div>} />
+      </Routes>
+    </BrowserRouter>
+  );
 }
 
 export default App;
