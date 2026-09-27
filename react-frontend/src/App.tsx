@@ -3,9 +3,10 @@ import Landing from "./pages/LandingPage";
 import Register from "./pages/RegisterPage";
 import Login from "./pages/LoginPage";
 import Provider from "./pages/Provider";
+import SuperUser from "./components/superuser/superuser_route";
 
 function App() {
-  return (
+  return (  
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Landing />} />
@@ -14,6 +15,7 @@ function App() {
           <Route path="login" element={<Login />} />
         </Route>
         <Route path="/provider" element={<Provider />} />
+        <Route path="/superuser/*" element={<SuperUser />} />
         <Route path="*" element={<div>404! Page Not Found.</div>} />
       </Routes>
     </BrowserRouter>
