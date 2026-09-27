@@ -1,4 +1,9 @@
+// To use this shared sidebar-
+// create a layout for the role (if it doesnt exist yet)
+// create the route for the pages. example usage- superuser_route
+
 import { NavLink } from 'react-router-dom'
+import { type ReactNode } from 'react';
 
 interface SideBarItemProps
 {
@@ -6,7 +11,7 @@ interface SideBarItemProps
     label: string;
 }
 
-export default function SuperUser_SideBar()
+export default function SideBar({ children }: { children: ReactNode})
 {
     return(
         <aside className="w-64 h-full bg-white border-r">
@@ -23,18 +28,17 @@ export default function SuperUser_SideBar()
             </div>
 
             <nav className="flex flex-col gap-2 p-4">
-                <SidebarItem to="/superuser/dashboard" label="Dashboard" />
-                {/* continue the above pattern for the other pages */}
+                { children }
             </nav>
         </aside>
     )
 }
 
-const SidebarItem = ({to, label}: SideBarItemProps) => {
+export const SidebarItem = ({to, label}: SideBarItemProps) => {
     return(
         <NavLink
             to={to}
-            className={({isActive}) =>
+            className={({isActive}) =>  
                 `block p-3 rounded-lg transition-colors font-medium ${
                  isActive 
                     ? "bg-blue-50 text-blue-700" // The style when this page is open
