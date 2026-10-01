@@ -8,5 +8,6 @@ export class Customer {
   address: string;
   rating: number;
   is_active: boolean;
+  home_sector_id: string;
   created_at?: string;
 }
