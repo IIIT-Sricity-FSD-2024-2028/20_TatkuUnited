@@ -2,6 +2,9 @@ import axios from "axios";
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { BASE_URL } from "../services/api";
+import { useDispatch } from "react-redux";
+import type { AppDispatch } from "../store";
+import { AuthActions, type UserInterface } from "../store/auth/auth-slice";
 
 interface FormData {
   email: string;
@@ -75,7 +78,7 @@ interface FormErrors {
   password?: boolean;
 }
 
-function FillUserData() {
+function FillUserData({ dispatch }: { dispatch: AppDispatch }) {
   const navigate = useNavigate();
   const [formData, setFormData] = useState<FormData>({
     email: "",
@@ -137,18 +140,22 @@ function FillUserData() {
 
     if (res.success && res.data) {
       // Store session details consistent with Tatku United platform standard
-      sessionStorage.setItem("tu_auth_token", res.data.access_token);
-      sessionStorage.setItem(
-        "tu_auth_session",
-        JSON.stringify({
-          id: res.data.user.id,
-          name: res.data.user.name,
-          email: res.data.user.email,
-          role: res.data.user.role,
-          customer_id: res.data.user.customer_id || null,
-          loginAt: Date.now(),
-        }),
-      );
+      // sessionStorage.setItem(
+      //   "tu_auth_session",
+      //   JSON.stringify({
+      //     id: res.data.user.id,
+      //     name: res.data.user.name,
+      //     email: res.data.user.email,
+      //     role: res.data.user.role,
+      //     customer_id: res.data.user.customer_id || null,
+      //     loginAt: Date.now(),
+      //   }),
+      // );
+      const { access_token, user } = res.data;
+      const userObj: UserInterface = { id: user.id, name: user.name, email: user.email, role: user.role };
+      sessionStorage.setItem("token", access_token);
+      sessionStorage.setItem("user", JSON.stringify(userObj));
+      dispatch(AuthActions.login({ user: userObj, token: access_token }));
 
       // Redirect to home route
       navigate("/");
@@ -244,11 +251,12 @@ function FillUserData() {
 }
 
 function LoginPage() {
+  const dispatch = useDispatch<AppDispatch>();
   return (
     <div className="flex flex-col justify-center items-center min-h-screen w-screen p-4">
       <div className="w-full max-w-md p-8">
         <LoginHeader />
-        <FillUserData />
+        <FillUserData dispatch={dispatch} />
         <RegisterLink />
       </div>
     </div>

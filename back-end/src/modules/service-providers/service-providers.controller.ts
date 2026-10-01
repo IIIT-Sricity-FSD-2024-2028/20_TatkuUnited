@@ -43,7 +43,10 @@ export class ServiceProvidersController {
   @Get()
   @Roles(Role.SUPER_USER)
   @ApiOperation({ summary: 'Get all service providers' })
-  @ApiResponse({ status: 200, description: 'Success - returns list of providers' })
+  @ApiResponse({
+    status: 200,
+    description: 'Success - returns list of providers',
+  })
   @ApiResponse({ status: 403, description: 'Forbidden' })
   findAll(@Request() req: { user: JwtPayload }) {
     return this.serviceProvidersService.findAll();
@@ -57,7 +60,9 @@ export class ServiceProvidersController {
   @ApiResponse({ status: 403, description: 'Forbidden' })
   findOne(@Param('id') id: string, @Request() req: { user: JwtPayload }) {
     if (req.user.role === Role.SERVICE_PROVIDER && req.user.sub !== id) {
-      throw new ForbiddenException('Providers can only access their own account');
+      throw new ForbiddenException(
+        'Providers can only access their own account',
+      );
     }
     return this.serviceProvidersService.findOne(id);
   }
@@ -67,7 +72,10 @@ export class ServiceProvidersController {
   @ApiOperation({ summary: 'Create a new service provider' })
   @ApiResponse({ status: 201, description: 'Created successfully' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
-  create(@Body() dto: CreateServiceProviderDto, @Request() req: { user: JwtPayload }) {
+  create(
+    @Body() dto: CreateServiceProviderDto,
+    @Request() req: { user: JwtPayload },
+  ) {
     return this.serviceProvidersService.create(dto);
   }
 
@@ -83,7 +91,9 @@ export class ServiceProvidersController {
     @Request() req: { user: JwtPayload },
   ) {
     if (req.user.role === Role.SERVICE_PROVIDER && req.user.sub !== id) {
-      throw new ForbiddenException('Providers can only update their own account');
+      throw new ForbiddenException(
+        'Providers can only update their own account',
+      );
     }
     return this.serviceProvidersService.update(id, dto);
   }
@@ -100,7 +110,9 @@ export class ServiceProvidersController {
     @Request() req: { user: JwtPayload },
   ) {
     if (req.user.role === Role.SERVICE_PROVIDER && req.user.sub !== id) {
-      throw new ForbiddenException('Providers can only update their own working hours');
+      throw new ForbiddenException(
+        'Providers can only update their own working hours',
+      );
     }
     return this.serviceProvidersService.updateWorkingHours(id, dto);
   }
@@ -117,7 +129,9 @@ export class ServiceProvidersController {
     @Request() req: { user: JwtPayload },
   ) {
     if (req.user.role === Role.SERVICE_PROVIDER && req.user.sub !== id) {
-      throw new ForbiddenException('Providers can only update their own profile');
+      throw new ForbiddenException(
+        'Providers can only update their own profile',
+      );
     }
     return this.serviceProvidersService.updateProfile(id, dto);
   }
@@ -128,9 +142,14 @@ export class ServiceProvidersController {
   @ApiResponse({ status: 200, description: 'Success' })
   @ApiResponse({ status: 404, description: 'Not found' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
-  requestDeactivation(@Param('id') id: string, @Request() req: { user: JwtPayload }) {
+  requestDeactivation(
+    @Param('id') id: string,
+    @Request() req: { user: JwtPayload },
+  ) {
     if (req.user.role === Role.SERVICE_PROVIDER && req.user.sub !== id) {
-      throw new ForbiddenException('Providers can only request their own deactivation');
+      throw new ForbiddenException(
+        'Providers can only request their own deactivation',
+      );
     }
     return this.serviceProvidersService.requestDeactivation(id);
   }

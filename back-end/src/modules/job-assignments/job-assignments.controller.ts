@@ -53,11 +53,7 @@ export class JobAssignmentsController {
   }
 
   @Get('booking/:bookingId')
-  @Roles(
-    Role.SUPER_USER,
-    Role.SERVICE_PROVIDER,
-    Role.CUSTOMER,
-  )
+  @Roles(Role.SUPER_USER, Role.SERVICE_PROVIDER, Role.CUSTOMER)
   @ApiOperation({ summary: 'Get assignments for a booking' })
   @ApiResponse({ status: 200, description: 'Assignments for the booking' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
@@ -72,7 +68,9 @@ export class JobAssignmentsController {
     if (req.user.role === Role.CUSTOMER) {
       const booking = this.jaService.findBooking(bookingId);
       if (booking.customer_id !== req.user.sub) {
-        throw new ForbiddenException('Customers can only access their own booking assignments');
+        throw new ForbiddenException(
+          'Customers can only access their own booking assignments',
+        );
       }
     }
     return rows;
@@ -88,18 +86,26 @@ export class JobAssignmentsController {
     @Request() req: { user: JwtPayload },
   ) {
     if (req.user.role === Role.SERVICE_PROVIDER && req.user.sub !== spId) {
-      throw new ForbiddenException('Providers can only access their own assignments');
+      throw new ForbiddenException(
+        'Providers can only access their own assignments',
+      );
     }
     return this.jaService.findByProvider(spId);
   }
 
   @Patch(':id/complete')
   @Roles(Role.SERVICE_PROVIDER)
-  @ApiOperation({ summary: 'Mark assignment as complete (triggers revenue split when all done)' })
+  @ApiOperation({
+    summary:
+      'Mark assignment as complete (triggers revenue split when all done)',
+  })
   @ApiResponse({ status: 200, description: 'Assignment marked complete' })
   @ApiResponse({ status: 400, description: 'Already completed' })
   @ApiResponse({ status: 404, description: 'Assignment not found' })
-  @ApiResponse({ status: 403, description: 'Forbidden - service_provider only' })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden - service_provider only',
+  })
   markComplete(
     @Param('id') id: string,
     @Body() dto: CompleteJobDto,
@@ -107,7 +113,9 @@ export class JobAssignmentsController {
   ) {
     const assignment = this.jaService.findOne(id);
     if (assignment.sp_id !== req.user.sub) {
-      throw new ForbiddenException('Providers can only complete their own assignments');
+      throw new ForbiddenException(
+        'Providers can only complete their own assignments',
+      );
     }
     return this.jaService.markComplete(id, dto);
   }
@@ -118,14 +126,19 @@ export class JobAssignmentsController {
   @ApiResponse({ status: 200, description: 'Assignment marked in-progress' })
   @ApiResponse({ status: 400, description: 'Invalid status transition' })
   @ApiResponse({ status: 404, description: 'Assignment not found' })
-  @ApiResponse({ status: 403, description: 'Forbidden - service_provider only' })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden - service_provider only',
+  })
   markInProgress(
     @Param('id') id: string,
     @Request() req: { user: JwtPayload },
   ) {
     const assignment = this.jaService.findOne(id);
     if (assignment.sp_id !== req.user.sub) {
-      throw new ForbiddenException('Providers can only update their own assignments');
+      throw new ForbiddenException(
+        'Providers can only update their own assignments',
+      );
     }
     return this.jaService.markInProgress(id);
   }
@@ -140,24 +153,27 @@ export class JobAssignmentsController {
   }
 
   @Get(':id')
-  @Roles(
-    Role.SUPER_USER,
-    Role.SERVICE_PROVIDER,
-    Role.CUSTOMER,
-  )
+  @Roles(Role.SUPER_USER, Role.SERVICE_PROVIDER, Role.CUSTOMER)
   @ApiOperation({ summary: 'Get assignment by ID' })
   @ApiResponse({ status: 200, description: 'Assignment returned' })
   @ApiResponse({ status: 404, description: 'Assignment not found' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
   findOne(@Param('id') id: string, @Request() req: { user: JwtPayload }) {
     const assignment = this.jaService.findOne(id);
-    if (req.user.role === Role.SERVICE_PROVIDER && assignment.sp_id !== req.user.sub) {
-      throw new ForbiddenException('Providers can only access their own assignments');
+    if (
+      req.user.role === Role.SERVICE_PROVIDER &&
+      assignment.sp_id !== req.user.sub
+    ) {
+      throw new ForbiddenException(
+        'Providers can only access their own assignments',
+      );
     }
     if (req.user.role === Role.CUSTOMER) {
       const booking = this.jaService.findBooking(assignment.booking_id);
       if (booking.customer_id !== req.user.sub) {
-        throw new ForbiddenException('Customers can only access their own booking assignments');
+        throw new ForbiddenException(
+          'Customers can only access their own booking assignments',
+        );
       }
     }
     return assignment;
