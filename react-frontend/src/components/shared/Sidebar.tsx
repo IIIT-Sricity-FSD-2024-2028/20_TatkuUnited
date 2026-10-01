@@ -33,8 +33,8 @@ export default function SideBar({ children }: { children: ReactNode})
                     </span>
 
                 </div>
-                <div className='border-t border-gray-100 p-4'>
-                    <button onClick={() => setIsExpanded(!isExpanded)} className='w-full flex items-center justify-center p-3 rounded-lg hover:bg-gray-100 text-gray-600 transition-colors'>
+                <div className='px-4 pt-4'>
+                    <button onClick={() => setIsExpanded(!isExpanded)} className='w-full flex items-center justify-center p-2 rounded-lg bg-gray-50 border border-gray-200 hover:bg-gray-100 text-gray-500 hover:text-gray-700 transition-colors'>
                         {isExpanded ? <BsChevronLeft size={20} />: <BsChevronRight size={20} />}
                     </button>
                 </div>
