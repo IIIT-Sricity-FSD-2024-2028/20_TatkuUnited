@@ -82,17 +82,8 @@ export class JobAssignmentsService {
           );
         });
 
-      const bookingSector = this.db.sectors.find(
-        (s) => s.sector_id === booking.sector_id,
-      );
-
-      // c. Filter by unit's collective (same geography)
-      // We allow providers from ANY sector in the same collective to ensure availability
-      let candidates = qualifiedProviderIds.filter((sp) => {
-        if (!bookingSector) return false;
-        const unit = this.db.units.find((u) => u.unit_id === sp.unit_id);
-        return !!unit && unit.collective_id === bookingSector.collective_id;
-      });
+      // c. Candidates are all qualified providers
+      let candidates = qualifiedProviderIds;
 
       // d. Filter by availability, capacity, and schedule overlap
       candidates = candidates.filter((sp) => {
@@ -124,7 +115,6 @@ export class JobAssignmentsService {
 
         // Relaxed for simulation: allow multiple concurrent jobs up to maxConcurrent
         return true; 
-
       });
 
       const safetyCritical = this.isSafetyCritical(requiredSkillIds);
@@ -161,8 +151,7 @@ export class JobAssignmentsService {
             Math.min(1, (ratingValue - 1) / 4),
           );
 
-          // Proximity bonus: higher score if in the same sector
-          const proximityNorm = sp.home_sector_id === booking.sector_id ? 1.0 : 0.6;
+          const proximityNorm = 1.0;
 
           const isNewProvider = sp.rating_count < 5;
 

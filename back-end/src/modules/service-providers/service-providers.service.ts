@@ -21,14 +21,6 @@ export class ServiceProvidersService {
     return this.serviceProvidersRepository.findByEmail(email);
   }
 
-  findByUnit(unitId: string) {
-    return this.serviceProvidersRepository.findByUnit(unitId);
-  }
-
-  findBySector(sectorId: string) {
-    return this.serviceProvidersRepository.findBySector(sectorId);
-  }
-
   create(dto: CreateServiceProviderDto) {
     return this.serviceProvidersRepository.create(dto);
   }

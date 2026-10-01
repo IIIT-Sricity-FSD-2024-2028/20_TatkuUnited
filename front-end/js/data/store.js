@@ -3,11 +3,6 @@
 
   // ── Valid table names ────────────────────────────────────────────────────────
   const VALID_TABLES = [
-    "collectives",
-    "units",
-    "sectors",
-    "collective_managers",
-    "unit_managers",
     "service_providers",
     "provider_documents",
     "provider_working_hours",
@@ -38,11 +33,6 @@
 
   // ── Prefix → table mapping ───────────────────────────────────────────────────
   const PREFIX_TABLE_MAP = {
-    COL: "collectives",
-    UNT: "units",
-    SEC: "sectors",
-    CM: "collective_managers",
-    UM: "unit_managers",
     SP: "service_providers",
     DOC: "provider_documents",
     WH: "provider_working_hours",

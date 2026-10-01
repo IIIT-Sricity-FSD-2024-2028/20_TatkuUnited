@@ -23,16 +23,6 @@ export class CreateServiceProviderDto {
   @IsNotEmpty()
   phone: string;
 
-  @ApiProperty({ example: 'unit-uuid' })
-  @IsUUID()
-  @IsNotEmpty()
-  unit_id: string;
-
-  @ApiProperty({ example: 'sector-uuid' })
-  @IsUUID()
-  @IsNotEmpty()
-  sector_id: string;
-
   @ApiProperty({ example: true })
   @IsBoolean()
   is_active: boolean;

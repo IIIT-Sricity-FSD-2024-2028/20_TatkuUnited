@@ -28,12 +28,6 @@ export class CustomersRepository {
     );
   }
 
-  findBySector(sectorId: string): Customer[] {
-    return this.databaseService.customers.filter(
-      (row) => row.home_sector_id === sectorId,
-    );
-  }
-
   create(dto: CreateCustomerDto): Customer {
     const customer = {
       customer_id: randomUUID(),
@@ -45,7 +39,6 @@ export class CustomersRepository {
       address: '',
       rating: 0,
       is_active: dto.is_active,
-      home_sector_id: '',
       created_at: new Date().toISOString(),
     } as unknown as Customer;
     
@@ -64,7 +57,6 @@ export class CustomersRepository {
     if (dto.phone !== undefined) customer.phone = dto.phone;
     if (dto.is_active !== undefined) customer.is_active = dto.is_active;
     if (dto.address !== undefined) customer.address = dto.address;
-    if (dto.home_sector_id !== undefined) customer.home_sector_id = dto.home_sector_id;
     if ((dto as any).saved_addresses !== undefined) {
       (customer as any).saved_addresses = (dto as any).saved_addresses;
     }
