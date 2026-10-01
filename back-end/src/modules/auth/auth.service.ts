@@ -5,10 +5,12 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import {
+  CollectiveManager,
   Customer,
   DatabaseService,
   ServiceProvider,
   SuperUser,
+  UnitManager,
 } from '../../common/database/database.service';
 import { Role } from '../../common/enums/role.enum';
 import { LoginDto } from './dto/login.dto';
@@ -22,7 +24,7 @@ type AuthPrincipal = {
   email: string;
   password_hash: string;
   is_active: boolean;
-  ref: SuperUser | ServiceProvider | Customer;
+  ref: SuperUser | CollectiveManager | UnitManager | ServiceProvider | Customer;
 };
 
 @Injectable()
@@ -41,7 +43,7 @@ export class AuthService {
     if (!principal.is_active) {
       if (principal.role === Role.SERVICE_PROVIDER) {
         throw new UnauthorizedException(
-          'Provider approval pending.',
+          'Provider approval pending. Wait for collective manager approval',
         );
       }
       throw new UnauthorizedException('Account is inactive');
@@ -71,6 +73,16 @@ export class AuthService {
         role: principal.role,
         name: principal.name,
         email: principal.email,
+        collective_id:
+          principal.role === Role.COLLECTIVE_MANAGER
+            ? (principal.ref as CollectiveManager).collective_id
+            : null,
+        unit_id:
+          principal.role === Role.UNIT_MANAGER
+            ? (principal.ref as UnitManager).unit_id
+            : principal.role === Role.SERVICE_PROVIDER
+              ? (principal.ref as ServiceProvider).unit_id
+              : null,
         customer_id:
           principal.role === Role.CUSTOMER
             ? (principal.ref as Customer).customer_id
@@ -108,6 +120,7 @@ export class AuthService {
         address: '',
         rating: 0,
         is_active: true,
+        home_sector_id: this.databaseService.sectors[0]?.sector_id || '',
       };
       this.databaseService.customers.push(record);
 
@@ -142,6 +155,8 @@ export class AuthService {
       hour_end: '18:00',
       created_at: now,
       updated_at: now,
+      unit_id: '',
+      home_sector_id: this.databaseService.sectors[0]?.sector_id || '',
     };
     this.databaseService.serviceProviders.push(record);
 
@@ -170,6 +185,16 @@ export class AuthService {
       name: principal.name,
       email: principal.email,
       is_active: principal.is_active,
+      collective_id:
+        principal.role === Role.COLLECTIVE_MANAGER
+          ? (principal.ref as CollectiveManager).collective_id
+          : null,
+      unit_id:
+        principal.role === Role.UNIT_MANAGER
+          ? (principal.ref as UnitManager).unit_id
+          : principal.role === Role.SERVICE_PROVIDER
+            ? (principal.ref as ServiceProvider).unit_id
+            : null,
       customer_id:
         principal.role === Role.CUSTOMER
           ? (principal.ref as Customer).customer_id
@@ -207,7 +232,7 @@ export class AuthService {
     const now = this.databaseService.now();
     if ('updated_at' in principal.ref) {
       (
-        principal.ref as ServiceProvider
+        principal.ref as CollectiveManager | UnitManager | ServiceProvider
       ).updated_at = now;
     }
     if ('last_login' in principal.ref) {
@@ -223,6 +248,24 @@ export class AuthService {
       ...this.databaseService.superUsers.map((u) => ({
         id: u.super_user_id,
         role: Role.SUPER_USER,
+        name: u.name,
+        email: u.email,
+        password_hash: u.password_hash,
+        is_active: u.is_active,
+        ref: u,
+      })),
+      ...this.databaseService.collectiveManagers.map((u) => ({
+        id: u.cm_id,
+        role: Role.COLLECTIVE_MANAGER,
+        name: u.name,
+        email: u.email,
+        password_hash: u.password_hash,
+        is_active: u.is_active,
+        ref: u,
+      })),
+      ...this.databaseService.unitManagers.map((u) => ({
+        id: u.um_id,
+        role: Role.UNIT_MANAGER,
         name: u.name,
         email: u.email,
         password_hash: u.password_hash,

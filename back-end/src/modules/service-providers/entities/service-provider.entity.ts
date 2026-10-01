@@ -16,4 +16,6 @@ export class ServiceProvider {
   hour_end: string;
   created_at: string;
   updated_at: string;
+  unit_id: string;
+  home_sector_id: string;
 }
