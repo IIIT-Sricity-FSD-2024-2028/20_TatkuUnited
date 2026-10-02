@@ -62,6 +62,15 @@ export class CollectivesController {
     return this.collectivesService.findOne(id);
   }
 
+  // @Get('manager/:id')
+  // @Roles(Role.SUPER_USER, Role.COLLECTIVE_MANAGER)
+  // @ApiOperation({summary: 'Get the collective controlled by given collective manager'})
+  // @ApiResponse({status: 200, description: 'Collective found'})
+  // @ApiResponse({status: 404, description: 'No such collective'})
+  // findByManager(@Param('id') id: string, @Request() req: { user: JwtPayload }) {
+  //   this.accessScope.assertCollectiveAccess(req.user, id);
+  // }
+
   @Post()
   @Roles(Role.SUPER_USER)
   @ApiOperation({ summary: 'Create a new collective' })

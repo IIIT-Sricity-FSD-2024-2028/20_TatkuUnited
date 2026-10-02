@@ -1,10 +1,10 @@
 import { Outlet } from 'react-router-dom'
-import SideBar, { SidebarItem } from "../shared/Sidebar";
+import SideBar, { SidebarItem } from "../shared/Sidebar"
 import SuperUser_Header from "./superuser_header";
-import { BsGrid , BsPeopleFill } from "react-icons/bs";
+import { BsGrid, BsPeopleFill } from "react-icons/bs";
 
 export const SuperUser_Layout = () => {
-    return(
+    return (
         <div className='flex h-screen overflow-hidden'>
             <SideBar>
                 <SidebarItem to="/superuser/dashboard" label="Dashboard" icon={<BsGrid />} />

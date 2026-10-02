@@ -320,7 +320,7 @@
     },
     "/collective-managers/{id}": {
       "get": {
-        "operationId": "CollectiveManagersController_findOne",
+        "operationId": "CollectiveManagersController_getCollective",
         "parameters": [
           {
             "name": "id",
@@ -350,7 +350,7 @@
             "bearer": []
           }
         ],
-        "summary": "Get collective manager by ID",
+        "summary": "Get collective managed by given collective manager",
         "tags": [
           "collective-managers"
         ]
@@ -435,6 +435,401 @@
         "summary": "Delete a collective manager",
         "tags": [
           "collective-managers"
+        ]
+      }
+    },
+    "/collectives": {
+      "get": {
+        "operationId": "CollectivesController_findAll",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Returns all collectives"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "x-role": []
+          },
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List all collectives",
+        "tags": [
+          "collectives"
+        ]
+      },
+      "post": {
+        "operationId": "CollectivesController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCollectiveDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Collective created"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "x-role": []
+          },
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create a new collective",
+        "tags": [
+          "collectives"
+        ]
+      }
+    },
+    "/collectives/{id}": {
+      "get": {
+        "operationId": "CollectivesController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns the collective"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Collective not found"
+          }
+        },
+        "security": [
+          {
+            "x-role": []
+          },
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get a collective by ID",
+        "tags": [
+          "collectives"
+        ]
+      },
+      "patch": {
+        "operationId": "CollectivesController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateCollectiveDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Collective updated"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Collective not found"
+          }
+        },
+        "security": [
+          {
+            "x-role": []
+          },
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update a collective",
+        "tags": [
+          "collectives"
+        ]
+      },
+      "delete": {
+        "operationId": "CollectivesController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Collective deleted"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Collective not found"
+          }
+        },
+        "security": [
+          {
+            "x-role": []
+          },
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Delete a collective",
+        "tags": [
+          "collectives"
+        ]
+      }
+    },
+    "/sectors": {
+      "get": {
+        "operationId": "SectorsController_findAll",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "x-role": []
+          },
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get all sectors",
+        "tags": [
+          "sectors"
+        ]
+      },
+      "post": {
+        "operationId": "SectorsController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSectorDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created successfully"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "x-role": []
+          },
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create a new sector",
+        "tags": [
+          "sectors"
+        ]
+      }
+    },
+    "/sectors/collective/{collectiveId}": {
+      "get": {
+        "operationId": "SectorsController_findByCollective",
+        "parameters": [
+          {
+            "name": "collectiveId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "x-role": []
+          },
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get sectors by collective ID",
+        "tags": [
+          "sectors"
+        ]
+      }
+    },
+    "/sectors/{id}": {
+      "get": {
+        "operationId": "SectorsController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        },
+        "security": [
+          {
+            "x-role": []
+          },
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get sector by ID",
+        "tags": [
+          "sectors"
+        ]
+      },
+      "patch": {
+        "operationId": "SectorsController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateSectorDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        },
+        "security": [
+          {
+            "x-role": []
+          },
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update a sector",
+        "tags": [
+          "sectors"
+        ]
+      },
+      "delete": {
+        "operationId": "SectorsController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        },
+        "security": [
+          {
+            "x-role": []
+          },
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Delete a sector",
+        "tags": [
+          "sectors"
         ]
       }
     },
@@ -1287,401 +1682,6 @@
         "summary": "Delete customer account",
         "tags": [
           "customers"
-        ]
-      }
-    },
-    "/collectives": {
-      "get": {
-        "operationId": "CollectivesController_findAll",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "Returns all collectives"
-          },
-          "403": {
-            "description": "Forbidden"
-          }
-        },
-        "security": [
-          {
-            "x-role": []
-          },
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "List all collectives",
-        "tags": [
-          "collectives"
-        ]
-      },
-      "post": {
-        "operationId": "CollectivesController_create",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateCollectiveDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "Collective created"
-          },
-          "403": {
-            "description": "Forbidden"
-          }
-        },
-        "security": [
-          {
-            "x-role": []
-          },
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Create a new collective",
-        "tags": [
-          "collectives"
-        ]
-      }
-    },
-    "/collectives/{id}": {
-      "get": {
-        "operationId": "CollectivesController_findOne",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Returns the collective"
-          },
-          "403": {
-            "description": "Forbidden"
-          },
-          "404": {
-            "description": "Collective not found"
-          }
-        },
-        "security": [
-          {
-            "x-role": []
-          },
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Get a collective by ID",
-        "tags": [
-          "collectives"
-        ]
-      },
-      "patch": {
-        "operationId": "CollectivesController_update",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateCollectiveDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Collective updated"
-          },
-          "403": {
-            "description": "Forbidden"
-          },
-          "404": {
-            "description": "Collective not found"
-          }
-        },
-        "security": [
-          {
-            "x-role": []
-          },
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Update a collective",
-        "tags": [
-          "collectives"
-        ]
-      },
-      "delete": {
-        "operationId": "CollectivesController_remove",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Collective deleted"
-          },
-          "403": {
-            "description": "Forbidden"
-          },
-          "404": {
-            "description": "Collective not found"
-          }
-        },
-        "security": [
-          {
-            "x-role": []
-          },
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Delete a collective",
-        "tags": [
-          "collectives"
-        ]
-      }
-    },
-    "/sectors": {
-      "get": {
-        "operationId": "SectorsController_findAll",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "Success"
-          },
-          "403": {
-            "description": "Forbidden"
-          }
-        },
-        "security": [
-          {
-            "x-role": []
-          },
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Get all sectors",
-        "tags": [
-          "sectors"
-        ]
-      },
-      "post": {
-        "operationId": "SectorsController_create",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateSectorDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "Created successfully"
-          },
-          "403": {
-            "description": "Forbidden"
-          }
-        },
-        "security": [
-          {
-            "x-role": []
-          },
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Create a new sector",
-        "tags": [
-          "sectors"
-        ]
-      }
-    },
-    "/sectors/collective/{collectiveId}": {
-      "get": {
-        "operationId": "SectorsController_findByCollective",
-        "parameters": [
-          {
-            "name": "collectiveId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success"
-          },
-          "403": {
-            "description": "Forbidden"
-          }
-        },
-        "security": [
-          {
-            "x-role": []
-          },
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Get sectors by collective ID",
-        "tags": [
-          "sectors"
-        ]
-      }
-    },
-    "/sectors/{id}": {
-      "get": {
-        "operationId": "SectorsController_findOne",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success"
-          },
-          "403": {
-            "description": "Forbidden"
-          },
-          "404": {
-            "description": "Not found"
-          }
-        },
-        "security": [
-          {
-            "x-role": []
-          },
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Get sector by ID",
-        "tags": [
-          "sectors"
-        ]
-      },
-      "patch": {
-        "operationId": "SectorsController_update",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateSectorDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Success"
-          },
-          "403": {
-            "description": "Forbidden"
-          },
-          "404": {
-            "description": "Not found"
-          }
-        },
-        "security": [
-          {
-            "x-role": []
-          },
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Update a sector",
-        "tags": [
-          "sectors"
-        ]
-      },
-      "delete": {
-        "operationId": "SectorsController_remove",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success"
-          },
-          "403": {
-            "description": "Forbidden"
-          },
-          "404": {
-            "description": "Not found"
-          }
-        },
-        "security": [
-          {
-            "x-role": []
-          },
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Delete a sector",
-        "tags": [
-          "sectors"
         ]
       }
     },
@@ -5723,6 +5723,131 @@
           }
         }
       },
+      "CreateCollectiveDto": {
+        "type": "object",
+        "properties": {
+          "collective_name": {
+            "type": "string",
+            "example": "South Chennai Collective"
+          },
+          "is_active": {
+            "type": "boolean",
+            "example": true
+          },
+          "sector_ids": {
+            "example": [
+              "sector-uuid-1",
+              "sector-uuid-2"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "collective_name",
+          "is_active"
+        ]
+      },
+      "UpdateCollectiveDto": {
+        "type": "object",
+        "properties": {
+          "collective_name": {
+            "type": "string",
+            "example": "South Chennai Collective"
+          },
+          "is_active": {
+            "type": "boolean",
+            "example": true
+          },
+          "sector_ids": {
+            "example": [
+              "sector-uuid-1",
+              "sector-uuid-2"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "CreateSectorDto": {
+        "type": "object",
+        "properties": {
+          "sector_name": {
+            "type": "string",
+            "example": "Adyar East"
+          },
+          "state": {
+            "type": "string",
+            "example": "Tamil Nadu"
+          },
+          "region": {
+            "type": "string",
+            "example": "South"
+          },
+          "density_tier": {
+            "type": "string",
+            "example": "HIGH",
+            "enum": [
+              "HIGH",
+              "MEDIUM",
+              "LOW"
+            ]
+          },
+          "is_active": {
+            "type": "boolean",
+            "example": true
+          },
+          "collective_id": {
+            "type": "string",
+            "example": "uuid-of-collective"
+          }
+        },
+        "required": [
+          "sector_name",
+          "state",
+          "region",
+          "density_tier",
+          "is_active"
+        ]
+      },
+      "UpdateSectorDto": {
+        "type": "object",
+        "properties": {
+          "sector_name": {
+            "type": "string",
+            "example": "Adyar East"
+          },
+          "state": {
+            "type": "string",
+            "example": "Tamil Nadu"
+          },
+          "region": {
+            "type": "string",
+            "example": "South"
+          },
+          "density_tier": {
+            "type": "string",
+            "example": "HIGH",
+            "enum": [
+              "HIGH",
+              "MEDIUM",
+              "LOW"
+            ]
+          },
+          "is_active": {
+            "type": "boolean",
+            "example": true
+          },
+          "collective_id": {
+            "type": "string",
+            "example": "uuid-of-collective"
+          }
+        }
+      },
       "CreateUnitManagerDto": {
         "type": "object",
         "properties": {
@@ -6053,131 +6178,6 @@
             "items": {
               "type": "string"
             }
-          }
-        }
-      },
-      "CreateCollectiveDto": {
-        "type": "object",
-        "properties": {
-          "collective_name": {
-            "type": "string",
-            "example": "South Chennai Collective"
-          },
-          "is_active": {
-            "type": "boolean",
-            "example": true
-          },
-          "sector_ids": {
-            "example": [
-              "sector-uuid-1",
-              "sector-uuid-2"
-            ],
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          }
-        },
-        "required": [
-          "collective_name",
-          "is_active"
-        ]
-      },
-      "UpdateCollectiveDto": {
-        "type": "object",
-        "properties": {
-          "collective_name": {
-            "type": "string",
-            "example": "South Chennai Collective"
-          },
-          "is_active": {
-            "type": "boolean",
-            "example": true
-          },
-          "sector_ids": {
-            "example": [
-              "sector-uuid-1",
-              "sector-uuid-2"
-            ],
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          }
-        }
-      },
-      "CreateSectorDto": {
-        "type": "object",
-        "properties": {
-          "sector_name": {
-            "type": "string",
-            "example": "Adyar East"
-          },
-          "state": {
-            "type": "string",
-            "example": "Tamil Nadu"
-          },
-          "region": {
-            "type": "string",
-            "example": "South"
-          },
-          "density_tier": {
-            "type": "string",
-            "example": "HIGH",
-            "enum": [
-              "HIGH",
-              "MEDIUM",
-              "LOW"
-            ]
-          },
-          "is_active": {
-            "type": "boolean",
-            "example": true
-          },
-          "collective_id": {
-            "type": "string",
-            "example": "uuid-of-collective"
-          }
-        },
-        "required": [
-          "sector_name",
-          "state",
-          "region",
-          "density_tier",
-          "is_active"
-        ]
-      },
-      "UpdateSectorDto": {
-        "type": "object",
-        "properties": {
-          "sector_name": {
-            "type": "string",
-            "example": "Adyar East"
-          },
-          "state": {
-            "type": "string",
-            "example": "Tamil Nadu"
-          },
-          "region": {
-            "type": "string",
-            "example": "South"
-          },
-          "density_tier": {
-            "type": "string",
-            "example": "HIGH",
-            "enum": [
-              "HIGH",
-              "MEDIUM",
-              "LOW"
-            ]
-          },
-          "is_active": {
-            "type": "boolean",
-            "example": true
-          },
-          "collective_id": {
-            "type": "string",
-            "example": "uuid-of-collective"
           }
         }
       },

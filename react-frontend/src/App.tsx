@@ -6,6 +6,7 @@ import Provider from "./pages/Provider";
 import SuperUser from "./components/superuser/superuser_route";
 import { Provider as ReduxProvider } from "react-redux";
 import { store } from "./store";
+import ManagerRouter from "./components/manager/manager_route";
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
           </Route>
           <Route path="/provider" element={<Provider />} />
           <Route path="/superuser/*" element={<SuperUser />} />
+          <Route path="/manager/*" element={<ManagerRouter />} />
           <Route path="*" element={<div>404! Page Not Found.</div>} />
         </Routes>
       </BrowserRouter>
