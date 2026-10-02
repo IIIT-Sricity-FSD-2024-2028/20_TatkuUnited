@@ -30,4 +30,8 @@ export class SuperUsersService {
   remove(id: string) {
     return this.superUsersRepository.delete(id);
   }
+
+  getAllUsers() {
+    return this.superUsersRepository.getAllUsers();
+  }
 }

@@ -43,6 +43,35 @@
         ]
       }
     },
+    "/super-users/all-users": {
+      "get": {
+        "operationId": "SuperUsersController_getAllUsers",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        },
+        "security": [
+          {
+            "x-role": []
+          },
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "get all users",
+        "tags": [
+          "super-users"
+        ]
+      }
+    },
     "/super-users": {
       "get": {
         "operationId": "SuperUsersController_findAll",

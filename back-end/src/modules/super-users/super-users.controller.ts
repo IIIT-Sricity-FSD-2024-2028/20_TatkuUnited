@@ -31,6 +31,16 @@ import { ApiRoleHeader } from '../../common/decorators/api-role-header.decorator
 export class SuperUsersController {
   constructor(private readonly superUsersService: SuperUsersService) {}
 
+  @Get('all-users')
+  @Roles(Role.SUPER_USER)
+  @ApiOperation({ summary: 'get all users' })
+  @ApiResponse({ status: 200, description: 'Success' })
+  @ApiResponse({ status: 404, description: 'Not found' })
+  @ApiResponse({ status: 403, description: 'Forbidden' })
+  getAllUsers() {
+    return this.superUsersService.getAllUsers();
+  }
+
   @Get()
   @Roles(Role.SUPER_USER)
   @ApiOperation({ summary: 'Get all super users' })
