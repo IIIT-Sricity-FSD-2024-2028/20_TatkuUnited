@@ -1,10 +1,10 @@
 import axios from "axios";
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { BASE_URL } from "../services/api";
+import { BASE_URL } from "../../services/api";
 import { useDispatch } from "react-redux";
-import type { AppDispatch } from "../store";
-import { AuthActions, type UserInterface } from "../store/auth/auth-slice";
+import type { AppDispatch } from "../../store";
+import { AuthActions, type UserInterface } from "../../store/auth/auth-slice";
 
 interface FormData {
   email: string;
@@ -24,13 +24,21 @@ interface LoginResponse {
 }
 
 const borderClass = (error?: boolean) => {
-  return `w-full border-2 p-2 rounded-lg transition-colors focus:outline-none ${error
-    ? "border-red-500 focus:border-red-600"
-    : "border-slate-400 focus:border-blue-500"
-    }`;
+  return `w-full border-2 p-2 rounded-lg transition-colors focus:outline-none ${
+    error
+      ? "border-red-500 focus:border-red-600"
+      : "border-slate-400 focus:border-blue-500"
+  }`;
 };
 
-async function loginUser(postData: { email: string; password: string }): Promise<{ success: boolean, data: LoginResponse | null, error: string | null }> {
+async function loginUser(postData: {
+  email: string;
+  password: string;
+}): Promise<{
+  success: boolean;
+  data: LoginResponse | null;
+  error: string | null;
+}> {
   try {
     const response = await axios.post<LoginResponse>(
       `${BASE_URL}/auth/login`,
@@ -152,7 +160,12 @@ function FillUserData({ dispatch }: { dispatch: AppDispatch }) {
       //   }),
       // );
       const { access_token, user } = res.data;
-      const userObj: UserInterface = { id: user.id, name: user.name, email: user.email, role: user.role };
+      const userObj: UserInterface = {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+      };
       sessionStorage.setItem("token", access_token);
       sessionStorage.setItem("user", JSON.stringify(userObj));
       dispatch(AuthActions.login({ user: userObj, token: access_token }));

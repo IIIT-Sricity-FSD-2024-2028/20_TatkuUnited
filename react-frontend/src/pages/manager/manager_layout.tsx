@@ -9,6 +9,7 @@ import {
   fetchCollective,
   fetchManager,
 } from "../../store/manager/manager-slice";
+import UrlMap from "../../common/urlMap";
 
 export default function ManagerLayout() {
   const dispatch = useDispatch<AppDispatch>();
@@ -26,22 +27,22 @@ export default function ManagerLayout() {
         <SidebarItem
           label="Dashboard"
           icon={<BsGrid />}
-          to="/manager/dashboard"
+          to={`${UrlMap.manager}/dashboard`}
         ></SidebarItem>
         <SidebarItem
           label="Revenue Reports"
           icon={<BsCash />}
-          to="/manager/revenue"
+          to={`${UrlMap.manager}/revenue`}
         ></SidebarItem>
         <SidebarItem
           label="Manage Providers"
           icon={<BsPersonAdd />}
-          to="/manager/providers"
+          to={`${UrlMap.manager}/providers`}
         ></SidebarItem>
         <SidebarItem
           label="My Profile"
           icon={<BsPeople />}
-          to="/manager/profile"
+          to={`${UrlMap.manager}/profile`}
         ></SidebarItem>
       </SideBar>
       <div className="flex flex-col flex-1 w-full">

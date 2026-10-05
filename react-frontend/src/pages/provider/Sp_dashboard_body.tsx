@@ -15,28 +15,28 @@ interface JobType {
 }
 
 interface JobAssignmentsResponse {
-  assigned_at: string,
-  assignment_id: string,
-  assignment_score: number,
-  booking_id: string,
-  created_at: string,
-  customer_name: string,
-  customer_phone: string,
-  estimated_duration_min: number,
-  hour_end: string,
-  hour_start: string,
-  notes: string | null,
-  scheduled_at: string,
-  scheduled_date: string,
-  service_address: string,
-  service_id: string,
-  service_name: string,
-  service_provider_id: string,
-  sp_id: string,
-  sp_name: string,
-  sp_phone: string,
-  status: string,
-  updated_at: string,
+  assigned_at: string;
+  assignment_id: string;
+  assignment_score: number;
+  booking_id: string;
+  created_at: string;
+  customer_name: string;
+  customer_phone: string;
+  estimated_duration_min: number;
+  hour_end: string;
+  hour_start: string;
+  notes: string | null;
+  scheduled_at: string;
+  scheduled_date: string;
+  service_address: string;
+  service_id: string;
+  service_name: string;
+  service_provider_id: string;
+  sp_id: string;
+  sp_name: string;
+  sp_phone: string;
+  status: string;
+  updated_at: string;
 }
 
 export default function AssignedJobs() {
@@ -63,23 +63,25 @@ export default function AssignedJobs() {
         `${BASE_URL}/job-assignments/provider/${encodeURIComponent(spId)}`,
         {
           headers: {
-            "Authorization": `Bearer ${token}`,
+            Authorization: `Bearer ${token}`,
             "x-role": "service_provider",
           },
         },
       );
       // console.log(response.data);
-      setJobs(response.data.map((job: JobAssignmentsResponse) => {
-        return {
-          assignment_id: job.assignment_id,
-          service_name: job.service_name,
-          full_name: job.customer_name,
-          service_address: job.service_address,
-          scheduled_date: job.scheduled_date,
-          hour_start: job.hour_start,
-          status: job.status,
-        }
-      }));
+      setJobs(
+        response.data.map((job: JobAssignmentsResponse) => {
+          return {
+            assignment_id: job.assignment_id,
+            service_name: job.service_name,
+            full_name: job.customer_name,
+            service_address: job.service_address,
+            scheduled_date: job.scheduled_date,
+            hour_start: job.hour_start,
+            status: job.status,
+          };
+        }),
+      );
     }
     fillJobs();
   }, []);

@@ -1,12 +1,12 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Landing from "./pages/LandingPage";
-import Register from "./pages/RegisterPage";
-import Login from "./pages/LoginPage";
-import Provider from "./pages/Provider";
-import SuperUser from "./components/superuser/superuser_route";
+import Landing from "./pages/general/LandingPage";
+import Register from "./pages/general/RegisterPage";
+import Login from "./pages/general/LoginPage";
+import Provider from "./pages/general/Provider";
+import SuperUser from "./pages/superuser/superuser_route";
 import { Provider as ReduxProvider } from "react-redux";
 import { store } from "./store";
-import ManagerRouter from "./components/manager/manager_route";
+import ManagerRouter from "./pages/manager/manager_route";
 
 function App() {
   return (
