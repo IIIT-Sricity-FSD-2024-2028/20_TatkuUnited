@@ -5,6 +5,7 @@ import Login from "./pages/LoginPage"
 import Cart from "./pages/CartPage"
 import Schedule from "./pages/SchedulePage"
 import AccountSettings from "./pages/AccountSettingsPage"
+import RatingsFeedback from "./pages/RatingsFeedbackPage";
 
 function App() {
   return (<BrowserRouter>
@@ -20,6 +21,8 @@ function App() {
       <Route path="/schedule" element={<Schedule />} />
 
       <Route path="/account-settings" element={<AccountSettings />} />
+
+      <Route path="/ratings-feedback" element={<RatingsFeedback />} />
 
       <Route path="*" element={<div>404! Page Not Found.</div>} />
     </Routes>
