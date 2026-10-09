@@ -1,7 +1,8 @@
-export default function UserHeader({ header }) {
+export default function UserHeader({ header }: { header: string }) {
   return (
     <div className="flex items-center p-4">
       <h2 className="text-xl font-semibold">{header}</h2>
     </div>
   );
 }
+

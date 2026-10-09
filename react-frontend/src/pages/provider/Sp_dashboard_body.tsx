@@ -60,7 +60,7 @@ export default function AssignedJobs() {
 
     async function fillJobs() {
       const response = await axios.get<Array<JobAssignmentsResponse>>(
-        `${BASE_URL}/job-assignments/provider/${encodeURIComponent(spId)}`,
+        `${BASE_URL}/job-assignments/provider/${encodeURIComponent(spId ?? "")}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,

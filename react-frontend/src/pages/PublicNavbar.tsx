@@ -17,7 +17,7 @@ export default function PublicNavbar({
 }: PublicNavbarProps) {
   const token = useSelector((state: RootState) => state.auth.token);
   const user = useSelector((state: RootState) => state.auth.user);
-  const userRole: Role = user?.role ?? null;
+  const userRole: Role | null = user?.role ?? null;
   let redirectUrl = "";
 
   if (token && token.length > 0 && userRole) {
@@ -81,3 +81,4 @@ export default function PublicNavbar({
     </nav>
   );
 }
+
