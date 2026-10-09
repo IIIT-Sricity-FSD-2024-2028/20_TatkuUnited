@@ -5,7 +5,7 @@ import { CollectiveManagersRepository } from './collective-managers.repository';
 import { CollectivesModule } from '../collectives/collectives.module';
 
 @Module({
-  imports: [CollectivesModule],
+  imports: [],
   controllers: [CollectiveManagersController],
   providers: [CollectiveManagersService, CollectiveManagersRepository],
   exports: [CollectiveManagersService],

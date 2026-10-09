@@ -12,6 +12,9 @@ export default function ManagerDashboard() {
   const collective = useSelector(
     (state: RootState) => state.manager.collectiveInfo,
   );
+  const serviceProviders = useSelector(
+    (state: RootState) => state.manager.providersInfo,
+  );
 
   return (
     <div className="p-2">
@@ -31,7 +34,7 @@ export default function ManagerDashboard() {
           <CardHeader>
             <CardTitle>Total Providers</CardTitle>
           </CardHeader>
-          <CardContent>{"total providers"}</CardContent>
+          <CardContent>{serviceProviders.length}</CardContent>
         </Card>
         <Card>
           <CardHeader>

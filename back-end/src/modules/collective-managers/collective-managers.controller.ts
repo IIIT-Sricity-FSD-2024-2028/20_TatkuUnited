@@ -36,7 +36,6 @@ import { CollectivesService } from '../collectives/collectives.service';
 export class CollectiveManagersController {
   constructor(
     private readonly collectiveManagersService: CollectiveManagersService,
-    private readonly CollectiveService: CollectivesService,
     private readonly accessScope: AccessScopeService,
   ) {}
 
@@ -82,22 +81,6 @@ export class CollectiveManagersController {
     }
     this.accessScope.assertCollectiveAccess(req.user, manager.collective_id);
     return this.collectiveManagersService.findOne(id);
-  }
-
-  @Get(':id')
-  @Roles(Role.SUPER_USER, Role.COLLECTIVE_MANAGER)
-  @ApiOperation({ summary: 'Get collective managed by given collective manager' })
-  @ApiResponse({ status: 200, description: 'Success' })
-  @ApiResponse({ status: 404, description: 'Not found' })
-  @ApiResponse({ status: 403, description: 'Forbidden' })
-  getCollective(@Param('id') id: string, @Request() req: { user: JwtPayload }) {
-    const manager = this.collectiveManagersService.findOne(id);
-    const collective = manager.collective_id ? this.CollectiveService.findOne(manager.collective_id): null;
-    if (req.user.role === Role.COLLECTIVE_MANAGER && req.user.sub !== id) {
-      throw new ForbiddenException('Collective managers can only access their own account');
-    }
-    this.accessScope.assertCollectiveAccess(req.user, manager.collective_id);
-    return collective;
   }
 
   @Post()

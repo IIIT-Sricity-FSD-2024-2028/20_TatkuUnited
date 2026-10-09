@@ -83,6 +83,19 @@ export class ServiceProvidersController {
     return this.serviceProvidersService.findByUnit(unitId);
   }
 
+  @Get('collective/:collective_id')
+  @Roles(Role.SUPER_USER, Role.COLLECTIVE_MANAGER)
+  @ApiOperation({ summary: 'Get service providers by collective ID' })
+  @ApiResponse({ status: 200, description: 'Success' })
+  @ApiResponse({ status: 403, description: 'Forbidden' })
+  findByCollective(
+    @Param('collective_id') collective_id: string,
+    @Request() req: { user: JwtPayload },
+  ) {
+    this.accessScope.assertCollectiveAccess(req.user, collective_id);
+    return this.serviceProvidersService.findByCollective(collective_id); 
+  }
+
   @Get('sector/:sector_id')
   @Roles(Role.SUPER_USER, Role.COLLECTIVE_MANAGER, Role.UNIT_MANAGER)
   @ApiOperation({ summary: 'Get service providers by sector ID' })

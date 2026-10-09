@@ -6,6 +6,6 @@ import { UnitsRepository } from './units.repository';
 @Module({
   controllers: [UnitsController],
   providers: [UnitsService, UnitsRepository],
-  exports: [UnitsService],
+  exports: [UnitsService, UnitsRepository],
 })
 export class UnitsModule {}

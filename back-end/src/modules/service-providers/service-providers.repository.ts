@@ -36,6 +36,16 @@ export class ServiceProvidersRepository {
     );
   }
 
+  // findByCollective(collectiveId: string): ServiceProvider[] {
+  //   return this.databaseService.serviceProviders.filter(
+  //     (provider) => {
+  //       const unit = this.databaseService.units.find((u) => u.unit_id === provider.unit_id);
+  //       if(!unit) throw new NotFoundException("Unit not found");
+  //       return unit.collective_id === collectiveId;
+  //     }
+  //   )
+  // }
+
   findBySector(sectorId: string): ServiceProvider[] {
     return this.databaseService.serviceProviders.filter(
       (row) => row.home_sector_id === sectorId,

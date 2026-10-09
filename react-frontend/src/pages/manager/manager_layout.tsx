@@ -8,6 +8,7 @@ import { useEffect } from "react";
 import {
   fetchCollective,
   fetchManager,
+  fetchServiceProviders,
 } from "../../store/manager/manager-slice";
 import UrlMap from "../../common/urlMap";
 
@@ -17,8 +18,10 @@ export default function ManagerLayout() {
   const managerId = manager.id;
 
   useEffect(() => {
+    // Order matters
     dispatch(fetchManager(managerId));
     dispatch(fetchCollective(managerId));
+    dispatch(fetchServiceProviders());
   }, [dispatch]);
 
   return (

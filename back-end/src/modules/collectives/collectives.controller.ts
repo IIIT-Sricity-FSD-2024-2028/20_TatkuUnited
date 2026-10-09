@@ -26,6 +26,7 @@ import { Role } from '../../common/enums/role.enum';
 import { JwtPayload } from '../auth/interfaces/jwt-payload.interface';
 import { AccessScopeService } from '../../common/access/access-scope.service';
 import { ApiRoleHeader } from '../../common/decorators/api-role-header.decorator';
+import { CollectiveManagersService } from '../collective-managers/collective-managers.service';
 
 @ApiTags('collectives')
 @ApiBearerAuth('bearer')
@@ -35,6 +36,7 @@ import { ApiRoleHeader } from '../../common/decorators/api-role-header.decorator
 export class CollectivesController {
   constructor(
     private readonly collectivesService: CollectivesService,
+    private readonly collectiveManagersService: CollectiveManagersService,
     private readonly accessScope: AccessScopeService,
   ) {}
 
@@ -62,14 +64,21 @@ export class CollectivesController {
     return this.collectivesService.findOne(id);
   }
 
-  // @Get('manager/:id')
-  // @Roles(Role.SUPER_USER, Role.COLLECTIVE_MANAGER)
-  // @ApiOperation({summary: 'Get the collective controlled by given collective manager'})
-  // @ApiResponse({status: 200, description: 'Collective found'})
-  // @ApiResponse({status: 404, description: 'No such collective'})
-  // findByManager(@Param('id') id: string, @Request() req: { user: JwtPayload }) {
-  //   this.accessScope.assertCollectiveAccess(req.user, id);
-  // }
+  @Get('manager/:id')
+  @Roles(Role.SUPER_USER, Role.COLLECTIVE_MANAGER)
+  @ApiOperation({ summary: 'Get collective managed by given collective manager' })
+  @ApiResponse({ status: 200, description: 'Success' })
+  @ApiResponse({ status: 404, description: 'Not found' })
+  @ApiResponse({ status: 403, description: 'Forbidden' })
+  getCollective(@Param('id') id: string, @Request() req: { user: JwtPayload }) {
+    const manager = this.collectiveManagersService.findOne(id);
+    const collective = manager.collective_id ? this.collectivesService.findOne(manager.collective_id): null;
+    if (req.user.role === Role.COLLECTIVE_MANAGER && req.user.sub !== id) {
+      throw new ForbiddenException('Collective managers can only access their own account');
+    }
+    this.accessScope.assertCollectiveAccess(req.user, manager.collective_id);
+    return collective;
+  }
 
   @Post()
   @Roles(Role.SUPER_USER)
