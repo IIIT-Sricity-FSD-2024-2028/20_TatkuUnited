@@ -66,4 +66,49 @@ export class SuperUsersRepository {
     const [removed] = this.databaseService.superUsers.splice(index, 1);
     return removed;
   }
+
+  getAllUsers() {
+    return [
+      ...this.databaseService.customers.map((u) => ({
+        id: u.customer_id,
+        name: u.full_name,
+        email: u.email,
+        role: 'Customer',
+        status: u.is_active,
+        joined: u.dob,
+      })),
+      ...this.databaseService.serviceProviders.map((u) => ({
+        id: u.sp_id,
+        name: u.name,
+        email: u.email,
+        role: 'Service Provider',
+        status: u.is_active,
+        joined: u.created_at,
+      })),
+      ...this.databaseService.superUsers.map((u) => ({
+        id: u.super_user_id,
+        name: u.name,
+        email: u.email,
+        role: 'Super User',
+        status: u.is_active,
+        joined: u.created_at,
+      })),
+      ...this.databaseService.collectiveManagers.map((u) => ({
+        id: u.cm_id,
+        name: u.name,
+        email: u.email,
+        role: 'Collective Manager',
+        status: u.is_active,
+        joined: u.created_at,
+      })),
+      ...this.databaseService.unitManagers.map((u) => ({
+        id: u.um_id,
+        name: u.name,
+        email: u.email,
+        role: 'Unit Manager',
+        status: u.is_active,
+        joined: u.created_at,
+      })),
+    ];
+  }
 }

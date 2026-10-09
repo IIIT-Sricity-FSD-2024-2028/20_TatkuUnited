@@ -60,14 +60,16 @@ export class BookingsService {
       throw new BadRequestException('Service address is required for checkout.');
     }
 
-    // 3. Customer lookup & payment method normalization
+    // 3. Look up customer's sector
     const customer = this.db.customers.find(
       (c) => c.customer_id === customerId,
     );
+    const sectorId = customer?.home_sector_id || '';
+
+    // 4. Create one booking per cart item (each service is an independent booking)
     const paymentMethod = this.normalizePaymentMethod(dto.payment_method);
     const createdBookings: any[] = [];
 
-    // 4. Create one booking per cart item (each service is an independent booking)
     for (const item of cartItems) {
       const itemAmount = item.price_snapshot * item.quantity;
 
@@ -78,6 +80,7 @@ export class BookingsService {
         failure_reason: null,
         is_active: true,
         customer_id: customerId,
+        sector_id: sectorId,
       });
 
       // Create single BookingService row
@@ -215,6 +218,14 @@ export class BookingsService {
 
   findAssignmentsByBooking(bookingId: string) {
     return this.db.jobAssignments.filter((row) => row.booking_id === bookingId);
+  }
+
+  findByProviderAssignmentsForUnit(unitId: string) {
+    return this.db.serviceProviders.filter((provider) => provider.unit_id === unitId);
+  }
+
+  findBySector(sectorId: string) {
+    return this.db.bookings.filter((b) => b.sector_id === sectorId);
   }
 
   findOne(bookingId: string) {

@@ -39,7 +39,7 @@ export class JobAssignmentsController {
   // Specific routes MUST come before :id
 
   @Post('assign/:bookingId')
-  @Roles(Role.SUPER_USER)
+  @Roles(Role.SUPER_USER, Role.UNIT_MANAGER)
   @ApiOperation({ summary: 'Auto-assign providers to a booking' })
   @ApiResponse({ status: 201, description: 'Providers assigned' })
   @ApiResponse({ status: 400, description: 'No qualified provider found' })
@@ -49,12 +49,18 @@ export class JobAssignmentsController {
     @Param('bookingId') bookingId: string,
     @Request() req: { user: JwtPayload },
   ) {
+    if (req.user.role === Role.UNIT_MANAGER) {
+      const booking = this.jaService.findBooking(bookingId);
+      this.accessScope.assertSectorAccess(req.user, booking.sector_id);
+    }
     return this.jaService.autoAssign(bookingId);
   }
 
   @Get('booking/:bookingId')
   @Roles(
     Role.SUPER_USER,
+    Role.COLLECTIVE_MANAGER,
+    Role.UNIT_MANAGER,
     Role.SERVICE_PROVIDER,
     Role.CUSTOMER,
   )
@@ -75,11 +81,15 @@ export class JobAssignmentsController {
         throw new ForbiddenException('Customers can only access their own booking assignments');
       }
     }
+    if (req.user.role === Role.COLLECTIVE_MANAGER || req.user.role === Role.UNIT_MANAGER) {
+      const booking = this.jaService.findBooking(bookingId);
+      this.accessScope.assertSectorAccess(req.user, booking.sector_id);
+    }
     return rows;
   }
 
   @Get('provider/:spId')
-  @Roles(Role.SERVICE_PROVIDER, Role.SUPER_USER)
+  @Roles(Role.SERVICE_PROVIDER, Role.UNIT_MANAGER, Role.SUPER_USER)
   @ApiOperation({ summary: 'Get assignments for a provider' })
   @ApiResponse({ status: 200, description: 'Assignments for the provider' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
@@ -89,6 +99,9 @@ export class JobAssignmentsController {
   ) {
     if (req.user.role === Role.SERVICE_PROVIDER && req.user.sub !== spId) {
       throw new ForbiddenException('Providers can only access their own assignments');
+    }
+    if (req.user.role === Role.UNIT_MANAGER) {
+      this.accessScope.assertProviderAccess(req.user, spId);
     }
     return this.jaService.findByProvider(spId);
   }
@@ -131,17 +144,34 @@ export class JobAssignmentsController {
   }
 
   @Get()
-  @Roles(Role.SUPER_USER)
-  @ApiOperation({ summary: 'Get all job assignments' })
+  @Roles(Role.SUPER_USER, Role.COLLECTIVE_MANAGER, Role.UNIT_MANAGER)
+  @ApiOperation({ summary: 'Get all job assignments (scoped for managers)' })
   @ApiResponse({ status: 200, description: 'All assignments returned' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
   findAll(@Request() req: { user: JwtPayload }) {
+    if (req.user.role === Role.COLLECTIVE_MANAGER) {
+      const manager = this.accessScope.getCollectiveManager(req.user.sub);
+      return this.jaService.findAll().filter((assignment) => {
+        const provider = this.accessScope.getProvider(assignment.sp_id);
+        const unit = this.accessScope.getUnit(provider.unit_id);
+        return unit.collective_id === manager.collective_id;
+      });
+    }
+    if (req.user.role === Role.UNIT_MANAGER) {
+      const manager = this.accessScope.getUnitManager(req.user.sub);
+      return this.jaService.findAll().filter((assignment) => {
+        const provider = this.accessScope.getProvider(assignment.sp_id);
+        return provider.unit_id === manager.unit_id;
+      });
+    }
     return this.jaService.findAll();
   }
 
   @Get(':id')
   @Roles(
     Role.SUPER_USER,
+    Role.COLLECTIVE_MANAGER,
+    Role.UNIT_MANAGER,
     Role.SERVICE_PROVIDER,
     Role.CUSTOMER,
   )
@@ -159,6 +189,10 @@ export class JobAssignmentsController {
       if (booking.customer_id !== req.user.sub) {
         throw new ForbiddenException('Customers can only access their own booking assignments');
       }
+    }
+    if (req.user.role === Role.COLLECTIVE_MANAGER || req.user.role === Role.UNIT_MANAGER) {
+      const booking = this.jaService.findBooking(assignment.booking_id);
+      this.accessScope.assertSectorAccess(req.user, booking.sector_id);
     }
     return assignment;
   }
