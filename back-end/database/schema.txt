@@ -64,7 +64,7 @@ Service [icon: service, color: green] {
   
   description string
   price number // integer in paise
-  duration number
+  duration number // minutes
   isActive bool
   
   imageUrls [string]
@@ -90,26 +90,29 @@ Order [icon: shopping-cart, color: orange] {
 Unavailability [icon: calendar-x, color: brown] {
   id string pk
   provider ref:Provider fk
-  startDateTime date
-  endDateTime date
-  recurringMode enum // [none, daily, weekly, monthly]
-  recurrenceEndDate date
+  date date // IST calendar day (midnight)
+  startTime time // minutes from midnight, on the slot grid, e.g. 480 (8:00)
+  endTime time // minutes from midnight, on the slot grid, e.g. 600 (10:00)
   reason string
 }
 
 Booking [icon: book-check, color: red] {
   id string pk
   service ref:Service fk
-  provider ref:Provider fk // assigned at order creation
+  provider ref:Provider fk // tentatively assigned at order creation, final once accepted
   customer ref:User fk
 
   scheduledDate date
-  startTime time
-  endTime time
+  startTime time // on the slot grid
+  endTime time // startTime + service duration
+  blockStartTime time // startTime - travel buffer (snapshot); provider is blocked from here to endTime
   
-  status enum // [pending, confirmed, in_progress, completed, cancelled]
+  status enum // [pending, awaiting_provider, confirmed, in_progress, completed, cancelled]
   cancelledBy enum // [customer, provider, manager, admin, system]
   cancelledReason string
+
+  offerExpiresAt date // set while awaiting_provider: when the current provider's offer lapses
+  declinedBy [ref:Provider] // providers who rejected, timed out or cancelled this booking
 
   providerShare number // paise
   platformShare number // paise
@@ -158,6 +161,14 @@ Region [icon: circle, color: green] {
 PlatformSetting [icon: settings, color: blue] {
   platformFeePercent number
   maxAssignmentDistanceKm number
+
+  slotIntervalMinutes number // 30
+  firstSlotStart number // 480 (8:00)
+  lastSlotStart number // 1170 (19:30)
+  bookingWindowDays number // 3 (today + next 2 days)
+  minLeadMinutes number // e.g. 120, earliest start for today's slots
+  travelBufferMinutes number // 30
+  offerTimeoutMinutes number // e.g. 10, time a provider has to accept or reject
 }
 
 // Timestamp for all collections
