@@ -1,4 +1,4 @@
-﻿import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
 import { RefundStatus } from '../common/enums';
 
@@ -55,6 +55,4 @@ export class Payment {
 export const PaymentSchema = SchemaFactory.createForClass(Payment);
 
 // -- Indexes ----------------------------------------------------------------
-PaymentSchema.index({ order: 1 }, { unique: true });
-PaymentSchema.index({ razorpayOrderId: 1 }, { unique: true });
 PaymentSchema.index({ razorpayPaymentId: 1 }, { unique: true, sparse: true });
