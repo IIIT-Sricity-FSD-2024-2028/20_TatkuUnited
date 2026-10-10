@@ -1,4 +1,12 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+} from '@nestjs/common';
 import { UnavailabilityService } from './unavailability.service';
 import { CreateUnavailabilityDto } from './dto/create-unavailability.dto';
 import { UpdateUnavailabilityDto } from './dto/update-unavailability.dto';
@@ -23,7 +31,10 @@ export class UnavailabilityController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUnavailabilityDto: UpdateUnavailabilityDto) {
+  update(
+    @Param('id') id: string,
+    @Body() updateUnavailabilityDto: UpdateUnavailabilityDto,
+  ) {
     return this.unavailabilityService.update(id, updateUnavailabilityDto);
   }
 

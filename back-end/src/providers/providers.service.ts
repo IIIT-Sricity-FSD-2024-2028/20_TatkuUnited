@@ -8,7 +8,8 @@ import { UpdateProviderDto } from './dto/update-provider.dto';
 @Injectable()
 export class ProvidersService {
   constructor(
-    @InjectModel(Provider.name) private readonly providerModel: Model<ProviderDocument>,
+    @InjectModel(Provider.name)
+    private readonly providerModel: Model<ProviderDocument>,
   ) {}
 
   create(dto: CreateProviderDto) {
@@ -20,7 +21,10 @@ export class ProvidersService {
   }
 
   async findOne(id: string) {
-    const doc = await this.providerModel.findById(id).populate('user', '-password').exec();
+    const doc = await this.providerModel
+      .findById(id)
+      .populate('user', '-password')
+      .exec();
     if (!doc) throw new NotFoundException(`Provider ${id} not found`);
     return doc;
   }

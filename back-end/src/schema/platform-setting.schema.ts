@@ -2,7 +2,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
 
 /**
- * Single-document collection — the admin creates exactly one record.
+ * Single-document collection ï¿½ the admin creates exactly one record.
  * Read on every checkout and slot listing. Changes only affect future bookings.
  */
 export type PlatformSettingDocument = PlatformSetting & Document;
@@ -46,4 +46,5 @@ export class PlatformSetting {
   offerTimeoutMinutes: number;
 }
 
-export const PlatformSettingSchema = SchemaFactory.createForClass(PlatformSetting);
+export const PlatformSettingSchema =
+  SchemaFactory.createForClass(PlatformSetting);

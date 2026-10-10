@@ -1,6 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
 import { UserAddress } from './common';
+import { Role, UserStatus, Gender } from '../common/enums';
 
 // -- Embedded: Cart item inside User.cart.items[] -----------------------------
 @Schema({ _id: false })
@@ -36,34 +37,40 @@ export class User {
   @Prop({ type: String, required: true })
   name: string;
 
-  @Prop({ type: String, required: true, unique: true, lowercase: true, trim: true })
+  @Prop({
+    type: String,
+    required: true,
+    unique: true,
+    lowercase: true,
+    trim: true,
+  })
   email: string;
 
   @Prop({ type: String, required: true, select: false }) // never return in responses
   password: string;
 
-  @Prop({ type: String, enum: ['male', 'female', 'other'] })
-  gender: string;
+  @Prop({ type: String, enum: Object.values(Gender) })
+  gender?: Gender;
 
   @Prop({ type: String, required: true, unique: true, trim: true })
   phone: string;
 
   @Prop({ type: Date })
-  dob: Date;
+  dob?: Date;
 
   @Prop({
     type: String,
-    enum: ['customer', 'provider', 'manager', 'admin'],
+    enum: Object.values(Role),
     required: true,
   })
-  role: string;
+  role: Role;
 
   @Prop({
     type: String,
-    enum: ['active', 'blocked'],
-    default: 'active',
+    enum: Object.values(UserStatus),
+    default: UserStatus.ACTIVE,
   })
-  status: string;
+  status: UserStatus;
 
   @Prop({ type: Cart, default: () => ({ address: null, items: [] }) })
   cart: Cart;

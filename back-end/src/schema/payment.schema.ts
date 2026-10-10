@@ -1,5 +1,6 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+ï»¿import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
+import { RefundStatus } from '../common/enums';
 
 // -- Embedded: Refund entry inside Payment.refunds[] --------------------------
 @Schema({ _id: false })
@@ -15,10 +16,10 @@ export class RefundEntry {
 
   @Prop({
     type: String,
-    enum: ['initiated', 'processed', 'failed'],
-    default: 'initiated',
+    enum: Object.values(RefundStatus),
+    default: RefundStatus.INITIATED,
   })
-  status: string;
+  status: RefundStatus;
 
   @Prop({ type: Date, default: () => new Date() })
   createdAt: Date;
@@ -32,7 +33,7 @@ export class Payment {
   @Prop({ type: Types.ObjectId, ref: 'Order', required: true, unique: true })
   order: Types.ObjectId;
 
-  @Prop({ type: Number, required: true }) // paise — must match Order.totalAmount
+  @Prop({ type: Number, required: true }) // paise - must match Order.totalAmount
   totalAmount: number;
 
   @Prop({ type: String, default: 'INR' })

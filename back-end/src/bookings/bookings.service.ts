@@ -1,14 +1,16 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+﻿import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Booking, BookingDocument } from '../schema/booking.schema';
 import { CreateBookingDto } from './dto/create-booking.dto';
 import { UpdateBookingDto } from './dto/update-booking.dto';
+import { BookingStatus } from '../common/enums';
 
 @Injectable()
 export class BookingsService {
   constructor(
-    @InjectModel(Booking.name) private readonly bookingModel: Model<BookingDocument>,
+    @InjectModel(Booking.name)
+    private readonly bookingModel: Model<BookingDocument>,
   ) {}
 
   create(dto: CreateBookingDto) {
@@ -52,7 +54,14 @@ export class BookingsService {
       .find({
         provider: providerId,
         scheduledDate: date,
-        status: { $in: ['pending', 'awaiting_provider', 'confirmed', 'in_progress'] },
+        status: {
+          $in: [
+            BookingStatus.PENDING,
+            BookingStatus.AWAITING_PROVIDER,
+            BookingStatus.CONFIRMED,
+            BookingStatus.IN_PROGRESS,
+          ],
+        },
       })
       .exec();
   }

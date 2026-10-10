@@ -1,6 +1,7 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+ï»¿import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
 import { AddressSnapshot } from './common';
+import { PaymentStatus } from '../common/enums';
 
 // -- Order document ------------------------------------------------------------
 export type OrderDocument = Order & Document;
@@ -11,7 +12,7 @@ export class Order {
   customer: Types.ObjectId;
 
   @Prop({ type: AddressSnapshot, required: true })
-  address: AddressSnapshot; // snapshot — never update after creation
+  address: AddressSnapshot; // snapshot - never update after creation
 
   @Prop({ type: Number, required: true }) // paise
   totalAmount: number;
@@ -21,10 +22,10 @@ export class Order {
 
   @Prop({
     type: String,
-    enum: ['created', 'paid', 'failed', 'refunded', 'partially_refunded'],
-    default: 'created',
+    enum: Object.values(PaymentStatus),
+    default: PaymentStatus.CREATED,
   })
-  paymentStatus: string;
+  paymentStatus: PaymentStatus;
 
   @Prop({ type: Date, required: true }) // order creation + 15 min
   expiresAt: Date;

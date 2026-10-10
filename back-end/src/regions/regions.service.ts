@@ -8,7 +8,8 @@ import { UpdateRegionDto } from './dto/update-region.dto';
 @Injectable()
 export class RegionsService {
   constructor(
-    @InjectModel(Region.name) private readonly regionModel: Model<RegionDocument>,
+    @InjectModel(Region.name)
+    private readonly regionModel: Model<RegionDocument>,
   ) {}
 
   create(dto: CreateRegionDto) {

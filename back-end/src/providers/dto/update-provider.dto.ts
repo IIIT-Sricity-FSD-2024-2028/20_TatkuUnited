@@ -1,5 +1,13 @@
 import { Type } from 'class-transformer';
-import { IsArray, IsEnum, IsMongoId, IsNumber, IsOptional, IsString, ValidateNested } from 'class-validator';
+import {
+  IsArray,
+  IsEnum,
+  IsMongoId,
+  IsNumber,
+  IsOptional,
+  IsString,
+  ValidateNested,
+} from 'class-validator';
 import { GeoLocationDto } from '../../common/dto/geo-location.dto';
 
 export class UpdateProviderDto {

@@ -1,5 +1,11 @@
 import { Type } from 'class-transformer';
-import { IsEnum, IsNumber, IsOptional, IsString, ValidateNested } from 'class-validator';
+import {
+  IsEnum,
+  IsNumber,
+  IsOptional,
+  IsString,
+  ValidateNested,
+} from 'class-validator';
 import { GeoLocationDto } from '../../common/dto/geo-location.dto';
 
 export class UpdateManagerDto {

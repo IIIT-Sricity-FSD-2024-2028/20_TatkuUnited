@@ -1,7 +1,10 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { PlatformSetting, PlatformSettingDocument } from '../schema/platform-setting.schema';
+import {
+  PlatformSetting,
+  PlatformSettingDocument,
+} from '../schema/platform-setting.schema';
 import { CreatePlatformSettingDto } from './dto/create-platform-setting.dto';
 import { UpdatePlatformSettingDto } from './dto/update-platform-setting.dto';
 
@@ -24,7 +27,10 @@ export class PlatformSettingsService {
   /** Returns the single settings document. Used on every checkout and slot listing. */
   async get() {
     const doc = await this.settingModel.findOne().exec();
-    if (!doc) throw new NotFoundException('Platform settings have not been initialised');
+    if (!doc)
+      throw new NotFoundException(
+        'Platform settings have not been initialised',
+      );
     return doc;
   }
 

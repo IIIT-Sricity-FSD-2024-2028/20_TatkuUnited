@@ -1,6 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
 import { GeoPointSchema } from './common';
+import { ProviderStatus } from '../common/enums';
 
 type GeoPointType = { type: string; coordinates: [number, number] };
 
@@ -31,10 +32,10 @@ export class Provider {
 
   @Prop({
     type: String,
-    enum: ['pending', 'approved', 'suspended'],
-    default: 'pending',
+    enum: Object.values(ProviderStatus),
+    default: ProviderStatus.PENDING,
   })
-  status: string;
+  status: ProviderStatus;
 
   @Prop({ type: Number, default: 0 })
   rating: number;

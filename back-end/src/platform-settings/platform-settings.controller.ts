@@ -1,11 +1,21 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+} from '@nestjs/common';
 import { PlatformSettingsService } from './platform-settings.service';
 import { CreatePlatformSettingDto } from './dto/create-platform-setting.dto';
 import { UpdatePlatformSettingDto } from './dto/update-platform-setting.dto';
 
 @Controller('platform-settings')
 export class PlatformSettingsController {
-  constructor(private readonly platformSettingsService: PlatformSettingsService) {}
+  constructor(
+    private readonly platformSettingsService: PlatformSettingsService,
+  ) {}
 
   @Post()
   create(@Body() createPlatformSettingDto: CreatePlatformSettingDto) {
@@ -23,7 +33,10 @@ export class PlatformSettingsController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updatePlatformSettingDto: UpdatePlatformSettingDto) {
+  update(
+    @Param('id') id: string,
+    @Body() updatePlatformSettingDto: UpdatePlatformSettingDto,
+  ) {
     return this.platformSettingsService.update(id, updatePlatformSettingDto);
   }
 

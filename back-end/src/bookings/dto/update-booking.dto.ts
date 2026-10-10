@@ -1,8 +1,21 @@
-import { IsDateString, IsEnum, IsMongoId, IsOptional, IsString } from 'class-validator';
+import {
+  IsDateString,
+  IsEnum,
+  IsMongoId,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 
 export class UpdateBookingDto {
   @IsOptional()
-  @IsEnum(['pending', 'awaiting_provider', 'confirmed', 'in_progress', 'completed', 'cancelled'])
+  @IsEnum([
+    'pending',
+    'awaiting_provider',
+    'confirmed',
+    'in_progress',
+    'completed',
+    'cancelled',
+  ])
   status?: string;
 
   /** Reassignment: new provider. */

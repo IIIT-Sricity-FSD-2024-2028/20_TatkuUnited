@@ -1,4 +1,10 @@
-import { IsDateString, IsMongoId, IsNumber, IsOptional, IsString } from 'class-validator';
+import {
+  IsDateString,
+  IsMongoId,
+  IsNumber,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 
 export class CreateUnavailabilityDto {
   @IsMongoId()

@@ -8,7 +8,8 @@ import { UpdateManagerDto } from './dto/update-manager.dto';
 @Injectable()
 export class ManagersService {
   constructor(
-    @InjectModel(Manager.name) private readonly managerModel: Model<ManagerDocument>,
+    @InjectModel(Manager.name)
+    private readonly managerModel: Model<ManagerDocument>,
   ) {}
 
   create(dto: CreateManagerDto) {
@@ -20,7 +21,10 @@ export class ManagersService {
   }
 
   async findOne(id: string) {
-    const doc = await this.managerModel.findById(id).populate('user', '-password').exec();
+    const doc = await this.managerModel
+      .findById(id)
+      .populate('user', '-password')
+      .exec();
     if (!doc) throw new NotFoundException(`Manager ${id} not found`);
     return doc;
   }

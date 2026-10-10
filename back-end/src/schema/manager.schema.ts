@@ -1,6 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
 import { GeoPointSchema } from './common';
+import { ManagerStatus } from '../common/enums';
 
 type GeoPointType = { type: string; coordinates: [number, number] };
 
@@ -25,10 +26,10 @@ export class Manager {
 
   @Prop({
     type: String,
-    enum: ['active', 'suspended', 'inactive'],
-    default: 'active',
+    enum: Object.values(ManagerStatus),
+    default: ManagerStatus.ACTIVE,
   })
-  status: string;
+  status: ManagerStatus;
 }
 
 export const ManagerSchema = SchemaFactory.createForClass(Manager);

@@ -8,7 +8,8 @@ import { UpdateServiceDto } from './dto/update-service.dto';
 @Injectable()
 export class ServicesService {
   constructor(
-    @InjectModel(Service.name) private readonly serviceModel: Model<ServiceDocument>,
+    @InjectModel(Service.name)
+    private readonly serviceModel: Model<ServiceDocument>,
   ) {}
 
   create(dto: CreateServiceDto) {
@@ -22,7 +23,10 @@ export class ServicesService {
   }
 
   async findOne(id: string) {
-    const doc = await this.serviceModel.findById(id).populate('category').exec();
+    const doc = await this.serviceModel
+      .findById(id)
+      .populate('category')
+      .exec();
     if (!doc) throw new NotFoundException(`Service ${id} not found`);
     return doc;
   }

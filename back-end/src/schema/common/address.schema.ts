@@ -5,7 +5,7 @@ import { GeoPointSchema } from './geo-point.schema';
 type GeoPointType = { type: string; coordinates: [number, number] };
 
 /**
- * UserAddress — a saved address entry inside User.addresses[].
+ * UserAddress ï¿½ a saved address entry inside User.addresses[].
  * Has a self-generated `id` (used as a reference inside User.cart.address)
  * and a human-readable `label` (e.g. "Home", "Office").
  */
@@ -28,7 +28,7 @@ export class UserAddress {
 }
 
 /**
- * AddressSnapshot — an immutable address copied onto Order at checkout.
+ * AddressSnapshot ï¿½ an immutable address copied onto Order at checkout.
  * Does NOT have `id` or `label`; must never be updated after creation.
  */
 @Schema({ _id: false })

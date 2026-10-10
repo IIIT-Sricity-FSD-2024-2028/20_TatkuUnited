@@ -21,7 +21,8 @@ export class Unavailability {
   reason: string | null;
 }
 
-export const UnavailabilitySchema = SchemaFactory.createForClass(Unavailability);
+export const UnavailabilitySchema =
+  SchemaFactory.createForClass(Unavailability);
 
 // -- Indexes ----------------------------------------------------------------
 UnavailabilitySchema.index({ provider: 1, date: 1 });

@@ -12,7 +12,10 @@ import { Booking, BookingSchema } from './booking.schema';
 import { Payment, PaymentSchema } from './payment.schema';
 import { Review, ReviewSchema } from './review.schema';
 import { Unavailability, UnavailabilitySchema } from './unavailability.schema';
-import { PlatformSetting, PlatformSettingSchema } from './platform-setting.schema';
+import {
+  PlatformSetting,
+  PlatformSettingSchema,
+} from './platform-setting.schema';
 
 const models = MongooseModule.forFeature([
   { name: User.name, schema: UserSchema },
@@ -30,7 +33,7 @@ const models = MongooseModule.forFeature([
 ]);
 
 /**
- * DatabaseModule — registers every Mongoose model globally so any feature
+ * DatabaseModule ï¿½ registers every Mongoose model globally so any feature
  * module can inject its Model<T> without re-importing MongooseModule.forFeature.
  */
 @Module({

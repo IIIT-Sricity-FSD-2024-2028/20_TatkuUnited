@@ -1,7 +1,10 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { Unavailability, UnavailabilityDocument } from '../schema/unavailability.schema';
+import {
+  Unavailability,
+  UnavailabilityDocument,
+} from '../schema/unavailability.schema';
 import { CreateUnavailabilityDto } from './dto/create-unavailability.dto';
 import { UpdateUnavailabilityDto } from './dto/update-unavailability.dto';
 
@@ -21,14 +24,13 @@ export class UnavailabilityService {
   }
 
   findByProviderAndDate(providerId: string, date: Date) {
-    return this.unavailabilityModel
-      .find({ provider: providerId, date })
-      .exec();
+    return this.unavailabilityModel.find({ provider: providerId, date }).exec();
   }
 
   async findOne(id: string) {
     const doc = await this.unavailabilityModel.findById(id).exec();
-    if (!doc) throw new NotFoundException(`Unavailability record ${id} not found`);
+    if (!doc)
+      throw new NotFoundException(`Unavailability record ${id} not found`);
     return doc;
   }
 
@@ -36,13 +38,15 @@ export class UnavailabilityService {
     const doc = await this.unavailabilityModel
       .findByIdAndUpdate(id, dto, { new: true })
       .exec();
-    if (!doc) throw new NotFoundException(`Unavailability record ${id} not found`);
+    if (!doc)
+      throw new NotFoundException(`Unavailability record ${id} not found`);
     return doc;
   }
 
   async remove(id: string) {
     const doc = await this.unavailabilityModel.findByIdAndDelete(id).exec();
-    if (!doc) throw new NotFoundException(`Unavailability record ${id} not found`);
+    if (!doc)
+      throw new NotFoundException(`Unavailability record ${id} not found`);
     return doc;
   }
 }

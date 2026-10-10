@@ -1,5 +1,6 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+ï»¿import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
+import { BookingStatus, CancelledBy, PayoutStatus } from '../common/enums';
 
 export type BookingDocument = Booking & Document;
 
@@ -36,17 +37,17 @@ export class Booking {
   // -- Status ----------------------------------------------------------------
   @Prop({
     type: String,
-    enum: ['pending', 'awaiting_provider', 'confirmed', 'in_progress', 'completed', 'cancelled'],
-    default: 'pending',
+    enum: Object.values(BookingStatus),
+    default: BookingStatus.PENDING,
   })
-  status: string;
+  status: BookingStatus;
 
   @Prop({
     type: String,
-    enum: ['customer', 'provider', 'manager', 'admin', 'system'],
+    enum: Object.values(CancelledBy),
     default: null,
   })
-  cancelledBy: string | null;
+  cancelledBy: CancelledBy | null;
 
   @Prop({ type: String, default: null })
   cancelledReason: string | null;
@@ -59,7 +60,7 @@ export class Booking {
   declinedBy: Types.ObjectId[]; // providers who rejected / timed out / cancelled
 
   // -- Financials (snapshots) ------------------------------------------------
-  @Prop({ type: Number, required: true }) // paise — snapshot of Service.price
+  @Prop({ type: Number, required: true }) // paise - snapshot of Service.price
   price: number;
 
   @Prop({ type: Number, required: true }) // snapshot of PlatformSetting.platformFeePercent
@@ -74,10 +75,10 @@ export class Booking {
   // -- Payout ----------------------------------------------------------------
   @Prop({
     type: String,
-    enum: ['pending', 'paid'],
-    default: 'pending',
+    enum: Object.values(PayoutStatus),
+    default: PayoutStatus.PENDING,
   })
-  payoutStatus: string;
+  payoutStatus: PayoutStatus;
 
   @Prop({ type: Date, default: null })
   payoutAt: Date | null;
@@ -92,7 +93,9 @@ BookingSchema.index(
   {
     unique: true,
     partialFilterExpression: {
-      status: { $in: ['pending', 'awaiting_provider', 'confirmed', 'in_progress'] },
+      status: {
+        $in: ['pending', 'awaiting_provider', 'confirmed', 'in_progress'],
+      },
     },
   },
 );

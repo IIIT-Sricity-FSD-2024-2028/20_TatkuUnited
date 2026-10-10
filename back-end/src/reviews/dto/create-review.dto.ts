@@ -1,4 +1,11 @@
-import { IsMongoId, IsNumber, IsOptional, IsString, Max, Min } from 'class-validator';
+import {
+  IsMongoId,
+  IsNumber,
+  IsOptional,
+  IsString,
+  Max,
+  Min,
+} from 'class-validator';
 
 export class CreateReviewDto {
   /** One review per booking — enforced by unique index. */

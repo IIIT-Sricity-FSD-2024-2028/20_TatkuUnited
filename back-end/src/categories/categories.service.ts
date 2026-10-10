@@ -8,7 +8,8 @@ import { UpdateCategoryDto } from './dto/update-category.dto';
 @Injectable()
 export class CategoriesService {
   constructor(
-    @InjectModel(Category.name) private readonly categoryModel: Model<CategoryDocument>,
+    @InjectModel(Category.name)
+    private readonly categoryModel: Model<CategoryDocument>,
   ) {}
 
   create(dto: CreateCategoryDto) {

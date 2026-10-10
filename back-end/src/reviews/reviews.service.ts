@@ -8,7 +8,8 @@ import { UpdateReviewDto } from './dto/update-review.dto';
 @Injectable()
 export class ReviewsService {
   constructor(
-    @InjectModel(Review.name) private readonly reviewModel: Model<ReviewDocument>,
+    @InjectModel(Review.name)
+    private readonly reviewModel: Model<ReviewDocument>,
   ) {}
 
   create(dto: CreateReviewDto) {
