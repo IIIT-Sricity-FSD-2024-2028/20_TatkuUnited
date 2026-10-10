@@ -1,53 +1,104 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { HydratedDocument, Types } from 'mongoose';
-import { Service } from './service.schema';
-import { Provider } from './provider.schema';
-import { User } from './user.schema';
-import { BookingStatus, CancelledBy } from './common/enums';
+import { Document, Types } from 'mongoose';
 
-export type BookingDocument = HydratedDocument<Booking>;
+export type BookingDocument = Booking & Document;
 
-@Schema({ timestamps: { createdAt: true, updatedAt: false } })
+@Schema({ timestamps: true })
 export class Booking {
+  @Prop({ type: Types.ObjectId, ref: 'Service', required: true })
+  service: Types.ObjectId;
+
+  @Prop({ type: Types.ObjectId, ref: 'Provider', required: true })
+  provider: Types.ObjectId; // tentative until accepted
+
+  @Prop({ type: Types.ObjectId, ref: 'User', required: true })
+  customer: Types.ObjectId;
+
+  @Prop({ type: Types.ObjectId, ref: 'Order', required: true })
+  order: Types.ObjectId;
+
+  @Prop({ type: Types.ObjectId, ref: 'Region', required: true })
+  region: Types.ObjectId;
+
+  // -- Slot ------------------------------------------------------------------
+  @Prop({ type: Date, required: true }) // midnight of IST calendar day
+  scheduledDate: Date;
+
+  @Prop({ type: Number, required: true }) // minutes from midnight, on slot grid
+  startTime: number;
+
+  @Prop({ type: Number, required: true }) // startTime + service.duration
+  endTime: number;
+
+  @Prop({ type: Number, required: true }) // startTime - travelBufferMinutes (snapshot)
+  blockStartTime: number;
+
+  // -- Status ----------------------------------------------------------------
   @Prop({
-    type: Types.ObjectId,
-    ref: Service.name,
-    required: true,
-    index: true,
+    type: String,
+    enum: ['pending', 'awaiting_provider', 'confirmed', 'in_progress', 'completed', 'cancelled'],
+    default: 'pending',
   })
-  service!: Types.ObjectId;
+  status: string;
 
   @Prop({
-    type: Types.ObjectId,
-    ref: Provider.name,
-    required: true,
-    index: true,
+    type: String,
+    enum: ['customer', 'provider', 'manager', 'admin', 'system'],
+    default: null,
   })
-  provider!: Types.ObjectId;
+  cancelledBy: string | null;
 
-  @Prop({ type: Types.ObjectId, ref: User.name, required: true, index: true })
-  customer!: Types.ObjectId;
+  @Prop({ type: String, default: null })
+  cancelledReason: string | null;
 
-  @Prop({ required: true })
-  date!: Date;
+  // -- Provider offer --------------------------------------------------------
+  @Prop({ type: Date, default: null }) // set while awaiting_provider
+  offerExpiresAt: Date | null;
 
-  @Prop({ required: true })
-  startTime!: string;
+  @Prop({ type: [{ type: Types.ObjectId, ref: 'Provider' }], default: [] })
+  declinedBy: Types.ObjectId[]; // providers who rejected / timed out / cancelled
 
-  @Prop({ required: true })
-  endTime!: string;
+  // -- Financials (snapshots) ------------------------------------------------
+  @Prop({ type: Number, required: true }) // paise — snapshot of Service.price
+  price: number;
 
-  @Prop({ type: String, enum: BookingStatus, default: BookingStatus.PENDING })
-  status!: BookingStatus;
+  @Prop({ type: Number, required: true }) // snapshot of PlatformSetting.platformFeePercent
+  platformFeePercent: number;
 
-  @Prop({ type: String, enum: CancelledBy })
-  cancelledBy?: CancelledBy;
+  @Prop({ type: Number, required: true }) // round(price * fee / 100)
+  platformShare: number;
 
-  @Prop()
-  cancelledReason?: string;
+  @Prop({ type: Number, required: true }) // price - platformShare
+  providerShare: number;
 
-  // createdAt is added automatically via the `timestamps` option above
-  createdAt?: Date;
+  // -- Payout ----------------------------------------------------------------
+  @Prop({
+    type: String,
+    enum: ['pending', 'paid'],
+    default: 'pending',
+  })
+  payoutStatus: string;
+
+  @Prop({ type: Date, default: null })
+  payoutAt: Date | null;
 }
 
 export const BookingSchema = SchemaFactory.createForClass(Booking);
+
+// -- Indexes ----------------------------------------------------------------
+// Partial unique index: blocks identical start-time double-bookings for active statuses
+BookingSchema.index(
+  { provider: 1, scheduledDate: 1, startTime: 1 },
+  {
+    unique: true,
+    partialFilterExpression: {
+      status: { $in: ['pending', 'awaiting_provider', 'confirmed', 'in_progress'] },
+    },
+  },
+);
+BookingSchema.index({ provider: 1, scheduledDate: 1, status: 1 });
+BookingSchema.index({ status: 1, offerExpiresAt: 1 }); // offer-expiry sweep
+BookingSchema.index({ customer: 1, createdAt: -1 });
+BookingSchema.index({ region: 1, scheduledDate: 1, status: 1 });
+BookingSchema.index({ order: 1 });
+BookingSchema.index({ payoutStatus: 1, status: 1 });

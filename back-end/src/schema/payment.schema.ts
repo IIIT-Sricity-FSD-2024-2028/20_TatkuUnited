@@ -1,70 +1,59 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { HydratedDocument, Types } from 'mongoose';
-import { Booking } from './booking.schema';
-import { User } from './user.schema';
-import { PaymentStatus, PayoutStatus } from './common/enums';
+import { Document, Types } from 'mongoose';
 
-export type PaymentDocument = HydratedDocument<Payment>;
+// -- Embedded: Refund entry inside Payment.refunds[] --------------------------
+@Schema({ _id: false })
+export class RefundEntry {
+  @Prop({ type: Types.ObjectId, ref: 'Booking', required: true })
+  booking: Types.ObjectId;
 
-@Schema({ timestamps: { createdAt: true, updatedAt: false } })
-export class Payment {
+  @Prop({ type: Number, required: true }) // paise
+  amount: number;
+
+  @Prop({ type: String, required: true })
+  razorpayRefundId: string;
+
   @Prop({
-    type: Types.ObjectId,
-    ref: Booking.name,
-    required: true,
-    unique: true,
-    index: true,
+    type: String,
+    enum: ['initiated', 'processed', 'failed'],
+    default: 'initiated',
   })
-  booking!: Types.ObjectId;
+  status: string;
 
-  @Prop({ type: Types.ObjectId, ref: User.name, required: true, index: true })
-  customer!: Types.ObjectId;
+  @Prop({ type: Date, default: () => new Date() })
+  createdAt: Date;
+}
 
-  @Prop({ required: true, min: 0 })
-  totalAmount!: number;
+// -- Payment document ----------------------------------------------------------
+export type PaymentDocument = Payment & Document;
 
-  @Prop({ required: true, default: 'inr' })
-  currency!: string;
+@Schema({ timestamps: true })
+export class Payment {
+  @Prop({ type: Types.ObjectId, ref: 'Order', required: true, unique: true })
+  order: Types.ObjectId;
 
-  @Prop({ required: true, min: 0 })
-  providerShare!: number;
+  @Prop({ type: Number, required: true }) // paise — must match Order.totalAmount
+  totalAmount: number;
 
-  @Prop({ required: true, min: 0 })
-  platformShare!: number;
+  @Prop({ type: String, default: 'INR' })
+  currency: string;
 
-  @Prop({ required: true, min: 0 })
-  providerFeePercent!: number;
+  @Prop({ type: String, required: true, unique: true })
+  razorpayOrderId: string;
 
-  @Prop({ required: true, min: 0 })
-  platformFeePercent!: number;
+  @Prop({ type: String, default: null })
+  razorpayPaymentId: string | null;
 
-  // created up-front, before the customer pays
-  @Prop()
-  razorpayOrderId?: string;
+  @Prop({ type: String, default: null })
+  razorpaySignature: string | null;
 
-  // set once Razorpay captures the payment against the order
-  @Prop()
-  razorpayPaymentId?: string;
-
-  // HMAC signature returned on checkout success / webhook â€” verify before
-  // trusting razorpayPaymentId, then you can drop or keep it for audit
-  @Prop()
-  razorpaySignature?: string;
-
-  @Prop()
-  razorpayRefundId?: string;
-
-  @Prop({ type: String, enum: PaymentStatus, default: PaymentStatus.PENDING })
-  paymentStatus!: PaymentStatus;
-
-  @Prop({ type: String, enum: PayoutStatus, default: PayoutStatus.PENDING })
-  payoutStatus!: PayoutStatus;
-
-  @Prop()
-  dispatchedAt?: Date;
-
-  // createdAt is added automatically via the `timestamps` option above
-  createdAt?: Date;
+  @Prop({ type: [RefundEntry], default: [] })
+  refunds: RefundEntry[];
 }
 
 export const PaymentSchema = SchemaFactory.createForClass(Payment);
+
+// -- Indexes ----------------------------------------------------------------
+PaymentSchema.index({ order: 1 }, { unique: true });
+PaymentSchema.index({ razorpayOrderId: 1 }, { unique: true });
+PaymentSchema.index({ razorpayPaymentId: 1 }, { unique: true, sparse: true });

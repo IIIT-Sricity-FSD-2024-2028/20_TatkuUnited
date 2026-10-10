@@ -1,31 +1,27 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { HydratedDocument, Types } from 'mongoose';
-import { Provider } from './provider.schema';
+import { Document, Types } from 'mongoose';
 
-export type UnavailabilityDocument = HydratedDocument<Unavailability>;
+export type UnavailabilityDocument = Unavailability & Document;
 
-@Schema()
+@Schema({ timestamps: true })
 export class Unavailability {
-  @Prop({
-    type: Types.ObjectId,
-    ref: Provider.name,
-    required: true,
-    index: true,
-  })
-  provider!: Types.ObjectId;
+  @Prop({ type: Types.ObjectId, ref: 'Provider', required: true })
+  provider: Types.ObjectId;
 
-  @Prop({ required: true })
-  startDateTime!: Date;
+  @Prop({ type: Date, required: true }) // midnight of the IST calendar day
+  date: Date;
 
-  @Prop({ required: true })
-  endDateTime!: Date;
+  @Prop({ type: Number, required: true }) // minutes from midnight, on slot grid
+  startTime: number;
 
-  @Prop({ type: Boolean, default: false })
-  recurring!: boolean;
+  @Prop({ type: Number, required: true }) // minutes from midnight, on slot grid; startTime < endTime
+  endTime: number;
 
-  @Prop()
-  reason?: string;
+  @Prop({ type: String, default: null })
+  reason: string | null;
 }
 
-export const UnavailabilitySchema =
-  SchemaFactory.createForClass(Unavailability);
+export const UnavailabilitySchema = SchemaFactory.createForClass(Unavailability);
+
+// -- Indexes ----------------------------------------------------------------
+UnavailabilitySchema.index({ provider: 1, date: 1 });

@@ -1,56 +1,71 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { HydratedDocument, Types } from 'mongoose';
-import { Category } from './category.schema';
-import {
-  HowItWorksStep,
-  HowItWorksStepSchema,
-  Faq,
-  FaqSchema,
-} from './common/service-embeds.schema';
+import { Document, Types } from 'mongoose';
 
-export type ServiceDocument = HydratedDocument<Service>;
+// -- Embedded sub-schemas -----------------------------------------------------
+@Schema({ _id: false })
+export class HowItWorksStep {
+  @Prop({ type: String, required: true })
+  title: string;
 
-@Schema()
+  @Prop({ type: String, required: true })
+  desc: string;
+}
+
+@Schema({ _id: false })
+export class FaqItem {
+  @Prop({ type: String, required: true })
+  question: string;
+
+  @Prop({ type: String, required: true })
+  answer: string;
+}
+
+// -- Service document ---------------------------------------------------------
+export type ServiceDocument = Service & Document;
+
+@Schema({ timestamps: true })
 export class Service {
-  @Prop({ required: true })
-  name!: string;
+  @Prop({ type: String, required: true, trim: true })
+  name: string;
 
-  @Prop({
-    type: Types.ObjectId,
-    ref: Category.name,
-    required: true,
-    index: true,
-  })
-  category!: Types.ObjectId;
+  @Prop({ type: Types.ObjectId, ref: 'Category', required: true })
+  category: Types.ObjectId;
 
   @Prop({ type: Number, default: 0 })
-  reviewCount!: number;
+  reviewCount: number;
 
-  @Prop({ type: Number, default: 0, min: 0, max: 5 })
-  rating!: number;
+  @Prop({ type: Number, default: 0 })
+  rating: number;
 
-  // Diagram has this as a string array (e.g. paragraphs/bullets)
-  @Prop({ type: [String], default: [] })
-  description!: string[];
+  @Prop({ type: String, required: true })
+  description: string;
 
-  @Prop({ required: true, min: 0 })
-  price!: number;
+  @Prop({ type: Number, required: true }) // integer paise
+  price: number;
 
-  // duration in minutes
-  @Prop({ required: true, min: 0 })
-  duration!: number;
+  @Prop({ type: Number, required: true }) // minutes
+  duration: number;
 
-  @Prop({ type: [HowItWorksStepSchema], default: [] })
-  howItWorks!: HowItWorksStep[];
+  @Prop({ type: Boolean, default: true })
+  isActive: boolean;
 
   @Prop({ type: [String], default: [] })
-  whatIsCovered!: string[];
+  imageUrls: string[];
 
   @Prop({ type: [String], default: [] })
-  whatIsNotCovered!: string[];
+  whatIsCovered: string[];
 
-  @Prop({ type: [FaqSchema], default: [] })
-  faq!: Faq[];
+  @Prop({ type: [String], default: [] })
+  whatIsNotCovered: string[];
+
+  @Prop({ type: [HowItWorksStep], default: [] })
+  howItWorks: HowItWorksStep[];
+
+  @Prop({ type: [FaqItem], default: [] })
+  faq: FaqItem[];
 }
 
 export const ServiceSchema = SchemaFactory.createForClass(Service);
+
+// -- Indexes ----------------------------------------------------------------
+ServiceSchema.index({ category: 1, isActive: 1 });

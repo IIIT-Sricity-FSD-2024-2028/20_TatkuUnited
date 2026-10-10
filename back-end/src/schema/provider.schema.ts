@@ -1,48 +1,58 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { HydratedDocument, Types } from 'mongoose';
-import { User } from './user.schema';
-import { Service } from './service.schema';
-import { GeoPoint, GeoPointSchema } from './common/geo-point.schema';
-import { ProviderStatus } from './common/enums';
+import { Document, Types } from 'mongoose';
+import { GeoPointSchema } from './common';
 
-export type ProviderDocument = HydratedDocument<Provider>;
+type GeoPointType = { type: string; coordinates: [number, number] };
 
-@Schema()
+export type ProviderDocument = Provider & Document;
+
+@Schema({ timestamps: true })
 export class Provider {
+  @Prop({ type: Types.ObjectId, ref: 'User', required: true, unique: true })
+  user: Types.ObjectId;
+
+  @Prop({ type: [{ type: Types.ObjectId, ref: 'Service' }], default: [] })
+  offeredServices: Types.ObjectId[];
+
+  @Prop({ type: Number, required: true, default: 0 }) // years
+  experience: number;
+
+  @Prop({ type: Number, required: true }) // minutes from midnight, e.g. 480 = 8:00
+  workHourStart: number;
+
+  @Prop({ type: Number, required: true }) // minutes from midnight, e.g. 1200 = 20:00
+  workHourEnd: number;
+
+  @Prop({ type: [Number], default: [] }) // 0=Sun ... 6=Sat
+  workingDays: number[];
+
+  @Prop({ type: GeoPointSchema, required: true })
+  location: GeoPointType;
+
   @Prop({
-    type: Types.ObjectId,
-    ref: User.name,
-    required: true,
-    unique: true,
-    index: true,
+    type: String,
+    enum: ['pending', 'approved', 'suspended'],
+    default: 'pending',
   })
-  user!: Types.ObjectId;
+  status: string;
 
-  @Prop({ type: [Types.ObjectId], ref: Service.name, default: [] })
-  offeredServices!: Types.ObjectId[];
+  @Prop({ type: Number, default: 0 })
+  rating: number;
 
-  // years of experience
-  @Prop({ type: Number, default: 0, min: 0 })
-  experience!: number;
+  @Prop({ type: Number, default: 0 })
+  ratingCount: number;
 
-  // 0-23 hour markers for working window
-  @Prop({ type: Number, required: true, min: 0, max: 23 })
-  workHourStart!: number;
+  @Prop({ type: Types.ObjectId, ref: 'Region', default: null })
+  region: Types.ObjectId | null;
 
-  @Prop({ type: Number, required: true, min: 0, max: 23 })
-  workHourEnd!: number;
-
-  @Prop({ type: GeoPointSchema })
-  location!: GeoPoint;
-
-  @Prop({ type: Number, default: 0, min: 0 })
-  activeJobCount!: number;
-
-  @Prop({ type: String, enum: ProviderStatus, default: ProviderStatus.OFFLINE })
-  status!: ProviderStatus;
+  @Prop({ type: String, default: null })
+  razorpayAccountId: string | null;
 }
 
 export const ProviderSchema = SchemaFactory.createForClass(Provider);
 
-// Enables geospatial "find providers near me" queries
+// -- Indexes -------------------------------------------------------------------
+ProviderSchema.index({ user: 1 }, { unique: true });
 ProviderSchema.index({ location: '2dsphere' });
+ProviderSchema.index({ status: 1, offeredServices: 1 });
+ProviderSchema.index({ region: 1, status: 1 });

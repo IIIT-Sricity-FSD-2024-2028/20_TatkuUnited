@@ -1,14 +1,12 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+/**
+ * Shared GeoJSON Point sub-schema.
+ * Usage: @Prop({ type: GeoPointSchema, required: true })
+ * Store as { type: "Point", coordinates: [longitude, latitude] }
+ * Longitude comes FIRST — this is the GeoJSON / MongoDB standard.
+ */
+export const GeoPointSchema = {
+  type: { type: String, enum: ['Point'], default: 'Point' },
+  coordinates: { type: [Number], required: true }, // [longitude, latitude]
+};
 
-// Stored as GeoJSON so you can use Mongo's $near / 2dsphere queries.
-@Schema({ _id: false })
-export class GeoPoint {
-  @Prop({ type: String, enum: ['Point'], default: 'Point' })
-  type!: string;
-
-  // [longitude, latitude]
-  @Prop({ type: [Number], required: true })
-  coordinates!: number[];
-}
-
-export const GeoPointSchema = SchemaFactory.createForClass(GeoPoint);
+export type GeoPoint = { type: string; coordinates: [number, number] };

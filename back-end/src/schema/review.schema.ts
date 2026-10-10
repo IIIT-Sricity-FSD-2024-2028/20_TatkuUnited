@@ -1,41 +1,29 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { HydratedDocument, Types } from 'mongoose';
-import { Booking } from './booking.schema';
-import { User } from './user.schema';
-import { Service } from './service.schema';
+import { Document, Types } from 'mongoose';
 
-export type ReviewDocument = HydratedDocument<Review>;
+export type ReviewDocument = Review & Document;
 
-@Schema()
+@Schema({ timestamps: true })
 export class Review {
-  @Prop({
-    type: Types.ObjectId,
-    ref: Booking.name,
-    required: true,
-    unique: true,
-    index: true,
-  })
-  booking!: Types.ObjectId;
+  @Prop({ type: Types.ObjectId, ref: 'Booking', required: true, unique: true })
+  booking: Types.ObjectId; // unique: one review per booking
 
-  @Prop({ required: true, min: 0, max: 5 })
-  rating!: number;
+  @Prop({ type: Number, required: true, min: 1, max: 5 })
+  rating: number;
 
-  @Prop()
-  review?: string;
+  @Prop({ type: String, default: null }) // optional text
+  review: string | null;
 
-  @Prop({ type: Types.ObjectId, ref: User.name, required: true, index: true })
-  user!: Types.ObjectId;
+  @Prop({ type: Types.ObjectId, ref: 'Provider', required: true })
+  provider: Types.ObjectId; // copied from booking for aggregation
 
-  @Prop({
-    type: Types.ObjectId,
-    ref: Service.name,
-    required: true,
-    index: true,
-  })
-  service!: Types.ObjectId;
-
-  @Prop({ default: Date.now })
-  date!: Date;
+  @Prop({ type: Types.ObjectId, ref: 'Service', required: true })
+  service: Types.ObjectId; // copied from booking for aggregation
 }
 
 export const ReviewSchema = SchemaFactory.createForClass(Review);
+
+// -- Indexes ----------------------------------------------------------------
+ReviewSchema.index({ booking: 1 }, { unique: true });
+ReviewSchema.index({ service: 1, createdAt: -1 });
+ReviewSchema.index({ provider: 1, createdAt: -1 });

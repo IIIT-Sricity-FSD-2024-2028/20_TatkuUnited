@@ -1,18 +1,24 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { HydratedDocument } from 'mongoose';
+import { Document } from 'mongoose';
 
-export type CategoryDocument = HydratedDocument<Category>;
+export type CategoryDocument = Category & Document;
 
-@Schema()
+@Schema({ timestamps: true })
 export class Category {
-  @Prop({ required: true, unique: true })
-  name!: string;
+  @Prop({ type: String, required: true, unique: true, trim: true })
+  name: string;
 
-  @Prop()
-  description?: string;
+  @Prop({ type: String, required: true })
+  description: string;
 
-  @Prop({ type: Number, default: 0, min: 0, max: 5 })
-  rating!: number;
+  @Prop({ type: String, required: true })
+  imageUrl: string;
+
+  @Prop({ type: Boolean, default: true })
+  isActive: boolean;
 }
 
 export const CategorySchema = SchemaFactory.createForClass(Category);
+
+// -- Indexes ----------------------------------------------------------------
+CategorySchema.index({ name: 1 }, { unique: true });
