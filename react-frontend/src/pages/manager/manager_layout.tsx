@@ -24,8 +24,10 @@ export default function ManagerLayout() {
 
   useEffect(() => {
     if (!managerId) return;
-    dispatch(fetchManager(managerId));
-    dispatch(fetchRegions(managerId));
+    dispatch(fetchManager(managerId))
+      .unwrap()
+      .then((m) => dispatch(fetchRegions(m._id)))
+      .catch(() => {}); // the failure is already stored as state.manager.error
   }, [dispatch, managerId]);
 
   useEffect(() => {

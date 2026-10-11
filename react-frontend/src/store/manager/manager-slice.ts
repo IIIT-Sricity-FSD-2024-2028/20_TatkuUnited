@@ -85,30 +85,32 @@ const initialState: ManagerState = {
   error: null,
 };
 
-// The back-end accepts the auth user id for both of these lookups.
 export const fetchManager = createAsyncThunkTyped(
   "manager/fetchManager",
   async (userId: string, thunkAPI): Promise<Manager> => {
     const { token } = thunkAPI.getState().auth;
+    let manager: Manager | null;
     try {
-      const res = await axios.get<Manager>(
+      const res = await axios.get<Manager | "">(
         `${BASE_URL}/managers/user/${userId}`,
         authConfig(token),
       );
-      return res.data;
+      manager = res.data || null; // empty body when there is no profile
     } catch {
       throw new Error("Fetching manager details failed");
     }
+    if (!manager) throw new Error("No manager profile found for this account");
+    return manager;
   },
 );
 
 export const fetchRegions = createAsyncThunkTyped(
   "manager/fetchRegions",
-  async (userId: string, thunkAPI): Promise<Region[]> => {
+  async (managerId: string, thunkAPI): Promise<Region[]> => {
     const { token } = thunkAPI.getState().auth;
     try {
       const res = await axios.get<Region[]>(
-        `${BASE_URL}/regions/manager/${userId}`,
+        `${BASE_URL}/regions/manager/${managerId}`,
         authConfig(token),
       );
       return res.data;
