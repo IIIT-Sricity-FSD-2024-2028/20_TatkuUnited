@@ -15,33 +15,49 @@ import RatingsFeedback from "./pages/RatingsFeedbackPage";
 
 import { Provider as ReduxProvider } from "react-redux";
 import { store } from "./store";
+import AuthContext from "./common/AuthContext";
+import { useEffect, useState } from "react";
+import type { AuthInterface } from "./models/auth.models";
 
 function App() {
-    return (
-        <ReduxProvider store={store}>
-            <BrowserRouter>
-                <Routes>
-                    <Route path="/" element={<Landing />} />
+  const [authDetails, setAuthDetails] = useState<AuthInterface>(null);
 
-                    <Route path="/auth">
-                        <Route path="register" element={<Register />} />
-                        <Route path="login" element={<Login />} />
-                    </Route>
+  useEffect(() => {
+    const user = JSON.parse(sessionStorage.getItem("user"));
+    const token = sessionStorage.getItem("token");
 
-                    <Route path="/provider" element={<Provider />} />
-                    <Route path="/superuser/*" element={<SuperUser />} />
-                    <Route path="/manager/*" element={<ManagerRouter />} />
+    if (token) {
+      setAuthDetails({ token, user });
+    }
+  }, []);
 
-                    <Route path="/cart" element={<Cart />} />
-                    <Route path="/schedule" element={<Schedule />} />
-                    <Route path="/account-settings" element={<AccountSettings />} />
-                    <Route path="/ratings-feedback" element={<RatingsFeedback />} />
+  return (
+    <AuthContext.Provider value={{ authDetails, setAuthDetails }}>
+      <ReduxProvider store={store}>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<Landing />} />
 
-                    <Route path="*" element={<div>404! Page Not Found.</div>} />
-                </Routes>
-            </BrowserRouter>
-        </ReduxProvider>
-    );
+            <Route path="/auth">
+              <Route path="register" element={<Register />} />
+              <Route path="login" element={<Login />} />
+            </Route>
+
+            <Route path="/provider" element={<Provider />} />
+            <Route path="/superuser/*" element={<SuperUser />} />
+            <Route path="/manager/*" element={<ManagerRouter />} />
+
+            <Route path="/cart" element={<Cart />} />
+            <Route path="/schedule" element={<Schedule />} />
+            <Route path="/account-settings" element={<AccountSettings />} />
+            <Route path="/ratings-feedback" element={<RatingsFeedback />} />
+
+            <Route path="*" element={<div>404! Page Not Found.</div>} />
+          </Routes>
+        </BrowserRouter>
+      </ReduxProvider>
+    </AuthContext.Provider>
+  );
 }
 
 export default App;

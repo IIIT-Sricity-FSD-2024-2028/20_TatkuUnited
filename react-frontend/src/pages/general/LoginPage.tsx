@@ -1,27 +1,12 @@
-import axios from "axios";
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { BASE_URL } from "../../services/api";
-import { useDispatch } from "react-redux";
-import type { AppDispatch } from "../../store";
-import { AuthActions, type UserInterface } from "../../store/auth/auth-slice";
-import type { Role } from "../../common/roles.enum";
+import { handleLogin } from "@/services/auth";
+import AuthContext from "@/common/AuthContext";
+import UrlMap from "@/common/urlMap";
 
 interface FormData {
   email: string;
   password: string;
-}
-
-interface LoginResponse {
-  access_token: string;
-  token_type: string;
-  user: {
-    id: string;
-    role: string;
-    name: string;
-    email: string;
-    customer_id?: string | null;
-  };
 }
 
 const borderClass = (error?: boolean) => {
@@ -31,31 +16,6 @@ const borderClass = (error?: boolean) => {
       : "border-slate-400 focus:border-blue-500"
   }`;
 };
-
-async function loginUser(postData: {
-  email: string;
-  password: string;
-}): Promise<{
-  success: boolean;
-  data: LoginResponse | null;
-  error: string | null;
-}> {
-  try {
-    const response = await axios.post<LoginResponse>(
-      `${BASE_URL}/auth/login`,
-      postData,
-    );
-    return { success: true, data: response.data, error: null };
-  } catch (error: any) {
-    const rawMessage =
-      error.response?.data?.message ||
-      "Invalid email or password. Please try again.";
-    const message = Array.isArray(rawMessage)
-      ? rawMessage.join(", ")
-      : rawMessage;
-    return { success: false, data: null, error: message };
-  }
-}
 
 function LoginHeader() {
   return (
@@ -87,7 +47,7 @@ interface FormErrors {
   password?: boolean;
 }
 
-function FillUserData({ dispatch }: { dispatch: AppDispatch }) {
+function FillUserData() {
   const navigate = useNavigate();
   const [formData, setFormData] = useState<FormData>({
     email: "",
@@ -100,6 +60,8 @@ function FillUserData({ dispatch }: { dispatch: AppDispatch }) {
     email: false,
     password: false,
   });
+
+  const authContext = useContext(AuthContext);
 
   const updateField = (field: keyof FormData, value: string) => {
     setFormData((prev) => ({
@@ -140,41 +102,15 @@ function FillUserData({ dispatch }: { dispatch: AppDispatch }) {
     setSubmitting(true);
     setApiError(null);
 
-    const res = await loginUser({
-      email: trimmedEmail,
-      password: trimmedPassword,
-    });
-
+    const res = await handleLogin(trimmedEmail, trimmedPassword);
     setSubmitting(false);
 
-    if (res.success && res.data) {
-      // Store session details consistent with Tatku United platform standard
-      // sessionStorage.setItem(
-      //   "tu_auth_session",
-      //   JSON.stringify({
-      //     id: res.data.user.id,
-      //     name: res.data.user.name,
-      //     email: res.data.user.email,
-      //     role: res.data.user.role,
-      //     customer_id: res.data.user.customer_id || null,
-      //     loginAt: Date.now(),
-      //   }),
-      // );
-      const { access_token, user } = res.data;
-      const userObj: UserInterface = {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        role: user.role as Role,
-      };
-      sessionStorage.setItem("token", access_token);
-      sessionStorage.setItem("user", JSON.stringify(userObj));
-      dispatch(AuthActions.login({ user: userObj, token: access_token }));
-
+    if (typeof res !== "string") {
       // Redirect to home route
-      navigate("/");
+      authContext.setAuthDetails(res);
+      navigate(UrlMap[res.user.role]);
     } else {
-      setApiError(res.error || "Login failed. Please check your credentials.");
+      setApiError(res || "Login failed. Please check your credentials.");
     }
   };
 
@@ -265,12 +201,11 @@ function FillUserData({ dispatch }: { dispatch: AppDispatch }) {
 }
 
 function LoginPage() {
-  const dispatch = useDispatch<AppDispatch>();
   return (
     <div className="flex flex-col justify-center items-center min-h-screen w-screen p-4">
       <div className="w-full max-w-md p-8">
         <LoginHeader />
-        <FillUserData dispatch={dispatch} />
+        <FillUserData />
         <RegisterLink />
       </div>
     </div>

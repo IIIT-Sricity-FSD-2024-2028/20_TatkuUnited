@@ -1,12 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
-import type { Role } from "../../common/roles.enum";
-
-export interface UserInterface {
-    id: string;
-    name: string;
-    email: string;
-    role: Role;
-}
+import type { UserInterface } from "@/models/auth.models";
 
 interface AuthState {
     user: UserInterface | null;
