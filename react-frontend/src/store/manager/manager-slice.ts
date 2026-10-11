@@ -71,6 +71,8 @@ interface ManagerState {
   selectedRegionId: string | null;
   providers: RegionProvider[];
   bookings: RegionBooking[];
+  pending: number; // in-flight requests
+  error: string | null;
 }
 
 const initialState: ManagerState = {
@@ -79,6 +81,8 @@ const initialState: ManagerState = {
   selectedRegionId: null,
   providers: [],
   bookings: [],
+  pending: 0,
+  error: null,
 };
 
 // The back-end accepts the auth user id for both of these lookups.
@@ -173,7 +177,29 @@ const ManagerSlice = createSlice({
       })
       .addCase(fetchRegionBookings.fulfilled, (state, action) => {
         state.bookings = action.payload;
-      });
+      })
+      .addMatcher(
+        (a) => a.type.startsWith("manager/") && a.type.endsWith("/pending"),
+        (state) => {
+          state.pending += 1;
+          state.error = null;
+        },
+      )
+      .addMatcher(
+        (a) => a.type.startsWith("manager/") && a.type.endsWith("/fulfilled"),
+        (state) => {
+          state.pending -= 1;
+        },
+      )
+      .addMatcher(
+        (a) => a.type.startsWith("manager/") && a.type.endsWith("/rejected"),
+        (state, action) => {
+          state.pending -= 1;
+          state.error =
+            (action as { error?: { message?: string } }).error?.message ??
+            "Something went wrong";
+        },
+      );
   },
 });
 
