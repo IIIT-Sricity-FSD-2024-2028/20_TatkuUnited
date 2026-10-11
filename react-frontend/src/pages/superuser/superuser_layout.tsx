@@ -1,30 +1,30 @@
-import { Outlet } from "react-router-dom";
+/**
+ * To add a new sidebar link:
+ *   1. Import the icon you want from react-icons.
+ *   2. Add a new <SidebarItem /> inside the <SideBar> component below.
+ *   3. Register the corresponding route in superuser_route.tsx.
+ */
+
+import { Outlet } from 'react-router-dom'
 import SideBar, { SidebarItem } from "../shared/Sidebar";
-import SuperUser_Header from "./superuser_header";
-import { BsGrid, BsPeopleFill } from "react-icons/bs";
+import SuperUser_Header from "../shared/superuser_header";
+import { BsGrid , BsPeopleFill, BsCollection, BsTools } from "react-icons/bs";
 
 export const SuperUser_Layout = () => {
-  return (
-    <div className="flex h-screen overflow-hidden">
-      <SideBar>
-        <SidebarItem
-          to="/superuser/dashboard"
-          label="Dashboard"
-          icon={<BsGrid />}
-        />
-        <SidebarItem
-          to="/superuser/manage_users"
-          label="User Management"
-          icon={<BsPeopleFill />}
-        />
-        {/* continue the above patter to add more pages to the sidebar */}
-      </SideBar>
-      <div className="flex flex-col flex-1 w-full">
-        <SuperUser_Header />
-        <main className="h-full w-full overflow-y-auto bg-gray-50 p-6">
-          <Outlet />
-        </main>
-      </div>
-    </div>
-  );
-};
+    return(
+        <div className='flex h-screen overflow-hidden'>
+            <SideBar>
+                <SidebarItem to="/superuser/dashboard" label="Dashboard" icon={<BsGrid />} />
+                <SidebarItem to="/superuser/manage_users" label="User Management" icon={<BsPeopleFill />} />
+                <SidebarItem to="/superuser/manage_categories" label="Category Management" icon={<BsCollection />} />
+                <SidebarItem to="/superuser/manage_services" label="Service Management" icon={<BsTools />} />
+            </SideBar>
+            <div className='flex flex-col flex-1 w-full'>
+                <SuperUser_Header />
+                <main className="h-full w-full overflow-y-auto bg-gray-50 p-6">
+                    <Outlet />
+                </main>
+            </div>
+        </div>
+    );
+}
