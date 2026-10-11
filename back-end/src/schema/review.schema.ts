@@ -24,6 +24,5 @@ export class Review {
 export const ReviewSchema = SchemaFactory.createForClass(Review);
 
 // -- Indexes ----------------------------------------------------------------
-ReviewSchema.index({ booking: 1 }, { unique: true });
 ReviewSchema.index({ service: 1, createdAt: -1 });
 ReviewSchema.index({ provider: 1, createdAt: -1 });

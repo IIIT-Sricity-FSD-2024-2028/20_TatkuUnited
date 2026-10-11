@@ -20,5 +20,3 @@ export class Category {
 
 export const CategorySchema = SchemaFactory.createForClass(Category);
 
-// -- Indexes ----------------------------------------------------------------
-CategorySchema.index({ name: 1 }, { unique: true });

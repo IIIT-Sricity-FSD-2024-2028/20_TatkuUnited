@@ -1,10 +1,11 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import {
   Unavailability,
   UnavailabilityDocument,
 } from '../schema/unavailability.schema';
+import { Provider, ProviderDocument } from '../schema/provider.schema';
 import { CreateUnavailabilityDto } from './dto/create-unavailability.dto';
 import { UpdateUnavailabilityDto } from './dto/update-unavailability.dto';
 
@@ -13,6 +14,8 @@ export class UnavailabilityService {
   constructor(
     @InjectModel(Unavailability.name)
     private readonly unavailabilityModel: Model<UnavailabilityDocument>,
+    @InjectModel(Provider.name)
+    private readonly providerModel: Model<ProviderDocument>,
   ) {}
 
   create(dto: CreateUnavailabilityDto) {
@@ -20,11 +23,42 @@ export class UnavailabilityService {
   }
 
   findAll() {
-    return this.unavailabilityModel.find().exec();
+    return this.unavailabilityModel.find().populate('provider').exec();
   }
 
   findByProviderAndDate(providerId: string, date: Date) {
     return this.unavailabilityModel.find({ provider: providerId, date }).exec();
+  }
+
+  async findByProvider(providerId: string, date?: string) {
+    let actualProviderId = providerId;
+    if (Types.ObjectId.isValid(providerId)) {
+      const providerDoc = await this.providerModel
+        .findOne({
+          $or: [
+            { _id: new Types.ObjectId(providerId) },
+            { user: new Types.ObjectId(providerId) },
+          ],
+        })
+        .exec();
+      if (providerDoc) {
+        actualProviderId = providerDoc._id.toString();
+      }
+    }
+
+    const filter: Record<string, unknown> = { provider: actualProviderId };
+    if (date) {
+      const queryDate = new Date(date);
+      if (!isNaN(queryDate.getTime())) {
+        filter.date = queryDate;
+      }
+    }
+
+    return this.unavailabilityModel
+      .find(filter)
+      .sort({ date: 1, startTime: 1 })
+      .populate('provider')
+      .exec();
   }
 
   async findOne(id: string) {

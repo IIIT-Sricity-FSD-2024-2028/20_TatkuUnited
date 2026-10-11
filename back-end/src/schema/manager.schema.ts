@@ -35,5 +35,4 @@ export class Manager {
 export const ManagerSchema = SchemaFactory.createForClass(Manager);
 
 // -- Indexes -------------------------------------------------------------------
-ManagerSchema.index({ user: 1 }, { unique: true });
 ManagerSchema.index({ location: '2dsphere' });

@@ -30,6 +30,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
 
     if (exception instanceof HttpException) {
       status = exception.getStatus();
+      errorType = exception.name;
       const res = exception.getResponse();
       if (typeof res === 'string') {
         message = res;

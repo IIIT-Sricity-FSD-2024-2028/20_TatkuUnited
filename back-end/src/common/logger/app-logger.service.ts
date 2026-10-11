@@ -1,11 +1,11 @@
-import { Injectable, LoggerService } from '@nestjs/common';
+import { Injectable, LoggerService, Optional } from '@nestjs/common';
 import { winstonLoggerInstance } from './winston.config';
 
 @Injectable()
 export class AppLoggerService implements LoggerService {
   private context?: string;
 
-  constructor(context?: string) {
+  constructor(@Optional() context?: string) {
     this.context = context;
   }
 

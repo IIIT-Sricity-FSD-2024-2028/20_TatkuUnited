@@ -4,6 +4,7 @@ import { Model } from 'mongoose';
 import { Order, OrderDocument } from '../schema/order.schema';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
+import { PaymentStatus } from '../common/enums';
 
 @Injectable()
 export class OrdersService {
@@ -24,6 +25,23 @@ export class OrdersService {
       .find({ customer: customerId })
       .sort({ createdAt: -1 })
       .exec();
+  }
+
+  findByStatus(status: PaymentStatus | string) {
+    return this.orderModel
+      .find({ paymentStatus: status as PaymentStatus })
+      .sort({ createdAt: -1 })
+      .exec();
+  }
+
+  async findWithDetails(id: string) {
+    const doc = await this.orderModel
+      .findById(id)
+      .populate('customer', '-password')
+      .populate('payment')
+      .exec();
+    if (!doc) throw new NotFoundException(`Order ${id} not found`);
+    return doc;
   }
 
   async findOne(id: string) {

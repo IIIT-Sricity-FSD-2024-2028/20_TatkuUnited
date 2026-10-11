@@ -36,8 +36,12 @@ flowchart TD
 
 | Document | Topic | Description |
 | :--- | :--- | :--- |
+| **[Cross-Collection Architecture](./cross-collection-architecture.md)** | Schemas & Workflows | Cross-collection relationships, foreign keys, state machines, and lifecycle service implementations based on `db_docs.md`. |
+| **[Swagger & API Specification](./swagger-api-spec.md)** | Full REST URLs & Swagger UI | Complete catalog of endpoints, interactive Swagger UI paths, OpenAPI specs, parameters, and payloads. |
 | **[RBAC & Security Guide](./rbac-and-security.md)** | Roles, Permissions & Guards | Roles enum, permissions matrix, guards hierarchy, input sanitization, rate limiting, and ownership protection. |
 | **[Logging & Observability Guide](./logging-and-observability.md)** | Logging & Error Handling | Winston daily rotating file logger, correlation IDs, exception filters, performance tracking, and log audits. |
+| **[Testing & Verification Guide](./testing-and-verification.md)** | Unit Testing & QA | Complete unit test suite, RBAC/auth verification, vital flow tests, and coverage metrics. |
+| **[Test Execution & Coverage Report](./test-results.md)** | QA & Test Metrics | Official test execution metrics (98/98 passed, 0 failures), module breakdown, and coverage matrix. |
 
 ---
 

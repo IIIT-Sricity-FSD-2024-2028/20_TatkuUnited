@@ -10,6 +10,8 @@ import { APP_GUARD } from '@nestjs/core';
 // Common modules & security
 import { LoggerModule } from './common/logger/logger.module';
 import { AuthModule } from './auth/auth.module';
+import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
+import { RolesGuard } from './common/guards/roles.guard';
 import {
   CorrelationIdMiddleware,
   SanitizeInputMiddleware,
@@ -72,6 +74,14 @@ import { PlatformSettingsModule } from './platform-settings/platform-settings.mo
     {
       provide: APP_GUARD,
       useClass: ThrottlerGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: JwtAuthGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: RolesGuard,
     },
   ],
 })

@@ -53,7 +53,6 @@ export class Provider {
 export const ProviderSchema = SchemaFactory.createForClass(Provider);
 
 // -- Indexes -------------------------------------------------------------------
-ProviderSchema.index({ user: 1 }, { unique: true });
 ProviderSchema.index({ location: '2dsphere' });
 ProviderSchema.index({ status: 1, offeredServices: 1 });
 ProviderSchema.index({ region: 1, status: 1 });
