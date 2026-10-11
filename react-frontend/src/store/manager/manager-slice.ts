@@ -107,9 +107,12 @@ export const fetchServiceProviders = createAsyncThunkTyped(
     async (_, thunkAPI): Promise<ServiceProvider[]> => {
         const globalState: RootState = thunkAPI.getState();
         const token = globalState.auth.token;
-        const collective_id = globalState.manager.collectiveInfo.collective_id;
+        const collective_id = globalState.manager.collectiveInfo?.collective_id;
 
         try {
+            if (!collective_id) {
+                throw new Error("Manager collective information is not available");
+            }
             const response = await axios.get<ServiceProvider[]>(`${BASE_URL}/service-providers/collective/${collective_id}`,
                 {
                     headers: {

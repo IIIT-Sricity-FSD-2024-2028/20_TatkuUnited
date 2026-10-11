@@ -15,14 +15,15 @@ import UrlMap from "../../common/urlMap";
 export default function ManagerLayout() {
   const dispatch = useDispatch<AppDispatch>();
   const manager = useSelector((state: RootState) => state.auth.user);
-  const managerId = manager.id;
+  const managerId = manager?.id;
 
   useEffect(() => {
-    // Order matters
-    dispatch(fetchManager(managerId));
-    dispatch(fetchCollective(managerId));
-    dispatch(fetchServiceProviders());
-  }, [dispatch]);
+  if (!managerId) return;
+
+  dispatch(fetchManager(managerId));
+  dispatch(fetchCollective(managerId));
+  dispatch(fetchServiceProviders());
+}, [dispatch, managerId]);
 
   return (
     <div className="flex h-screen overflow-hidden">

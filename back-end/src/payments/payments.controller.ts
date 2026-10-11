@@ -13,16 +13,21 @@ import {
   ApiResponse,
   ApiParam,
   ApiBody,
+  ApiBearerAuth,
 } from '@nestjs/swagger';
 import { PaymentsService } from './payments.service';
 import { CreatePaymentDto } from './dto/create-payment.dto';
 import { UpdatePaymentDto } from './dto/update-payment.dto';
+import { Roles } from '../common/decorators/roles.decorator';
+import { Role } from '../common/enums/roles.enum';
 
 @ApiTags('Payments')
+@ApiBearerAuth('bearer-token')
 @Controller('payments')
 export class PaymentsController {
   constructor(private readonly paymentsService: PaymentsService) {}
 
+  @Roles(Role.CUSTOMER, Role.ADMIN)
   @Post()
   @ApiOperation({
     summary: 'Create a new payment record',
@@ -36,6 +41,7 @@ export class PaymentsController {
     return this.paymentsService.create(createPaymentDto);
   }
 
+  @Roles(Role.CUSTOMER, Role.MANAGER, Role.ADMIN)
   @Get()
   @ApiOperation({
     summary: 'Get all payments',
@@ -46,6 +52,20 @@ export class PaymentsController {
     return this.paymentsService.findAll();
   }
 
+  @Roles(Role.CUSTOMER, Role.MANAGER, Role.ADMIN)
+  @Get('order/:orderId')
+  @ApiOperation({
+    summary: 'Get payment by order ID',
+    description: 'Retrieves payment transaction record associated with an order ID.',
+  })
+  @ApiParam({ name: 'orderId', description: 'Order Mongo ObjectId', example: '65f1a2b3c4d5e6f7a8b9c0d1' })
+  @ApiResponse({ status: 200, description: 'Payment record found.' })
+  @ApiResponse({ status: 404, description: 'Payment not found.' })
+  findByOrder(@Param('orderId') orderId: string) {
+    return this.paymentsService.findByOrder(orderId);
+  }
+
+  @Roles(Role.CUSTOMER, Role.MANAGER, Role.ADMIN)
   @Get(':id')
   @ApiOperation({
     summary: 'Get payment by ID',
@@ -58,6 +78,7 @@ export class PaymentsController {
     return this.paymentsService.findOne(id);
   }
 
+  @Roles(Role.ADMIN)
   @Patch(':id')
   @ApiOperation({
     summary: 'Update payment status or details',
@@ -71,6 +92,7 @@ export class PaymentsController {
     return this.paymentsService.update(id, updatePaymentDto);
   }
 
+  @Roles(Role.ADMIN)
   @Delete(':id')
   @ApiOperation({
     summary: 'Delete payment record',

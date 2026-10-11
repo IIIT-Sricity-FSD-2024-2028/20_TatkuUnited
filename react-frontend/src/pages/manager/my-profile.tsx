@@ -11,19 +11,9 @@ import {
   FieldGroup,
   FieldSet,
   FieldLegend,
-  FieldDescription,
   FieldLabel,
-  FieldSeparator,
 } from "../../components/ui/field";
 import { Input } from "../../components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "../../components/ui/select";
 import { Button } from "../../components/ui/button";
 
 export default function ManagerProfile() {
@@ -65,3 +55,4 @@ export default function ManagerProfile() {
     </div>
   );
 }
+

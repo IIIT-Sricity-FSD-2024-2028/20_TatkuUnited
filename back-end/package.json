@@ -82,6 +82,9 @@
       "**/*.(t|j)s"
     ],
     "coverageDirectory": "../coverage",
-    "testEnvironment": "node"
+    "testEnvironment": "node",
+    "moduleNameMapper": {
+      "^@nestjs/swagger$": "<rootDir>/../test/__mocks__/swagger.mock.ts"
+    }
   }
 }

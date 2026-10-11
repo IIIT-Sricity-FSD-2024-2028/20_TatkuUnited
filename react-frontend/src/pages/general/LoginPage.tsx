@@ -5,6 +5,7 @@ import { BASE_URL } from "../../services/api";
 import { useDispatch } from "react-redux";
 import type { AppDispatch } from "../../store";
 import { AuthActions, type UserInterface } from "../../store/auth/auth-slice";
+import type { Role } from "../../common/roles.enum";
 
 interface FormData {
   email: string;
@@ -164,7 +165,7 @@ function FillUserData({ dispatch }: { dispatch: AppDispatch }) {
         id: user.id,
         name: user.name,
         email: user.email,
-        role: user.role,
+        role: user.role as Role,
       };
       sessionStorage.setItem("token", access_token);
       sessionStorage.setItem("user", JSON.stringify(userObj));

@@ -13,16 +13,22 @@ import {
   ApiResponse,
   ApiParam,
   ApiBody,
+  ApiBearerAuth,
 } from '@nestjs/swagger';
 import { CategoriesService } from './categories.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
+import { Public } from '../common/decorators/public.decorator';
+import { Roles } from '../common/decorators/roles.decorator';
+import { Role } from '../common/enums/roles.enum';
 
 @ApiTags('Categories')
+@ApiBearerAuth('bearer-token')
 @Controller('categories')
 export class CategoriesController {
   constructor(private readonly categoriesService: CategoriesService) {}
 
+  @Roles(Role.ADMIN)
   @Post()
   @ApiOperation({
     summary: 'Create a new service category',
@@ -35,6 +41,7 @@ export class CategoriesController {
     return this.categoriesService.create(createCategoryDto);
   }
 
+  @Public()
   @Get()
   @ApiOperation({
     summary: 'Get all categories',
@@ -45,6 +52,7 @@ export class CategoriesController {
     return this.categoriesService.findAll();
   }
 
+  @Public()
   @Get(':id')
   @ApiOperation({
     summary: 'Get category by ID',
@@ -57,6 +65,7 @@ export class CategoriesController {
     return this.categoriesService.findOne(id);
   }
 
+  @Roles(Role.ADMIN)
   @Patch(':id')
   @ApiOperation({
     summary: 'Update category',
@@ -73,6 +82,7 @@ export class CategoriesController {
     return this.categoriesService.update(id, updateCategoryDto);
   }
 
+  @Roles(Role.ADMIN)
   @Delete(':id')
   @ApiOperation({
     summary: 'Delete category',
