@@ -6,6 +6,7 @@ import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch, RootState } from "../../store";
 import { useEffect } from "react";
 import {
+  ManagerActions,
   fetchManager,
   fetchRegionBookings,
   fetchRegionProviders,
@@ -17,8 +18,8 @@ export default function ManagerLayout() {
   const dispatch = useDispatch<AppDispatch>();
   const manager = useSelector((state: RootState) => state.auth.user);
   const managerId = manager?.id;
-  const selectedRegionId = useSelector(
-    (state: RootState) => state.manager.selectedRegionId,
+  const { regions, selectedRegionId } = useSelector(
+    (state: RootState) => state.manager,
   );
 
   useEffect(() => {
@@ -58,7 +59,24 @@ export default function ManagerLayout() {
         ></SidebarItem>
       </SideBar>
       <div className="flex flex-col flex-1 w-full">
-        <UserHeader header="Manager Dashboard" />
+        <div className="flex items-center justify-between pr-4">
+          <UserHeader header="Manager Dashboard" />
+          {regions.length > 1 && (
+            <select
+              className="border rounded-md px-2 py-1 text-sm bg-white"
+              value={selectedRegionId ?? ""}
+              onChange={(e) =>
+                dispatch(ManagerActions.selectRegion(e.target.value))
+              }
+            >
+              {regions.map((r) => (
+                <option key={r._id} value={r._id}>
+                  {r.name}
+                </option>
+              ))}
+            </select>
+          )}
+        </div>
         <main className="h-full w-full overflow-y-auto bg-gray-50 p-6">
           <Outlet />
         </main>
