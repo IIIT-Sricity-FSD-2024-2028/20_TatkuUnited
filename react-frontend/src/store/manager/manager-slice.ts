@@ -1,148 +1,96 @@
 import { createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
-import { BASE_URL } from "../../common/endpoints";
-import type { RootState } from "..";
+import { BASE_URL } from "../../services/api";
 import createAsyncThunkTyped from "../asyncThunk";
 
-export interface CollectiveManager {
-  cm_id: string;
+const authConfig = (token: string | null) => ({
+  headers: { Authorization: `Bearer ${token}` },
+});
+
+type GeoPoint = { type: "Point"; coordinates: [number, number] };
+
+export interface Manager {
+  _id: string;
+  user: string;
+  salary: number; // paise
+  experience: number; // years
+  location: GeoPoint;
+  status: "active" | "suspended" | "inactive";
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Region {
+  _id: string;
   name: string;
-  email: string;
-//   password_hash: string;
-  phone: string;
-  is_active: boolean;
-  created_at: string;
-  updated_at: string;
-  collective_id: string;
+  manager: string;
+  location: GeoPoint;
+  isActive: boolean;
 }
-
-export interface Collective {
-  collective_id: string;
-  collective_name: string;
-  is_active: boolean;
-  created_at: string;
-}
-
-export interface ServiceProvider {
-  sp_id: string;
-  name: string;
-  email: string;
-//   password_hash: string;
-  phone: string;
-  dob: string;
-  address: string;
-  gender: string;
-  rating: number;
-  rating_count: number;
-  is_active: boolean;
-  account_status: string;
-//   deactivation_requested: boolean;
-//   hour_start: string;
-//   hour_end: string;
-//   created_at: string;
-//   updated_at: string;
-  unit_id: string;
-  home_sector_id: string;
-}
-
 
 interface ManagerState {
-    managerInfo: CollectiveManager | null,
-    collectiveInfo: Collective | null,
-    providersInfo: ServiceProvider[],
+  managerInfo: Manager | null;
+  regions: Region[];
+  selectedRegionId: string | null;
 }
 
 const initialState: ManagerState = {
-    managerInfo: null,
-    collectiveInfo: null,
-    providersInfo: [],
-}
+  managerInfo: null,
+  regions: [],
+  selectedRegionId: null,
+};
 
+// The back-end accepts the auth user id for both of these lookups.
 export const fetchManager = createAsyncThunkTyped(
-    "manager/fetchManager",
-    async (managerId: string, thunkAPI):Promise<CollectiveManager> => {
-        const globalState: RootState = thunkAPI.getState();
-        const token = globalState.auth.token;
-
-        try {
-            const response = await axios.get<CollectiveManager>(`${BASE_URL}/collective-managers/${managerId}`,
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                        "x-role": "collective_manager"
-                    }
-                }
-            );
-            return response.data;
-        } catch(err) {
-            throw new Error("Fetching manager details failed");
-        }
+  "manager/fetchManager",
+  async (userId: string, thunkAPI): Promise<Manager> => {
+    const { token } = thunkAPI.getState().auth;
+    try {
+      const res = await axios.get<Manager>(
+        `${BASE_URL}/managers/user/${userId}`,
+        authConfig(token),
+      );
+      return res.data;
+    } catch {
+      throw new Error("Fetching manager details failed");
     }
-)
+  },
+);
 
-export const fetchCollective = createAsyncThunkTyped(
-    "manager/fetchCollective",
-    async (managerId: string, thunkAPI): Promise<Collective> => {
-        const globalState: RootState = thunkAPI.getState();
-        const token = globalState.auth.token;
-
-        try {
-            const response = await axios.get<Collective>(`${BASE_URL}/collectives/manager/${managerId}`,
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                        "x-role": "collective_manager"
-                    }
-                }
-            );
-            return response.data;
-        } catch(err) {
-            throw new Error("Fetching manager details failed");
-        }
+export const fetchRegions = createAsyncThunkTyped(
+  "manager/fetchRegions",
+  async (userId: string, thunkAPI): Promise<Region[]> => {
+    const { token } = thunkAPI.getState().auth;
+    try {
+      const res = await axios.get<Region[]>(
+        `${BASE_URL}/regions/manager/${userId}`,
+        authConfig(token),
+      );
+      return res.data;
+    } catch {
+      throw new Error("Fetching regions failed");
     }
-)
-
-export const fetchServiceProviders = createAsyncThunkTyped(
-    "manager/fetchServiceProviders",
-    async (_, thunkAPI): Promise<ServiceProvider[]> => {
-        const globalState: RootState = thunkAPI.getState();
-        const token = globalState.auth.token;
-        const collective_id = globalState.manager.collectiveInfo?.collective_id;
-
-        try {
-            if (!collective_id) {
-                throw new Error("Manager collective information is not available");
-            }
-            const response = await axios.get<ServiceProvider[]>(`${BASE_URL}/service-providers/collective/${collective_id}`,
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                        "x-role": "collective_manager"
-                    }
-                }
-            );
-            console.log(response.data);
-            return response.data;
-        } catch(err) {
-            throw new Error("Fetching service providers details failed");
-        }
-    }
-)
+  },
+);
 
 const ManagerSlice = createSlice({
-    name: "manager",
-    initialState,
-    reducers: {},
-    extraReducers: (builder) => {
-        builder.addCase(fetchManager.fulfilled, (state, action) => {
-            state.managerInfo = action.payload;
-        }).addCase(fetchCollective.fulfilled, (state, action) => {
-            state.collectiveInfo = action.payload;
-        }).addCase(fetchServiceProviders.fulfilled, (state, action) => {
-            state.providersInfo = action.payload;
-        })
-    },
-})
+  name: "manager",
+  initialState,
+  reducers: {},
+  extraReducers: (builder) => {
+    builder
+      .addCase(fetchManager.fulfilled, (state, action) => {
+        state.managerInfo = action.payload;
+      })
+      .addCase(fetchRegions.fulfilled, (state, action) => {
+        state.regions = action.payload;
+        const stillValid = action.payload.some(
+          (r) => r._id === state.selectedRegionId,
+        );
+        if (!stillValid) state.selectedRegionId = action.payload[0]?._id ?? null;
+      });
+  },
+});
 
 export const ManagerReducer = ManagerSlice.reducer;
 export const ManagerActions = ManagerSlice.actions;

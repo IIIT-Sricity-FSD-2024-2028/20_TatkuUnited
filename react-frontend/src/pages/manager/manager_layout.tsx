@@ -5,11 +5,7 @@ import UserHeader from "../shared/user-header";
 import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch, RootState } from "../../store";
 import { useEffect } from "react";
-import {
-  fetchCollective,
-  fetchManager,
-  fetchServiceProviders,
-} from "../../store/manager/manager-slice";
+import { fetchManager, fetchRegions } from "../../store/manager/manager-slice";
 import UrlMap from "../../common/urlMap";
 
 export default function ManagerLayout() {
@@ -18,12 +14,10 @@ export default function ManagerLayout() {
   const managerId = manager?.id;
 
   useEffect(() => {
-  if (!managerId) return;
-
-  dispatch(fetchManager(managerId));
-  dispatch(fetchCollective(managerId));
-  dispatch(fetchServiceProviders());
-}, [dispatch, managerId]);
+    if (!managerId) return;
+    dispatch(fetchManager(managerId));
+    dispatch(fetchRegions(managerId));
+  }, [dispatch, managerId]);
 
   return (
     <div className="flex h-screen overflow-hidden">

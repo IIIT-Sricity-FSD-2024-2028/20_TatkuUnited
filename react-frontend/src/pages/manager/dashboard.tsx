@@ -8,18 +8,16 @@ import {
 } from "../../components/ui/card";
 
 export default function ManagerDashboard() {
-  const manager = useSelector((state: RootState) => state.manager.managerInfo);
-  const collective = useSelector(
-    (state: RootState) => state.manager.collectiveInfo,
+  const user = useSelector((state: RootState) => state.auth.user);
+  const { regions, selectedRegionId } = useSelector(
+    (state: RootState) => state.manager,
   );
-  const serviceProviders = useSelector(
-    (state: RootState) => state.manager.providersInfo,
-  );
+  const region = regions.find((r) => r._id === selectedRegionId);
 
   return (
     <div className="p-2">
       <h1 className="font-semibold text-2xl mb-4">
-        Welcome back, {manager?.name ?? "Guest"}
+        Welcome back, {user?.name ?? "Guest"}
       </h1>
       <div className="grid gap-4 grid-cols-2 grid-rows-2">
         <Card>
@@ -27,14 +25,14 @@ export default function ManagerDashboard() {
             <CardTitle>Region Name</CardTitle>
           </CardHeader>
           <CardContent>
-            {collective?.collective_name ?? "Unknown collective"}
+            {region?.name ?? "No region assigned"}
           </CardContent>
         </Card>
         <Card>
           <CardHeader>
             <CardTitle>Total Providers</CardTitle>
           </CardHeader>
-          <CardContent>{serviceProviders.length}</CardContent>
+          <CardContent>{"total providers"}</CardContent>
         </Card>
         <Card>
           <CardHeader>
