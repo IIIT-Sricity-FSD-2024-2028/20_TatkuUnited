@@ -5,19 +5,33 @@ import UserHeader from "../shared/user-header";
 import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch, RootState } from "../../store";
 import { useEffect } from "react";
-import { fetchManager, fetchRegions } from "../../store/manager/manager-slice";
+import {
+  fetchManager,
+  fetchRegionBookings,
+  fetchRegionProviders,
+  fetchRegions,
+} from "../../store/manager/manager-slice";
 import UrlMap from "../../common/urlMap";
 
 export default function ManagerLayout() {
   const dispatch = useDispatch<AppDispatch>();
   const manager = useSelector((state: RootState) => state.auth.user);
   const managerId = manager?.id;
+  const selectedRegionId = useSelector(
+    (state: RootState) => state.manager.selectedRegionId,
+  );
 
   useEffect(() => {
     if (!managerId) return;
     dispatch(fetchManager(managerId));
     dispatch(fetchRegions(managerId));
   }, [dispatch, managerId]);
+
+  useEffect(() => {
+    if (!selectedRegionId) return;
+    dispatch(fetchRegionProviders(selectedRegionId));
+    dispatch(fetchRegionBookings(selectedRegionId));
+  }, [dispatch, selectedRegionId]);
 
   return (
     <div className="flex h-screen overflow-hidden">
