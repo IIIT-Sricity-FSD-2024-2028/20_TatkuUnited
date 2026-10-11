@@ -1,0 +1,1868 @@
+{
+  "openapi": "3.0.0",
+  "paths": {
+    "/": {
+      "get": {
+        "description": "Returns a greeting string indicating the backend service is running.",
+        "operationId": "AppController_getHello",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Service is healthy and responding.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string",
+                  "example": "Hello World!"
+                }
+              }
+            }
+          }
+        },
+        "summary": "System health check and welcome endpoint",
+        "tags": [
+          "System"
+        ]
+      }
+    },
+    "/users": {
+      "post": {
+        "description": "Registers a new user record. Roles can be customer, provider, manager, or admin.",
+        "operationId": "UsersController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateUserDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "User successfully created."
+          },
+          "400": {
+            "description": "Invalid payload or email already exists."
+          }
+        },
+        "summary": "Create a new user",
+        "tags": [
+          "Users"
+        ]
+      },
+      "get": {
+        "description": "Retrieves all registered users without sensitive password fields.",
+        "operationId": "UsersController_findAll",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "List of all users."
+          }
+        },
+        "summary": "Get all users",
+        "tags": [
+          "Users"
+        ]
+      }
+    },
+    "/users/{id}": {
+      "get": {
+        "description": "Retrieves a single user document by its MongoDB ObjectId.",
+        "operationId": "UsersController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "User Mongo ObjectId",
+            "schema": {
+              "example": "65f1a2b3c4d5e6f7a8b9c0d1",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User found."
+          },
+          "404": {
+            "description": "User not found."
+          }
+        },
+        "summary": "Get user by ID",
+        "tags": [
+          "Users"
+        ]
+      },
+      "patch": {
+        "description": "Updates specific fields on an existing user.",
+        "operationId": "UsersController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "User Mongo ObjectId",
+            "schema": {
+              "example": "65f1a2b3c4d5e6f7a8b9c0d1",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateUserDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "User successfully updated."
+          },
+          "404": {
+            "description": "User not found."
+          }
+        },
+        "summary": "Update user profile",
+        "tags": [
+          "Users"
+        ]
+      },
+      "delete": {
+        "description": "Permanently removes a user record from the system.",
+        "operationId": "UsersController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "User Mongo ObjectId",
+            "schema": {
+              "example": "65f1a2b3c4d5e6f7a8b9c0d1",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User successfully removed."
+          },
+          "404": {
+            "description": "User not found."
+          }
+        },
+        "summary": "Delete user",
+        "tags": [
+          "Users"
+        ]
+      }
+    },
+    "/providers": {
+      "post": {
+        "description": "Creates a new provider document linked to a User, specifying offered services, work hours, working days, and GeoJSON location.",
+        "operationId": "ProvidersController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateProviderDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Provider profile successfully created."
+          },
+          "400": {
+            "description": "Invalid provider data."
+          }
+        },
+        "summary": "Create / register a service provider profile",
+        "tags": [
+          "Providers"
+        ]
+      },
+      "get": {
+        "description": "Retrieves all service providers with user relations, working days, and status.",
+        "operationId": "ProvidersController_findAll",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "List of all providers."
+          }
+        },
+        "summary": "Get all service providers",
+        "tags": [
+          "Providers"
+        ]
+      }
+    },
+    "/providers/{id}": {
+      "get": {
+        "description": "Retrieves a single service provider profile by Mongo ObjectId.",
+        "operationId": "ProvidersController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Provider Mongo ObjectId",
+            "schema": {
+              "example": "65f1a2b3c4d5e6f7a8b9c0d1",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Provider found."
+          },
+          "404": {
+            "description": "Provider not found."
+          }
+        },
+        "summary": "Get provider by ID",
+        "tags": [
+          "Providers"
+        ]
+      },
+      "patch": {
+        "description": "Updates provider fields such as status, offered services, work hours, or location.",
+        "operationId": "ProvidersController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Provider Mongo ObjectId",
+            "schema": {
+              "example": "65f1a2b3c4d5e6f7a8b9c0d1",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateProviderDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Provider updated successfully."
+          },
+          "404": {
+            "description": "Provider not found."
+          }
+        },
+        "summary": "Update provider profile",
+        "tags": [
+          "Providers"
+        ]
+      },
+      "delete": {
+        "description": "Removes a provider profile from the platform.",
+        "operationId": "ProvidersController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Provider Mongo ObjectId",
+            "schema": {
+              "example": "65f1a2b3c4d5e6f7a8b9c0d1",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Provider successfully deleted."
+          },
+          "404": {
+            "description": "Provider not found."
+          }
+        },
+        "summary": "Delete provider",
+        "tags": [
+          "Providers"
+        ]
+      }
+    },
+    "/managers": {
+      "post": {
+        "description": "Creates a manager record linked to a User, with salary, experience, and office GeoLocation.",
+        "operationId": "ManagersController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateManagerDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Manager successfully created."
+          },
+          "400": {
+            "description": "Invalid manager payload."
+          }
+        },
+        "summary": "Create / register a regional manager",
+        "tags": [
+          "Managers"
+        ]
+      },
+      "get": {
+        "description": "Retrieves all managers with populated user info and active status.",
+        "operationId": "ManagersController_findAll",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "List of all managers."
+          }
+        },
+        "summary": "Get all regional managers",
+        "tags": [
+          "Managers"
+        ]
+      }
+    },
+    "/managers/{id}": {
+      "get": {
+        "description": "Retrieves a single manager by its Mongo ObjectId.",
+        "operationId": "ManagersController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Manager Mongo ObjectId",
+            "schema": {
+              "example": "65f1a2b3c4d5e6f7a8b9c0d1",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Manager found."
+          },
+          "404": {
+            "description": "Manager not found."
+          }
+        },
+        "summary": "Get manager by ID",
+        "tags": [
+          "Managers"
+        ]
+      },
+      "patch": {
+        "description": "Updates manager status (active, suspended, inactive), salary, or office location.",
+        "operationId": "ManagersController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Manager Mongo ObjectId",
+            "schema": {
+              "example": "65f1a2b3c4d5e6f7a8b9c0d1",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateManagerDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Manager updated successfully."
+          },
+          "404": {
+            "description": "Manager not found."
+          }
+        },
+        "summary": "Update manager profile",
+        "tags": [
+          "Managers"
+        ]
+      },
+      "delete": {
+        "description": "Permanently removes a regional manager.",
+        "operationId": "ManagersController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Manager Mongo ObjectId",
+            "schema": {
+              "example": "65f1a2b3c4d5e6f7a8b9c0d1",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Manager successfully removed."
+          },
+          "404": {
+            "description": "Manager not found."
+          }
+        },
+        "summary": "Delete manager",
+        "tags": [
+          "Managers"
+        ]
+      }
+    },
+    "/regions": {
+      "post": {
+        "description": "Registers a serviceable geographical region assigned to a regional manager with centroid coordinates.",
+        "operationId": "RegionsController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateRegionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Region successfully created."
+          },
+          "400": {
+            "description": "Invalid region payload."
+          }
+        },
+        "summary": "Create a new region",
+        "tags": [
+          "Regions"
+        ]
+      },
+      "get": {
+        "description": "Retrieves all operational regions with their assigned manager and centroid locations.",
+        "operationId": "RegionsController_findAll",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "List of all regions."
+          }
+        },
+        "summary": "Get all regions",
+        "tags": [
+          "Regions"
+        ]
+      }
+    },
+    "/regions/{id}": {
+      "get": {
+        "description": "Retrieves a single region document by Mongo ObjectId.",
+        "operationId": "RegionsController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Region Mongo ObjectId",
+            "schema": {
+              "example": "65f1a2b3c4d5e6f7a8b9c0d1",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Region found."
+          },
+          "404": {
+            "description": "Region not found."
+          }
+        },
+        "summary": "Get region by ID",
+        "tags": [
+          "Regions"
+        ]
+      },
+      "patch": {
+        "description": "Updates region properties, such as assigned manager, centroid GeoLocation, or active state.",
+        "operationId": "RegionsController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Region Mongo ObjectId",
+            "schema": {
+              "example": "65f1a2b3c4d5e6f7a8b9c0d1",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateRegionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Region successfully updated."
+          },
+          "404": {
+            "description": "Region not found."
+          }
+        },
+        "summary": "Update region",
+        "tags": [
+          "Regions"
+        ]
+      },
+      "delete": {
+        "description": "Removes a region from the platform.",
+        "operationId": "RegionsController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Region Mongo ObjectId",
+            "schema": {
+              "example": "65f1a2b3c4d5e6f7a8b9c0d1",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Region successfully removed."
+          },
+          "404": {
+            "description": "Region not found."
+          }
+        },
+        "summary": "Delete region",
+        "tags": [
+          "Regions"
+        ]
+      }
+    },
+    "/categories": {
+      "post": {
+        "description": "Creates a service category with name, description, image URL, and active status.",
+        "operationId": "CategoriesController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCategoryDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Category successfully created."
+          },
+          "400": {
+            "description": "Invalid category payload."
+          }
+        },
+        "summary": "Create a new service category",
+        "tags": [
+          "Categories"
+        ]
+      },
+      "get": {
+        "description": "Retrieves all service categories in the platform catalog.",
+        "operationId": "CategoriesController_findAll",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "List of all categories."
+          }
+        },
+        "summary": "Get all categories",
+        "tags": [
+          "Categories"
+        ]
+      }
+    },
+    "/categories/{id}": {
+      "get": {
+        "description": "Retrieves a single service category by Mongo ObjectId.",
+        "operationId": "CategoriesController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Category Mongo ObjectId",
+            "schema": {
+              "example": "65f1a2b3c4d5e6f7a8b9c0d1",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Category found."
+          },
+          "404": {
+            "description": "Category not found."
+          }
+        },
+        "summary": "Get category by ID",
+        "tags": [
+          "Categories"
+        ]
+      },
+      "patch": {
+        "description": "Updates category title, description, thumbnail image, or active status.",
+        "operationId": "CategoriesController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Category Mongo ObjectId",
+            "schema": {
+              "example": "65f1a2b3c4d5e6f7a8b9c0d1",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateCategoryDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Category updated successfully."
+          },
+          "404": {
+            "description": "Category not found."
+          }
+        },
+        "summary": "Update category",
+        "tags": [
+          "Categories"
+        ]
+      },
+      "delete": {
+        "description": "Removes a category from the catalog.",
+        "operationId": "CategoriesController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Category Mongo ObjectId",
+            "schema": {
+              "example": "65f1a2b3c4d5e6f7a8b9c0d1",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Category successfully deleted."
+          },
+          "404": {
+            "description": "Category not found."
+          }
+        },
+        "summary": "Delete category",
+        "tags": [
+          "Categories"
+        ]
+      }
+    },
+    "/services": {
+      "post": {
+        "description": "Creates a service offering with pricing in paise, duration in minutes, what is covered/not covered, how it works, and FAQs.",
+        "operationId": "ServicesController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateServiceDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Service successfully created."
+          },
+          "400": {
+            "description": "Invalid service payload."
+          }
+        },
+        "summary": "Create a new service offering",
+        "tags": [
+          "Services"
+        ]
+      },
+      "get": {
+        "description": "Retrieves all service offerings populated with category data.",
+        "operationId": "ServicesController_findAll",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "List of all services."
+          }
+        },
+        "summary": "Get all services",
+        "tags": [
+          "Services"
+        ]
+      }
+    },
+    "/services/{id}": {
+      "get": {
+        "description": "Retrieves a single service offering by its Mongo ObjectId.",
+        "operationId": "ServicesController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Service Mongo ObjectId",
+            "schema": {
+              "example": "65f1a2b3c4d5e6f7a8b9c0d1",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Service found."
+          },
+          "404": {
+            "description": "Service not found."
+          }
+        },
+        "summary": "Get service by ID",
+        "tags": [
+          "Services"
+        ]
+      },
+      "patch": {
+        "description": "Updates price, duration, descriptions, FAQs, or active availability.",
+        "operationId": "ServicesController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Service Mongo ObjectId",
+            "schema": {
+              "example": "65f1a2b3c4d5e6f7a8b9c0d1",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateServiceDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Service updated successfully."
+          },
+          "404": {
+            "description": "Service not found."
+          }
+        },
+        "summary": "Update service offering",
+        "tags": [
+          "Services"
+        ]
+      },
+      "delete": {
+        "description": "Deletes a service offering from the catalog.",
+        "operationId": "ServicesController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Service Mongo ObjectId",
+            "schema": {
+              "example": "65f1a2b3c4d5e6f7a8b9c0d1",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Service successfully removed."
+          },
+          "404": {
+            "description": "Service not found."
+          }
+        },
+        "summary": "Delete service",
+        "tags": [
+          "Services"
+        ]
+      }
+    },
+    "/orders": {
+      "post": {
+        "description": "Creates a checkout order record snapshotting address and total amount in paise, with a 15-minute expiration timestamp.",
+        "operationId": "OrdersController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateOrderDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Order created successfully."
+          },
+          "400": {
+            "description": "Invalid order payload."
+          }
+        },
+        "summary": "Create a new customer order",
+        "tags": [
+          "Orders"
+        ]
+      },
+      "get": {
+        "description": "Retrieves all orders, populated with customer profile data.",
+        "operationId": "OrdersController_findAll",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "List of all orders."
+          }
+        },
+        "summary": "Get all orders",
+        "tags": [
+          "Orders"
+        ]
+      }
+    },
+    "/orders/{id}": {
+      "get": {
+        "description": "Retrieves single order details by its Mongo ObjectId.",
+        "operationId": "OrdersController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Order Mongo ObjectId",
+            "schema": {
+              "example": "65f1a2b3c4d5e6f7a8b9c0d1",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Order found."
+          },
+          "404": {
+            "description": "Order not found."
+          }
+        },
+        "summary": "Get order by ID",
+        "tags": [
+          "Orders"
+        ]
+      },
+      "patch": {
+        "description": "Updates order status (e.g. paid, failed, refunded) or associated fields.",
+        "operationId": "OrdersController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Order Mongo ObjectId",
+            "schema": {
+              "example": "65f1a2b3c4d5e6f7a8b9c0d1",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateOrderDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Order updated successfully."
+          },
+          "404": {
+            "description": "Order not found."
+          }
+        },
+        "summary": "Update order",
+        "tags": [
+          "Orders"
+        ]
+      },
+      "delete": {
+        "description": "Removes an order document from the database.",
+        "operationId": "OrdersController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Order Mongo ObjectId",
+            "schema": {
+              "example": "65f1a2b3c4d5e6f7a8b9c0d1",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Order successfully removed."
+          },
+          "404": {
+            "description": "Order not found."
+          }
+        },
+        "summary": "Delete order",
+        "tags": [
+          "Orders"
+        ]
+      }
+    },
+    "/bookings": {
+      "post": {
+        "description": "Creates a booking reservation for a service with provider, customer, scheduledDate, startTime/endTime, travel buffers, and fee splits.",
+        "operationId": "BookingsController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateBookingDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Booking successfully created."
+          },
+          "400": {
+            "description": "Invalid booking data or slot conflict."
+          }
+        },
+        "summary": "Create a new service booking",
+        "tags": [
+          "Bookings"
+        ]
+      },
+      "get": {
+        "description": "Retrieves all bookings with populated service, provider, customer, order, and region references.",
+        "operationId": "BookingsController_findAll",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "List of all bookings."
+          }
+        },
+        "summary": "Get all bookings",
+        "tags": [
+          "Bookings"
+        ]
+      }
+    },
+    "/bookings/{id}": {
+      "get": {
+        "description": "Retrieves a single booking details by its Mongo ObjectId.",
+        "operationId": "BookingsController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Booking Mongo ObjectId",
+            "schema": {
+              "example": "65f1a2b3c4d5e6f7a8b9c0d1",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Booking found."
+          },
+          "404": {
+            "description": "Booking not found."
+          }
+        },
+        "summary": "Get booking by ID",
+        "tags": [
+          "Bookings"
+        ]
+      },
+      "patch": {
+        "description": "Updates booking state (e.g. confirmed, in_progress, completed, cancelled), OTP, or notes.",
+        "operationId": "BookingsController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Booking Mongo ObjectId",
+            "schema": {
+              "example": "65f1a2b3c4d5e6f7a8b9c0d1",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateBookingDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Booking successfully updated."
+          },
+          "404": {
+            "description": "Booking not found."
+          }
+        },
+        "summary": "Update booking status or details",
+        "tags": [
+          "Bookings"
+        ]
+      },
+      "delete": {
+        "description": "Removes a booking record from the platform.",
+        "operationId": "BookingsController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Booking Mongo ObjectId",
+            "schema": {
+              "example": "65f1a2b3c4d5e6f7a8b9c0d1",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Booking successfully removed."
+          },
+          "404": {
+            "description": "Booking not found."
+          }
+        },
+        "summary": "Delete booking",
+        "tags": [
+          "Bookings"
+        ]
+      }
+    },
+    "/payments": {
+      "post": {
+        "description": "Creates a payment record linked to an Order, total amount in paise, currency, and Razorpay order ID.",
+        "operationId": "PaymentsController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePaymentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Payment successfully initialized."
+          },
+          "400": {
+            "description": "Invalid payment data."
+          }
+        },
+        "summary": "Create a new payment record",
+        "tags": [
+          "Payments"
+        ]
+      },
+      "get": {
+        "description": "Retrieves all payment transactions populated with order data.",
+        "operationId": "PaymentsController_findAll",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "List of all payments."
+          }
+        },
+        "summary": "Get all payments",
+        "tags": [
+          "Payments"
+        ]
+      }
+    },
+    "/payments/{id}": {
+      "get": {
+        "description": "Retrieves a single payment transaction by its Mongo ObjectId.",
+        "operationId": "PaymentsController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Payment Mongo ObjectId",
+            "schema": {
+              "example": "65f1a2b3c4d5e6f7a8b9c0d1",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Payment found."
+          },
+          "404": {
+            "description": "Payment not found."
+          }
+        },
+        "summary": "Get payment by ID",
+        "tags": [
+          "Payments"
+        ]
+      },
+      "patch": {
+        "description": "Updates payment status, Razorpay payment ID, method, or refund details.",
+        "operationId": "PaymentsController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Payment Mongo ObjectId",
+            "schema": {
+              "example": "65f1a2b3c4d5e6f7a8b9c0d1",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePaymentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Payment successfully updated."
+          },
+          "404": {
+            "description": "Payment not found."
+          }
+        },
+        "summary": "Update payment status or details",
+        "tags": [
+          "Payments"
+        ]
+      },
+      "delete": {
+        "description": "Removes a payment record from the database.",
+        "operationId": "PaymentsController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Payment Mongo ObjectId",
+            "schema": {
+              "example": "65f1a2b3c4d5e6f7a8b9c0d1",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Payment successfully removed."
+          },
+          "404": {
+            "description": "Payment not found."
+          }
+        },
+        "summary": "Delete payment record",
+        "tags": [
+          "Payments"
+        ]
+      }
+    },
+    "/reviews": {
+      "post": {
+        "description": "Creates a 1-5 star review and optional comment for a completed booking, linking the provider and service.",
+        "operationId": "ReviewsController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateReviewDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Review submitted successfully."
+          },
+          "400": {
+            "description": "Invalid review payload or duplicate booking review."
+          }
+        },
+        "summary": "Submit a service review and rating",
+        "tags": [
+          "Reviews"
+        ]
+      },
+      "get": {
+        "description": "Retrieves all reviews with populated booking, provider, and service details.",
+        "operationId": "ReviewsController_findAll",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "List of all reviews."
+          }
+        },
+        "summary": "Get all reviews",
+        "tags": [
+          "Reviews"
+        ]
+      }
+    },
+    "/reviews/{id}": {
+      "get": {
+        "description": "Retrieves a single review by its Mongo ObjectId.",
+        "operationId": "ReviewsController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Review Mongo ObjectId",
+            "schema": {
+              "example": "65f1a2b3c4d5e6f7a8b9c0d1",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Review found."
+          },
+          "404": {
+            "description": "Review not found."
+          }
+        },
+        "summary": "Get review by ID",
+        "tags": [
+          "Reviews"
+        ]
+      },
+      "patch": {
+        "description": "Updates review rating or text comment.",
+        "operationId": "ReviewsController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Review Mongo ObjectId",
+            "schema": {
+              "example": "65f1a2b3c4d5e6f7a8b9c0d1",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateReviewDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Review updated successfully."
+          },
+          "404": {
+            "description": "Review not found."
+          }
+        },
+        "summary": "Update review",
+        "tags": [
+          "Reviews"
+        ]
+      },
+      "delete": {
+        "description": "Removes a customer review from the system.",
+        "operationId": "ReviewsController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Review Mongo ObjectId",
+            "schema": {
+              "example": "65f1a2b3c4d5e6f7a8b9c0d1",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Review successfully removed."
+          },
+          "404": {
+            "description": "Review not found."
+          }
+        },
+        "summary": "Delete review",
+        "tags": [
+          "Reviews"
+        ]
+      }
+    },
+    "/unavailability": {
+      "post": {
+        "description": "Blocks out a provider schedule on a specific date between startTime and endTime (in minutes from midnight).",
+        "operationId": "UnavailabilityController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateUnavailabilityDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Unavailability block successfully created."
+          },
+          "400": {
+            "description": "Invalid time bounds or missing fields."
+          }
+        },
+        "summary": "Create blackout interval / provider unavailability",
+        "tags": [
+          "Unavailability"
+        ]
+      },
+      "get": {
+        "description": "Retrieves all blackout periods populated with provider profiles.",
+        "operationId": "UnavailabilityController_findAll",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "List of all unavailability records."
+          }
+        },
+        "summary": "Get all unavailability records",
+        "tags": [
+          "Unavailability"
+        ]
+      }
+    },
+    "/unavailability/{id}": {
+      "get": {
+        "description": "Retrieves a single unavailability record by its Mongo ObjectId.",
+        "operationId": "UnavailabilityController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Unavailability Mongo ObjectId",
+            "schema": {
+              "example": "65f1a2b3c4d5e6f7a8b9c0d1",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Unavailability record found."
+          },
+          "404": {
+            "description": "Unavailability record not found."
+          }
+        },
+        "summary": "Get unavailability by ID",
+        "tags": [
+          "Unavailability"
+        ]
+      },
+      "patch": {
+        "description": "Updates date, time slot bounds, or reason on an existing unavailability record.",
+        "operationId": "UnavailabilityController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Unavailability Mongo ObjectId",
+            "schema": {
+              "example": "65f1a2b3c4d5e6f7a8b9c0d1",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateUnavailabilityDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Unavailability record updated successfully."
+          },
+          "404": {
+            "description": "Unavailability record not found."
+          }
+        },
+        "summary": "Update unavailability record",
+        "tags": [
+          "Unavailability"
+        ]
+      },
+      "delete": {
+        "description": "Deletes a blackout period, freeing the provider calendar slot.",
+        "operationId": "UnavailabilityController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Unavailability Mongo ObjectId",
+            "schema": {
+              "example": "65f1a2b3c4d5e6f7a8b9c0d1",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Unavailability record removed successfully."
+          },
+          "404": {
+            "description": "Unavailability record not found."
+          }
+        },
+        "summary": "Delete unavailability record",
+        "tags": [
+          "Unavailability"
+        ]
+      }
+    },
+    "/platform-settings": {
+      "post": {
+        "description": "Creates system-wide configuration including commission percentage, max assignment distance, slot intervals, lead times, and timeouts.",
+        "operationId": "PlatformSettingsController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePlatformSettingDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Platform settings created successfully."
+          },
+          "400": {
+            "description": "Invalid setting parameters."
+          }
+        },
+        "summary": "Create global platform settings",
+        "tags": [
+          "Platform Settings"
+        ]
+      },
+      "get": {
+        "description": "Retrieves all configuration entries for platform policies and scheduling constraints.",
+        "operationId": "PlatformSettingsController_findAll",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "List of platform settings."
+          }
+        },
+        "summary": "Get all platform settings",
+        "tags": [
+          "Platform Settings"
+        ]
+      }
+    },
+    "/platform-settings/{id}": {
+      "get": {
+        "description": "Retrieves a specific configuration document by Mongo ObjectId.",
+        "operationId": "PlatformSettingsController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Setting Mongo ObjectId",
+            "schema": {
+              "example": "65f1a2b3c4d5e6f7a8b9c0d1",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Platform setting found."
+          },
+          "404": {
+            "description": "Platform setting not found."
+          }
+        },
+        "summary": "Get platform setting by ID",
+        "tags": [
+          "Platform Settings"
+        ]
+      },
+      "patch": {
+        "description": "Updates commission fee percent, slot interval, buffer times, or offer timeout limits.",
+        "operationId": "PlatformSettingsController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Setting Mongo ObjectId",
+            "schema": {
+              "example": "65f1a2b3c4d5e6f7a8b9c0d1",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePlatformSettingDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Platform setting updated successfully."
+          },
+          "404": {
+            "description": "Platform setting not found."
+          }
+        },
+        "summary": "Update platform setting",
+        "tags": [
+          "Platform Settings"
+        ]
+      },
+      "delete": {
+        "description": "Removes a setting configuration document.",
+        "operationId": "PlatformSettingsController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Setting Mongo ObjectId",
+            "schema": {
+              "example": "65f1a2b3c4d5e6f7a8b9c0d1",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Platform setting removed successfully."
+          },
+          "404": {
+            "description": "Platform setting not found."
+          }
+        },
+        "summary": "Delete platform setting",
+        "tags": [
+          "Platform Settings"
+        ]
+      }
+    }
+  },
+  "info": {
+    "title": "Tatku United - Digital Services Marketplace API",
+    "description": "Complete RESTful API documentation for Tatku United: an on-demand digital & home services scheduling and fulfillment platform. Includes all domain resources: Users, Providers, Managers, Regions, Categories, Services, Orders, Bookings, Payments, Reviews, Unavailability, and Platform Settings.",
+    "version": "1.0.0",
+    "contact": {}
+  },
+  "tags": [
+    {
+      "name": "System",
+      "description": "Health checks and root welcome endpoint"
+    },
+    {
+      "name": "Users",
+      "description": "User accounts, customer records, and identity management"
+    },
+    {
+      "name": "Providers",
+      "description": "Service providers, catalog offerings, working days, and location tracking"
+    },
+    {
+      "name": "Managers",
+      "description": "Regional managers overseeing service provider collectives"
+    },
+    {
+      "name": "Regions",
+      "description": "Operational territories, area centroids, and manager assignments"
+    },
+    {
+      "name": "Categories",
+      "description": "Service category taxonomy and catalog groupings"
+    },
+    {
+      "name": "Services",
+      "description": "Service catalog offerings, durations, pricing in paise, and FAQs"
+    },
+    {
+      "name": "Orders",
+      "description": "Multi-item customer checkout orders and 15-minute expiration timers"
+    },
+    {
+      "name": "Bookings",
+      "description": "Service booking schedules, time slot grids, and provider assignments"
+    },
+    {
+      "name": "Payments",
+      "description": "Razorpay payment transactions, webhooks, and refund lifecycles"
+    },
+    {
+      "name": "Reviews",
+      "description": "Verified customer ratings and textual feedback for completed bookings"
+    },
+    {
+      "name": "Unavailability",
+      "description": "Provider calendar blackout periods and unavailable time intervals"
+    },
+    {
+      "name": "Platform Settings",
+      "description": "Global system parameters, commission splits, and scheduling rules"
+    }
+  ],
+  "servers": [],
+  "components": {
+    "securitySchemes": {
+      "bearer-token": {
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "type": "http",
+        "name": "Authorization",
+        "description": "Provide JWT access token for authenticated operations",
+        "in": "header"
+      }
+    },
+    "schemas": {
+      "CreateUserDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "UpdateUserDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "CreateProviderDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "UpdateProviderDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "CreateManagerDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "UpdateManagerDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "CreateRegionDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "UpdateRegionDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "CreateCategoryDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "UpdateCategoryDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "CreateServiceDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "UpdateServiceDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "CreateOrderDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "UpdateOrderDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "CreateBookingDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "UpdateBookingDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "CreatePaymentDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "UpdatePaymentDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "CreateReviewDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "UpdateReviewDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "CreateUnavailabilityDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "UpdateUnavailabilityDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "CreatePlatformSettingDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "UpdatePlatformSettingDto": {
+        "type": "object",
+        "properties": {}
+      }
+    }
+  }
+}

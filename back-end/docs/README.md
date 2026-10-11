@@ -36,6 +36,7 @@ flowchart TD
 
 | Document | Topic | Description |
 | :--- | :--- | :--- |
+| **[Swagger & API Specification](./swagger-api-spec.md)** | Full REST URLs & Swagger UI | Complete catalog of 61 endpoints, interactive Swagger UI paths, OpenAPI specs, parameters, and payloads. |
 | **[RBAC & Security Guide](./rbac-and-security.md)** | Roles, Permissions & Guards | Roles enum, permissions matrix, guards hierarchy, input sanitization, rate limiting, and ownership protection. |
 | **[Logging & Observability Guide](./logging-and-observability.md)** | Logging & Error Handling | Winston daily rotating file logger, correlation IDs, exception filters, performance tracking, and log audits. |
 | **[Testing & Verification Guide](./testing-and-verification.md)** | Unit Testing & QA | Complete unit test suite, RBAC/auth verification, vital flow tests, and coverage metrics. |
