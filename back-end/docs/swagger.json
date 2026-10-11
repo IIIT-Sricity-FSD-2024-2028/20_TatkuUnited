@@ -3820,7 +3820,15 @@
       },
       "UpdateUserDto": {
         "type": "object",
-        "properties": {}
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "blocked"
+            ]
+          }
+        }
       },
       "GeoLocationDto": {
         "type": "object",
