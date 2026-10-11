@@ -25,6 +25,27 @@ export class JwtAuthGuard implements CanActivate {
     ]);
 
     if (isPublic) {
+      const request = context.switchToHttp().getRequest<Request>();
+      const authHeader = request.headers.authorization;
+      if (authHeader && authHeader.startsWith('Bearer ')) {
+        const token = authHeader.substring(7).trim();
+        if (token) {
+          try {
+            const payload = await this.authService.verifyToken(token);
+            if (payload && payload.status !== UserStatus.BLOCKED) {
+              (request as any).user = {
+                userId: payload.sub,
+                email: payload.email,
+                phone: payload.phone,
+                role: payload.role,
+                status: payload.status,
+              };
+            }
+          } catch {
+            // Optional token failure on public routes is ignored
+          }
+        }
+      }
       return true;
     }
 

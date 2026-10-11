@@ -29,18 +29,41 @@ function sanitizeObject(target: any): any {
   return cleanObj;
 }
 
+function inPlaceSanitize(target: Record<string, any>) {
+  for (const key of Object.keys(target)) {
+    if (key.startsWith('$') || key.includes('.')) {
+      delete target[key];
+    } else if (typeof target[key] === 'object' && target[key] !== null) {
+      target[key] = sanitizeObject(target[key]);
+    }
+  }
+}
+
 @Injectable()
 export class SanitizeInputMiddleware implements NestMiddleware {
   use(req: Request, _res: Response, next: NextFunction) {
     if (req.body && typeof req.body === 'object') {
-      req.body = sanitizeObject(req.body);
+      try {
+        req.body = sanitizeObject(req.body);
+      } catch {
+        inPlaceSanitize(req.body);
+      }
     }
     if (req.query && typeof req.query === 'object') {
-      req.query = sanitizeObject(req.query);
+      try {
+        req.query = sanitizeObject(req.query);
+      } catch {
+        inPlaceSanitize(req.query as any);
+      }
     }
     if (req.params && typeof req.params === 'object') {
-      req.params = sanitizeObject(req.params);
+      try {
+        req.params = sanitizeObject(req.params);
+      } catch {
+        inPlaceSanitize(req.params as any);
+      }
     }
     next();
   }
 }
+

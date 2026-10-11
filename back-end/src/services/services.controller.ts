@@ -6,23 +6,31 @@ import {
   Patch,
   Param,
   Delete,
+  Query,
 } from '@nestjs/common';
 import {
   ApiTags,
   ApiOperation,
   ApiResponse,
   ApiParam,
+  ApiQuery,
   ApiBody,
+  ApiBearerAuth,
 } from '@nestjs/swagger';
 import { ServicesService } from './services.service';
 import { CreateServiceDto } from './dto/create-service.dto';
 import { UpdateServiceDto } from './dto/update-service.dto';
+import { Public } from '../common/decorators/public.decorator';
+import { Roles } from '../common/decorators/roles.decorator';
+import { Role } from '../common/enums/roles.enum';
 
 @ApiTags('Services')
+@ApiBearerAuth('bearer-token')
 @Controller('services')
 export class ServicesController {
   constructor(private readonly servicesService: ServicesService) {}
 
+  @Roles(Role.ADMIN)
   @Post()
   @ApiOperation({
     summary: 'Create a new service offering',
@@ -36,16 +44,31 @@ export class ServicesController {
     return this.servicesService.create(createServiceDto);
   }
 
+  @Public()
   @Get()
   @ApiOperation({
     summary: 'Get all services',
-    description: 'Retrieves all service offerings populated with category data.',
+    description: 'Retrieves all service offerings populated with category data, optionally filtered by category ID.',
   })
+  @ApiQuery({ name: 'category', required: false, description: 'Filter by category Mongo ObjectId', example: '65f1a2b3c4d5e6f7a8b9c0d1' })
   @ApiResponse({ status: 200, description: 'List of all services.' })
-  findAll() {
-    return this.servicesService.findAll();
+  findAll(@Query('category') categoryId?: string) {
+    return this.servicesService.findAll(categoryId);
   }
 
+  @Public()
+  @Get('category/:categoryId')
+  @ApiOperation({
+    summary: 'Get services by category ID',
+    description: 'Retrieves all active services in a specific category.',
+  })
+  @ApiParam({ name: 'categoryId', description: 'Category Mongo ObjectId', example: '65f1a2b3c4d5e6f7a8b9c0d1' })
+  @ApiResponse({ status: 200, description: 'List of services in category.' })
+  findByCategory(@Param('categoryId') categoryId: string) {
+    return this.servicesService.findAll(categoryId);
+  }
+
+  @Public()
   @Get(':id')
   @ApiOperation({
     summary: 'Get service by ID',
@@ -58,6 +81,7 @@ export class ServicesController {
     return this.servicesService.findOne(id);
   }
 
+  @Roles(Role.ADMIN)
   @Patch(':id')
   @ApiOperation({
     summary: 'Update service offering',
@@ -71,6 +95,7 @@ export class ServicesController {
     return this.servicesService.update(id, updateServiceDto);
   }
 
+  @Roles(Role.ADMIN)
   @Delete(':id')
   @ApiOperation({
     summary: 'Delete service',

@@ -25,9 +25,91 @@
         ]
       }
     },
+    "/auth/login": {
+      "post": {
+        "description": "Validates user email and password against the database, verifies account status, and generates a signed JWT token containing user identity and role claims.",
+        "operationId": "AuthController_login",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Login successful. Returns access token and user metadata."
+          },
+          "401": {
+            "description": "Invalid credentials or blocked user account."
+          }
+        },
+        "summary": "Authenticate user & issue JWT Bearer token",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/auth/register": {
+      "post": {
+        "description": "Creates a new customer or provider account with securely hashed password and returns the user object with an initial JWT access token.",
+        "operationId": "AuthController_register",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Account successfully registered and authenticated."
+          },
+          "400": {
+            "description": "Email already registered or invalid fields."
+          }
+        },
+        "summary": "Register a new user account",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/auth/profile": {
+      "get": {
+        "description": "Returns the authenticated user details extracted from the JWT Bearer token.",
+        "operationId": "AuthController_getProfile",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Current user session profile."
+          },
+          "401": {
+            "description": "Missing or invalid Bearer token."
+          }
+        },
+        "security": [
+          {
+            "bearer-token": []
+          }
+        ],
+        "summary": "Get current authenticated user profile",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
     "/users": {
       "post": {
-        "description": "Registers a new user record. Roles can be customer, provider, manager, or admin.",
+        "description": "Registers a new user record. Public callers can only create customer or provider accounts. Only admins can create admin or manager accounts.",
         "operationId": "UsersController_create",
         "parameters": [],
         "requestBody": {
@@ -46,15 +128,23 @@
           },
           "400": {
             "description": "Invalid payload or email already exists."
+          },
+          "403": {
+            "description": "Forbidden. Only admins can create other admins or managers."
           }
         },
+        "security": [
+          {
+            "bearer-token": []
+          }
+        ],
         "summary": "Create a new user",
         "tags": [
           "Users"
         ]
       },
       "get": {
-        "description": "Retrieves all registered users without sensitive password fields.",
+        "description": "Retrieves all registered users without sensitive password fields. Requires admin privileges.",
         "operationId": "UsersController_findAll",
         "parameters": [],
         "responses": {
@@ -62,7 +152,76 @@
             "description": "List of all users."
           }
         },
+        "security": [
+          {
+            "bearer-token": []
+          }
+        ],
         "summary": "Get all users",
+        "tags": [
+          "Users"
+        ]
+      }
+    },
+    "/users/me": {
+      "get": {
+        "description": "Retrieves the complete profile document for the currently authenticated user.",
+        "operationId": "UsersController_getMe",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Current authenticated user profile."
+          },
+          "401": {
+            "description": "Unauthorized."
+          }
+        },
+        "security": [
+          {
+            "bearer-token": []
+          }
+        ],
+        "summary": "Get current user profile",
+        "tags": [
+          "Users"
+        ]
+      }
+    },
+    "/users/role/{role}": {
+      "get": {
+        "description": "Retrieves all users filtered by role (customer, provider, manager, admin). Admin only.",
+        "operationId": "UsersController_findByRole",
+        "parameters": [
+          {
+            "name": "role",
+            "required": true,
+            "in": "path",
+            "description": "Role enum filter",
+            "schema": {
+              "enum": [
+                "customer",
+                "provider",
+                "manager",
+                "admin"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of users with the given role."
+          },
+          "403": {
+            "description": "Forbidden. Requires admin role."
+          }
+        },
+        "security": [
+          {
+            "bearer-token": []
+          }
+        ],
+        "summary": "Get users by role",
         "tags": [
           "Users"
         ]
@@ -70,7 +229,7 @@
     },
     "/users/{id}": {
       "get": {
-        "description": "Retrieves a single user document by its MongoDB ObjectId.",
+        "description": "Retrieves a single user document. Users can view their own profile; managers and admins can view any profile.",
         "operationId": "UsersController_findOne",
         "parameters": [
           {
@@ -88,17 +247,25 @@
           "200": {
             "description": "User found."
           },
+          "403": {
+            "description": "Forbidden. Non-admins can only view their own user profile."
+          },
           "404": {
             "description": "User not found."
           }
         },
+        "security": [
+          {
+            "bearer-token": []
+          }
+        ],
         "summary": "Get user by ID",
         "tags": [
           "Users"
         ]
       },
       "patch": {
-        "description": "Updates specific fields on an existing user.",
+        "description": "Updates specific fields on an existing user. Users can only update their own profile; only admins can change user roles.",
         "operationId": "UsersController_update",
         "parameters": [
           {
@@ -126,10 +293,18 @@
           "200": {
             "description": "User successfully updated."
           },
+          "403": {
+            "description": "Forbidden. Cannot update another user profile or change roles without admin permissions."
+          },
           "404": {
             "description": "User not found."
           }
         },
+        "security": [
+          {
+            "bearer-token": []
+          }
+        ],
         "summary": "Update user profile",
         "tags": [
           "Users"
@@ -158,7 +333,383 @@
             "description": "User not found."
           }
         },
+        "security": [
+          {
+            "bearer-token": []
+          }
+        ],
         "summary": "Delete user",
+        "tags": [
+          "Users"
+        ]
+      }
+    },
+    "/users/{id}/addresses": {
+      "get": {
+        "description": "Retrieves all saved delivery addresses for a customer.",
+        "operationId": "UsersController_getAddresses",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "User Mongo ObjectId",
+            "schema": {
+              "example": "65f1a2b3c4d5e6f7a8b9c0d1",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of saved addresses."
+          }
+        },
+        "security": [
+          {
+            "bearer-token": []
+          }
+        ],
+        "summary": "Get user saved addresses",
+        "tags": [
+          "Users"
+        ]
+      },
+      "post": {
+        "description": "Appends a new address with label, line, city, and GeoJSON location to the user profile (§4.3).",
+        "operationId": "UsersController_addAddress",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "User Mongo ObjectId",
+            "schema": {
+              "example": "65f1a2b3c4d5e6f7a8b9c0d1",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "line",
+                  "city",
+                  "location"
+                ],
+                "properties": {
+                  "label": {
+                    "type": "string",
+                    "example": "Home"
+                  },
+                  "line": {
+                    "type": "string",
+                    "example": "123 Tech Park Ave"
+                  },
+                  "city": {
+                    "type": "string",
+                    "example": "Chennai"
+                  },
+                  "location": {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "example": "Point"
+                      },
+                      "coordinates": {
+                        "type": "array",
+                        "items": {
+                          "type": "number"
+                        },
+                        "example": [
+                          80,
+                          13
+                        ]
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Address added."
+          }
+        },
+        "security": [
+          {
+            "bearer-token": []
+          }
+        ],
+        "summary": "Add saved address",
+        "tags": [
+          "Users"
+        ]
+      }
+    },
+    "/users/{id}/addresses/{addressId}": {
+      "delete": {
+        "description": "Removes an address by address ID from user saved addresses.",
+        "operationId": "UsersController_removeAddress",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "User Mongo ObjectId",
+            "schema": {
+              "example": "65f1a2b3c4d5e6f7a8b9c0d1",
+              "type": "string"
+            }
+          },
+          {
+            "name": "addressId",
+            "required": true,
+            "in": "path",
+            "description": "Address ID string",
+            "schema": {
+              "example": "65f1a2b3c4d5e6f7a8b9c0d1",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Address removed."
+          }
+        },
+        "security": [
+          {
+            "bearer-token": []
+          }
+        ],
+        "summary": "Remove saved address",
+        "tags": [
+          "Users"
+        ]
+      }
+    },
+    "/users/{id}/cart": {
+      "get": {
+        "description": "Retrieves current cart items and selected address populated with service info (§4.5).",
+        "operationId": "UsersController_getCart",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "User Mongo ObjectId",
+            "schema": {
+              "example": "65f1a2b3c4d5e6f7a8b9c0d1",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User cart."
+          }
+        },
+        "security": [
+          {
+            "bearer-token": []
+          }
+        ],
+        "summary": "Get user shopping cart",
+        "tags": [
+          "Users"
+        ]
+      },
+      "post": {
+        "description": "Pushes a service reservation slot into the user cart (§4.5).",
+        "operationId": "UsersController_addToCart",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "User Mongo ObjectId",
+            "schema": {
+              "example": "65f1a2b3c4d5e6f7a8b9c0d1",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "service",
+                  "scheduledDate",
+                  "startTime",
+                  "endTime"
+                ],
+                "properties": {
+                  "service": {
+                    "type": "string",
+                    "example": "65f1a2b3c4d5e6f7a8b9c0d1"
+                  },
+                  "scheduledDate": {
+                    "type": "string",
+                    "example": "2026-10-15"
+                  },
+                  "startTime": {
+                    "type": "number",
+                    "example": 600
+                  },
+                  "endTime": {
+                    "type": "number",
+                    "example": 660
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Item added to cart."
+          }
+        },
+        "security": [
+          {
+            "bearer-token": []
+          }
+        ],
+        "summary": "Add item to shopping cart",
+        "tags": [
+          "Users"
+        ]
+      },
+      "delete": {
+        "description": "Empties cart items and resets selected address (§4.8).",
+        "operationId": "UsersController_clearCart",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "User Mongo ObjectId",
+            "schema": {
+              "example": "65f1a2b3c4d5e6f7a8b9c0d1",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Cart cleared."
+          }
+        },
+        "security": [
+          {
+            "bearer-token": []
+          }
+        ],
+        "summary": "Clear shopping cart",
+        "tags": [
+          "Users"
+        ]
+      }
+    },
+    "/users/{id}/cart/{index}": {
+      "delete": {
+        "description": "Pulls an item from cart by array index (§4.5).",
+        "operationId": "UsersController_removeFromCart",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "User Mongo ObjectId",
+            "schema": {
+              "example": "65f1a2b3c4d5e6f7a8b9c0d1",
+              "type": "string"
+            }
+          },
+          {
+            "name": "index",
+            "required": true,
+            "in": "path",
+            "description": "Cart item index (0-indexed)",
+            "schema": {
+              "example": "0",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Cart updated."
+          }
+        },
+        "security": [
+          {
+            "bearer-token": []
+          }
+        ],
+        "summary": "Remove item from cart by index",
+        "tags": [
+          "Users"
+        ]
+      }
+    },
+    "/users/{id}/cart/address": {
+      "patch": {
+        "description": "Sets cart.address to one of the user saved address IDs (§4.5).",
+        "operationId": "UsersController_selectCartAddress",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "User Mongo ObjectId",
+            "schema": {
+              "example": "65f1a2b3c4d5e6f7a8b9c0d1",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "addressId"
+                ],
+                "properties": {
+                  "addressId": {
+                    "type": "string",
+                    "example": "65f1a2b3c4d5e6f7a8b9c0d1"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Cart address selected."
+          }
+        },
+        "security": [
+          {
+            "bearer-token": []
+          }
+        ],
+        "summary": "Select delivery address for cart",
         "tags": [
           "Users"
         ]
@@ -187,6 +738,11 @@
             "description": "Invalid provider data."
           }
         },
+        "security": [
+          {
+            "bearer-token": []
+          }
+        ],
         "summary": "Create / register a service provider profile",
         "tags": [
           "Providers"
@@ -201,7 +757,221 @@
             "description": "List of all providers."
           }
         },
+        "security": [
+          {
+            "bearer-token": []
+          }
+        ],
         "summary": "Get all service providers",
+        "tags": [
+          "Providers"
+        ]
+      }
+    },
+    "/providers/user/{userId}": {
+      "get": {
+        "description": "Retrieves a service provider profile linked to a specific user account.",
+        "operationId": "ProvidersController_findByUser",
+        "parameters": [
+          {
+            "name": "userId",
+            "required": true,
+            "in": "path",
+            "description": "User Mongo ObjectId",
+            "schema": {
+              "example": "65f1a2b3c4d5e6f7a8b9c0d1",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Provider found."
+          },
+          "404": {
+            "description": "Provider not found."
+          }
+        },
+        "security": [
+          {
+            "bearer-token": []
+          }
+        ],
+        "summary": "Get provider profile by user ID",
+        "tags": [
+          "Providers"
+        ]
+      }
+    },
+    "/providers/region/{regionId}": {
+      "get": {
+        "description": "Retrieves all service providers assigned to a specific geographical region, optionally filtered by status (e.g. pending, approved, suspended).",
+        "operationId": "ProvidersController_findByRegion",
+        "parameters": [
+          {
+            "name": "regionId",
+            "required": true,
+            "in": "path",
+            "description": "Region Mongo ObjectId",
+            "schema": {
+              "example": "65f1a2b3c4d5e6f7a8b9c0d1",
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "description": "Provider status filter",
+            "schema": {
+              "enum": [
+                "pending",
+                "approved",
+                "suspended"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of providers in region."
+          }
+        },
+        "security": [
+          {
+            "bearer-token": []
+          }
+        ],
+        "summary": "Get providers by region ID",
+        "tags": [
+          "Providers"
+        ]
+      }
+    },
+    "/providers/status/{status}": {
+      "get": {
+        "description": "Retrieves all providers with a specific status (pending, approved, suspended).",
+        "operationId": "ProvidersController_findByStatus",
+        "parameters": [
+          {
+            "name": "status",
+            "required": true,
+            "in": "path",
+            "description": "Provider status",
+            "schema": {
+              "example": "pending",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of providers with status."
+          }
+        },
+        "security": [
+          {
+            "bearer-token": []
+          }
+        ],
+        "summary": "Get providers by status",
+        "tags": [
+          "Providers"
+        ]
+      }
+    },
+    "/providers/service/{serviceId}": {
+      "get": {
+        "description": "Retrieves all active service providers offering the requested service.",
+        "operationId": "ProvidersController_findByService",
+        "parameters": [
+          {
+            "name": "serviceId",
+            "required": true,
+            "in": "path",
+            "description": "Service Mongo ObjectId",
+            "schema": {
+              "example": "65f1a2b3c4d5e6f7a8b9c0d1",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of providers offering the service."
+          }
+        },
+        "security": [
+          {
+            "bearer-token": []
+          }
+        ],
+        "summary": "Get providers offering a specific service",
+        "tags": [
+          "Providers"
+        ]
+      }
+    },
+    "/providers/{id}/approve": {
+      "patch": {
+        "description": "Updates provider status to approved, enabling them to receive job offers (§4.2, §4.16).",
+        "operationId": "ProvidersController_approve",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Provider Mongo ObjectId",
+            "schema": {
+              "example": "65f1a2b3c4d5e6f7a8b9c0d1",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Provider approved."
+          }
+        },
+        "security": [
+          {
+            "bearer-token": []
+          }
+        ],
+        "summary": "Approve provider application",
+        "tags": [
+          "Providers"
+        ]
+      }
+    },
+    "/providers/{id}/suspend": {
+      "patch": {
+        "description": "Suspends provider account, preventing them from receiving future job offers (§4.16).",
+        "operationId": "ProvidersController_suspend",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Provider Mongo ObjectId",
+            "schema": {
+              "example": "65f1a2b3c4d5e6f7a8b9c0d1",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Provider suspended."
+          }
+        },
+        "security": [
+          {
+            "bearer-token": []
+          }
+        ],
+        "summary": "Suspend provider",
         "tags": [
           "Providers"
         ]
@@ -231,6 +1001,11 @@
             "description": "Provider not found."
           }
         },
+        "security": [
+          {
+            "bearer-token": []
+          }
+        ],
         "summary": "Get provider by ID",
         "tags": [
           "Providers"
@@ -269,6 +1044,11 @@
             "description": "Provider not found."
           }
         },
+        "security": [
+          {
+            "bearer-token": []
+          }
+        ],
         "summary": "Update provider profile",
         "tags": [
           "Providers"
@@ -297,6 +1077,11 @@
             "description": "Provider not found."
           }
         },
+        "security": [
+          {
+            "bearer-token": []
+          }
+        ],
         "summary": "Delete provider",
         "tags": [
           "Providers"
@@ -326,6 +1111,11 @@
             "description": "Invalid manager payload."
           }
         },
+        "security": [
+          {
+            "bearer-token": []
+          }
+        ],
         "summary": "Create / register a regional manager",
         "tags": [
           "Managers"
@@ -340,7 +1130,47 @@
             "description": "List of all managers."
           }
         },
+        "security": [
+          {
+            "bearer-token": []
+          }
+        ],
         "summary": "Get all regional managers",
+        "tags": [
+          "Managers"
+        ]
+      }
+    },
+    "/managers/user/{userId}": {
+      "get": {
+        "description": "Retrieves a regional manager profile linked to a specific user account.",
+        "operationId": "ManagersController_findByUser",
+        "parameters": [
+          {
+            "name": "userId",
+            "required": true,
+            "in": "path",
+            "description": "User Mongo ObjectId",
+            "schema": {
+              "example": "65f1a2b3c4d5e6f7a8b9c0d1",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Manager found."
+          },
+          "404": {
+            "description": "Manager not found."
+          }
+        },
+        "security": [
+          {
+            "bearer-token": []
+          }
+        ],
+        "summary": "Get manager profile by user ID",
         "tags": [
           "Managers"
         ]
@@ -370,6 +1200,11 @@
             "description": "Manager not found."
           }
         },
+        "security": [
+          {
+            "bearer-token": []
+          }
+        ],
         "summary": "Get manager by ID",
         "tags": [
           "Managers"
@@ -408,6 +1243,11 @@
             "description": "Manager not found."
           }
         },
+        "security": [
+          {
+            "bearer-token": []
+          }
+        ],
         "summary": "Update manager profile",
         "tags": [
           "Managers"
@@ -436,6 +1276,11 @@
             "description": "Manager not found."
           }
         },
+        "security": [
+          {
+            "bearer-token": []
+          }
+        ],
         "summary": "Delete manager",
         "tags": [
           "Managers"
@@ -465,21 +1310,69 @@
             "description": "Invalid region payload."
           }
         },
+        "security": [
+          {
+            "bearer-token": []
+          }
+        ],
         "summary": "Create a new region",
         "tags": [
           "Regions"
         ]
       },
       "get": {
-        "description": "Retrieves all operational regions with their assigned manager and centroid locations.",
+        "description": "Retrieves all operational regions. Restricted to regional managers and admins.",
         "operationId": "RegionsController_findAll",
         "parameters": [],
         "responses": {
           "200": {
             "description": "List of all regions."
+          },
+          "403": {
+            "description": "Forbidden. Requires manager or admin role."
           }
         },
+        "security": [
+          {
+            "bearer-token": []
+          }
+        ],
         "summary": "Get all regions",
+        "tags": [
+          "Regions"
+        ]
+      }
+    },
+    "/regions/manager/{managerId}": {
+      "get": {
+        "description": "Retrieves all operational regions assigned to a specific manager (supports manager ObjectId or user ObjectId). Restricted to regional managers and admins.",
+        "operationId": "RegionsController_findByManager",
+        "parameters": [
+          {
+            "name": "managerId",
+            "required": true,
+            "in": "path",
+            "description": "Manager Mongo ObjectId or User ObjectId",
+            "schema": {
+              "example": "65f1a2b3c4d5e6f7a8b9c0d1",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of regions controlled by manager."
+          },
+          "403": {
+            "description": "Forbidden. Requires manager or admin role."
+          }
+        },
+        "security": [
+          {
+            "bearer-token": []
+          }
+        ],
+        "summary": "Get regions controlled by manager ID",
         "tags": [
           "Regions"
         ]
@@ -487,7 +1380,7 @@
     },
     "/regions/{id}": {
       "get": {
-        "description": "Retrieves a single region document by Mongo ObjectId.",
+        "description": "Retrieves a single region document by Mongo ObjectId. Restricted to regional managers and admins.",
         "operationId": "RegionsController_findOne",
         "parameters": [
           {
@@ -505,10 +1398,18 @@
           "200": {
             "description": "Region found."
           },
+          "403": {
+            "description": "Forbidden. Requires manager or admin role."
+          },
           "404": {
             "description": "Region not found."
           }
         },
+        "security": [
+          {
+            "bearer-token": []
+          }
+        ],
         "summary": "Get region by ID",
         "tags": [
           "Regions"
@@ -547,6 +1448,11 @@
             "description": "Region not found."
           }
         },
+        "security": [
+          {
+            "bearer-token": []
+          }
+        ],
         "summary": "Update region",
         "tags": [
           "Regions"
@@ -575,7 +1481,44 @@
             "description": "Region not found."
           }
         },
+        "security": [
+          {
+            "bearer-token": []
+          }
+        ],
         "summary": "Delete region",
+        "tags": [
+          "Regions"
+        ]
+      }
+    },
+    "/regions/{id}/recompute-centroid": {
+      "post": {
+        "description": "Calculates the mean coordinates of all approved providers in this region and updates the centroid (§4.2, §3.5).",
+        "operationId": "RegionsController_recomputeCentroid",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Region Mongo ObjectId",
+            "schema": {
+              "example": "65f1a2b3c4d5e6f7a8b9c0d1",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Region centroid recomputed."
+          }
+        },
+        "security": [
+          {
+            "bearer-token": []
+          }
+        ],
+        "summary": "Recompute region centroid",
         "tags": [
           "Regions"
         ]
@@ -604,6 +1547,11 @@
             "description": "Invalid category payload."
           }
         },
+        "security": [
+          {
+            "bearer-token": []
+          }
+        ],
         "summary": "Create a new service category",
         "tags": [
           "Categories"
@@ -618,6 +1566,11 @@
             "description": "List of all categories."
           }
         },
+        "security": [
+          {
+            "bearer-token": []
+          }
+        ],
         "summary": "Get all categories",
         "tags": [
           "Categories"
@@ -648,6 +1601,11 @@
             "description": "Category not found."
           }
         },
+        "security": [
+          {
+            "bearer-token": []
+          }
+        ],
         "summary": "Get category by ID",
         "tags": [
           "Categories"
@@ -686,6 +1644,11 @@
             "description": "Category not found."
           }
         },
+        "security": [
+          {
+            "bearer-token": []
+          }
+        ],
         "summary": "Update category",
         "tags": [
           "Categories"
@@ -714,6 +1677,11 @@
             "description": "Category not found."
           }
         },
+        "security": [
+          {
+            "bearer-token": []
+          }
+        ],
         "summary": "Delete category",
         "tags": [
           "Categories"
@@ -743,21 +1711,74 @@
             "description": "Invalid service payload."
           }
         },
+        "security": [
+          {
+            "bearer-token": []
+          }
+        ],
         "summary": "Create a new service offering",
         "tags": [
           "Services"
         ]
       },
       "get": {
-        "description": "Retrieves all service offerings populated with category data.",
+        "description": "Retrieves all service offerings populated with category data, optionally filtered by category ID.",
         "operationId": "ServicesController_findAll",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "category",
+            "required": false,
+            "in": "query",
+            "description": "Filter by category Mongo ObjectId",
+            "schema": {
+              "example": "65f1a2b3c4d5e6f7a8b9c0d1",
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "List of all services."
           }
         },
+        "security": [
+          {
+            "bearer-token": []
+          }
+        ],
         "summary": "Get all services",
+        "tags": [
+          "Services"
+        ]
+      }
+    },
+    "/services/category/{categoryId}": {
+      "get": {
+        "description": "Retrieves all active services in a specific category.",
+        "operationId": "ServicesController_findByCategory",
+        "parameters": [
+          {
+            "name": "categoryId",
+            "required": true,
+            "in": "path",
+            "description": "Category Mongo ObjectId",
+            "schema": {
+              "example": "65f1a2b3c4d5e6f7a8b9c0d1",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of services in category."
+          }
+        },
+        "security": [
+          {
+            "bearer-token": []
+          }
+        ],
+        "summary": "Get services by category ID",
         "tags": [
           "Services"
         ]
@@ -787,6 +1808,11 @@
             "description": "Service not found."
           }
         },
+        "security": [
+          {
+            "bearer-token": []
+          }
+        ],
         "summary": "Get service by ID",
         "tags": [
           "Services"
@@ -825,6 +1851,11 @@
             "description": "Service not found."
           }
         },
+        "security": [
+          {
+            "bearer-token": []
+          }
+        ],
         "summary": "Update service offering",
         "tags": [
           "Services"
@@ -853,6 +1884,11 @@
             "description": "Service not found."
           }
         },
+        "security": [
+          {
+            "bearer-token": []
+          }
+        ],
         "summary": "Delete service",
         "tags": [
           "Services"
@@ -882,6 +1918,11 @@
             "description": "Invalid order payload."
           }
         },
+        "security": [
+          {
+            "bearer-token": []
+          }
+        ],
         "summary": "Create a new customer order",
         "tags": [
           "Orders"
@@ -896,7 +1937,76 @@
             "description": "List of all orders."
           }
         },
+        "security": [
+          {
+            "bearer-token": []
+          }
+        ],
         "summary": "Get all orders",
+        "tags": [
+          "Orders"
+        ]
+      }
+    },
+    "/orders/customer/{customerId}": {
+      "get": {
+        "description": "Retrieves all orders placed by a specific customer, sorted by creation date descending.",
+        "operationId": "OrdersController_findByCustomer",
+        "parameters": [
+          {
+            "name": "customerId",
+            "required": true,
+            "in": "path",
+            "description": "Customer User Mongo ObjectId",
+            "schema": {
+              "example": "65f1a2b3c4d5e6f7a8b9c0d1",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of customer orders."
+          }
+        },
+        "security": [
+          {
+            "bearer-token": []
+          }
+        ],
+        "summary": "Get orders by customer ID",
+        "tags": [
+          "Orders"
+        ]
+      }
+    },
+    "/orders/status/{status}": {
+      "get": {
+        "description": "Retrieves all orders matching paymentStatus (created, paid, failed, refunded, partially_refunded).",
+        "operationId": "OrdersController_findByStatus",
+        "parameters": [
+          {
+            "name": "status",
+            "required": true,
+            "in": "path",
+            "description": "Payment status",
+            "schema": {
+              "example": "paid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of orders with status."
+          }
+        },
+        "security": [
+          {
+            "bearer-token": []
+          }
+        ],
+        "summary": "Get orders by payment status",
         "tags": [
           "Orders"
         ]
@@ -926,6 +2036,11 @@
             "description": "Order not found."
           }
         },
+        "security": [
+          {
+            "bearer-token": []
+          }
+        ],
         "summary": "Get order by ID",
         "tags": [
           "Orders"
@@ -964,6 +2079,11 @@
             "description": "Order not found."
           }
         },
+        "security": [
+          {
+            "bearer-token": []
+          }
+        ],
         "summary": "Update order",
         "tags": [
           "Orders"
@@ -992,7 +2112,47 @@
             "description": "Order not found."
           }
         },
+        "security": [
+          {
+            "bearer-token": []
+          }
+        ],
         "summary": "Delete order",
+        "tags": [
+          "Orders"
+        ]
+      }
+    },
+    "/orders/{id}/details": {
+      "get": {
+        "description": "Retrieves single order details populated with customer and payment references.",
+        "operationId": "OrdersController_findWithDetails",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Order Mongo ObjectId",
+            "schema": {
+              "example": "65f1a2b3c4d5e6f7a8b9c0d1",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Order details found."
+          },
+          "404": {
+            "description": "Order not found."
+          }
+        },
+        "security": [
+          {
+            "bearer-token": []
+          }
+        ],
+        "summary": "Get order with populated customer and payment details",
         "tags": [
           "Orders"
         ]
@@ -1021,6 +2181,11 @@
             "description": "Invalid booking data or slot conflict."
           }
         },
+        "security": [
+          {
+            "bearer-token": []
+          }
+        ],
         "summary": "Create a new service booking",
         "tags": [
           "Bookings"
@@ -1035,7 +2200,256 @@
             "description": "List of all bookings."
           }
         },
+        "security": [
+          {
+            "bearer-token": []
+          }
+        ],
         "summary": "Get all bookings",
+        "tags": [
+          "Bookings"
+        ]
+      }
+    },
+    "/bookings/customer/{customerId}": {
+      "get": {
+        "description": "Retrieves all bookings made by a specific customer, sorted by newest first.",
+        "operationId": "BookingsController_findByCustomer",
+        "parameters": [
+          {
+            "name": "customerId",
+            "required": true,
+            "in": "path",
+            "description": "Customer User Mongo ObjectId",
+            "schema": {
+              "example": "65f1a2b3c4d5e6f7a8b9c0d1",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of customer bookings."
+          }
+        },
+        "security": [
+          {
+            "bearer-token": []
+          }
+        ],
+        "summary": "Get bookings by customer ID",
+        "tags": [
+          "Bookings"
+        ]
+      }
+    },
+    "/bookings/provider/{providerId}": {
+      "get": {
+        "description": "Retrieves all bookings scheduled for a specific provider, sorted chronologically.",
+        "operationId": "BookingsController_findByProvider",
+        "parameters": [
+          {
+            "name": "providerId",
+            "required": true,
+            "in": "path",
+            "description": "Provider Mongo ObjectId",
+            "schema": {
+              "example": "65f1a2b3c4d5e6f7a8b9c0d1",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of provider bookings."
+          }
+        },
+        "security": [
+          {
+            "bearer-token": []
+          }
+        ],
+        "summary": "Get bookings by provider ID",
+        "tags": [
+          "Bookings"
+        ]
+      }
+    },
+    "/bookings/order/{orderId}": {
+      "get": {
+        "description": "Retrieves all booking items associated with a parent order transaction.",
+        "operationId": "BookingsController_findByOrder",
+        "parameters": [
+          {
+            "name": "orderId",
+            "required": true,
+            "in": "path",
+            "description": "Order Mongo ObjectId",
+            "schema": {
+              "example": "65f1a2b3c4d5e6f7a8b9c0d1",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of bookings for the order."
+          }
+        },
+        "security": [
+          {
+            "bearer-token": []
+          }
+        ],
+        "summary": "Get bookings by order ID",
+        "tags": [
+          "Bookings"
+        ]
+      }
+    },
+    "/bookings/provider/{providerId}/offers": {
+      "get": {
+        "description": "Retrieves all unaccepted job offers (awaiting_provider) whose offer timeout has not expired.",
+        "operationId": "BookingsController_findPendingOffers",
+        "parameters": [
+          {
+            "name": "providerId",
+            "required": true,
+            "in": "path",
+            "description": "Provider Mongo ObjectId",
+            "schema": {
+              "example": "65f1a2b3c4d5e6f7a8b9c0d1",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of active job offers."
+          }
+        },
+        "security": [
+          {
+            "bearer-token": []
+          }
+        ],
+        "summary": "Get pending job offers for provider inbox",
+        "tags": [
+          "Bookings"
+        ]
+      }
+    },
+    "/bookings/provider/{providerId}/schedule": {
+      "get": {
+        "description": "Retrieves all confirmed and in-progress jobs assigned to the provider, optionally filtered by date.",
+        "operationId": "BookingsController_findSchedule",
+        "parameters": [
+          {
+            "name": "providerId",
+            "required": true,
+            "in": "path",
+            "description": "Provider Mongo ObjectId",
+            "schema": {
+              "example": "65f1a2b3c4d5e6f7a8b9c0d1",
+              "type": "string"
+            }
+          },
+          {
+            "name": "date",
+            "required": false,
+            "in": "query",
+            "description": "Optional date filter (YYYY-MM-DD)",
+            "schema": {
+              "example": "2026-10-15",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of scheduled jobs."
+          }
+        },
+        "security": [
+          {
+            "bearer-token": []
+          }
+        ],
+        "summary": "Get provider active job schedule",
+        "tags": [
+          "Bookings"
+        ]
+      }
+    },
+    "/bookings/region/{regionId}/problems": {
+      "get": {
+        "description": "Retrieves bookings in region that were cancelled by providers or the system (e.g. no provider available).",
+        "operationId": "BookingsController_findProblems",
+        "parameters": [
+          {
+            "name": "regionId",
+            "required": true,
+            "in": "path",
+            "description": "Region Mongo ObjectId",
+            "schema": {
+              "example": "65f1a2b3c4d5e6f7a8b9c0d1",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of problem bookings."
+          }
+        },
+        "security": [
+          {
+            "bearer-token": []
+          }
+        ],
+        "summary": "Get problem bookings in region",
+        "tags": [
+          "Bookings"
+        ]
+      }
+    },
+    "/bookings/region/{regionId}": {
+      "get": {
+        "description": "Retrieves all bookings in a specific operational region, optionally filtered by date.",
+        "operationId": "BookingsController_findByRegion",
+        "parameters": [
+          {
+            "name": "regionId",
+            "required": true,
+            "in": "path",
+            "description": "Region Mongo ObjectId",
+            "schema": {
+              "example": "65f1a2b3c4d5e6f7a8b9c0d1",
+              "type": "string"
+            }
+          },
+          {
+            "name": "date",
+            "required": false,
+            "in": "query",
+            "description": "Optional date filter (YYYY-MM-DD)",
+            "schema": {
+              "example": "2026-10-15",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of bookings in the region."
+          }
+        },
+        "security": [
+          {
+            "bearer-token": []
+          }
+        ],
+        "summary": "Get bookings by region ID",
         "tags": [
           "Bookings"
         ]
@@ -1065,6 +2479,11 @@
             "description": "Booking not found."
           }
         },
+        "security": [
+          {
+            "bearer-token": []
+          }
+        ],
         "summary": "Get booking by ID",
         "tags": [
           "Bookings"
@@ -1103,6 +2522,11 @@
             "description": "Booking not found."
           }
         },
+        "security": [
+          {
+            "bearer-token": []
+          }
+        ],
         "summary": "Update booking status or details",
         "tags": [
           "Bookings"
@@ -1131,7 +2555,239 @@
             "description": "Booking not found."
           }
         },
+        "security": [
+          {
+            "bearer-token": []
+          }
+        ],
         "summary": "Delete booking",
+        "tags": [
+          "Bookings"
+        ]
+      }
+    },
+    "/bookings/{id}/accept": {
+      "post": {
+        "description": "Accepts an awaiting_provider booking before the offer timeout expires, transitioning it to confirmed.",
+        "operationId": "BookingsController_acceptOffer",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Booking Mongo ObjectId",
+            "schema": {
+              "example": "65f1a2b3c4d5e6f7a8b9c0d1",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "providerId": {
+                    "type": "string",
+                    "example": "65f1a2b3c4d5e6f7a8b9c0d1"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Booking accepted."
+          },
+          "400": {
+            "description": "Offer expired or already taken."
+          }
+        },
+        "security": [
+          {
+            "bearer-token": []
+          }
+        ],
+        "summary": "Provider accepts booking offer",
+        "tags": [
+          "Bookings"
+        ]
+      }
+    },
+    "/bookings/{id}/reject": {
+      "post": {
+        "description": "Declines an offer and adds the provider to declinedBy list to trigger reassignment.",
+        "operationId": "BookingsController_rejectOffer",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Booking Mongo ObjectId",
+            "schema": {
+              "example": "65f1a2b3c4d5e6f7a8b9c0d1",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "providerId"
+                ],
+                "properties": {
+                  "providerId": {
+                    "type": "string",
+                    "example": "65f1a2b3c4d5e6f7a8b9c0d1"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Booking offer declined."
+          }
+        },
+        "security": [
+          {
+            "bearer-token": []
+          }
+        ],
+        "summary": "Provider declines booking offer",
+        "tags": [
+          "Bookings"
+        ]
+      }
+    },
+    "/bookings/{id}/start": {
+      "post": {
+        "description": "Transitions confirmed booking to in_progress when the provider arrives and begins service.",
+        "operationId": "BookingsController_startJob",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Booking Mongo ObjectId",
+            "schema": {
+              "example": "65f1a2b3c4d5e6f7a8b9c0d1",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Job started."
+          }
+        },
+        "security": [
+          {
+            "bearer-token": []
+          }
+        ],
+        "summary": "Start job",
+        "tags": [
+          "Bookings"
+        ]
+      }
+    },
+    "/bookings/{id}/complete": {
+      "post": {
+        "description": "Transitions in_progress booking to completed when service is fully rendered.",
+        "operationId": "BookingsController_completeJob",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Booking Mongo ObjectId",
+            "schema": {
+              "example": "65f1a2b3c4d5e6f7a8b9c0d1",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Job completed."
+          }
+        },
+        "security": [
+          {
+            "bearer-token": []
+          }
+        ],
+        "summary": "Complete job",
+        "tags": [
+          "Bookings"
+        ]
+      }
+    },
+    "/bookings/{id}/cancel": {
+      "post": {
+        "description": "Cancels a booking with reason and actor (customer, provider, manager, admin).",
+        "operationId": "BookingsController_cancelBooking",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Booking Mongo ObjectId",
+            "schema": {
+              "example": "65f1a2b3c4d5e6f7a8b9c0d1",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "cancelledBy"
+                ],
+                "properties": {
+                  "cancelledBy": {
+                    "type": "string",
+                    "enum": [
+                      "customer",
+                      "provider",
+                      "manager",
+                      "admin",
+                      "system"
+                    ]
+                  },
+                  "reason": {
+                    "type": "string",
+                    "example": "Customer requested reschedule"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Booking cancelled."
+          }
+        },
+        "security": [
+          {
+            "bearer-token": []
+          }
+        ],
+        "summary": "Cancel booking",
         "tags": [
           "Bookings"
         ]
@@ -1160,6 +2816,11 @@
             "description": "Invalid payment data."
           }
         },
+        "security": [
+          {
+            "bearer-token": []
+          }
+        ],
         "summary": "Create a new payment record",
         "tags": [
           "Payments"
@@ -1174,7 +2835,47 @@
             "description": "List of all payments."
           }
         },
+        "security": [
+          {
+            "bearer-token": []
+          }
+        ],
         "summary": "Get all payments",
+        "tags": [
+          "Payments"
+        ]
+      }
+    },
+    "/payments/order/{orderId}": {
+      "get": {
+        "description": "Retrieves payment transaction record associated with an order ID.",
+        "operationId": "PaymentsController_findByOrder",
+        "parameters": [
+          {
+            "name": "orderId",
+            "required": true,
+            "in": "path",
+            "description": "Order Mongo ObjectId",
+            "schema": {
+              "example": "65f1a2b3c4d5e6f7a8b9c0d1",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Payment record found."
+          },
+          "404": {
+            "description": "Payment not found."
+          }
+        },
+        "security": [
+          {
+            "bearer-token": []
+          }
+        ],
+        "summary": "Get payment by order ID",
         "tags": [
           "Payments"
         ]
@@ -1204,6 +2905,11 @@
             "description": "Payment not found."
           }
         },
+        "security": [
+          {
+            "bearer-token": []
+          }
+        ],
         "summary": "Get payment by ID",
         "tags": [
           "Payments"
@@ -1242,6 +2948,11 @@
             "description": "Payment not found."
           }
         },
+        "security": [
+          {
+            "bearer-token": []
+          }
+        ],
         "summary": "Update payment status or details",
         "tags": [
           "Payments"
@@ -1270,6 +2981,11 @@
             "description": "Payment not found."
           }
         },
+        "security": [
+          {
+            "bearer-token": []
+          }
+        ],
         "summary": "Delete payment record",
         "tags": [
           "Payments"
@@ -1299,6 +3015,11 @@
             "description": "Invalid review payload or duplicate booking review."
           }
         },
+        "security": [
+          {
+            "bearer-token": []
+          }
+        ],
         "summary": "Submit a service review and rating",
         "tags": [
           "Reviews"
@@ -1313,7 +3034,111 @@
             "description": "List of all reviews."
           }
         },
+        "security": [
+          {
+            "bearer-token": []
+          }
+        ],
         "summary": "Get all reviews",
+        "tags": [
+          "Reviews"
+        ]
+      }
+    },
+    "/reviews/service/{serviceId}": {
+      "get": {
+        "description": "Retrieves all customer reviews and ratings submitted for a specific service catalog item.",
+        "operationId": "ReviewsController_findByService",
+        "parameters": [
+          {
+            "name": "serviceId",
+            "required": true,
+            "in": "path",
+            "description": "Service Mongo ObjectId",
+            "schema": {
+              "example": "65f1a2b3c4d5e6f7a8b9c0d1",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of reviews for the service."
+          }
+        },
+        "security": [
+          {
+            "bearer-token": []
+          }
+        ],
+        "summary": "Get reviews by service ID",
+        "tags": [
+          "Reviews"
+        ]
+      }
+    },
+    "/reviews/provider/{providerId}": {
+      "get": {
+        "description": "Retrieves all reviews and ratings received by a specific service provider.",
+        "operationId": "ReviewsController_findByProvider",
+        "parameters": [
+          {
+            "name": "providerId",
+            "required": true,
+            "in": "path",
+            "description": "Provider Mongo ObjectId",
+            "schema": {
+              "example": "65f1a2b3c4d5e6f7a8b9c0d1",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of reviews for the provider."
+          }
+        },
+        "security": [
+          {
+            "bearer-token": []
+          }
+        ],
+        "summary": "Get reviews by provider ID",
+        "tags": [
+          "Reviews"
+        ]
+      }
+    },
+    "/reviews/booking/{bookingId}": {
+      "get": {
+        "description": "Retrieves the specific review submitted for a booking reservation.",
+        "operationId": "ReviewsController_findByBooking",
+        "parameters": [
+          {
+            "name": "bookingId",
+            "required": true,
+            "in": "path",
+            "description": "Booking Mongo ObjectId",
+            "schema": {
+              "example": "65f1a2b3c4d5e6f7a8b9c0d1",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Review found."
+          },
+          "404": {
+            "description": "Review not found for this booking."
+          }
+        },
+        "security": [
+          {
+            "bearer-token": []
+          }
+        ],
+        "summary": "Get review by booking ID",
         "tags": [
           "Reviews"
         ]
@@ -1343,6 +3168,11 @@
             "description": "Review not found."
           }
         },
+        "security": [
+          {
+            "bearer-token": []
+          }
+        ],
         "summary": "Get review by ID",
         "tags": [
           "Reviews"
@@ -1381,6 +3211,11 @@
             "description": "Review not found."
           }
         },
+        "security": [
+          {
+            "bearer-token": []
+          }
+        ],
         "summary": "Update review",
         "tags": [
           "Reviews"
@@ -1409,6 +3244,11 @@
             "description": "Review not found."
           }
         },
+        "security": [
+          {
+            "bearer-token": []
+          }
+        ],
         "summary": "Delete review",
         "tags": [
           "Reviews"
@@ -1438,6 +3278,11 @@
             "description": "Invalid time bounds or missing fields."
           }
         },
+        "security": [
+          {
+            "bearer-token": []
+          }
+        ],
         "summary": "Create blackout interval / provider unavailability",
         "tags": [
           "Unavailability"
@@ -1452,7 +3297,54 @@
             "description": "List of all unavailability records."
           }
         },
+        "security": [
+          {
+            "bearer-token": []
+          }
+        ],
         "summary": "Get all unavailability records",
+        "tags": [
+          "Unavailability"
+        ]
+      }
+    },
+    "/unavailability/provider/{providerId}": {
+      "get": {
+        "description": "Retrieves all blackout periods / unavailabilities for a given provider (supports provider ObjectId or user ObjectId), optionally filtered by date.",
+        "operationId": "UnavailabilityController_findByProvider",
+        "parameters": [
+          {
+            "name": "providerId",
+            "required": true,
+            "in": "path",
+            "description": "Provider Mongo ObjectId or User ObjectId",
+            "schema": {
+              "example": "65f1a2b3c4d5e6f7a8b9c0d1",
+              "type": "string"
+            }
+          },
+          {
+            "name": "date",
+            "required": false,
+            "in": "query",
+            "description": "Optional date filter (YYYY-MM-DD)",
+            "schema": {
+              "example": "2026-10-15",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of unavailability records for the provider."
+          }
+        },
+        "security": [
+          {
+            "bearer-token": []
+          }
+        ],
+        "summary": "Get unavailability records by provider ID",
         "tags": [
           "Unavailability"
         ]
@@ -1482,6 +3374,11 @@
             "description": "Unavailability record not found."
           }
         },
+        "security": [
+          {
+            "bearer-token": []
+          }
+        ],
         "summary": "Get unavailability by ID",
         "tags": [
           "Unavailability"
@@ -1520,6 +3417,11 @@
             "description": "Unavailability record not found."
           }
         },
+        "security": [
+          {
+            "bearer-token": []
+          }
+        ],
         "summary": "Update unavailability record",
         "tags": [
           "Unavailability"
@@ -1548,6 +3450,11 @@
             "description": "Unavailability record not found."
           }
         },
+        "security": [
+          {
+            "bearer-token": []
+          }
+        ],
         "summary": "Delete unavailability record",
         "tags": [
           "Unavailability"
@@ -1577,6 +3484,11 @@
             "description": "Invalid setting parameters."
           }
         },
+        "security": [
+          {
+            "bearer-token": []
+          }
+        ],
         "summary": "Create global platform settings",
         "tags": [
           "Platform Settings"
@@ -1591,6 +3503,11 @@
             "description": "List of platform settings."
           }
         },
+        "security": [
+          {
+            "bearer-token": []
+          }
+        ],
         "summary": "Get all platform settings",
         "tags": [
           "Platform Settings"
@@ -1621,6 +3538,11 @@
             "description": "Platform setting not found."
           }
         },
+        "security": [
+          {
+            "bearer-token": []
+          }
+        ],
         "summary": "Get platform setting by ID",
         "tags": [
           "Platform Settings"
@@ -1659,6 +3581,11 @@
             "description": "Platform setting not found."
           }
         },
+        "security": [
+          {
+            "bearer-token": []
+          }
+        ],
         "summary": "Update platform setting",
         "tags": [
           "Platform Settings"
@@ -1687,6 +3614,11 @@
             "description": "Platform setting not found."
           }
         },
+        "security": [
+          {
+            "bearer-token": []
+          }
+        ],
         "summary": "Delete platform setting",
         "tags": [
           "Platform Settings"
@@ -1767,33 +3699,293 @@
       }
     },
     "schemas": {
+      "LoginDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "example": "customer@tatku.com",
+            "description": "Registered user email address"
+          },
+          "password": {
+            "type": "string",
+            "minLength": 8,
+            "example": "password123",
+            "description": "User password (minimum 8 characters)"
+          }
+        },
+        "required": [
+          "email",
+          "password"
+        ]
+      },
+      "RegisterDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Rahul Sharma",
+            "description": "User full name"
+          },
+          "fullName": {
+            "type": "string",
+            "example": "Rahul Sharma",
+            "description": "Alternative field for full name supported by frontend forms"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "example": "rahul.sharma@example.com",
+            "description": "Unique email address"
+          },
+          "password": {
+            "type": "string",
+            "minLength": 8,
+            "example": "SecurePass@123",
+            "description": "Account password (minimum 8 characters)"
+          },
+          "phone": {
+            "type": "string",
+            "example": "+919876543210",
+            "description": "Unique mobile phone number"
+          },
+          "role": {
+            "type": "string",
+            "default": "customer",
+            "enum": [
+              "customer",
+              "provider",
+              "manager",
+              "admin"
+            ],
+            "description": "Assigned platform role (customer, provider, manager, admin)"
+          },
+          "gender": {
+            "type": "string",
+            "example": "male",
+            "enum": [
+              "male",
+              "female",
+              "other"
+            ],
+            "description": "Demographic gender"
+          },
+          "dob": {
+            "type": "string",
+            "example": "1995-05-20",
+            "description": "Date of birth in ISO format"
+          }
+        },
+        "required": [
+          "email",
+          "password",
+          "phone"
+        ]
+      },
       "CreateUserDto": {
         "type": "object",
-        "properties": {}
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "password": {
+            "type": "string",
+            "minLength": 8
+          },
+          "gender": {
+            "type": "string"
+          },
+          "phone": {
+            "type": "string"
+          },
+          "dob": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "email",
+          "password",
+          "phone",
+          "role"
+        ]
       },
       "UpdateUserDto": {
         "type": "object",
         "properties": {}
       },
+      "GeoLocationDto": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "default": "Point"
+          },
+          "coordinates": {
+            "minItems": 2,
+            "maxItems": 2,
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "type",
+          "coordinates"
+        ]
+      },
       "CreateProviderDto": {
         "type": "object",
-        "properties": {}
+        "properties": {
+          "user": {
+            "type": "string"
+          },
+          "offeredServices": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "experience": {
+            "type": "number"
+          },
+          "workHourStart": {
+            "type": "number"
+          },
+          "workHourEnd": {
+            "type": "number"
+          },
+          "workingDays": {
+            "type": "array",
+            "items": {
+              "type": "number"
+            }
+          },
+          "location": {
+            "$ref": "#/components/schemas/GeoLocationDto"
+          }
+        },
+        "required": [
+          "user",
+          "offeredServices",
+          "experience",
+          "workHourStart",
+          "workHourEnd",
+          "workingDays",
+          "location"
+        ]
       },
       "UpdateProviderDto": {
         "type": "object",
-        "properties": {}
+        "properties": {
+          "offeredServices": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "experience": {
+            "type": "number"
+          },
+          "workHourStart": {
+            "type": "number"
+          },
+          "workHourEnd": {
+            "type": "number"
+          },
+          "workingDays": {
+            "type": "array",
+            "items": {
+              "type": "number"
+            }
+          },
+          "location": {
+            "$ref": "#/components/schemas/GeoLocationDto"
+          },
+          "status": {
+            "type": "string"
+          },
+          "razorpayAccountId": {
+            "type": "string"
+          },
+          "region": {
+            "type": "string"
+          }
+        }
       },
       "CreateManagerDto": {
         "type": "object",
-        "properties": {}
+        "properties": {
+          "user": {
+            "type": "string"
+          },
+          "salary": {
+            "type": "number"
+          },
+          "experience": {
+            "type": "number"
+          },
+          "location": {
+            "$ref": "#/components/schemas/GeoLocationDto"
+          }
+        },
+        "required": [
+          "user",
+          "salary",
+          "experience",
+          "location"
+        ]
       },
       "UpdateManagerDto": {
         "type": "object",
-        "properties": {}
+        "properties": {
+          "salary": {
+            "type": "number"
+          },
+          "experience": {
+            "type": "number"
+          },
+          "location": {
+            "$ref": "#/components/schemas/GeoLocationDto"
+          },
+          "status": {
+            "type": "string"
+          },
+          "razorpayAccountId": {
+            "type": "string"
+          }
+        }
       },
       "CreateRegionDto": {
         "type": "object",
-        "properties": {}
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "manager": {
+            "type": "string"
+          },
+          "location": {
+            "$ref": "#/components/schemas/GeoLocationDto"
+          },
+          "isActive": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "name",
+          "manager",
+          "location"
+        ]
       },
       "UpdateRegionDto": {
         "type": "object",
@@ -1801,63 +3993,421 @@
       },
       "CreateCategoryDto": {
         "type": "object",
-        "properties": {}
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "imageUrl": {
+            "type": "string"
+          },
+          "isActive": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "name",
+          "description",
+          "imageUrl"
+        ]
       },
       "UpdateCategoryDto": {
         "type": "object",
         "properties": {}
       },
+      "HowItWorksStepDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "desc": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "title",
+          "desc"
+        ]
+      },
+      "FaqItemDto": {
+        "type": "object",
+        "properties": {
+          "question": {
+            "type": "string"
+          },
+          "answer": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "question",
+          "answer"
+        ]
+      },
       "CreateServiceDto": {
         "type": "object",
-        "properties": {}
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "price": {
+            "type": "number"
+          },
+          "duration": {
+            "type": "number"
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "imageUrls": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "whatIsCovered": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "whatIsNotCovered": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "howItWorks": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/HowItWorksStepDto"
+            }
+          },
+          "faq": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FaqItemDto"
+            }
+          }
+        },
+        "required": [
+          "name",
+          "category",
+          "description",
+          "price",
+          "duration"
+        ]
       },
       "UpdateServiceDto": {
         "type": "object",
         "properties": {}
       },
+      "AddressSnapshotDto": {
+        "type": "object",
+        "properties": {
+          "line": {
+            "type": "string"
+          },
+          "city": {
+            "type": "string"
+          },
+          "location": {
+            "$ref": "#/components/schemas/GeoLocationDto"
+          }
+        },
+        "required": [
+          "line",
+          "city",
+          "location"
+        ]
+      },
       "CreateOrderDto": {
         "type": "object",
-        "properties": {}
+        "properties": {
+          "customer": {
+            "type": "string"
+          },
+          "address": {
+            "$ref": "#/components/schemas/AddressSnapshotDto"
+          },
+          "totalAmount": {
+            "type": "number"
+          },
+          "expiresAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "customer",
+          "address",
+          "totalAmount",
+          "expiresAt"
+        ]
       },
       "UpdateOrderDto": {
         "type": "object",
-        "properties": {}
+        "properties": {
+          "paymentStatus": {
+            "type": "string"
+          },
+          "payment": {
+            "type": "string"
+          }
+        }
       },
       "CreateBookingDto": {
         "type": "object",
-        "properties": {}
+        "properties": {
+          "service": {
+            "type": "string"
+          },
+          "provider": {
+            "type": "string"
+          },
+          "customer": {
+            "type": "string"
+          },
+          "order": {
+            "type": "string"
+          },
+          "region": {
+            "type": "string"
+          },
+          "scheduledDate": {
+            "type": "string"
+          },
+          "startTime": {
+            "type": "number"
+          },
+          "endTime": {
+            "type": "number"
+          },
+          "blockStartTime": {
+            "type": "number"
+          },
+          "price": {
+            "type": "number"
+          },
+          "platformFeePercent": {
+            "type": "number"
+          },
+          "platformShare": {
+            "type": "number"
+          },
+          "providerShare": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "service",
+          "provider",
+          "customer",
+          "order",
+          "region",
+          "scheduledDate",
+          "startTime",
+          "endTime",
+          "blockStartTime",
+          "price",
+          "platformFeePercent",
+          "platformShare",
+          "providerShare"
+        ]
       },
       "UpdateBookingDto": {
         "type": "object",
-        "properties": {}
+        "properties": {
+          "status": {
+            "type": "string"
+          },
+          "provider": {
+            "type": "string"
+          },
+          "cancelledBy": {
+            "type": "string"
+          },
+          "cancelledReason": {
+            "type": "string"
+          },
+          "offerExpiresAt": {
+            "type": "string"
+          },
+          "payoutStatus": {
+            "type": "string"
+          },
+          "payoutAt": {
+            "type": "string"
+          }
+        }
       },
       "CreatePaymentDto": {
         "type": "object",
-        "properties": {}
+        "properties": {
+          "order": {
+            "type": "string"
+          },
+          "totalAmount": {
+            "type": "number"
+          },
+          "currency": {
+            "type": "string"
+          },
+          "razorpayOrderId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "order",
+          "totalAmount",
+          "razorpayOrderId"
+        ]
       },
       "UpdatePaymentDto": {
         "type": "object",
-        "properties": {}
+        "properties": {
+          "razorpayPaymentId": {
+            "type": "string"
+          },
+          "razorpaySignature": {
+            "type": "string"
+          }
+        }
       },
       "CreateReviewDto": {
         "type": "object",
-        "properties": {}
+        "properties": {
+          "booking": {
+            "type": "string"
+          },
+          "rating": {
+            "type": "number",
+            "minimum": 1,
+            "maximum": 5
+          },
+          "review": {
+            "type": "string"
+          },
+          "provider": {
+            "type": "string"
+          },
+          "service": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "booking",
+          "rating",
+          "provider",
+          "service"
+        ]
       },
       "UpdateReviewDto": {
         "type": "object",
-        "properties": {}
+        "properties": {
+          "rating": {
+            "type": "number",
+            "minimum": 1,
+            "maximum": 5
+          },
+          "review": {
+            "type": "string"
+          }
+        }
       },
       "CreateUnavailabilityDto": {
         "type": "object",
-        "properties": {}
+        "properties": {
+          "provider": {
+            "type": "string"
+          },
+          "date": {
+            "type": "string"
+          },
+          "startTime": {
+            "type": "number"
+          },
+          "endTime": {
+            "type": "number"
+          },
+          "reason": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "provider",
+          "date",
+          "startTime",
+          "endTime"
+        ]
       },
       "UpdateUnavailabilityDto": {
         "type": "object",
-        "properties": {}
+        "properties": {
+          "date": {
+            "type": "string"
+          },
+          "startTime": {
+            "type": "number"
+          },
+          "endTime": {
+            "type": "number"
+          },
+          "reason": {
+            "type": "string"
+          }
+        }
       },
       "CreatePlatformSettingDto": {
         "type": "object",
-        "properties": {}
+        "properties": {
+          "platformFeePercent": {
+            "type": "number"
+          },
+          "maxAssignmentDistanceKm": {
+            "type": "number"
+          },
+          "slotIntervalMinutes": {
+            "type": "number"
+          },
+          "firstSlotStart": {
+            "type": "number"
+          },
+          "lastSlotStart": {
+            "type": "number"
+          },
+          "bookingWindowDays": {
+            "type": "number"
+          },
+          "minLeadMinutes": {
+            "type": "number"
+          },
+          "travelBufferMinutes": {
+            "type": "number"
+          },
+          "offerTimeoutMinutes": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "platformFeePercent",
+          "maxAssignmentDistanceKm",
+          "slotIntervalMinutes",
+          "firstSlotStart",
+          "lastSlotStart",
+          "bookingWindowDays",
+          "minLeadMinutes",
+          "travelBufferMinutes",
+          "offerTimeoutMinutes"
+        ]
       },
       "UpdatePlatformSettingDto": {
         "type": "object",

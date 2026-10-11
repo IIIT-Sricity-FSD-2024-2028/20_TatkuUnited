@@ -13,18 +13,24 @@ import {
   ApiResponse,
   ApiParam,
   ApiBody,
+  ApiBearerAuth,
 } from '@nestjs/swagger';
 import { PlatformSettingsService } from './platform-settings.service';
 import { CreatePlatformSettingDto } from './dto/create-platform-setting.dto';
 import { UpdatePlatformSettingDto } from './dto/update-platform-setting.dto';
+import { Public } from '../common/decorators/public.decorator';
+import { Roles } from '../common/decorators/roles.decorator';
+import { Role } from '../common/enums/roles.enum';
 
 @ApiTags('Platform Settings')
+@ApiBearerAuth('bearer-token')
 @Controller('platform-settings')
 export class PlatformSettingsController {
   constructor(
     private readonly platformSettingsService: PlatformSettingsService,
   ) {}
 
+  @Roles(Role.ADMIN)
   @Post()
   @ApiOperation({
     summary: 'Create global platform settings',
@@ -38,6 +44,7 @@ export class PlatformSettingsController {
     return this.platformSettingsService.create(createPlatformSettingDto);
   }
 
+  @Public()
   @Get()
   @ApiOperation({
     summary: 'Get all platform settings',
@@ -48,6 +55,7 @@ export class PlatformSettingsController {
     return this.platformSettingsService.findAll();
   }
 
+  @Public()
   @Get(':id')
   @ApiOperation({
     summary: 'Get platform setting by ID',
@@ -60,6 +68,7 @@ export class PlatformSettingsController {
     return this.platformSettingsService.findOne(id);
   }
 
+  @Roles(Role.ADMIN)
   @Patch(':id')
   @ApiOperation({
     summary: 'Update platform setting',
@@ -76,6 +85,7 @@ export class PlatformSettingsController {
     return this.platformSettingsService.update(id, updatePlatformSettingDto);
   }
 
+  @Roles(Role.ADMIN)
   @Delete(':id')
   @ApiOperation({
     summary: 'Delete platform setting',

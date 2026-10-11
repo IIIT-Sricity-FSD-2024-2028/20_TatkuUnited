@@ -61,7 +61,14 @@ describe('UsersService', () => {
 
       const result = await service.create(dto);
 
-      expect(mockUserModel).toHaveBeenCalledWith(dto);
+      expect(mockUserModel).toHaveBeenCalledWith(
+        expect.objectContaining({
+          name: 'John Doe',
+          email: 'john@example.com',
+          phone: '+919876543210',
+          role: Role.CUSTOMER,
+        }),
+      );
       expect(result).toEqual(
         expect.objectContaining({ _id: 'user-001', email: 'john@example.com' }),
       );

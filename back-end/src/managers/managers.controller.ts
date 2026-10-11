@@ -13,16 +13,21 @@ import {
   ApiResponse,
   ApiParam,
   ApiBody,
+  ApiBearerAuth,
 } from '@nestjs/swagger';
 import { ManagersService } from './managers.service';
 import { CreateManagerDto } from './dto/create-manager.dto';
 import { UpdateManagerDto } from './dto/update-manager.dto';
+import { Roles } from '../common/decorators/roles.decorator';
+import { Role } from '../common/enums/roles.enum';
 
 @ApiTags('Managers')
+@ApiBearerAuth('bearer-token')
 @Controller('managers')
 export class ManagersController {
   constructor(private readonly managersService: ManagersService) {}
 
+  @Roles(Role.ADMIN)
   @Post()
   @ApiOperation({
     summary: 'Create / register a regional manager',
@@ -35,6 +40,7 @@ export class ManagersController {
     return this.managersService.create(createManagerDto);
   }
 
+  @Roles(Role.ADMIN)
   @Get()
   @ApiOperation({
     summary: 'Get all regional managers',
@@ -45,6 +51,20 @@ export class ManagersController {
     return this.managersService.findAll();
   }
 
+  @Roles(Role.ADMIN, Role.MANAGER)
+  @Get('user/:userId')
+  @ApiOperation({
+    summary: 'Get manager profile by user ID',
+    description: 'Retrieves a regional manager profile linked to a specific user account.',
+  })
+  @ApiParam({ name: 'userId', description: 'User Mongo ObjectId', example: '65f1a2b3c4d5e6f7a8b9c0d1' })
+  @ApiResponse({ status: 200, description: 'Manager found.' })
+  @ApiResponse({ status: 404, description: 'Manager not found.' })
+  findByUser(@Param('userId') userId: string) {
+    return this.managersService.findByUser(userId);
+  }
+
+  @Roles(Role.ADMIN, Role.MANAGER)
   @Get(':id')
   @ApiOperation({
     summary: 'Get manager by ID',
@@ -57,6 +77,7 @@ export class ManagersController {
     return this.managersService.findOne(id);
   }
 
+  @Roles(Role.ADMIN, Role.MANAGER)
   @Patch(':id')
   @ApiOperation({
     summary: 'Update manager profile',
@@ -70,6 +91,7 @@ export class ManagersController {
     return this.managersService.update(id, updateManagerDto);
   }
 
+  @Roles(Role.ADMIN)
   @Delete(':id')
   @ApiOperation({
     summary: 'Delete manager',
