@@ -1,46 +1,19 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
-import axios from "axios";
-import { BASE_URL } from "../../services/api";
 import createAsyncThunkTyped from "../asyncThunk";
+import { getManagerByUser } from "@/services/managers.service";
+import { getRegionsByManager } from "@/services/regions.service";
+import { getProvidersByRegion } from "@/services/providers.service";
+import { getBookingsByRegion } from "@/services/bookings.service";
+import type {
+  BookingDocument,
+  ManagerDocument,
+  ProviderDocument,
+  RegionDocument,
+} from "@/models/api.models";
 
-const authConfig = (token: string | null) => ({
-  headers: { Authorization: `Bearer ${token}` },
-});
-
-type GeoPoint = { type: "Point"; coordinates: [number, number] };
-
-export interface Manager {
-  _id: string;
-  user: string;
-  salary: number; // paise
-  experience: number; // years
-  location: GeoPoint;
-  status: "active" | "suspended" | "inactive";
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface Region {
-  _id: string;
-  name: string;
-  manager: string;
-  location: GeoPoint;
-  isActive: boolean;
-}
-
+// The back-end's status values differ from the ones in api.models, so
+// override them here with what the API actually returns.
 export type ProviderStatus = "pending" | "approved" | "suspended";
-
-export interface RegionProvider {
-  _id: string;
-  user: string;
-  offeredServices: string[];
-  experience: number;
-  status: ProviderStatus;
-  rating: number;
-  ratingCount: number;
-  region: string | null;
-}
-
 export type BookingStatus =
   | "pending"
   | "awaiting_provider"
@@ -49,25 +22,16 @@ export type BookingStatus =
   | "completed"
   | "cancelled";
 
-// Region bookings come back with service / provider / customer populated.
-export interface RegionBooking {
-  _id: string;
-  service: { _id: string; name?: string } | string;
-  provider: { _id: string } | string;
-  customer: { _id: string; name?: string } | string;
-  scheduledDate: string;
-  startTime: number;
-  endTime: number;
+export type RegionProvider = Omit<ProviderDocument, "status"> & {
+  status: ProviderStatus;
+};
+export type RegionBooking = Omit<BookingDocument, "status"> & {
   status: BookingStatus;
-  cancelledBy: string | null;
-  price: number; // paise
-  platformShare: number; // paise
-  providerShare: number; // paise
-}
+};
 
 interface ManagerState {
-  managerInfo: Manager | null;
-  regions: Region[];
+  managerInfo: ManagerDocument | null;
+  regions: RegionDocument[];
   selectedRegionId: string | null;
   providers: RegionProvider[];
   bookings: RegionBooking[];
@@ -87,15 +51,11 @@ const initialState: ManagerState = {
 
 export const fetchManager = createAsyncThunkTyped(
   "manager/fetchManager",
-  async (userId: string, thunkAPI): Promise<Manager> => {
-    const { token } = thunkAPI.getState().auth;
-    let manager: Manager | null;
+  async (userId: string): Promise<ManagerDocument> => {
+    let manager: ManagerDocument | null;
     try {
-      const res = await axios.get<Manager | "">(
-        `${BASE_URL}/managers/user/${userId}`,
-        authConfig(token),
-      );
-      manager = res.data || null; // empty body when there is no profile
+      // the API answers 200 with an empty body when there is no profile
+      manager = (await getManagerByUser(userId)) || null;
     } catch {
       throw new Error("Fetching manager details failed");
     }
@@ -106,14 +66,9 @@ export const fetchManager = createAsyncThunkTyped(
 
 export const fetchRegions = createAsyncThunkTyped(
   "manager/fetchRegions",
-  async (managerId: string, thunkAPI): Promise<Region[]> => {
-    const { token } = thunkAPI.getState().auth;
+  async (managerId: string): Promise<RegionDocument[]> => {
     try {
-      const res = await axios.get<Region[]>(
-        `${BASE_URL}/regions/manager/${managerId}`,
-        authConfig(token),
-      );
-      return res.data;
+      return await getRegionsByManager(managerId);
     } catch {
       throw new Error("Fetching regions failed");
     }
@@ -122,14 +77,9 @@ export const fetchRegions = createAsyncThunkTyped(
 
 export const fetchRegionProviders = createAsyncThunkTyped(
   "manager/fetchRegionProviders",
-  async (regionId: string, thunkAPI): Promise<RegionProvider[]> => {
-    const { token } = thunkAPI.getState().auth;
+  async (regionId: string): Promise<RegionProvider[]> => {
     try {
-      const res = await axios.get<RegionProvider[]>(
-        `${BASE_URL}/providers/region/${regionId}`,
-        authConfig(token),
-      );
-      return res.data;
+      return (await getProvidersByRegion(regionId)) as unknown as RegionProvider[];
     } catch {
       throw new Error("Fetching service providers failed");
     }
@@ -138,14 +88,9 @@ export const fetchRegionProviders = createAsyncThunkTyped(
 
 export const fetchRegionBookings = createAsyncThunkTyped(
   "manager/fetchRegionBookings",
-  async (regionId: string, thunkAPI): Promise<RegionBooking[]> => {
-    const { token } = thunkAPI.getState().auth;
+  async (regionId: string): Promise<RegionBooking[]> => {
     try {
-      const res = await axios.get<RegionBooking[]>(
-        `${BASE_URL}/bookings/region/${regionId}`,
-        authConfig(token),
-      );
-      return res.data;
+      return (await getBookingsByRegion(regionId)) as unknown as RegionBooking[];
     } catch {
       throw new Error("Fetching bookings failed");
     }
