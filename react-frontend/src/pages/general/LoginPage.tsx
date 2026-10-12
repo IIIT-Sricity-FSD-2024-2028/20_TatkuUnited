@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { handleLogin } from "@/services/auth";
-import { useAuthContext } from "@/common/AuthContext";
+import { handleLogin } from "@/common/services/authService";
+import AuthContext from "@/common/AuthContext";
 import UrlMap from "@/common/urlMap";
 import { toast } from "@/components/ui/toast";
 
@@ -112,10 +112,9 @@ function FillUserData() {
       });
       navigate(UrlMap[res.user.role]);
     } else {
-      const error = res || "Login failed. Please check your credentials.";
       toast.add({
         type: "error",
-        description: error,
+        description: res,
         priority: "high",
       });
     }

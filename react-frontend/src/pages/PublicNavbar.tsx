@@ -3,8 +3,9 @@ import { Link } from "react-router-dom";
 // import type { RootState } from "../store";
 import { RolesEnum, type Role } from "../common/roles.enum";
 import UrlMap from "../common/urlMap";
-import { handleLogout } from "@/services/auth";
-import { useAuthContext } from "@/common/AuthContext";
+import { handleLogout } from "@/common/services/authService";
+import { useContext } from "react";
+import AuthContext from "@/common/AuthContext";
 
 interface PublicNavbarProps {
   brandName: string;

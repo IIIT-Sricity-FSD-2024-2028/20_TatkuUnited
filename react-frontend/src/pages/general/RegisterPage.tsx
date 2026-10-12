@@ -1,7 +1,9 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
-import { handleRegister } from "@/services/auth";
+import { Link, useNavigate } from "react-router-dom";
+import { handleRegister } from "@/common/services/authService";
 import type { Role } from "@/common/roles.enum";
+import { toast } from "@/components/ui/toast";
+import { ENDPOINT_ENUM } from "@/common/endpoints";
 
 interface FormData {
   name: string;
@@ -214,6 +216,8 @@ function FillPassword({
     }));
   };
 
+  const navigate = useNavigate();
+
   const handleSubmit = async () => {
     const { password, confirmPassword, name, email } = formData;
     const invalid =
@@ -241,7 +245,18 @@ function FillPassword({
     });
     setSubmitting(false);
 
-    setCurPage(res === "success" ? 4 : 5);
+    if (res === "success") {
+      toast.add({
+        type: "info",
+        description: "Account created successfully",
+      });
+      navigate(ENDPOINT_ENUM.AUTH_LOGIN);
+    } else {
+      toast.add({
+        type: "error",
+        description: res,
+      });
+    }
   };
 
   return (
@@ -309,28 +324,28 @@ function LoginLink() {
   );
 }
 
-function RegistrationSuccess() {
-  return (
-    <div>
-      <h1 className="text-3xl font-bold my-3">Account Created!</h1>
-      <p className="text-slate-500">
-        Proceed to login:{" "}
-        <Link className="text-blue-500 cursor-pointer" to="/auth/login">
-          Login here
-        </Link>
-      </p>
-    </div>
-  );
-}
+// function RegistrationSuccess() {
+//   return (
+//     <div>
+//       <h1 className="text-3xl font-bold my-3">Account Created!</h1>
+//       <p className="text-slate-500">
+//         Proceed to login:{" "}
+//         <Link className="text-blue-500 cursor-pointer" to="/auth/login">
+//           Login here
+//         </Link>
+//       </p>
+//     </div>
+//   );
+// }
 
-function RegistrationFailed() {
-  return (
-    <div>
-      <h1 className="text-3xl font-bold my-3">Account Creation Failed!</h1>
-      <p className="text-slate-500">Try again later.</p>
-    </div>
-  );
-}
+// function RegistrationFailed() {
+//   return (
+//     <div>
+//       <h1 className="text-3xl font-bold my-3">Account Creation Failed!</h1>
+//       <p className="text-slate-500">Try again later.</p>
+//     </div>
+//   );
+// }
 
 function RegisterPage() {
   const [curPage, setCurPage] = useState(1);
@@ -378,9 +393,9 @@ function RegisterPage() {
           role={role}
         />
       )}
-      {curPage == 4 && <RegistrationSuccess />}
-      {curPage == 5 && <RegistrationFailed />}
-      {curPage != 4 && curPage != 5 && <LoginLink />}
+      {/* {curPage == 4 && <RegistrationSuccess />}
+      {curPage == 5 && <RegistrationFailed />} */}
+      <LoginLink />
     </div>
   );
 }

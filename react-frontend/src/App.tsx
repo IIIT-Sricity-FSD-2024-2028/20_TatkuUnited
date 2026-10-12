@@ -17,24 +17,26 @@ import RatingsFeedback from "./pages/RatingsFeedbackPage";
 import { Provider as ReduxProvider } from "react-redux";
 import { store } from "./store";
 import AuthContext from "./common/AuthContext";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import type { AuthInterface } from "./models/auth.models";
 import { Toaster } from "./components/ui/toast";
+import NotFound from "./pages/components/notFound";
+// import ForbiddenAccess from "./pages/components/forbiddenAccess";
 
 function App() {
-  const [authDetails, setAuthDetails] = useState<AuthInterface | null>(null);
-
-  useEffect(() => {
-    const storedUser = sessionStorage.getItem("user");
-    const token = sessionStorage.getItem("token");
-
-    if (token && storedUser) {
-      const user = JSON.parse(storedUser);
-      if (user) {
-        setAuthDetails({ token, user });
+  const [authDetails, setAuthDetails] = useState<AuthInterface>(() => {
+    try {
+      const token = sessionStorage.getItem("token");
+      const userStr = sessionStorage.getItem("user");
+      const user = userStr ? JSON.parse(userStr) : null;
+      if (token) {
+        return { token, user };
       }
+    } catch {
+      // ignore parse errors
     }
-  }, []);
+    return null;
+  });
 
   return (
     <AuthContext.Provider value={{ authDetails, setAuthDetails }}>
@@ -49,6 +51,7 @@ function App() {
             </Route>
 
             <Route path="/provider" element={<Provider />} />
+
             <Route path="/superuser/*" element={<SuperUser />} />
             <Route path="/manager/*" element={<ManagerRouter />} />
 
@@ -56,10 +59,7 @@ function App() {
             <Route path="/schedule" element={<Schedule />} />
             <Route path="/account-settings" element={<AccountSettings />} />
             <Route path="/ratings-feedback" element={<RatingsFeedback />} />
-
-            <Route path="/customer" element={<CustomerDashboard />} />
-
-            <Route path="*" element={<div>404! Page Not Found.</div>} />
+            <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
         <Toaster />

@@ -1,10 +1,31 @@
 import { HTTP_METHODS_ENUM } from "@/common/http.methods";
-import {type AuthInterface, type LoginResponse, type UserRegistrationInterface} from "../models/auth.models"
 import { apiService } from "./apiService";
-import { ENDPOINT_ENUM } from "./endpoints";
+import { ENDPOINT_ENUM } from "../endpoints";
+import {
+  type AuthInterface,
+  type LoginResponse,
+  type UserRegistrationInterface,
+  type UserInterface,
+} from "../../models/auth.models";
+
+
 
 export function handleLogout() {
-    sessionStorage.clear();
+  sessionStorage.clear();
+}
+
+export function getStoredUser(): (UserInterface & { _id?: string }) | null {
+  try {
+    const raw = sessionStorage.getItem("user");
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
+export function getStoredUserId(): string | undefined {
+  const user = getStoredUser();
+  return user?.id || user?._id;
 }
 
 export async function handleLogin(email: string, password: string): Promise<string | AuthInterface> {
@@ -16,8 +37,8 @@ export async function handleLogin(email: string, password: string): Promise<stri
       sessionStorage.setItem("user", JSON.stringify(user));
     });
     return {token: data.access_token, user: data.user};
-  } catch(_) {
-    return "Login failed";
+  } catch(error: any) {
+    return error.response?.data?.message || "Login failed";
   }
 }
 
@@ -29,7 +50,7 @@ export async function handleRegister(userData: UserRegistrationInterface): Promi
       userData 
     );
     return "success";
-  } catch(_) {
-    return "Registration failed";
+  } catch(error: any) {
+    return error.response?.data?.message || "Account creation failed";
   }
 }

@@ -2,8 +2,12 @@ import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { type RootState } from "../../store";
 import axios from "axios";
-import { BASE_URL } from "../../services/endpoints";
+import { BASE_URL, ENDPOINT_ENUM } from "../../common/endpoints";
 import { BsPeople, BsPersonCheck, BsPersonX, BsPlus } from "react-icons/bs";
+import useAuth from "@/hooks/useAuth";
+import { RolesEnum } from "@/common/roles.enum";
+import { apiService } from "@/common/services/apiService";
+import { HTTP_METHODS_ENUM } from "@/common/http.methods";
 
 interface UsersResponse {
   id: string;
@@ -15,8 +19,9 @@ interface UsersResponse {
 }
 
 export default function SuperUser_ManageUsers() {
-  const token = useSelector((state: RootState) => state.auth.token);
-  const user = useSelector((state: RootState) => state.auth.user);
+  // const token = useSelector((state: RootState) => state.auth.token);
+  // const user = useSelector((state: RootState) => state.auth.user);
+  const { user, isAuthenticated } = useAuth();
   const super_user_id = user?.id;
 
   const [users, setUsers] = useState<Array<UsersResponse>>([]);
@@ -74,22 +79,17 @@ export default function SuperUser_ManageUsers() {
   });
 
   const fetchAllUsers = async () => {
-    if (!token || !super_user_id) return;
+    if (!isAuthenticated || user.role != RolesEnum.ADMIN) return;
     try {
       setIsLoading(true);
       setError(null);
 
-      const response = await axios.get<Array<UsersResponse>>(
-        `${BASE_URL}/super-users/all-users`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "x-role": "super_user",
-          },
-        },
+      const users_data = await apiService<Array<UsersResponse>, null>(
+        HTTP_METHODS_ENUM.get,
+        ENDPOINT_ENUM.USERS,
       );
-      setUsers(response.data);
-      console.log(response.data);
+      setUsers(users_data);
+      // console.log(users_data);
     } catch (err) {
       setError("Failed to fetch users. Please check your connection.");
       console.log(err);
@@ -100,7 +100,7 @@ export default function SuperUser_ManageUsers() {
 
   useEffect(() => {
     fetchAllUsers();
-  }, [token, super_user_id]);
+  }, [super_user_id]);
 
   return (
     <div className="flex flex-col gap-6">
@@ -124,7 +124,6 @@ export default function SuperUser_ManageUsers() {
 
       {isAddUser && (
         <AddUser
-          token={token}
           super_user_id={super_user_id}
           onClose={() => setIsAddUser(false)}
           refreshUsers={fetchAllUsers}
@@ -132,7 +131,6 @@ export default function SuperUser_ManageUsers() {
       )}
       {isEditingUserID && isEditingUserRole && (
         <EditUser
-          token={token}
           super_user_id={super_user_id}
           userId={isEditingUserID}
           role={isEditingUserRole}
@@ -466,7 +464,6 @@ function AddUser({
 
 function EditUser({
   onClose,
-  token,
   super_user_id,
   userId,
   role,
@@ -478,7 +475,7 @@ function EditUser({
   const handleSubmit = async (e: React.SyntheticEvent) => {
     e.preventDefault();
 
-    if (!token || !super_user_id) return;
+    if (!super_user_id) return;
 
     let endpoint = "";
     if (role === "Super User") {
@@ -495,20 +492,15 @@ function EditUser({
     }
 
     try {
-      const response = await axios.patch(
-        `${BASE_URL}/${endpoint}/${userId}`,
+      const res_data = await apiService(
+        HTTP_METHODS_ENUM.patch,
+        `${endpoint}/${userId}`,
         {
           is_active: status,
         },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "x-role": "super_user",
-          },
-        },
       );
 
-      console.log(response.data);
+      console.log(res_data);
       onClose();
       refreshUsers();
     } catch (err) {
