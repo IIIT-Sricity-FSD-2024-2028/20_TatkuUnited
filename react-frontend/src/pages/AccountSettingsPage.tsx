@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-const API_BASE_URL = "http://localhost:10000";
+const API_BASE_URL = "http://localhost:3000";
 
 function AccountSettingsPage() {
   const navigate = useNavigate();
@@ -29,16 +29,16 @@ function AccountSettingsPage() {
   const [error, setError] = useState("");
 
   const getSession = () => {
-    try {
-      return JSON.parse(sessionStorage.getItem("tu_auth_session") || "null");
-    } catch {
-      return null;
-    }
-  };
+  try {
+    return JSON.parse(sessionStorage.getItem("user") || "null");
+  } catch {
+    return null;
+  }
+};
 
-  const getToken = () => {
-    return sessionStorage.getItem("tu_auth_token");
-  };
+const getToken = () => {
+  return sessionStorage.getItem("token");
+};
 
   const showMessage = (text: string) => {
     setMessage(text);
@@ -83,7 +83,7 @@ function AccountSettingsPage() {
 
       try {
         const response = await fetch(
-          `${API_BASE_URL}/customers/${session.id}`,
+          `${API_BASE_URL}/users/${session.id}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -97,7 +97,7 @@ function AccountSettingsPage() {
 
         const data = await response.json();
 
-        setName(data.full_name || session.name || "");
+        setName(data.name || data.full_name || session.name || "");
         setEmail(data.email || session.email || "");
 
         const rawPhone = data.phone
@@ -107,19 +107,21 @@ function AccountSettingsPage() {
         setPhone(rawPhone);
         setDob(data.dob || "");
 
-        const savedAddresses = data.saved_addresses || [];
-
-        if (savedAddresses.length > 0) {
-          setAddresses(savedAddresses);
-        } else if (data.address) {
-          setAddresses([
-            {
-              id: 1,
-              tag: "Home",
-              text: data.address,
-            },
-          ]);
-        }
+        const savedAddresses = Array.isArray(data.addresses)
+          ? data.addresses
+          : Array.isArray(data.saved_addresses)
+            ? data.saved_addresses
+            : [];
+        setAddresses(
+          savedAddresses.map((address: any) => ({
+            id: address.id ?? address._id,
+            tag: address.label || address.tag || "Other",
+            text:
+              address.line ||
+              address.text ||
+              [address.city, address.state].filter(Boolean).join(", "),
+          })),
+        );
       } catch (err) {
         console.error(err);
         showError("Could not load your profile.");
@@ -139,11 +141,17 @@ function AccountSettingsPage() {
       if (!token) return;
 
       try {
-        const response = await fetch(`${API_BASE_URL}/bookings/my`, {
+        const session = getSession();
+        if (!session?.id) return;
+
+        const response = await fetch(
+          `${API_BASE_URL}/bookings/customer/${encodeURIComponent(session.id)}`,
+          {
           headers: {
             Authorization: `Bearer ${token}`,
           },
-        });
+          },
+        );
 
         if (!response.ok) return;
 
@@ -153,8 +161,8 @@ function AccountSettingsPage() {
           (data || [])
             .sort(
               (a: any, b: any) =>
-                new Date(b.created_at).getTime() -
-                new Date(a.created_at).getTime(),
+                new Date(b.createdAt || b.created_at).getTime() -
+                new Date(a.createdAt || a.created_at).getTime(),
             )
             .slice(0, 4),
         );
@@ -206,17 +214,17 @@ function AccountSettingsPage() {
     setSaving(true);
 
     try {
-      const response = await fetch(`${API_BASE_URL}/customers/${session.id}`, {
+      const response = await fetch(`${API_BASE_URL}/users/${session.id}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          full_name: name.trim(),
+          name: name.trim(),
           email: email.trim(),
           phone: `+91${phone}`,
-          dob: dob,
+          dob: dob || undefined,
         }),
       });
 
@@ -235,7 +243,10 @@ function AccountSettingsPage() {
         email: email.trim(),
       };
 
-      sessionStorage.setItem("tu_auth_session", JSON.stringify(updatedSession));
+      sessionStorage.setItem(
+        "tu_auth_session",
+        JSON.stringify(updatedSession),
+      );
 
       showMessage("Personal information saved successfully!");
     } catch (err: any) {
@@ -245,6 +256,7 @@ function AccountSettingsPage() {
     }
   };
 
+  // Add address
   // Add address
   const handleAddAddress = async () => {
     if (!newAddress.trim()) {
@@ -257,35 +269,49 @@ function AccountSettingsPage() {
 
     if (!session || !token) return;
 
-    const updatedAddresses = [
-      ...addresses,
-      {
-        id: Date.now(),
-        tag: "Other",
-        text: newAddress.trim(),
-      },
-    ];
-
     try {
-      const response = await fetch(`${API_BASE_URL}/customers/${session.id}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          saved_addresses: updatedAddresses,
-        }),
-      });
+      const response = await fetch(
+        `${API_BASE_URL}/users/${session.id}/addresses`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+            body: JSON.stringify({
+            line: newAddress.trim(),
+            city: "Unknown",
+            location: {
+              type: "Point",
+              coordinates: [0, 0],
+            },
+          }),
+        }
+      );
 
       if (!response.ok) {
-        throw new Error("Failed to save address.");
+        const errorData = await response.json();
+        throw new Error(
+          Array.isArray(errorData.message)
+            ? errorData.message.join(", ")
+            : errorData.message || "Failed to save address."
+        );
       }
 
-      setAddresses(updatedAddresses);
+      const savedAddresses = await response.json();
+      if (!Array.isArray(savedAddresses)) {
+        throw new Error("The server returned an invalid address list.");
+      }
+      setAddresses(
+        savedAddresses.map((address: any) => ({
+          id: address.id ?? address._id,
+          tag: address.label || "Other",
+          text: address.line || "",
+        })),
+      );
+
       setNewAddress("");
       setShowAddressForm(false);
-
       showMessage("Address added successfully!");
     } catch (err: any) {
       showError(err.message || "Failed to save address.");
@@ -293,31 +319,38 @@ function AccountSettingsPage() {
   };
 
   // Delete address
-  const handleDeleteAddress = async (id: number) => {
+  const handleDeleteAddress = async (id: string | number) => {
     const session = getSession();
     const token = getToken();
 
     if (!session || !token) return;
 
-    const updatedAddresses = addresses.filter((address) => address.id !== id);
-
     try {
-      const response = await fetch(`${API_BASE_URL}/customers/${session.id}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+      const response = await fetch(
+        `${API_BASE_URL}/users/${encodeURIComponent(session.id)}/addresses/${encodeURIComponent(String(id))}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         },
-        body: JSON.stringify({
-          saved_addresses: updatedAddresses,
-        }),
-      });
+      );
 
       if (!response.ok) {
         throw new Error("Failed to delete address.");
       }
 
-      setAddresses(updatedAddresses);
+      const savedAddresses = await response.json();
+      if (!Array.isArray(savedAddresses)) {
+        throw new Error("The server returned an invalid address list.");
+      }
+      setAddresses(
+        savedAddresses.map((address: any) => ({
+          id: address.id ?? address._id,
+          tag: address.label || "Other",
+          text: address.line || "",
+        })),
+      );
       showMessage("Address removed.");
     } catch (err: any) {
       showError(err.message || "Failed to remove address.");
@@ -387,12 +420,11 @@ function AccountSettingsPage() {
         });
       }
     } catch {
-      // Continue logout even if request fails
+      // Continue logout even if the request fails.
     }
 
     sessionStorage.removeItem("tu_auth_token");
     sessionStorage.removeItem("tu_auth_session");
-
     navigate("/auth/login");
   };
 
@@ -423,7 +455,6 @@ function AccountSettingsPage() {
 
       sessionStorage.removeItem("tu_auth_token");
       sessionStorage.removeItem("tu_auth_session");
-
       navigate("/auth/login");
     } catch (err: any) {
       showError(err.message || "Failed to delete account.");

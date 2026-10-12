@@ -25,7 +25,11 @@ export const apiService = async (method: HTTP_METHOD_TYPE, endpoint: ENDPOINT_TY
         onSuccess?.(response.data);
         return response.data;
     } catch(error) {
-        const errorMessage = error.response?.data?.message || "Something went wrong";
+        const errorMessage = axios.isAxiosError(error)
+            ? error.response?.data?.message || "Something went wrong"
+            : error instanceof Error
+                ? error.message
+                : "Something went wrong";
         onError?.(errorMessage);
         return Promise.reject(error);
     }

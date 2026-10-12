@@ -1,7 +1,7 @@
-import React, { useContext, useState } from "react";
+import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { handleLogin } from "@/services/auth";
-import AuthContext from "@/common/AuthContext";
+import { useAuthContext } from "@/common/AuthContext";
 import UrlMap from "@/common/urlMap";
 import { toast } from "@/components/ui/toast";
 
@@ -61,7 +61,7 @@ function FillUserData() {
     password: false,
   });
 
-  const authContext = useContext(AuthContext);
+  const authContext = useAuthContext();
 
   const updateField = (field: keyof FormData, value: string) => {
     setFormData((prev) => ({

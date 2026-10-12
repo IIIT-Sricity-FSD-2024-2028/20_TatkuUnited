@@ -7,6 +7,7 @@ import Login from "./pages/general/LoginPage";
 import Provider from "./pages/general/Provider";
 import SuperUser from "./pages/superuser/superuser_route";
 import ManagerRouter from "./pages/manager/manager_route";
+import CustomerDashboard from "./pages/CustomerDashboard";
 
 import Cart from "./pages/CartPage";
 import Schedule from "./pages/SchedulePage";
@@ -21,14 +22,17 @@ import type { AuthInterface } from "./models/auth.models";
 import { Toaster } from "./components/ui/toast";
 
 function App() {
-  const [authDetails, setAuthDetails] = useState<AuthInterface>(null);
+  const [authDetails, setAuthDetails] = useState<AuthInterface | null>(null);
 
   useEffect(() => {
-    const user = JSON.parse(sessionStorage.getItem("user"));
+    const storedUser = sessionStorage.getItem("user");
     const token = sessionStorage.getItem("token");
 
-    if (token) {
-      setAuthDetails({ token, user });
+    if (token && storedUser) {
+      const user = JSON.parse(storedUser);
+      if (user) {
+        setAuthDetails({ token, user });
+      }
     }
   }, []);
 
@@ -52,6 +56,8 @@ function App() {
             <Route path="/schedule" element={<Schedule />} />
             <Route path="/account-settings" element={<AccountSettings />} />
             <Route path="/ratings-feedback" element={<RatingsFeedback />} />
+
+            <Route path="/customer" element={<CustomerDashboard />} />
 
             <Route path="*" element={<div>404! Page Not Found.</div>} />
           </Routes>

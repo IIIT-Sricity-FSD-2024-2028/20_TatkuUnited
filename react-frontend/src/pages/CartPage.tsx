@@ -1,30 +1,46 @@
-﻿import { useState } from "react";
+import { useEffect, useState } from "react";
 import CartList from "../components/CartList";
 import CartSummary from "../components/CartSummary";
 import EmptyCart from "../components/EmptyCart";
 
+interface CartItemData {
+    id: number;
+    serviceName: string;
+    location: string;
+    schedule: string;
+    price: number;
+}
+
 function CartPage() {
-    const [cartItems, setCartItems] = useState([
-        {
-            id: 1,
-            serviceName: "Home Cleaning",
-            location: "Sri City",
-            schedule: "Instant Booking",
-            price: 500,
-        },
-        {
-            id: 2,
-            serviceName: "AC Repair",
-            location: "Sri City",
-            schedule: "Scheduled for Aug 30, 2026",
-            price: 800,
-        },
-    ]);
+    const [cartItems, setCartItems] = useState<CartItemData[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState("");
+
+    useEffect(() => {
+        try {
+            const storedItems: unknown = JSON.parse(
+                localStorage.getItem("cartItems") || "[]",
+            );
+            if (!Array.isArray(storedItems)) {
+                throw new Error("Cart data is invalid.");
+            }
+            setCartItems(storedItems);
+        } catch {
+            setError("Unable to load your cart. Please try again.");
+        } finally {
+            setLoading(false);
+        }
+    }, []);
 
     const handleRemoveItem = (id: number) => {
-        setCartItems((items) =>
-            items.filter((item) => item.id !== id)
-        );
+        const updatedItems = cartItems.filter((item) => item.id !== id);
+        try {
+            localStorage.setItem("cartItems", JSON.stringify(updatedItems));
+            setCartItems(updatedItems);
+            setError("");
+        } catch {
+            setError("Unable to update your cart. Please try again.");
+        }
     };
 
     const subtotal = cartItems.reduce(
@@ -46,14 +62,26 @@ function CartPage() {
                     </h1>
 
                     <p className="text-slate-500 mt-2">
-                        {cartItems.length > 0
+                        {loading
+                            ? "Loading your cart..."
+                            : cartItems.length > 0
                             ? `${cartItems.length} service${cartItems.length > 1 ? "s" : ""} in your cart`
                             : "Your cart is empty"}
                     </p>
                 </div>
 
+                {error && (
+                    <p role="alert" className="mb-6 rounded-lg bg-red-50 p-4 text-red-700">
+                        {error}
+                    </p>
+                )}
+
                 {/* Cart */}
-                {cartItems.length > 0 ? (
+                {loading ? (
+                    <p role="status" className="rounded-xl border bg-white p-8 text-center">
+                        Loading your cart...
+                    </p>
+                ) : cartItems.length > 0 ? (
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
                         {/* Cart Items */}
