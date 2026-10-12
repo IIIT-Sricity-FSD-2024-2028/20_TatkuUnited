@@ -1,8 +1,8 @@
 import axios from 'axios';
-import { type RootState } from '../../store';
+import { useContext } from 'react';
+import AuthContext from '../../common/AuthContext';
 import React, { useEffect, useState } from 'react';
-import { BsPlus, BsFolder2, BsStarFill } from 'react-icons/bs';
-import { useSelector } from 'react-redux';
+import { BsPlus, BsFolder2 } from 'react-icons/bs';
 import { BASE_URL } from '../../services/api';
 import SummaryCards, { type SummaryStat } from '../../components/superuser/SummaryCards';
 import DataTable, { type Column } from '../../components/superuser/DataTable';
@@ -11,36 +11,36 @@ import DataTable, { type Column } from '../../components/superuser/DataTable';
 
 
 export interface CategoriesResponse {
-  category_id: string;
-  category_name: string;
+  _id: string;
+  name: string;
   description: string;
-  average_rating: number;
-  rating_count: number;
-  is_available: boolean;
-  icon?: string;
-  image_url?: string;
+  imageUrl: string;
+  isActive: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+  __v?: number;
 }
+
 
 
 export default function SuperUser_ManageCategories() {
 
-  const token = useSelector((state: RootState) => state.auth.token);
-  const user = useSelector((state: RootState) => state.auth.user);
+  const authContext = useContext(AuthContext);
+  const token = authContext?.authDetails?.token;
+  const user = authContext?.authDetails?.user;
   const super_user_id = user?.id;
 
   const [search, setSearch] = useState('');
+  const [status, setStatus] = useState('All Statuses');
 
 
   const [categories, setCategories] = useState<Array<CategoriesResponse>>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  let sum = 0;
-  categories.forEach(category => {
-    sum += category.average_rating || 0;
-  })
+
   const totalCategories = categories.length;
-  const avg_rating = totalCategories > 0 ? (sum / totalCategories).toFixed(2) : 0;
+  const activeCategories = categories.filter(cat => cat.isActive === true).length;
 
 
 
@@ -50,37 +50,47 @@ export default function SuperUser_ManageCategories() {
   const [editingCategoryID, setEditingCategoryID] = useState<string | null>(null);
   const [editingCategoryName, setEditingCategoryName] = useState<string | null>(null);
   const [editingCategoryDescription, setEditingCategoryDescription] = useState<string | null>(null);
-  const [editingCategoryIcon, setEditingCategoryIcon] = useState<string | null | undefined>(null);
   const [editingCategoryImage, setEditingCategoryImage] = useState<string | null | undefined>(null);
+  const [editingCategoryStatus, setEditingCategoryStatus] = useState<boolean | undefined>();
 
 
 
   const SUMMARY_STATS: SummaryStat[] = [
     { title: "Total Categories", count: totalCategories, icon: <BsFolder2 size={20} />, iconColor: "text-blue-600", bg: "bg-blue-50" },
-    { title: "Avg Rating", count: avg_rating, icon: <BsStarFill size={20} />, iconColor: "text-amber-500", bg: "bg-amber-50" },
+    { title: "Active Catrgories", count: activeCategories, icon: <BsFolder2 size={20} />, iconColor: "text-green-500", bg: "bg-green-50" },
+    { title: "Inactive Catrgories", count: totalCategories - activeCategories, icon: <BsFolder2 size={20} />, iconColor: "text-red-500", bg: "bg-red-50" },
   ];
 
-  const filtered_categories = categories.filter((category) =>
-    category.category_name.toLowerCase().includes(search.toLowerCase())
-  );
+  const filtered_categories = categories.filter((category) => {
+    if(!category.name.toLowerCase().includes(search.toLowerCase())) return false;
+    if(!(status==="All Statuses") && status==='Active' && category.isActive==false) return false;
+    if(!(status==="All Statuses") && status==='Inactive' && category.isActive==true) return false;
+    return true;
+});
 
 
   const columns: Column<CategoriesResponse>[] = [
-    { header: "Category Name", render: (row) => <span className="font-medium text-slate-900">{row.category_name}</span> },
+    { header: "Category Name", render: (row) => <span className="font-medium text-slate-900">{row.name}</span> },
     { header: "Description", render: (row) => <span className="text-slate-500">{row.description}</span> },
     {
-      header: "Rating", render: (row) => (
-        <div className="flex items-center gap-1.5 font-medium text-slate-700">
-          <BsStarFill className="text-amber-400" />
-          {row.average_rating}
-        </div>
-      )
-    },
+  header: "Status",
+  render: (row) => (
+    <span
+      className={`px-2 py-1 rounded-full text-xs font-semibold ${
+        row.isActive
+          ? 'bg-green-100 text-green-700'
+          : 'bg-red-100 text-red-700'
+      }`}
+    >
+      {row.isActive ? 'Active' : 'Inactive'}
+    </span>
+  ),
+},
     {
       header: "Actions", render: (row) => (
         <button
           className="text-blue-600 hover:underline font-medium"
-          onClick={() => { setEditingCategoryID(row.category_id); setEditingCategoryName(row.category_name); setEditingCategoryDescription(row.description); setEditingCategoryIcon(row.icon); setEditingCategoryImage(row.image_url); }}
+          onClick={() => { setEditingCategoryID(row._id); setEditingCategoryName(row.name); setEditingCategoryDescription(row.description); setEditingCategoryImage(row.imageUrl); setEditingCategoryStatus(row.isActive) }}
         >
           Edit
         </button>
@@ -98,7 +108,6 @@ export default function SuperUser_ManageCategories() {
         {
           headers: {
             Authorization: `Bearer ${token}`,
-            "x-role": "super_user,"
           },
         },
       );
@@ -151,12 +160,12 @@ export default function SuperUser_ManageCategories() {
         category_id={editingCategoryID}
         category_name={editingCategoryName}
         description={editingCategoryDescription}
-        icon={editingCategoryIcon}
         image_url={editingCategoryImage}
+        isActive={editingCategoryStatus}
       />)}
 
       {/* Summary Cards — uses reusable SummaryCards component */}
-      <SummaryCards stats={SUMMARY_STATS} gridClassName="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl" />
+      <SummaryCards stats={SUMMARY_STATS} />
 
       <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex flex-wrap gap-4 items-end">
         <div className="flex flex-col gap-1 flex-1 min-w-50">
@@ -169,15 +178,40 @@ export default function SuperUser_ManageCategories() {
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
-        {/* Placeholder for future filters if needed, keeps the layout consistent */}
-        <div className="flex-2"></div>
+        
+        <div className="flex flex-col gap-1 flex-2 min-w-37.5">
+          <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Category Status</label>
+          <select
+            className="w-full p-2 border border-slate-300 rounded-lg text-sm outline-none focus:border-blue-500 bg-white"
+            value={status}
+            onChange={(e) => setStatus(e.target.value)}>
+            <option
+              id='all_statuses'
+              value="All Statuses"
+            >
+              All Statuses
+            </option>
+            <option
+              id='active'
+              value="Active"
+            >
+              Active
+            </option>
+            <option
+              id='inactive'
+              value="Inactive"
+            >
+              Inactive
+            </option>
+          </select>
+        </div>
       </div>
 
       {/* Data Table — uses reusable DataTable component */}
       <DataTable
         columns={columns}
         data={filtered_categories}
-        rowKey={(row) => row.category_id}
+        rowKey={(row) => row._id}
         isLoading={isLoading}
         error={error}
         emptyMessage="No categories found matching your search."
@@ -190,27 +224,26 @@ export default function SuperUser_ManageCategories() {
 
 interface AddCategoryProps {
   onClose: () => void;
-  token: string | null;
+  token: string | null | undefined;
   super_user_id: string | undefined;
   refreshCategories: () => void;
 }
 
 interface EditCategoryProps {
   onClose: () => void;
-  token: string | null;
+  token: string | null | undefined;
   super_user_id: string | undefined;
   refreshCategories: () => void;
   category_id: string | null;
   category_name: string | null;
   description: string | null;
-  icon: string | null | undefined
-  image_url: string | null | undefined
+  image_url: string | null | undefined;
+  isActive: boolean | undefined;
 }
 
 function AddCategory({ onClose, token, super_user_id, refreshCategories }: AddCategoryProps) {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
-  const [icon, setIcon] = useState('');
   const [image, setImage] = useState('');
 
   const onAddCategory = async (newCategory: any) => {
@@ -221,7 +254,6 @@ function AddCategory({ onClose, token, super_user_id, refreshCategories }: AddCa
         {
           headers: {
             Authorization: `Bearer ${token}`,
-            'x-role': "super_user",
           },
         }
       );
@@ -240,16 +272,15 @@ function AddCategory({ onClose, token, super_user_id, refreshCategories }: AddCa
     e.preventDefault();
 
     const newCategory = {
-      category_name: name,
+      name: name,
       description: description,
-      icon: icon,
-      image_url: image,
+      imageUrl: image,
+      isActive: true,
     };
     onAddCategory(newCategory);
 
     setName('');
     setDescription('');
-    setIcon('');
     setImage('');
   }
   return (
@@ -278,18 +309,6 @@ function AddCategory({ onClose, token, super_user_id, refreshCategories }: AddCa
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Brief description of services"
-              className="w-full p-2 border border-slate-300 rounded-lg text-sm outline-none focus:border-blue-500 bg-white"
-              required
-            />
-          </div>
-
-          <div className="flex flex-col gap-1">
-            <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Icon Identifier</label>
-            <input
-              type="text"
-              value={icon}
-              onChange={(e) => setIcon(e.target.value)}
-              placeholder="e.g. BsFolder2"
               className="w-full p-2 border border-slate-300 rounded-lg text-sm outline-none focus:border-blue-500 bg-white"
               required
             />
@@ -329,11 +348,11 @@ function AddCategory({ onClose, token, super_user_id, refreshCategories }: AddCa
 }
 
 
-function EditCategory({ onClose, token, super_user_id, refreshCategories, category_id, category_name, description, icon, image_url }: EditCategoryProps) {
+function EditCategory({ onClose, token, super_user_id, refreshCategories, category_id, category_name, description, image_url, isActive }: EditCategoryProps) {
   const [categoryName, setCategoryName] = useState(category_name);
   const [categoryDescription, setCategoryDescription] = useState(description);
-  const [categoryIcon, setCategoryIcon] = useState(icon);
   const [categoryImage, setCategoryImage] = useState(image_url);
+  const [status, setStatus] = useState(isActive);
 
   const handleSubmit = async (e: React.SyntheticEvent) => {
     e.preventDefault();
@@ -343,17 +362,16 @@ function EditCategory({ onClose, token, super_user_id, refreshCategories, catego
     try {
       const updatedCategory =
       {
-        category_name: categoryName,
+        name: categoryName,
         description: categoryDescription,
-        icon: categoryIcon,
-        image_url: categoryImage,
+        imageUrl: categoryImage,
+        isActive: status,
       };
 
       const response = await axios.patch(`${BASE_URL}/categories/${category_id}`, updatedCategory,
         {
           headers: {
             Authorization: `Bearer ${token}`,
-            "x-role": "super_user",
           },
         }
       );
@@ -375,7 +393,6 @@ function EditCategory({ onClose, token, super_user_id, refreshCategories, catego
         {
           headers: {
             Authorization: `Bearer ${token}`,
-            "x-role": "super_user",
           },
         }
       );
@@ -423,18 +440,6 @@ function EditCategory({ onClose, token, super_user_id, refreshCategories, catego
           </div>
 
           <div className="flex flex-col gap-1">
-            <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Icon Identifier</label>
-            <input
-              type="text"
-              value={categoryIcon || ""}
-              onChange={(e) => setCategoryIcon(e.target.value)}
-              placeholder="e.g. BsFolder2"
-              className="w-full p-2 border border-slate-300 rounded-lg text-sm outline-none focus:border-blue-500 bg-white"
-              required
-            />
-          </div>
-
-          <div className="flex flex-col gap-1">
             <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Image URL</label>
             <input
               type="text"
@@ -445,6 +450,22 @@ function EditCategory({ onClose, token, super_user_id, refreshCategories, catego
               required
             />
           </div>
+
+          <div>
+            <label className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">Account Status</label>
+            <span className={`text-sm font-semibold ${status === true ? 'text-green-700' : 'text-slate-500'}`}>
+              {status === true ? 'Active' : 'Suspended'}
+            </span>
+          </div>
+          <label className="relative inline-flex items-center cursor-pointer">
+            <input
+              type='checkbox'
+              className="sr-only peer"
+              checked={status === true}
+              onChange={(e) => setStatus(e.target.checked ? true : false)}
+            />
+            <div className="w-11 h-6 bg-slate-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-600"></div>
+          </label>
 
           <div className="flex justify-between items-center mt-2 border-t border-slate-100 pt-4">
             <button

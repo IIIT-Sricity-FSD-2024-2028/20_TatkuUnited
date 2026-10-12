@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { useSelector } from 'react-redux';
-import { type RootState } from '../../store';
+import { useContext } from 'react';
+import AuthContext from '../../common/AuthContext';
 import axios from 'axios';
 import { BASE_URL } from '../../services/api';
 import { BsPeople, BsPersonCheck, BsPersonX, BsPlus } from 'react-icons/bs';
-import SummaryCards, { type SummaryStat } from '../../components/superuser/SummaryCards';
-import DataTable, { type Column } from '../../components/superuser/DataTable';
+import SummaryCards, { type SummaryStat } from '@/components/superuser/SummaryCards';
+import DataTable, { type Column } from '@/components/superuser/DataTable';
 
 
 
@@ -15,15 +15,16 @@ interface UsersResponse {
   email: string;
   role: 'customer' | 'provider' | 'manager' | 'admin';
   status: 'active' | 'blocked';
-  joined: string;
 }
 
 
 
 export default function SuperUser_ManageUsers() {
-  const token = useSelector((state: RootState) => state.auth.token);
-  const user = useSelector((state: RootState) => state.auth.user);
+  const authContext = useContext(AuthContext);
+  const token = authContext?.authDetails?.token;
+  const user = authContext?.authDetails?.user;
   const super_user_id = user?.id;
+
 
   const [users, setUsers] = useState<Array<UsersResponse>>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -69,12 +70,11 @@ export default function SuperUser_ManageUsers() {
     { header: "Role", render: (row) => <>{row.role}</> },
     {
       header: "Status", render: (row) => (
-        <span className={`px-2 py-1 rounded-full text-xs font-semibold ${row.status === true ? 'text-green-700' : 'text-red-700'}`}>
+        <span className={`px-2 py-1 rounded-full text-xs font-semibold ${row.status === 'active' ? 'text-green-700' : 'text-red-700'}`}>
           {row.status === 'active' ? "Active" : "Suspended"}
         </span>
       )
     },
-    { header: "Joined", render: (row) => <>{new Date(row.joined).toLocaleDateString()}</> },
     {
       header: "Actions", render: (row) => (
         <button onClick={() => { setIsEditingUserID(row._id); setIsEditingUserRole(row.role); setIsEditingUserStatus(row.status) }} className="text-blue-600 hover:underline">
@@ -94,7 +94,7 @@ export default function SuperUser_ManageUsers() {
 
       const response = await axios.get<Array<UsersResponse>>(`${BASE_URL}/users`, {
         headers: {
-          Authorization: `Bearer ${token}`, "x-role": "admin",
+          Authorization: `Bearer ${token}`,
         },
       },
       );
@@ -135,7 +135,6 @@ export default function SuperUser_ManageUsers() {
           token={token}
           super_user_id={super_user_id}
           userId={isEditingUserID}
-          role={isEditingUserRole}
           is_active={isEditingUserStatus}
           onClose={() => { setIsEditingUserID(null); setIsEditingUserRole(null) }}
           refreshUsers={fetchAllUsers} />)}
@@ -236,18 +235,17 @@ export default function SuperUser_ManageUsers() {
 
 interface AddUserProps {
   onClose: () => void;
-  token: string | null;
+  token: string | null | undefined;
   super_user_id: string | undefined;
   refreshUsers: () => void;
 }
 
 interface EditUserProps {
   onClose: () => void;
-  token: string | null;
+  token: string | null | undefined;
   super_user_id: string | undefined;
   userId: string;
-  role: string;
-  is_active: string;
+  is_active: 'active' | 'blocked' | string | null;
   refreshUsers: () => void;
 }
 
@@ -257,6 +255,8 @@ function AddUser({ onClose, token, super_user_id, refreshUsers }: AddUserProps) 
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
+  const [dob, setDob] = useState('');
+  const [gender, setGender] = useState('');
 
   const onAddUser = async (newUser: any) => {
 
@@ -265,7 +265,6 @@ function AddUser({ onClose, token, super_user_id, refreshUsers }: AddUserProps) 
       const response = await axios.post(`${BASE_URL}/users`, newUser, {
         headers: {
           Authorization: `Bearer ${token}`,
-          "x-role": "admin",
         },
       });
 
@@ -282,19 +281,23 @@ function AddUser({ onClose, token, super_user_id, refreshUsers }: AddUserProps) 
     e.preventDefault();
 
     const newUser = {
-      email: email,
       name: name,
+      email: email,
       password: "Password@123",
+      gender: gender,
       phone: phone,
+      dob: dob,
       role: role,
-      status: 'active'
     }
 
     onAddUser(newUser);
 
     setName('');
     setEmail('');
+    setPhone('');
     setRole('');
+    setDob('');
+    setGender('');
   }
 
   return (
@@ -334,6 +337,27 @@ function AddUser({ onClose, token, super_user_id, refreshUsers }: AddUserProps) 
             </label>
             <input type="text" value={phone} onChange={(e) => setPhone(e.target.value)} className="w-full p-2 border border-slate-300 rounded-lg text-sm" required />
           </div>
+          <div className="flex flex-col gap-1">
+            <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+              DOB
+            </label>
+            <input type="date" value={dob} onChange={(e) => setDob(e.target.value)} className="w-full p-2 border border-slate-300 rounded-lg text-sm" required />
+          </div>
+          <div className="flex flex-col gap-1">
+            <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+              Gender
+            </label>
+            <select
+              value={gender}
+              onChange={(e) => setGender(e.target.value)}
+              className="w-full p-2 border border-slate-300 rounded-lg text-sm outline-none focus:border-blue-500 bg-white"
+              required
+            >
+              <option value="" disabled>Select Gender</option>
+              <option value="male">Male</option>
+              <option value="female">Female</option>
+            </select>
+          </div>
         </div>
 
         <div className="flex justify-end items-center gap-3 mt-2 border-t border-slate-100 pt-4">
@@ -353,8 +377,8 @@ function AddUser({ onClose, token, super_user_id, refreshUsers }: AddUserProps) 
 }
 
 
-function EditUser({ onClose, token, super_user_id, userId, role, is_active, refreshUsers }: EditUserProps) {
-  const [status, setStatus] = useState(is_active);
+function EditUser({ onClose, token, super_user_id, userId, is_active, refreshUsers }: EditUserProps) {
+  const [status, setStatus] = useState(is_active ?? 'active');
 
   const handleSubmit = async (e: React.SyntheticEvent) => {
     e.preventDefault();
@@ -369,7 +393,7 @@ function EditUser({ onClose, token, super_user_id, userId, role, is_active, refr
         {
           headers: {
             Authorization: `Bearer ${token}`,
-            "x-role": "admin",
+             
           },
         }
       );
@@ -383,7 +407,7 @@ function EditUser({ onClose, token, super_user_id, userId, role, is_active, refr
     }
   }
 
-  const DeleteUser = async (e: React.SyntheticEvent) => {
+  const handleDeleteUser = async (e: React.SyntheticEvent) => {
     e.preventDefault();
 
     if (!token || !super_user_id) return;
@@ -393,7 +417,7 @@ function EditUser({ onClose, token, super_user_id, userId, role, is_active, refr
         {
           headers: {
             Authorization: `Bearer ${token}`,
-            "x-role": "admin",
+             
           },
         }
       );
