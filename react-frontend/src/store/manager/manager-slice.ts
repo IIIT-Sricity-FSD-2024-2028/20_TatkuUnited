@@ -4,11 +4,15 @@ import { getManagerByUser } from "@/services/managers.service";
 import { getRegionsByManager } from "@/services/regions.service";
 import { getProvidersByRegion, getProviderById } from "@/services/providers.service";
 import { getBookingsByRegion } from "@/services/bookings.service";
+import { getServices } from "@/services/services.service";
+import { getCategories } from "@/services/categories.service";
 import type {
   BookingDocument,
+  CategoryDocument,
   ManagerDocument,
   ProviderDocument,
   RegionDocument,
+  ServiceDocument,
 } from "@/models/api.models";
 
 // The back-end's status values differ from the ones in api.models, so
@@ -37,6 +41,8 @@ interface ManagerState {
   selectedRegionId: string | null;
   providers: RegionProvider[];
   bookings: RegionBooking[];
+  services: ServiceDocument[];
+  categories: CategoryDocument[];
   pending: number; // in-flight requests
   error: string | null;
 }
@@ -47,6 +53,8 @@ const initialState: ManagerState = {
   selectedRegionId: null,
   providers: [],
   bookings: [],
+  services: [],
+  categories: [],
   pending: 0,
   error: null,
 };
@@ -112,6 +120,44 @@ export const fetchRegionBookings = createAsyncThunkTyped(
   },
 );
 
+export const fetchCatalogue = createAsyncThunkTyped(
+  "manager/fetchCatalogue",
+  async (): Promise<{
+    services: ServiceDocument[];
+    categories: CategoryDocument[];
+  }> => {
+    try {
+      // categories are only used for names, so a failure there isn't fatal
+      const [services, categories] = await Promise.all([
+        getServices(),
+        getCategories().catch(() => [] as CategoryDocument[]),
+      ]);
+      return { services, categories };
+    } catch {
+      throw new Error("Fetching services failed");
+    }
+  },
+);
+
+/** Names of the categories a provider works in, via their offered services. */
+export function getProviderCategoryNames(
+  provider: RegionProvider,
+  services: ServiceDocument[],
+  categories: CategoryDocument[],
+): string[] {
+  const names = new Set<string>();
+  for (const id of provider.offeredServices) {
+    const category = services.find((s) => s._id === id)?.category;
+    if (!category) continue;
+    const name =
+      typeof category === "string"
+        ? categories.find((c) => c._id === category)?.name
+        : category.name;
+    if (name) names.add(name);
+  }
+  return [...names];
+}
+
 const ManagerSlice = createSlice({
   name: "manager",
   initialState,
@@ -136,6 +182,10 @@ const ManagerSlice = createSlice({
       })
       .addCase(fetchRegionProviders.fulfilled, (state, action) => {
         state.providers = action.payload;
+      })
+      .addCase(fetchCatalogue.fulfilled, (state, action) => {
+        state.services = action.payload.services;
+        state.categories = action.payload.categories;
       })
       .addCase(fetchRegionBookings.fulfilled, (state, action) => {
         state.bookings = action.payload;

@@ -7,6 +7,7 @@ import type { AppDispatch, RootState } from "../../store";
 import { useEffect } from "react";
 import {
   ManagerActions,
+  fetchCatalogue,
   fetchManager,
   fetchRegionBookings,
   fetchRegionProviders,
@@ -31,6 +32,10 @@ export default function ManagerLayout() {
       .then((m) => dispatch(fetchRegions(m._id)))
       .catch(() => {}); // the failure is already stored as state.manager.error
   }, [dispatch, managerId]);
+
+  useEffect(() => {
+    dispatch(fetchCatalogue());
+  }, [dispatch]);
 
   useEffect(() => {
     if (error) toast.add({ type: "error", description: error, priority: "high" });
