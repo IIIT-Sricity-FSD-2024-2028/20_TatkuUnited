@@ -1,6 +1,7 @@
 import axios from "axios";
 import { BASE_URL, type ENDPOINT_TYPE } from "./endpoints";
 import type { HTTP_METHOD_TYPE } from "@/common/http.methods";
+import type { UserInterface } from "@/models/auth.models";
 
 const axiosInstance = axios.create({
     baseURL: BASE_URL,
@@ -17,9 +18,14 @@ axiosInstance.interceptors.request.use(
     }, (error) => Promise.reject(error)
 );
 
-export const apiService = async (method: HTTP_METHOD_TYPE, endpoint: ENDPOINT_TYPE, data: any, onSuccess?: any, onError?: any) => {
+export const apiService = async <TResponse = unknown, TBody = unknown> (
+    method: HTTP_METHOD_TYPE, 
+    endpoint: ENDPOINT_TYPE, 
+    data?: TBody, 
+    onSuccess?: any, 
+    onError?: any) => {
     try {
-        const response = await axiosInstance({
+        const response = await axiosInstance<TResponse>({
             method, url: endpoint, data
         });
         onSuccess?.(response.data);

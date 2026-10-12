@@ -4,7 +4,7 @@ import { apiService } from "./apiService";
 import { ENDPOINT_ENUM } from "./endpoints";
 
 export function handleLogout() {
-    sessionStorage.clear();
+  sessionStorage.clear();
 }
 
 export async function handleLogin(email: string, password: string): Promise<string | AuthInterface> {

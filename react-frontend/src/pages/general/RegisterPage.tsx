@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { handleRegister } from "@/services/auth";
+import { handleRegister } from "@/services/authService";
 import type { Role } from "@/common/roles.enum";
 import { toast } from "@/components/ui/toast";
 import { ENDPOINT_ENUM } from "@/services/endpoints";

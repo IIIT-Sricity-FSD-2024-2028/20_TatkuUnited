@@ -1,8 +1,8 @@
-import AuthContext from "@/common/AuthContext";
 import type { Role } from "@/common/roles.enum";
-import { useContext, useEffect } from "react";
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import ForbiddenAccess from "./forbiddenAccess";
+import useAuth from "@/hooks/useAuth";
 
 export default function ProtectedRoute({
   allowedRoles,
@@ -11,12 +11,8 @@ export default function ProtectedRoute({
   allowedRoles: Role[];
   children: React.ReactNode;
 }) {
-  const auth = useContext(AuthContext);
   const navigate = useNavigate();
-  const token = auth?.authDetails?.token;
-  const user = auth?.authDetails?.user;
-
-  const isAuthenticated = Boolean(token && token.length > 0);
+  const { user, isAuthenticated } = useAuth();
 
   useEffect(() => {
     if (!isAuthenticated) {
