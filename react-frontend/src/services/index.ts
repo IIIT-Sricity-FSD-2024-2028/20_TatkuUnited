@@ -20,3 +20,6 @@ export * from "./payments.service";
 export * from "./reviews.service";
 export * from "./unavailability.service";
 export * from "./platformSettings.service";
+
+// Explicitly re-export collided members to resolve barrel export ambiguity between providers.service and bookings.service
+export { getProviderOffers, getProviderSchedule } from "./bookings.service";

@@ -4,8 +4,8 @@
  */
 import { HTTP_METHODS_ENUM } from "@/common/http.methods";
 import { apiService } from "@/common/services/apiService";
-import { buildEndpoint, ENDPOINT_ENUM } from "@/common/endpoints";
-import type { LoginResponse, UserInterface, UserRegistrationInterface } from "@/models/auth.models";
+import { ENDPOINT_ENUM } from "@/common/endpoints";
+import type { UserInterface } from "@/models/auth.models";
 
 // Re-export helpers so callers import from one place
 export { handleLogin, handleLogout, handleRegister, getStoredUser, getStoredUserId } from "@/common/services/authService";
