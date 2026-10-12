@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { BsStarFill } from "react-icons/bs";
 import { useSelector } from "react-redux";
 import type { RootState } from "../../store";
@@ -6,6 +7,7 @@ import {
   type ProviderStatus,
 } from "../../store/manager/manager-slice";
 import { Skeleton } from "../../components/ui/skeleton";
+import { Button } from "../../components/ui/button";
 import {
   Card,
   CardAction,
@@ -21,7 +23,18 @@ const STATUS_STYLES: Record<ProviderStatus, string> = {
   suspended: "bg-red-100 text-red-800",
 };
 
+type StatusFilter = "all" | ProviderStatus;
+
+const FILTERS: { value: StatusFilter; label: string }[] = [
+  { value: "all", label: "All" },
+  { value: "pending", label: "Pending" },
+  { value: "approved", label: "Approved" },
+  { value: "suspended", label: "Suspended" },
+];
+
 export default function ManagerManageProviders() {
+  // only this page cares about the filter, so it stays local, not in Redux
+  const [filter, setFilter] = useState<StatusFilter>("all");
   const { providers, services, categories, pending } = useSelector(
     (state: RootState) => state.manager,
   );
@@ -33,6 +46,11 @@ export default function ManagerManageProviders() {
   const averageRating = rated.length
     ? (rated.reduce((sum, p) => sum + (p.rating ?? 0), 0) / rated.length).toFixed(1)
     : "—";
+
+  const visible =
+    filter === "all" ? providers : providers.filter((p) => p.status === filter);
+  const countOf = (f: StatusFilter) =>
+    f === "all" ? providers.length : providers.filter((p) => p.status === f).length;
 
   const stat = (value: string | number) =>
     loading ? <Skeleton className="h-6 w-16" /> : value;
@@ -68,15 +86,29 @@ export default function ManagerManageProviders() {
           <CardTitle>Service Providers</CardTitle>
         </CardHeader>
         <CardContent className="flex flex-col gap-3">
+          <div className="flex gap-2">
+            {FILTERS.map((f) => (
+              <Button
+                key={f.value}
+                size="sm"
+                variant={filter === f.value ? "default" : "outline"}
+                onClick={() => setFilter(f.value)}
+              >
+                {f.label} ({loading ? "…" : countOf(f.value)})
+              </Button>
+            ))}
+          </div>
           {loading &&
             [0, 1, 2].map((i) => <Skeleton key={i} className="h-20 w-full" />)}
-          {!loading && providers.length === 0 && (
+          {!loading && visible.length === 0 && (
             <p className="text-sm text-muted-foreground">
-              No service providers in this region yet.
+              {providers.length === 0
+                ? "No service providers in this region yet."
+                : `No ${filter} providers.`}
             </p>
           )}
           {!loading &&
-            providers.map((p) => {
+            visible.map((p) => {
               const user = typeof p.user === "string" ? null : p.user;
               const categoryNames = getProviderCategoryNames(
                 p,
