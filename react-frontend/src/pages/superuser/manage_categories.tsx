@@ -3,7 +3,7 @@ import { useContext } from 'react';
 import AuthContext from '../../common/AuthContext';
 import React, { useEffect, useState } from 'react';
 import { BsPlus, BsFolder2 } from 'react-icons/bs';
-import { BASE_URL } from '../../services/api';
+import { BASE_URL } from "../../services/endpoints";
 import SummaryCards, { type SummaryStat } from '../../components/superuser/SummaryCards';
 import DataTable, { type Column } from '../../components/superuser/DataTable';
 

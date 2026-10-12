@@ -2,7 +2,7 @@ import axios from 'axios';
 import { type RootState } from '../../store';
 import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { BASE_URL } from '../../services/api';
+import { BASE_URL } from "../../services/endpoints";
 import { type CategoriesResponse } from './manage_categories';
 import {
   BsPlus,
