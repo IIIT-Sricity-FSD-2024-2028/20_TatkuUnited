@@ -1,7 +1,5 @@
 import { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import PublicNavbar from "../PublicNavbar";
-import Footer from "../general/landing/Footer";
 
 function getLocalDateString(date: Date): string {
   const year = date.getFullYear();
@@ -99,20 +97,15 @@ function SchedulePage() {
         JSON.stringify([...existingCart, newItem]),
       );
 
-      navigate("/cart");
+      navigate("/customer/cart");
     } catch {
       alert("Unable to update your cart. Please try again.");
     }
   };
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <PublicNavbar
-        brandName="TatkuUnited"
-        brandInitials="TU"
-        onNavigate={(path) => navigate(path)}
-      />
-      <main className="mx-auto max-w-3xl px-6 pt-32 pb-12">
+    <div className="max-w-3xl mx-auto">
+      <main className="pb-12">
         <header className="mb-8">
           <h1 className="text-3xl font-bold text-slate-900">
             Schedule Your Service
@@ -249,7 +242,6 @@ function SchedulePage() {
           </button>
         </section>
       </main>
-      <Footer />
     </div>
   );
 }

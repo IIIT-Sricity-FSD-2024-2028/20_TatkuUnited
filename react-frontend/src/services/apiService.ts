@@ -1,5 +1,5 @@
 import axios from "axios";
-import { BASE_URL, type ENDPOINT_TYPE } from "./endpoints";
+import { BASE_URL, type ENDPOINT_TYPE } from "../common/endpoints";
 import type { HTTP_METHOD_TYPE } from "@/common/http.methods";
 
 const axiosInstance = axios.create({
