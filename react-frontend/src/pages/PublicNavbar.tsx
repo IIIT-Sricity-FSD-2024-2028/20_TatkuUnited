@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 // import type { RootState } from "../store";
 import { RolesEnum, type Role } from "../common/roles.enum";
 import UrlMap from "../common/urlMap";
-import { handleLogout } from "@/services/authService";
+import { handleLogout } from "@/common/services/authService";
 import { useContext } from "react";
 import AuthContext from "@/common/AuthContext";
 

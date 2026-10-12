@@ -2,11 +2,11 @@ import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { type RootState } from "../../store";
 import axios from "axios";
-import { BASE_URL, ENDPOINT_ENUM } from "../../services/endpoints";
+import { BASE_URL, ENDPOINT_ENUM } from "../../common/endpoints";
 import { BsPeople, BsPersonCheck, BsPersonX, BsPlus } from "react-icons/bs";
 import useAuth from "@/hooks/useAuth";
 import { RolesEnum } from "@/common/roles.enum";
-import { apiService } from "@/services/apiService";
+import { apiService } from "@/common/services/apiService";
 import { HTTP_METHODS_ENUM } from "@/common/http.methods";
 
 interface UsersResponse {

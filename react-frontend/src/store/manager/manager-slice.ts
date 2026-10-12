@@ -1,6 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
-import { BASE_URL } from "../../services/endpoints";
+import { BASE_URL } from "../../common/endpoints";
 import type { RootState } from "..";
 import createAsyncThunkTyped from "../asyncThunk";
 

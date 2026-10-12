@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { handleRegister } from "@/services/authService";
+import { handleRegister } from "@/common/services/authService";
 import type { Role } from "@/common/roles.enum";
 import { toast } from "@/components/ui/toast";
-import { ENDPOINT_ENUM } from "@/services/endpoints";
+import { ENDPOINT_ENUM } from "@/common/endpoints";
 
 interface FormData {
   name: string;
