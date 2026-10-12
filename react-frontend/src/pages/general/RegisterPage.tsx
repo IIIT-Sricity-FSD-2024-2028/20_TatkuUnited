@@ -1,6 +1,7 @@
-import axios from "axios";
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
+import { handleRegister } from "@/services/auth";
+import type { Role } from "@/common/roles.enum";
 
 interface FormData {
   name: string;
@@ -20,26 +21,9 @@ interface FormErrors {
   confirmPassword?: boolean;
 }
 
-const BASE_URL = "http://localhost:10000";
-
 const borderClass = (error?: boolean) => {
   return `w-full border-2 p-2 rounded-lg ${error ? "border-red-500" : "border-slate-400"}`;
 };
-
-async function createUserAccount(postData: {
-  fullName: string;
-  email: string;
-  phone: string;
-  password: string;
-  role: "" | "customer" | "service_provider";
-}) {
-  try {
-    await axios.post(`${BASE_URL}/auth/register`, postData);
-    return true;
-  } catch (error) {
-    return false;
-  }
-}
 
 function CreateAccount() {
   return (
@@ -53,10 +37,8 @@ function CreateAccount() {
 }
 
 interface SelectRolePageProps {
-  role: "" | "customer" | "service_provider";
-  setRole: React.Dispatch<
-    React.SetStateAction<"" | "customer" | "service_provider">
-  >;
+  role: Role;
+  setRole: React.Dispatch<React.SetStateAction<Role>>;
   setCurPage: React.Dispatch<React.SetStateAction<number>>;
 }
 
@@ -72,8 +54,8 @@ function SelectRolePage({ role, setRole, setCurPage }: SelectRolePageProps) {
           Customer
         </div>
         <div
-          onClick={() => setRole("service_provider")}
-          className={`${role == "service_provider" ? "bg-blue-100 text-blue-800 border-2 border-blue-600" : "border-2 border-slate-400"} cursor-pointer hover:border-2 ease-in-out duration-200 hover:bg-blue-100 hover:text-blue-600 flex justify-center items-center font-medium w-48 h-16 rounded-lg p-2`}
+          onClick={() => setRole("provider")}
+          className={`${role == "provider" ? "bg-blue-100 text-blue-800 border-2 border-blue-600" : "border-2 border-slate-400"} cursor-pointer hover:border-2 ease-in-out duration-200 hover:bg-blue-100 hover:text-blue-600 flex justify-center items-center font-medium w-48 h-16 rounded-lg p-2`}
         >
           Service Provider
         </div>
@@ -209,7 +191,7 @@ interface FillPasswordProps {
   errors: FormErrors;
   setErrors: React.Dispatch<React.SetStateAction<FormErrors>>;
   setCurPage: React.Dispatch<React.SetStateAction<number>>;
-  role: "" | "customer" | "service_provider";
+  role: Role;
 }
 
 function FillPassword({
@@ -249,8 +231,9 @@ function FillPassword({
     if (invalid) return;
 
     setSubmitting(true);
-    const res = await createUserAccount({
-      fullName: formData.name.trim(),
+
+    const res = await handleRegister({
+      name: formData.name.trim(),
       email: formData.email.trim(),
       phone: formData.phone.trim(),
       password: formData.password.trim(),
@@ -258,7 +241,7 @@ function FillPassword({
     });
     setSubmitting(false);
 
-    setCurPage(res ? 4 : 5);
+    setCurPage(res === "success" ? 4 : 5);
   };
 
   return (
@@ -303,7 +286,9 @@ function FillPassword({
         </button>
         <button
           disabled={submitting}
-          className="bg-blue-500 mt-6 cursor-pointer hover:bg-blue-600 disabled:opacity-60 disabled:cursor-not-allowed text-white font-medium w-full py-3 px-4 rounded-lg"
+          className={`bg-blue-500 mt-6 hover:bg-blue-600 disabled:opacity-60 text-white font-medium w-full py-3 px-4 rounded-lg ${
+            submitting ? "cursor-not-allowed" : "cursor-pointer"
+          }`}
           onClick={handleSubmit}
         >
           {submitting ? "Creating account..." : "Continue"}
@@ -349,7 +334,7 @@ function RegistrationFailed() {
 
 function RegisterPage() {
   const [curPage, setCurPage] = useState(1);
-  const [role, setRole] = useState<"" | "customer" | "service_provider">("");
+  const [role, setRole] = useState<Role>("customer");
 
   const [errors, setErrors] = useState<FormErrors>({});
   const [formData, setFormData] = useState<FormData>({

@@ -1,7 +1,7 @@
 const UrlMap = {
     customer: "/customer",
     provider: "/provider",
-    super_user: "/superuser",
+    admin: "/superuser",
     manager: "/manager",
 }
 

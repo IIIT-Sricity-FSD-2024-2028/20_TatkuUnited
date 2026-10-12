@@ -1,8 +1,11 @@
-import { useSelector } from "react-redux";
+// import { useSelector } from "react-redux";
 import { Link } from "react-router-dom";
-import type { RootState } from "../store";
+// import type { RootState } from "../store";
 import { RolesEnum, type Role } from "../common/roles.enum";
 import UrlMap from "../common/urlMap";
+import { handleLogout } from "@/services/auth";
+import { useContext } from "react";
+import AuthContext from "@/common/AuthContext";
 
 interface PublicNavbarProps {
   brandName: string;
@@ -15,8 +18,12 @@ export default function PublicNavbar({
   brandInitials,
   onNavigate,
 }: PublicNavbarProps) {
-  const token = useSelector((state: RootState) => state.auth.token);
-  const user = useSelector((state: RootState) => state.auth.user);
+  // const token = useSelector((state: RootState) => state.auth.token);
+  // const user = useSelector((state: RootState) => state.auth.user);
+  const authContext = useContext(AuthContext);
+  const token = authContext.authDetails?.token;
+  const user = authContext.authDetails?.user;
+
   const userRole: Role | null = user?.role ?? null;
   let redirectUrl = "";
 
@@ -25,16 +32,13 @@ export default function PublicNavbar({
       case RolesEnum.CUSTOMER:
         redirectUrl = UrlMap.customer;
         break;
-      case RolesEnum.SERVICE_PROVIDER:
+      case RolesEnum.PROVIDER:
         redirectUrl = UrlMap.provider;
         break;
-      case RolesEnum.SUPER_USER:
-        redirectUrl = UrlMap.super_user;
+      case RolesEnum.ADMIN:
+        redirectUrl = UrlMap.admin;
         break;
-      case RolesEnum.COLLECTIVE_MANAGER:
-        redirectUrl = UrlMap.manager;
-        break;
-      case RolesEnum.UNIT_MANAGER:
+      case RolesEnum.MANAGER:
         redirectUrl = UrlMap.manager;
         break;
     }
@@ -61,6 +65,16 @@ export default function PublicNavbar({
           >
             Go to Dashboard
           </button>
+          <button
+            className="px-4 py-2 text-sm font-medium border border-blue-500 text-blue-500 rounded-lg hover:bg-blue-50 transition-colors cursor-pointer"
+            onClick={() => {
+              handleLogout();
+              // Update context
+              authContext.setAuthDetails(null);
+            }}
+          >
+            Logout
+          </button>
         </div>
       ) : (
         <div className="flex items-center gap-3">
@@ -81,4 +95,3 @@ export default function PublicNavbar({
     </nav>
   );
 }
-
