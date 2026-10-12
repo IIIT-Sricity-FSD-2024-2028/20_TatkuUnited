@@ -1,18 +1,18 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
-import Landing from "./pages/general/LandingPage";
+import Landing from "./pages/general/landing/LandingPage";
 import Register from "./pages/general/RegisterPage";
 import Login from "./pages/general/LoginPage";
 
 import Provider from "./pages/general/Provider";
 import SuperUser from "./pages/superuser/superuser_route";
 import ManagerRouter from "./pages/manager/manager_route";
-import CustomerDashboard from "./pages/CustomerDashboard";
+import CustomerDashboard from "./pages/customer/CustomerDashboard";
 
-import Cart from "./pages/CartPage";
-import Schedule from "./pages/SchedulePage";
-import AccountSettings from "./pages/AccountSettingsPage";
-import RatingsFeedback from "./pages/RatingsFeedbackPage";
+import Cart from "./pages/customer/CartPage";
+import Schedule from "./pages/customer/SchedulePage";
+import AccountSettings from "./pages/customer/AccountSettingsPage";
+import RatingsFeedback from "./pages/customer/RatingsFeedbackPage";
 
 import { Provider as ReduxProvider } from "react-redux";
 import { store } from "./store";
@@ -24,7 +24,7 @@ import NotFound from "./pages/components/notFound";
 // import ForbiddenAccess from "./pages/components/forbiddenAccess";
 
 function App() {
-  const [authDetails, setAuthDetails] = useState<AuthInterface>(() => {
+  const [authDetails, setAuthDetails] = useState<AuthInterface | null>(() => {
     try {
       const token = sessionStorage.getItem("token");
       const userStr = sessionStorage.getItem("user");

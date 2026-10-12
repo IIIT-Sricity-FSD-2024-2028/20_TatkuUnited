@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import PublicNavbar from "./PublicNavbar";
+import PublicNavbar from "../PublicNavbar";
 
 export default function CustomerDashboard() {
   const navigate = useNavigate();

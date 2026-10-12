@@ -2,7 +2,7 @@ import { Routes, Route } from "react-router-dom";
 import { SuperUser_Layout } from "./superuser_layout";
 import SuperUser_Dashboard from "./dashboard";
 import SuperUser_ManageUsers from "./manage_users";
-import ProtectedRoute from "../components/ProtectedRoute";
+import ProtectedRoute from "../components/protectedRoute";
 import { RolesEnum } from "@/common/roles.enum";
 // import the new page here
 

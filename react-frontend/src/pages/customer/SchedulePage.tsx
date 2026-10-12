@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import PublicNavbar from "./PublicNavbar";
-import Footer from "./Footer";
+import PublicNavbar from "../PublicNavbar";
+import Footer from "../general/landing/Footer";
 
 function getLocalDateString(date: Date): string {
   const year = date.getFullYear();

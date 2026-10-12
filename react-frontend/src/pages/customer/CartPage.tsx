@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import CartList from "../components/CartList";
-import CartSummary from "../components/CartSummary";
-import EmptyCart from "../components/EmptyCart";
+import CartList from "../../components/CartList";
+import CartSummary from "../../components/CartSummary";
+import EmptyCart from "../../components/EmptyCart";
 
 interface CartItemData {
     id: number;

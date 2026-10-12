@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { handleLogin } from "@/common/services/authService";
-import AuthContext from "@/common/AuthContext";
+import { useAuthContext } from "@/common/AuthContext";
 import UrlMap from "@/common/urlMap";
 import { toast } from "@/components/ui/toast";
 
