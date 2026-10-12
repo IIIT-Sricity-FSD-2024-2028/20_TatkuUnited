@@ -1,13 +1,24 @@
 import { useState } from "react";
 import { BsStarFill } from "react-icons/bs";
-import { useSelector } from "react-redux";
-import type { RootState } from "../../store";
+import { useDispatch, useSelector } from "react-redux";
+import type { AppDispatch, RootState } from "../../store";
 import {
+  ManagerActions,
   getProviderCategoryNames,
   type ProviderStatus,
 } from "../../store/manager/manager-slice";
 import { Skeleton } from "../../components/ui/skeleton";
 import { Button } from "../../components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "../../components/ui/dialog";
+import { toast } from "../../components/ui/toast";
+import { approveProvider, suspendProvider } from "@/services/providers.service";
 import {
   Card,
   CardAction,
@@ -32,7 +43,17 @@ const FILTERS: { value: StatusFilter; label: string }[] = [
   { value: "suspended", label: "Suspended" },
 ];
 
+type ProviderAction = "approve" | "suspend";
+
 export default function ManagerManageProviders() {
+  const dispatch = useDispatch<AppDispatch>();
+  // the provider and action waiting for the manager's confirmation
+  const [confirming, setConfirming] = useState<{
+    id: string;
+    name: string;
+    action: ProviderAction;
+  } | null>(null);
+  const [saving, setSaving] = useState(false);
   // only this page cares about the filter, so it stays local, not in Redux
   const [filter, setFilter] = useState<StatusFilter>("all");
   const { providers, services, categories, pending } = useSelector(
@@ -51,6 +72,35 @@ export default function ManagerManageProviders() {
     filter === "all" ? providers : providers.filter((p) => p.status === filter);
   const countOf = (f: StatusFilter) =>
     f === "all" ? providers.length : providers.filter((p) => p.status === f).length;
+
+  const confirmAction = async () => {
+    if (!confirming) return;
+    const { id, name, action } = confirming;
+    setSaving(true);
+    try {
+      const updated =
+        action === "approve" ? await approveProvider(id) : await suspendProvider(id);
+      dispatch(
+        ManagerActions.providerStatusChanged({
+          id,
+          status: updated.status as unknown as ProviderStatus,
+        }),
+      );
+      toast.add({
+        type: "info",
+        description: `${name} ${action === "approve" ? "approved" : "suspended"}`,
+      });
+      setConfirming(null);
+    } catch {
+      toast.add({
+        type: "error",
+        description: `Could not ${action} ${name}`,
+        priority: "high",
+      });
+    } finally {
+      setSaving(false);
+    }
+  };
 
   const stat = (value: string | number) =>
     loading ? <Skeleton className="h-6 w-16" /> : value;
@@ -138,6 +188,24 @@ export default function ManagerManageProviders() {
                           {p.status}
                         </span>
                       </div>
+                      <Button
+                        size="sm"
+                        variant={p.status === "approved" ? "outline" : "default"}
+                        className="ml-3"
+                        onClick={() =>
+                          setConfirming({
+                            id: p._id,
+                            name: user?.name ?? "this provider",
+                            action: p.status === "approved" ? "suspend" : "approve",
+                          })
+                        }
+                      >
+                        {p.status === "approved"
+                          ? "Suspend"
+                          : p.status === "suspended"
+                            ? "Reinstate"
+                            : "Approve"}
+                      </Button>
                     </CardAction>
                   </CardHeader>
                 </Card>
@@ -145,6 +213,35 @@ export default function ManagerManageProviders() {
             })}
         </CardContent>
       </Card>
+      <Dialog
+        open={confirming !== null}
+        onOpenChange={(open) => !open && !saving && setConfirming(null)}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {confirming?.action === "approve" ? "Approve" : "Suspend"} provider?
+            </DialogTitle>
+            <DialogDescription>
+              {confirming?.action === "approve"
+                ? `${confirming?.name} will be able to receive job offers.`
+                : `${confirming?.name} will stop receiving new job offers.`}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              disabled={saving}
+              onClick={() => setConfirming(null)}
+            >
+              Cancel
+            </Button>
+            <Button disabled={saving} onClick={confirmAction}>
+              {saving ? "Saving…" : "Confirm"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

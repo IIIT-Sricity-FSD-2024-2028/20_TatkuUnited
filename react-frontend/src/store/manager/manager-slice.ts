@@ -167,6 +167,14 @@ const ManagerSlice = createSlice({
       state.providers = [];
       state.bookings = [];
     },
+    // update one provider in place, so the list doesn't reload after approve/suspend
+    providerStatusChanged(
+      state,
+      action: PayloadAction<{ id: string; status: ProviderStatus }>,
+    ) {
+      const provider = state.providers.find((p) => p._id === action.payload.id);
+      if (provider) provider.status = action.payload.status;
+    },
   },
   extraReducers: (builder) => {
     builder
