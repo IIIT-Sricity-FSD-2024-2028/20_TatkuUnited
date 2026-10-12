@@ -13,12 +13,14 @@ import {
   fetchRegions,
 } from "../../store/manager/manager-slice";
 import UrlMap from "../../common/urlMap";
+import useAuth from "@/hooks/useAuth";
+import { toast } from "@/components/ui/toast";
 
 export default function ManagerLayout() {
   const dispatch = useDispatch<AppDispatch>();
-  const manager = useSelector((state: RootState) => state.auth.user);
-  const managerId = manager?.id;
-  const { regions, selectedRegionId } = useSelector(
+  const { user } = useAuth();
+  const managerId = user?.id;
+  const { regions, selectedRegionId, error } = useSelector(
     (state: RootState) => state.manager,
   );
 
@@ -29,6 +31,10 @@ export default function ManagerLayout() {
       .then((m) => dispatch(fetchRegions(m._id)))
       .catch(() => {}); // the failure is already stored as state.manager.error
   }, [dispatch, managerId]);
+
+  useEffect(() => {
+    if (error) toast.add({ type: "error", description: error, priority: "high" });
+  }, [error]);
 
   useEffect(() => {
     if (!selectedRegionId) return;

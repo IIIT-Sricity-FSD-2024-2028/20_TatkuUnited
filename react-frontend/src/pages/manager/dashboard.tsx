@@ -7,12 +7,13 @@ import {
   CardTitle,
 } from "../../components/ui/card";
 import { Skeleton } from "../../components/ui/skeleton";
+import useAuth from "@/hooks/useAuth";
 
 const formatRupees = (paise: number) =>
   `₹${(paise / 100).toLocaleString("en-IN", { maximumFractionDigits: 2 })}`;
 
 export default function ManagerDashboard() {
-  const user = useSelector((state: RootState) => state.auth.user);
+  const { user } = useAuth();
   const { regions, selectedRegionId, providers, bookings, pending, error } =
     useSelector((state: RootState) => state.manager);
 
@@ -34,11 +35,6 @@ export default function ManagerDashboard() {
       <h1 className="font-semibold text-2xl mb-4">
         Welcome back, {user?.name ?? "Guest"}
       </h1>
-      {error && (
-        <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg text-sm">
-          {error}
-        </div>
-      )}
       {!loading && !error && regions.length === 0 && (
         <div className="mb-4 p-3 bg-yellow-50 border border-yellow-300 text-yellow-800 rounded-lg text-sm">
           No region is assigned to your account yet.
