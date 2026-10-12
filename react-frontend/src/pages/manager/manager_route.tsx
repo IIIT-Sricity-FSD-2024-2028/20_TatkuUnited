@@ -4,17 +4,21 @@ import ManagerDashboard from "./dashboard";
 import ManagerProfile from "./my-profile";
 import ManagerRevenue from "./revenue";
 import ManagerManageProviders from "./manage-providers";
+import ProtectedRoute from "../components/ProtectedRoute";
+import { RolesEnum } from "@/common/roles.enum";
 
 export default function ManagerRouter() {
   return (
-    <Routes>
-      <Route path="/" element={<ManagerLayout />}>
-        <Route index element={<ManagerDashboard />} />
-        <Route path="dashboard" element={<ManagerDashboard />} />
-        <Route path="revenue" element={<ManagerRevenue />} />
-        <Route path="providers" element={<ManagerManageProviders />} />
-        <Route path="profile" element={<ManagerProfile />} />
-      </Route>
-    </Routes>
+    <ProtectedRoute allowedRoles={[RolesEnum.MANAGER]}>
+      <Routes>
+        <Route element={<ManagerLayout />}>
+          <Route index element={<ManagerDashboard />} />
+          <Route path="dashboard" element={<ManagerDashboard />} />
+          <Route path="revenue" element={<ManagerRevenue />} />
+          <Route path="providers" element={<ManagerManageProviders />} />
+          <Route path="profile" element={<ManagerProfile />} />
+        </Route>
+      </Routes>
+    </ProtectedRoute>
   );
 }
