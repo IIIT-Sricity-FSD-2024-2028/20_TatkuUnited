@@ -2,7 +2,7 @@ import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import createAsyncThunkTyped from "../asyncThunk";
 import { getManagerByUser } from "@/services/managers.service";
 import { getRegionsByManager } from "@/services/regions.service";
-import { getProvidersByRegion } from "@/services/providers.service";
+import { getProvidersByRegion, getProviderById } from "@/services/providers.service";
 import { getBookingsByRegion } from "@/services/bookings.service";
 import type {
   BookingDocument,
@@ -24,6 +24,8 @@ export type BookingStatus =
 
 export type RegionProvider = Omit<ProviderDocument, "status"> & {
   status: ProviderStatus;
+  rating?: number;
+  ratingCount?: number;
 };
 export type RegionBooking = Omit<BookingDocument, "status"> & {
   status: BookingStatus;
@@ -78,11 +80,24 @@ export const fetchRegions = createAsyncThunkTyped(
 export const fetchRegionProviders = createAsyncThunkTyped(
   "manager/fetchRegionProviders",
   async (regionId: string): Promise<RegionProvider[]> => {
+    let list: RegionProvider[];
     try {
-      return (await getProvidersByRegion(regionId)) as unknown as RegionProvider[];
+      list = (await getProvidersByRegion(regionId)) as unknown as RegionProvider[];
     } catch {
       throw new Error("Fetching service providers failed");
     }
+    // The region list only has the user's id. The single-provider endpoint
+    // populates it with name and email, so fetch every provider's details in
+    // parallel. If one lookup fails, keep that provider's basic data.
+    return Promise.all(
+      list.map(async (p) => {
+        try {
+          return (await getProviderById(p._id)) as unknown as RegionProvider;
+        } catch {
+          return p;
+        }
+      }),
+    );
   },
 );
 
