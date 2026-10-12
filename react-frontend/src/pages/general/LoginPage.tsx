@@ -112,10 +112,9 @@ function FillUserData() {
       });
       navigate(UrlMap[res.user.role]);
     } else {
-      const error = res || "Login failed. Please check your credentials.";
       toast.add({
         type: "error",
-        description: error,
+        description: res,
         priority: "high",
       });
     }

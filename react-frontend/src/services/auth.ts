@@ -16,8 +16,8 @@ export async function handleLogin(email: string, password: string): Promise<stri
       sessionStorage.setItem("user", JSON.stringify(user));
     });
     return {token: data.access_token, user: data.user};
-  } catch(_) {
-    return "Login failed";
+  } catch(error) {
+    return error.response?.data?.message || "Login failed";
   }
 }
 
@@ -29,7 +29,7 @@ export async function handleRegister(userData: UserRegistrationInterface): Promi
       userData 
     );
     return "success";
-  } catch(_) {
-    return "Registration failed";
+  } catch(error) {
+    return error.response?.data?.message || "Account creation failed";
   }
 }
