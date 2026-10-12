@@ -18,6 +18,7 @@ import { store } from "./store";
 import AuthContext from "./common/AuthContext";
 import { useEffect, useState } from "react";
 import type { AuthInterface } from "./models/auth.models";
+import { Toaster } from "./components/ui/toast";
 
 function App() {
   const [authDetails, setAuthDetails] = useState<AuthInterface>(null);
@@ -55,6 +56,7 @@ function App() {
             <Route path="*" element={<div>404! Page Not Found.</div>} />
           </Routes>
         </BrowserRouter>
+        <Toaster />
       </ReduxProvider>
     </AuthContext.Provider>
   );

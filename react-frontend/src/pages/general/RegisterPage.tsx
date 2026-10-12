@@ -286,7 +286,9 @@ function FillPassword({
         </button>
         <button
           disabled={submitting}
-          className="bg-blue-500 mt-6 cursor-pointer hover:bg-blue-600 disabled:opacity-60 disabled:cursor-not-allowed text-white font-medium w-full py-3 px-4 rounded-lg"
+          className={`bg-blue-500 mt-6 hover:bg-blue-600 disabled:opacity-60 text-white font-medium w-full py-3 px-4 rounded-lg ${
+            submitting ? "cursor-not-allowed" : "cursor-pointer"
+          }`}
           onClick={handleSubmit}
         >
           {submitting ? "Creating account..." : "Continue"}

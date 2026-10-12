@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { handleLogin } from "@/services/auth";
 import AuthContext from "@/common/AuthContext";
 import UrlMap from "@/common/urlMap";
+import { toast } from "@/components/ui/toast";
 
 interface FormData {
   email: string;
@@ -12,8 +13,8 @@ interface FormData {
 const borderClass = (error?: boolean) => {
   return `w-full border-2 p-2 rounded-lg transition-colors focus:outline-none ${
     error
-      ? "border-red-500 focus:border-red-600"
-      : "border-slate-400 focus:border-blue-500"
+      ? "border-red-500 focus:ring-2 focus:ring-red-500"
+      : "border-slate-400 focus:ring-2 focus:ring-blue-500"
   }`;
 };
 
@@ -55,7 +56,6 @@ function FillUserData() {
   });
   const [submitting, setSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [apiError, setApiError] = useState<string | null>(null);
   const [errors, setErrors] = useState<FormErrors>({
     email: false,
     password: false,
@@ -72,7 +72,6 @@ function FillUserData() {
     if (errors[field]) {
       setErrors((prev) => ({ ...prev, [field]: false }));
     }
-    if (apiError) setApiError(null);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -100,7 +99,6 @@ function FillUserData() {
     if (!emailValid || !passwordValid) return;
 
     setSubmitting(true);
-    setApiError(null);
 
     const res = await handleLogin(trimmedEmail, trimmedPassword);
     setSubmitting(false);
@@ -108,27 +106,23 @@ function FillUserData() {
     if (typeof res !== "string") {
       // Redirect to home route
       authContext.setAuthDetails(res);
+      toast.add({
+        type: "info",
+        description: "Login success",
+      });
       navigate(UrlMap[res.user.role]);
     } else {
-      setApiError(res || "Login failed. Please check your credentials.");
+      const error = res || "Login failed. Please check your credentials.";
+      toast.add({
+        type: "error",
+        description: error,
+        priority: "high",
+      });
     }
   };
 
   return (
     <div className="w-full max-w-md px-4">
-      {apiError && (
-        <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg text-sm flex items-center justify-between">
-          <span>{apiError}</span>
-          <button
-            type="button"
-            className="text-red-700 font-bold ml-2 hover:text-red-900"
-            onClick={() => setApiError(null)}
-          >
-            &times;
-          </button>
-        </div>
-      )}
-
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <div>
           <label
@@ -191,7 +185,9 @@ function FillUserData() {
         <button
           type="submit"
           disabled={submitting}
-          className="bg-blue-500 mt-4 cursor-pointer hover:bg-blue-600 text-white font-medium w-full py-3 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"
+          className={`bg-blue-500 mt-4 hover:bg-blue-600 disabled:opacity-60 text-white font-medium w-full py-3 px-4 rounded-lg transition-colors flex items-center justify-center gap-2 ${
+            submitting ? "cursor-not-allowed" : "cursor-pointer"
+          }`}
         >
           {submitting ? <span>Logging in...</span> : "Login"}
         </button>
