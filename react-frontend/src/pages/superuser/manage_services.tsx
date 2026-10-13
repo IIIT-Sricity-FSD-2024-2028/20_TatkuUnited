@@ -40,8 +40,8 @@ interface ServicesResponse {
   name: string;
   category: ServiceCategory;
   description: string;
-  price: number;              
-  duration: number;           
+  price: number;
+  duration: number;
   rating: number;
   reviewCount: number;
   isActive: boolean;
@@ -96,47 +96,47 @@ export default function SuperUser_ManageServices() {
 
 
   const columns: Column<ServicesResponse>[] = [
-  { 
-    header: "Service Name", 
-    render: (row) => <span className="font-medium text-slate-900">{row.name}</span> 
-  },
-  { 
-    header: "Category", 
-    render: (row) => <>{row.category?.name || "Unknown Category"}</>
-  },
-  { 
-    header: "Price", 
-    render: (row) => <span className="font-semibold text-slate-900">₹{(row.price / 100).toFixed(0)}</span> 
-  },
-  { 
-    header: "Description", 
-    render: (row) => <span className="text-slate-500">{row.description}</span>, 
-    cellClassName: "truncate max-w-[200px]" 
-  },
-  {
-    header: "Rating", 
-    render: (row) => (
-      <div className="flex items-center gap-1.5 font-medium text-slate-700">
-        <BsStarFill className="text-amber-400" />
-        {row.rating || 0}
-      </div>
-    )
-  },
-  {
-    header: "Status", 
-    render: (row) => (
-      <span className={`px-2 py-1 rounded-full text-xs font-semibold ${row.isActive ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-        {row.isActive ? 'Active' : 'Inactive'}
-      </span>
-    )
-  },
-  {
-    header: "Actions", 
-    render: (row) => (
-      <button onClick={() => setEditingService(row)} className="text-blue-600 hover:underline font-medium">Edit</button>
-    )
-  },
-];
+    {
+      header: "Service Name",
+      render: (row) => <span className="font-medium text-slate-900">{row.name}</span>
+    },
+    {
+      header: "Category",
+      render: (row) => <>{row.category?.name || "Unknown Category"}</>
+    },
+    {
+      header: "Price",
+      render: (row) => <span className="font-semibold text-slate-900">₹{(row.price / 100).toFixed(0)}</span>
+    },
+    {
+      header: "Description",
+      render: (row) => <span className="text-slate-500">{row.description}</span>,
+      cellClassName: "truncate max-w-[200px]"
+    },
+    {
+      header: "Rating",
+      render: (row) => (
+        <div className="flex items-center gap-1.5 font-medium text-slate-700">
+          <BsStarFill className="text-amber-400" />
+          {row.rating || 0}
+        </div>
+      )
+    },
+    {
+      header: "Status",
+      render: (row) => (
+        <span className={`px-2 py-1 rounded-full text-xs font-semibold ${row.isActive ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+          {row.isActive ? 'Active' : 'Inactive'}
+        </span>
+      )
+    },
+    {
+      header: "Actions",
+      render: (row) => (
+        <button onClick={() => setEditingService(row)} className="text-blue-600 hover:underline font-medium">Edit</button>
+      )
+    },
+  ];
 
 
 
@@ -147,7 +147,7 @@ export default function SuperUser_ManageServices() {
       setIsLoading(true);
       setError(null);
 
-      const [servicesRes, categoriesRes] = await Promise.all([axios.get(`${BASE_URL}/services`,
+      const [servicesRes, categoriesRes] = await Promise.all([axios.get(`${BASE_URL}/services?includeAll=true`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -263,7 +263,7 @@ export default function SuperUser_ManageServices() {
 
       </div>
 
-      
+
       <DataTable
         columns={columns}
         data={filteredServices}
@@ -309,13 +309,13 @@ function AddService({ onClose, token, super_user_id, refreshServices, categories
   const [newImageUrl, setNewImageUrl] = useState('');
 
   const handleAddImage = () => {
-    if(!newImageUrl.trim()) return;
+    if (!newImageUrl.trim()) return;
     setImageUrls([...imageUrls, newImageUrl.trim()]);
     setNewImageUrl('');
   };
 
   const handleRemoveImage = (index: number) => {
-    setImageUrls(imageUrls.filter((_,i) => i!==index));
+    setImageUrls(imageUrls.filter((_, i) => i !== index));
   };
 
   const handleSubmit = async (e: React.SyntheticEvent) => {
@@ -506,13 +506,12 @@ function AddService({ onClose, token, super_user_id, refreshServices, categories
 }
 
 
-function EditService({ onClose, token, super_user_id, refreshServices, categories, service }: EditServiceProps) 
-{
+function EditService({ onClose, token, super_user_id, refreshServices, categories, service }: EditServiceProps) {
 
   const [serviceName, setServiceName] = useState(service.name || '');
   const [description, setDescription] = useState(service.description || '');
   const [categoryId, setCategoryId] = useState(service.category?._id || '');
-  const [basePrice, setBasePrice] = useState<number | ''>(service.price != null ? service.price/100 : '');
+  const [basePrice, setBasePrice] = useState<number | ''>(service.price != null ? service.price / 100 : '');
   const [duration, setDuration] = useState<number | ''>(service.duration || '');
   const [isAvailable, setIsAvailable] = useState(service.isActive);
 
@@ -525,20 +524,20 @@ function EditService({ onClose, token, super_user_id, refreshServices, categorie
   const [whatIsNotCovered, setWhatIsNotCovered] = useState(service.whatIsNotCovered?.join(', ') || '');
 
   const [steps, setSteps] = useState<Array<{ title: string; desc: string }>>(
-  service.howItWorks || []
-);
+    service.howItWorks || []
+  );
   const [newStepTitle, setNewStepTitle] = useState('');
   const [newStepDesc, setNewStepDesc] = useState('');
 
   const [faqs, setFaqs] = useState<Array<{ question: string; answer: string }>>(
-  service.faq || []
-);
+    service.faq || []
+  );
   const [newFaqQuestion, setNewFaqQuestion] = useState('');
   const [newFaqAnswer, setNewFaqAnswer] = useState('');
 
 
 
-  
+
   const handleAddImage = () => {
     if (!newImageUrl.trim()) return;
     setImageUrls([...imageUrls, newImageUrl.trim()]);
@@ -548,7 +547,7 @@ function EditService({ onClose, token, super_user_id, refreshServices, categorie
   const handleRemoveImage = (index: number) => {
     setImageUrls(imageUrls.filter((_, i) => i !== index));
   };
-  
+
   const handleAddStep = () => {
     if (!newStepTitle.trim() || !newStepDesc.trim()) return;
     setSteps([...steps, { title: newStepTitle.trim(), desc: newStepDesc.trim() }]);
@@ -558,7 +557,7 @@ function EditService({ onClose, token, super_user_id, refreshServices, categorie
   const handleRemoveStep = (index: number) => {
     setSteps(steps.filter((_, i) => i !== index));
   };
-  
+
   const handleAddFaq = () => {
     if (!token || !newFaqQuestion.trim() || !newFaqAnswer.trim()) return;
     setFaqs([...faqs, { question: newFaqQuestion.trim(), answer: newFaqAnswer.trim() }]);
@@ -567,16 +566,14 @@ function EditService({ onClose, token, super_user_id, refreshServices, categorie
   };
 
   const handleRemoveFaq = (index: number) => {
-    setFaqs(faqs.filter((_,i) => i!=index));
+    setFaqs(faqs.filter((_, i) => i != index));
   }
 
-  const handleDelete = async () => 
-  {
-    if(!token || !super_user_id) return;
+  const handleDelete = async () => {
+    if (!token || !super_user_id) return;
 
-    try
-    {
-      const response = await axios.delete(`${BASE_URL}/services/${service._id}`,  
+    try {
+      const response = await axios.delete(`${BASE_URL}/services/${service._id}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -588,8 +585,7 @@ function EditService({ onClose, token, super_user_id, refreshServices, categorie
       onClose();
       refreshServices();
     }
-    catch(err)
-    {
+    catch (err) {
       console.error("Failed to delete the service", err);
     }
   }
@@ -597,11 +593,10 @@ function EditService({ onClose, token, super_user_id, refreshServices, categorie
 
   const handleUpdateService = async (e: React.SyntheticEvent) => {
     e.preventDefault();
-    if(!token || !super_user_id) return;
+    if (!token || !super_user_id) return;
 
-    try
-    {
-      const updatedService = 
+    try {
+      const updatedService =
       {
         name: serviceName,
         category: categoryId,
@@ -626,12 +621,11 @@ function EditService({ onClose, token, super_user_id, refreshServices, categorie
 
       refreshServices();
       onClose();
-    } 
-    catch (err) 
-    {
-    console.error("Error updating service:", err);
-     }
-   }
+    }
+    catch (err) {
+      console.error("Error updating service:", err);
+    }
+  }
 
 
 
@@ -694,7 +688,7 @@ function EditService({ onClose, token, super_user_id, refreshServices, categorie
                             src={url}
                             alt={`preview-${index}`}
                             className="w-10 h-10 object-cover rounded border border-slate-200 shrink-0"
-                            
+
                           />
                           <span className="text-xs text-slate-600 truncate">{url}</span>
                         </div>
@@ -758,56 +752,56 @@ function EditService({ onClose, token, super_user_id, refreshServices, categorie
               </div>
 
               <div className="md:col-span-2 flex flex-col gap-3 mt-2">
-              <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">How It Works Steps</label>
+                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">How It Works Steps</label>
 
-              {steps.length === 0 ? (
-                <p className="text-xs text-slate-400 italic bg-slate-50 p-3 rounded-lg border border-slate-200">
-                  No steps added yet. Add steps below.
-                </p>
-              ) : (
-                steps.map((step, index) => (
-                  <div key={index} className="flex justify-between items-start bg-slate-50 p-3 rounded-lg border border-slate-200">
-                    <div>
-                      <span className="text-xs font-bold text-blue-600 block">Step {index + 1}: {step.title}</span>
-                      <span className="text-xs text-slate-600">{step.desc}</span>
+                {steps.length === 0 ? (
+                  <p className="text-xs text-slate-400 italic bg-slate-50 p-3 rounded-lg border border-slate-200">
+                    No steps added yet. Add steps below.
+                  </p>
+                ) : (
+                  steps.map((step, index) => (
+                    <div key={index} className="flex justify-between items-start bg-slate-50 p-3 rounded-lg border border-slate-200">
+                      <div>
+                        <span className="text-xs font-bold text-blue-600 block">Step {index + 1}: {step.title}</span>
+                        <span className="text-xs text-slate-600">{step.desc}</span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveStep(index)}
+                        className="text-xs text-red-500 hover:text-red-700 font-semibold ml-2"
+                      >
+                        Remove
+                      </button>
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveStep(index)}
-                      className="text-xs text-red-500 hover:text-red-700 font-semibold ml-2"
-                    >
-                      Remove
-                    </button>
-                  </div>
-                ))
-              )}
+                  ))
+                )}
 
 
-              <div className="flex flex-col gap-2 p-3 bg-slate-50 rounded-lg border border-slate-200">
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Add Next Step</span>
-                <input
-                  type="text"
-                  placeholder="Step Title (e.g. Booking Confirmation)"
-                  value={newStepTitle}
-                  onChange={(e) => setNewStepTitle(e.target.value)}
-                  className="w-full p-2 border border-slate-300 rounded-lg text-sm bg-white"
-                />
-                <input
-                  type="text"
-                  placeholder="Step Description (e.g. Our expert will arrive at your home)"
-                  value={newStepDesc}
-                  onChange={(e) => setNewStepDesc(e.target.value)}
-                  className="w-full p-2 border border-slate-300 rounded-lg text-sm bg-white"
-                />
-                <button
-                  type="button"
-                  onClick={handleAddStep}
-                  className="self-end px-3 py-1.5 bg-slate-800 text-white rounded-lg text-xs font-medium hover:bg-slate-900 transition-colors"
-                >
-                  Add Step
-                </button>
+                <div className="flex flex-col gap-2 p-3 bg-slate-50 rounded-lg border border-slate-200">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Add Next Step</span>
+                  <input
+                    type="text"
+                    placeholder="Step Title (e.g. Booking Confirmation)"
+                    value={newStepTitle}
+                    onChange={(e) => setNewStepTitle(e.target.value)}
+                    className="w-full p-2 border border-slate-300 rounded-lg text-sm bg-white"
+                  />
+                  <input
+                    type="text"
+                    placeholder="Step Description (e.g. Our expert will arrive at your home)"
+                    value={newStepDesc}
+                    onChange={(e) => setNewStepDesc(e.target.value)}
+                    className="w-full p-2 border border-slate-300 rounded-lg text-sm bg-white"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleAddStep}
+                    className="self-end px-3 py-1.5 bg-slate-800 text-white rounded-lg text-xs font-medium hover:bg-slate-900 transition-colors"
+                  >
+                    Add Step
+                  </button>
+                </div>
               </div>
-            </div>
             </div>
           </section>
 
@@ -875,7 +869,7 @@ function EditService({ onClose, token, super_user_id, refreshServices, categorie
           </div>
         </form>
 
-        
+
 
       </div>
     </div>

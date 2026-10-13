@@ -52,8 +52,9 @@ export class ServicesController {
   })
   @ApiQuery({ name: 'category', required: false, description: 'Filter by category Mongo ObjectId', example: '65f1a2b3c4d5e6f7a8b9c0d1' })
   @ApiResponse({ status: 200, description: 'List of all services.' })
-  findAll(@Query('category') categoryId?: string) {
-    return this.servicesService.findAll(categoryId);
+  findAll(@Query('category') categoryId?: string,
+  @Query('includeAll') includeAll?: string,) {
+    return this.servicesService.findAll(categoryId, includeAll === 'true');
   }
 
   @Public()
