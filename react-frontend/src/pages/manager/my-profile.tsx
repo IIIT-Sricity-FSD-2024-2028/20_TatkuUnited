@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import type { RootState } from "../../store";
 import { Skeleton } from "../../components/ui/skeleton";
@@ -15,9 +16,29 @@ import {
   FieldSet,
   FieldLegend,
   FieldLabel,
+  FieldError,
 } from "../../components/ui/field";
 import { Input } from "../../components/ui/input";
 import { Button } from "../../components/ui/button";
+
+interface ProfileForm {
+  name: string;
+  email: string;
+  phone: string;
+}
+
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+// returns an error message per invalid field, and nothing for valid ones
+const validate = (form: ProfileForm): Partial<ProfileForm> => ({
+  name: form.name.trim().length < 2 ? "Enter your full name" : undefined,
+  email: EMAIL_PATTERN.test(form.email.trim())
+    ? undefined
+    : "Enter a valid email address",
+  phone: /^\d{10}$/.test(form.phone.trim())
+    ? undefined
+    : "Phone number must be 10 digits",
+});
 
 // "Shri Manager" -> "SM"
 const getInitials = (name: string) =>
@@ -33,6 +54,46 @@ export default function ManagerProfile() {
     useSelector((state: RootState) => state.manager);
   const loading = pending > 0 && !userInfo;
   const region = regions.find((r) => r._id === selectedRegionId);
+
+  const [form, setForm] = useState<ProfileForm>({
+    name: "",
+    email: "",
+    phone: "",
+  });
+  // errors are only shown once the person has touched that field
+  const [touched, setTouched] = useState<Partial<Record<keyof ProfileForm, boolean>>>({});
+
+  // fill the form when the user loads, or whenever the stored user changes
+  useEffect(() => {
+    if (userInfo) {
+      setForm({
+        name: userInfo.name,
+        email: userInfo.email,
+        phone: userInfo.phone ?? "",
+      });
+      setTouched({});
+    }
+  }, [userInfo]);
+
+  const errors = validate(form);
+  const isValid = !errors.name && !errors.email && !errors.phone;
+  const isDirty =
+    !!userInfo &&
+    (form.name.trim() !== userInfo.name ||
+      form.email.trim() !== userInfo.email ||
+      form.phone.trim() !== (userInfo.phone ?? ""));
+
+  const bind = (field: keyof ProfileForm) => ({
+    value: form[field],
+    onChange: (e: React.ChangeEvent<HTMLInputElement>) =>
+      setForm((f) => ({ ...f, [field]: e.target.value })),
+    onBlur: () => setTouched((t) => ({ ...t, [field]: true })),
+    "aria-invalid": touched[field] && !!errors[field],
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault(); // saving is added in the next task
+  };
 
   return (
     <div>
@@ -54,18 +115,31 @@ export default function ManagerProfile() {
         </ItemContent>
       </Item>
 
-      <form>
+      <form onSubmit={handleSubmit}>
         <FieldGroup>
           <FieldSet>
             <FieldLegend>Personal Information</FieldLegend>
             <FieldGroup>
               <Field>
                 <FieldLabel htmlFor="full-name">Full Name</FieldLabel>
-                <Input id="full-name" value={userInfo?.name ?? ""} readOnly required />
+                <Input id="full-name" {...bind("name")} required />
+                {touched.name && errors.name && (
+                  <FieldError>{errors.name}</FieldError>
+                )}
               </Field>
               <Field>
                 <FieldLabel htmlFor="email-address">Email Address</FieldLabel>
-                <Input id="email-address" value={userInfo?.email ?? ""} readOnly required />
+                <Input id="email-address" type="email" {...bind("email")} required />
+                {touched.email && errors.email && (
+                  <FieldError>{errors.email}</FieldError>
+                )}
+              </Field>
+              <Field>
+                <FieldLabel htmlFor="phone">Phone Number</FieldLabel>
+                <Input id="phone" inputMode="numeric" {...bind("phone")} required />
+                {touched.phone && errors.phone && (
+                  <FieldError>{errors.phone}</FieldError>
+                )}
               </Field>
             </FieldGroup>
           </FieldSet>
@@ -98,7 +172,9 @@ export default function ManagerProfile() {
           </FieldSet>
 
           <Field orientation="horizontal">
-            <Button type="submit">Save Changes</Button>
+            <Button type="submit" disabled={!isDirty || !isValid}>
+              Save Changes
+            </Button>
           </Field>
         </FieldGroup>
       </form>
