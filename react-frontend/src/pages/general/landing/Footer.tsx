@@ -30,21 +30,21 @@ export default function Footer() {
                     </Link>
 
                     <Link
-                        to="/cart"
+                        to="/customer/cart"
                         className="transition-colors hover:text-blue-600"
                     >
                         Cart
                     </Link>
 
                     <Link
-                        to="/account-settings"
+                        to="/customer/account-settings"
                         className="transition-colors hover:text-blue-600"
                     >
                         Account Settings
                     </Link>
 
                     <Link
-                        to="/ratings-feedback"
+                        to="/customer/ratings-feedback"
                         className="transition-colors hover:text-blue-600"
                     >
                         Ratings & Feedback

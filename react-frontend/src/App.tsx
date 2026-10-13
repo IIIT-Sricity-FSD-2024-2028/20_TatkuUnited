@@ -1,36 +1,37 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
-import Landing from "./pages/general/LandingPage";
+import Landing from "./pages/general/landing/LandingPage";
 import Register from "./pages/general/RegisterPage";
 import Login from "./pages/general/LoginPage";
 
 import Provider from "./pages/general/Provider";
 import SuperUser from "./pages/superuser/superuser_route";
 import ManagerRouter from "./pages/manager/manager_route";
-
-import Cart from "./pages/CartPage";
-import Schedule from "./pages/SchedulePage";
-import AccountSettings from "./pages/AccountSettingsPage";
-import RatingsFeedback from "./pages/RatingsFeedbackPage";
+import CustomerRouter from "./pages/customer/customer_route";
 
 import { Provider as ReduxProvider } from "react-redux";
 import { store } from "./store";
 import AuthContext from "./common/AuthContext";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import type { AuthInterface } from "./models/auth.models";
 import { Toaster } from "./components/ui/toast";
+import NotFound from "./pages/components/notFound";
+// import ForbiddenAccess from "./pages/components/forbiddenAccess";
 
 function App() {
-  const [authDetails, setAuthDetails] = useState<AuthInterface>(null);
-
-  useEffect(() => {
-    const user = JSON.parse(sessionStorage.getItem("user"));
-    const token = sessionStorage.getItem("token");
-
-    if (token) {
-      setAuthDetails({ token, user });
+  const [authDetails, setAuthDetails] = useState<AuthInterface | null>(() => {
+    try {
+      const token = sessionStorage.getItem("token");
+      const userStr = sessionStorage.getItem("user");
+      const user = userStr ? JSON.parse(userStr) : null;
+      if (token) {
+        return { token, user };
+      }
+    } catch {
+      // ignore parse errors
     }
-  }, []);
+    return null;
+  });
 
   return (
     <AuthContext.Provider value={{ authDetails, setAuthDetails }}>
@@ -45,15 +46,17 @@ function App() {
             </Route>
 
             <Route path="/provider" element={<Provider />} />
+
             <Route path="/superuser/*" element={<SuperUser />} />
             <Route path="/manager/*" element={<ManagerRouter />} />
+            <Route path="/customer/*" element={<CustomerRouter />} />
 
-            <Route path="/cart" element={<Cart />} />
-            <Route path="/schedule" element={<Schedule />} />
-            <Route path="/account-settings" element={<AccountSettings />} />
-            <Route path="/ratings-feedback" element={<RatingsFeedback />} />
-
-            <Route path="*" element={<div>404! Page Not Found.</div>} />
+            {/* Backwards-compatible route redirects
+            <Route path="/cart" element={<Navigate to="/customer/cart" replace />} />
+            <Route path="/schedule" element={<Navigate to="/customer/schedule" replace />} />
+            <Route path="/account-settings" element={<Navigate to="/customer/account-settings" replace />} />
+            <Route path="/ratings-feedback" element={<Navigate to="/customer/ratings-feedback" replace />} /> */}
+            <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
         <Toaster />
