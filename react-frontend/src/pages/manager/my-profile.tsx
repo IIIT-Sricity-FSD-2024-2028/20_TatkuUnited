@@ -1,6 +1,11 @@
 import { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
-import type { RootState } from "../../store";
+import axios from "axios";
+import { useDispatch, useSelector } from "react-redux";
+import type { AppDispatch, RootState } from "../../store";
+import { ManagerActions } from "../../store/manager/manager-slice";
+import { toast } from "../../components/ui/toast";
+import { updateUser } from "@/services/users.service";
+import type { UpdateUserDto } from "@/models/api.models";
 import { Skeleton } from "../../components/ui/skeleton";
 import { Avatar, AvatarFallback } from "../../components/ui/avatar";
 import {
@@ -50,6 +55,8 @@ const getInitials = (name: string) =>
     .join("");
 
 export default function ManagerProfile() {
+  const dispatch = useDispatch<AppDispatch>();
+  const [saving, setSaving] = useState(false);
   const { userInfo, managerInfo, regions, selectedRegionId, pending } =
     useSelector((state: RootState) => state.manager);
   const loading = pending > 0 && !userInfo;
@@ -91,8 +98,35 @@ export default function ManagerProfile() {
     "aria-invalid": touched[field] && !!errors[field],
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault(); // saving is added in the next task
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!userInfo || !isDirty || !isValid) return;
+
+    // send only the fields that changed, never the whole user object
+    const changes: UpdateUserDto = {};
+    if (form.name.trim() !== userInfo.name) changes.name = form.name.trim();
+    if (form.email.trim() !== userInfo.email) changes.email = form.email.trim();
+    if (form.phone.trim() !== (userInfo.phone ?? ""))
+      changes.phone = form.phone.trim();
+
+    setSaving(true);
+    try {
+      const updated = await updateUser(userInfo._id, changes);
+      dispatch(ManagerActions.userUpdated({ ...userInfo, ...updated }));
+      toast.add({ type: "info", description: "Profile updated" });
+    } catch (error) {
+      const duplicate =
+        axios.isAxiosError(error) && error.response?.status === 409;
+      toast.add({
+        type: "error",
+        description: duplicate
+          ? "That email is already used by another account"
+          : "Could not save your profile",
+        priority: "high",
+      });
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -172,8 +206,8 @@ export default function ManagerProfile() {
           </FieldSet>
 
           <Field orientation="horizontal">
-            <Button type="submit" disabled={!isDirty || !isValid}>
-              Save Changes
+            <Button type="submit" disabled={!isDirty || !isValid || saving}>
+              {saving ? "Saving…" : "Save Changes"}
             </Button>
           </Field>
         </FieldGroup>

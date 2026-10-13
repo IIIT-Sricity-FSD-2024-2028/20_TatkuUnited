@@ -182,6 +182,10 @@ const ManagerSlice = createSlice({
       state.providers = [];
       state.bookings = [];
     },
+    // replace the stored user after a successful profile save
+    userUpdated(state, action: PayloadAction<UserDocument>) {
+      state.userInfo = action.payload;
+    },
     // update one provider in place, so the list doesn't reload after approve/suspend
     providerStatusChanged(
       state,
