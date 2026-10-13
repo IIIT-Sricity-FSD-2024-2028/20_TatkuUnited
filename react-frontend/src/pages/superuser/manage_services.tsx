@@ -263,7 +263,7 @@ export default function SuperUser_ManageServices() {
 
       </div>
 
-      {/* Data Table — uses reusable DataTable component */}
+      
       <DataTable
         columns={columns}
         data={filteredServices}
