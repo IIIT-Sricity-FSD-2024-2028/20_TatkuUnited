@@ -4,6 +4,7 @@ import { getManagerByUser } from "@/services/managers.service";
 import { getRegionsByManager } from "@/services/regions.service";
 import { getProvidersByRegion, getProviderById } from "@/services/providers.service";
 import { getBookingsByRegion } from "@/services/bookings.service";
+import { getMe } from "@/services/users.service";
 import { getServices } from "@/services/services.service";
 import { getCategories } from "@/services/categories.service";
 import type {
@@ -13,6 +14,7 @@ import type {
   ProviderDocument,
   RegionDocument,
   ServiceDocument,
+  UserDocument,
 } from "@/models/api.models";
 
 // The back-end's status values differ from the ones in api.models, so
@@ -37,6 +39,7 @@ export type RegionBooking = Omit<BookingDocument, "status"> & {
 
 interface ManagerState {
   managerInfo: ManagerDocument | null;
+  userInfo: UserDocument | null; // the manager's own name, email and phone
   regions: RegionDocument[];
   selectedRegionId: string | null;
   providers: RegionProvider[];
@@ -49,6 +52,7 @@ interface ManagerState {
 
 const initialState: ManagerState = {
   managerInfo: null,
+  userInfo: null,
   regions: [],
   selectedRegionId: null,
   providers: [],
@@ -71,6 +75,17 @@ export const fetchManager = createAsyncThunkTyped(
     }
     if (!manager) throw new Error("No manager profile found for this account");
     return manager;
+  },
+);
+
+export const fetchMe = createAsyncThunkTyped(
+  "manager/fetchMe",
+  async (): Promise<UserDocument> => {
+    try {
+      return await getMe();
+    } catch {
+      throw new Error("Fetching your profile failed");
+    }
   },
 );
 
@@ -180,6 +195,9 @@ const ManagerSlice = createSlice({
     builder
       .addCase(fetchManager.fulfilled, (state, action) => {
         state.managerInfo = action.payload;
+      })
+      .addCase(fetchMe.fulfilled, (state, action) => {
+        state.userInfo = action.payload;
       })
       .addCase(fetchRegions.fulfilled, (state, action) => {
         state.regions = action.payload;

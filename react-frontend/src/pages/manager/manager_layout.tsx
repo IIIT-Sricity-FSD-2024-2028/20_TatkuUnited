@@ -9,6 +9,7 @@ import {
   ManagerActions,
   fetchCatalogue,
   fetchManager,
+  fetchMe,
   fetchRegionBookings,
   fetchRegionProviders,
   fetchRegions,
@@ -27,6 +28,7 @@ export default function ManagerLayout() {
 
   useEffect(() => {
     if (!managerId) return;
+    dispatch(fetchMe());
     dispatch(fetchManager(managerId))
       .unwrap()
       .then((m) => dispatch(fetchRegions(m._id)))
