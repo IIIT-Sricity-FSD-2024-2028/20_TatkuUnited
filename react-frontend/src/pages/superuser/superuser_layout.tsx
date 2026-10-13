@@ -18,6 +18,7 @@ export const SuperUser_Layout = () => {
                 <SidebarItem to="/superuser/manage_users" label="User Management" icon={<BsPeopleFill />} />
                 <SidebarItem to="/superuser/manage_categories" label="Category Management" icon={<BsCollection />} />
                 <SidebarItem to="/superuser/manage_services" label="Service Management" icon={<BsTools />} />
+                <SidebarItem to="/superuser/manage_regions" label="Region Management" icon={<BsTools />} />
             </SideBar>
             <div className='flex flex-col flex-1 w-full'>
                 <SuperUser_Header />

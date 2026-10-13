@@ -139,7 +139,7 @@ export default function SuperUser_ManageUsers() {
           onClose={() => { setIsEditingUserID(null); setIsEditingUserRole(null) }}
           refreshUsers={fetchAllUsers} />)}
 
-      {/* Summary Cards — uses reusable SummaryCards component */}
+      
       <SummaryCards stats={SUMMARY_STATS} />
 
       <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex flex-wrap gap-4 items-end">
@@ -219,7 +219,6 @@ export default function SuperUser_ManageUsers() {
 
       </div>
 
-      {/* Data Table — uses reusable DataTable component */}
       <DataTable
         columns={columns}
         data={filtered_users}
