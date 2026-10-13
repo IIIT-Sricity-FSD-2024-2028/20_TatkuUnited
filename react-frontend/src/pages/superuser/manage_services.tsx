@@ -2,7 +2,7 @@ import axios from 'axios';
 import { useContext } from 'react';
 import AuthContext from '../../common/AuthContext';
 import React, { useEffect, useState } from 'react';
-import { BASE_URL } from "../../services/endpoints";
+import { BASE_URL } from '@/common/endpoints';
 import { type CategoriesResponse } from './manage_categories';
 import {
   BsPlus,

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useContext } from 'react';
 import AuthContext from '../../common/AuthContext';
 import axios from 'axios';
-import { BASE_URL } from "../../services/endpoints";
+import { BASE_URL } from '@/common/endpoints';
 import { BsPeople, BsPersonCheck, BsPersonX, BsPlus } from 'react-icons/bs';
 import SummaryCards, { type SummaryStat } from '@/components/superuser/SummaryCards';
 import DataTable, { type Column } from '@/components/superuser/DataTable';
