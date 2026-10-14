@@ -1,6 +1,8 @@
+import Dashboard from "./Dashboard";
 import AssignedJobs from "./AssignedJobs";
 import JobCalender from "./JobCalender";
 import Settings from "./Settings";
+import Revenue from "./Revenue";
 import { Card, CardContent } from "@/components/ui/card";
 
 type BodyProps = {
@@ -12,7 +14,7 @@ export default function Body({ activePage }: BodyProps) {
 
   switch (activePage) {
     case "Dashboard":
-      content = <AssignedJobs />;
+      content = <Dashboard />;
       break;
     case "Job Calender":
       content = <JobCalender />;
@@ -24,7 +26,7 @@ export default function Body({ activePage }: BodyProps) {
       content = <Settings />;
       break;
     case "Earnings":
-      content = <Settings />;
+      content = <Revenue />;
       break;
 
     default:
