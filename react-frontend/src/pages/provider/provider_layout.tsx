@@ -1,10 +1,21 @@
 import { Outlet } from "react-router-dom";
-import { BsCalendar3, BsCash, BsGrid, BsListTask, BsGear } from "react-icons/bs";
+import {
+  BsCalendar3,
+  BsCash,
+  BsGrid,
+  BsListTask,
+  BsGear,
+  BsLightningCharge,
+} from "react-icons/bs";
 import SideBar, { SidebarItem } from "../shared/Sidebar";
 import UserHeader from "../shared/user-header";
 import UrlMap from "../../common/urlMap";
+import { useIncomingOfferNotifier } from "./useIncomingOfferNotifier";
 
 export default function ProviderLayout() {
+  // Real-time listener for incoming offers with interactive toast alerts (Accept / Decline)
+  useIncomingOfferNotifier();
+
   return (
     <div className="flex h-screen overflow-hidden">
       <SideBar>
@@ -12,6 +23,11 @@ export default function ProviderLayout() {
           icon={<BsGrid />}
           label="Dashboard"
           to={`${UrlMap.provider}/dashboard`}
+        />
+        <SidebarItem
+          icon={<BsLightningCharge />}
+          label="Incoming Offers"
+          to={`${UrlMap.provider}/offers`}
         />
         <SidebarItem
           icon={<BsListTask />}
