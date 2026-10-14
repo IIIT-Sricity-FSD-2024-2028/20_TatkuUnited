@@ -1,11 +1,13 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import axios from "axios";
 import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch, RootState } from "../../store";
 import { ManagerActions } from "../../store/manager/manager-slice";
 import { toast } from "../../components/ui/toast";
+import AuthContext from "@/common/AuthContext";
 import { updateUser } from "@/services/users.service";
 import type { UpdateUserDto } from "@/models/api.models";
+import type { UserInterface } from "@/models/auth.models";
 import { Skeleton } from "../../components/ui/skeleton";
 import { Avatar, AvatarFallback } from "../../components/ui/avatar";
 import {
@@ -56,6 +58,7 @@ const getInitials = (name: string) =>
 
 export default function ManagerProfile() {
   const dispatch = useDispatch<AppDispatch>();
+  const auth = useContext(AuthContext);
   const [saving, setSaving] = useState(false);
   const { userInfo, managerInfo, regions, selectedRegionId, pending } =
     useSelector((state: RootState) => state.manager);
@@ -98,6 +101,23 @@ export default function ManagerProfile() {
     "aria-invalid": touched[field] && !!errors[field],
   });
 
+  // The header and Dashboard greeting read the logged-in user from the
+  // session, so copy the saved details there too, in memory and in storage.
+  const syncSession = (details: Pick<UserInterface, "name" | "email" | "phone">) => {
+    auth?.setAuthDetails((prev) => ({
+      ...prev,
+      user: { ...prev.user, ...details },
+    }));
+    try {
+      const stored = JSON.parse(sessionStorage.getItem("user") ?? "null");
+      if (stored) {
+        sessionStorage.setItem("user", JSON.stringify({ ...stored, ...details }));
+      }
+    } catch {
+      // storage unavailable: the in-memory update above is enough
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!userInfo || !isDirty || !isValid) return;
@@ -113,6 +133,11 @@ export default function ManagerProfile() {
     try {
       const updated = await updateUser(userInfo._id, changes);
       dispatch(ManagerActions.userUpdated({ ...userInfo, ...updated }));
+      syncSession({
+        name: updated.name,
+        email: updated.email,
+        phone: updated.phone,
+      });
       toast.add({ type: "info", description: "Profile updated" });
     } catch (error) {
       const duplicate =
