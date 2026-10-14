@@ -130,6 +130,24 @@ export async function completeBooking(id: string): Promise<BookingDocument> {
   return apiService<BookingDocument>(HTTP_METHODS_ENUM.post, url);
 }
 
+/** POST /bookings/:id/request-completion — Provider asks customer to confirm. */
+export async function requestBookingCompletion(id: string): Promise<BookingDocument> {
+  const url = buildEndpoint(ENDPOINT_ENUM.BOOKINGS_REQUEST_COMPLETION, { id });
+  return apiService<BookingDocument>(HTTP_METHODS_ENUM.post, url);
+}
+
+/** POST /bookings/:id/confirm-completion — Customer confirms service completion. */
+export async function confirmBookingCompletion(id: string): Promise<BookingDocument> {
+  const url = buildEndpoint(ENDPOINT_ENUM.BOOKINGS_CONFIRM_COMPLETION, { id });
+  return apiService<BookingDocument>(HTTP_METHODS_ENUM.post, url);
+}
+
+/** POST /bookings/:id/reject-completion — Customer rejects completion request. */
+export async function rejectBookingCompletion(id: string): Promise<BookingDocument> {
+  const url = buildEndpoint(ENDPOINT_ENUM.BOOKINGS_REJECT_COMPLETION, { id });
+  return apiService<BookingDocument>(HTTP_METHODS_ENUM.post, url);
+}
+
 /** POST /bookings/:id/cancel — Cancel a booking. */
 export async function cancelBooking(
   id: string,

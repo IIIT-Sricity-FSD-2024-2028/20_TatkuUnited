@@ -57,7 +57,7 @@ export default function PublicNavbar({
           {userRole === RolesEnum.CUSTOMER && (
             <button
               className="px-4 py-2 text-sm font-medium border border-blue-500 text-blue-500 rounded-lg hover:bg-blue-50 transition-colors cursor-pointer"
-              onClick={() => onNavigate("/bookings")}
+              onClick={() => onNavigate("/customer/bookings")}
             >
               My Bookings
             </button>

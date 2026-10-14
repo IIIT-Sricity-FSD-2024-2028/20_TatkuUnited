@@ -4,7 +4,11 @@ import PublicNavbar from "../PublicNavbar";
 import Footer from "../general/landing/Footer";
 import { useAuthContext } from "@/common/AuthContext";
 import { getStoredUser, getStoredUserId } from "@/common/services/authService";
-import { getBookingsByCustomer } from "@/services/bookings.service";
+import {
+  confirmBookingCompletion,
+  getBookingsByCustomer,
+  rejectBookingCompletion,
+} from "@/services/bookings.service";
 import type { BookingDocument } from "@/models/api.models";
 
 function formatSlotTime(minutesFromMidnight: number): string {
@@ -62,6 +66,12 @@ function getStatusBadge(status?: string) {
           In Progress
         </span>
       );
+    case "completion_requested":
+      return (
+        <span className="inline-flex items-center rounded-full bg-violet-50 px-2.5 py-1 text-xs font-medium text-violet-700 ring-1 ring-inset ring-violet-700/10">
+          Confirmation Required
+        </span>
+      );
     case "pending":
     case "awaiting_provider":
     case "offered":
@@ -94,6 +104,7 @@ export default function BookingHistoryPage() {
   const [bookings, setBookings] = useState<BookingDocument[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [completionLoading, setCompletionLoading] = useState(false);
 
   const storedUser = getStoredUser();
   const customerId =
@@ -136,6 +147,30 @@ export default function BookingHistoryPage() {
       );
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleCompletionDecision = async (
+    booking: BookingDocument,
+    confirmed: boolean,
+  ) => {
+    setCompletionLoading(true);
+    setError("");
+    try {
+      if (confirmed) {
+        await confirmBookingCompletion(booking._id);
+        navigate(`/customer/ratings-feedback?bookingId=${booking._id}`);
+      } else {
+        await rejectBookingCompletion(booking._id);
+      }
+      await fetchBookings();
+    } catch (err: any) {
+      setError(
+        err?.response?.data?.message ||
+          "Unable to update the completion request. Please try again.",
+      );
+    } finally {
+      setCompletionLoading(false);
     }
   };
 
@@ -424,6 +459,38 @@ export default function BookingHistoryPage() {
                         </button>
                       </div>
                     </div>
+                    {booking.status === "completion_requested" && (
+                      <div className="mt-5 rounded-lg border border-blue-200 bg-blue-50 p-4">
+                        <p className="font-medium text-blue-900">
+                          Your provider has requested confirmation that this service is complete.
+                        </p>
+                        <p className="mt-1 text-sm text-blue-800">
+                          Please confirm whether the service was completed.
+                        </p>
+                        <div className="mt-3 flex gap-2">
+                          <button
+                            className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
+                            disabled={completionLoading}
+                            onClick={() => {
+                              void handleCompletionDecision(booking, true);
+                            }}
+                            type="button"
+                          >
+                            Yes, service is complete
+                          </button>
+                          <button
+                            className="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 disabled:opacity-50"
+                            disabled={completionLoading}
+                            onClick={() => {
+                              void handleCompletionDecision(booking, false);
+                            }}
+                            type="button"
+                          >
+                            No
+                          </button>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 );
               })}

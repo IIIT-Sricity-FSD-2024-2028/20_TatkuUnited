@@ -7,6 +7,7 @@ import AssignedJobs from "./AssignedJobs";
 import JobCalender from "./JobCalender";
 import Revenue from "./Revenue";
 import Settings from "./Settings";
+import Profile from "./Profile";
 import ProviderLayout from "./provider_layout";
 
 export default function ProviderRouter() {
@@ -21,6 +22,7 @@ export default function ProviderRouter() {
           <Route path="calendar" element={<JobCalender />} />
           <Route path="earnings" element={<Revenue />} />
           <Route path="settings" element={<Settings />} />
+          <Route path="profile" element={<Profile />} />
         </Route>
       </Routes>
     </ProtectedRoute>

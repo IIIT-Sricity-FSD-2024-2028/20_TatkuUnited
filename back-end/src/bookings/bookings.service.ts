@@ -580,6 +580,70 @@ export class BookingsService {
     return booking;
   }
 
+  async requestCompletion(bookingId: string, user: AuthenticatedUser) {
+    const provider = await this.providerModel.findOne({ user: user.userId }).exec();
+    if (!provider) throw new ForbiddenException('Provider profile not found');
+
+    const booking = await this.bookingModel
+      .findOneAndUpdate(
+        {
+          _id: bookingId,
+          provider: provider._id,
+          status: BookingStatus.IN_PROGRESS,
+        },
+        { status: BookingStatus.COMPLETION_REQUESTED },
+        { new: true },
+      )
+      .populate('service customer order region')
+      .populate({ path: 'provider', populate: { path: 'user', select: 'name email phone' } })
+      .exec();
+
+    if (!booking) {
+      throw new BadRequestException(
+        'Only an in-progress assigned booking can request completion',
+      );
+    }
+    return booking;
+  }
+
+  async confirmCompletion(bookingId: string, user: AuthenticatedUser) {
+    const booking = await this.bookingModel
+      .findOneAndUpdate(
+        { _id: bookingId, customer: user.userId, status: BookingStatus.COMPLETION_REQUESTED },
+        { status: BookingStatus.COMPLETED, completedAt: new Date() },
+        { new: true },
+      )
+      .populate('service customer order region')
+      .populate({ path: 'provider', populate: { path: 'user', select: 'name email phone' } })
+      .exec();
+
+    if (!booking) {
+      throw new BadRequestException(
+        'Completion request not found for this customer',
+      );
+    }
+    return booking;
+  }
+
+  async rejectCompletion(bookingId: string, user: AuthenticatedUser) {
+    const booking = await this.bookingModel
+      .findOneAndUpdate(
+        { _id: bookingId, customer: user.userId, status: BookingStatus.COMPLETION_REQUESTED },
+        { status: BookingStatus.IN_PROGRESS },
+        { new: true },
+      )
+      .populate('service customer order region')
+      .populate({ path: 'provider', populate: { path: 'user', select: 'name email phone' } })
+      .exec();
+
+    if (!booking) {
+      throw new BadRequestException(
+        'Completion request not found for this customer',
+      );
+    }
+    return booking;
+  }
+
   /** Cancel booking with actor and reason (§4.14) */
   async cancelBooking(
     bookingId: string,

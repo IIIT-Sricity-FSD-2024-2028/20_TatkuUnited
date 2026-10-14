@@ -74,6 +74,9 @@ export const ENDPOINT_ENUM = {
   BOOKINGS_REJECT: "/bookings/{id}/reject",
   BOOKINGS_START: "/bookings/{id}/start",
   BOOKINGS_COMPLETE: "/bookings/{id}/complete",
+  BOOKINGS_REQUEST_COMPLETION: "/bookings/{id}/request-completion",
+  BOOKINGS_CONFIRM_COMPLETION: "/bookings/{id}/confirm-completion",
+  BOOKINGS_REJECT_COMPLETION: "/bookings/{id}/reject-completion",
   BOOKINGS_CANCEL: "/bookings/{id}/cancel",
 
   // --- Payments ---

@@ -393,6 +393,39 @@ export class BookingsController {
     return this.bookingsService.completeJob(id);
   }
 
+  @Roles(Role.PROVIDER)
+  @Post(':id/request-completion')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Request customer confirmation to complete a job' })
+  requestCompletion(@Param('id') id: string, @Req() req: any) {
+    return this.bookingsService.requestCompletion(
+      id,
+      req.user as AuthenticatedUser,
+    );
+  }
+
+  @Roles(Role.CUSTOMER)
+  @Post(':id/confirm-completion')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Confirm that a provider completed the service' })
+  confirmCompletion(@Param('id') id: string, @Req() req: any) {
+    return this.bookingsService.confirmCompletion(
+      id,
+      req.user as AuthenticatedUser,
+    );
+  }
+
+  @Roles(Role.CUSTOMER)
+  @Post(':id/reject-completion')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Reject a provider completion request' })
+  rejectCompletion(@Param('id') id: string, @Req() req: any) {
+    return this.bookingsService.rejectCompletion(
+      id,
+      req.user as AuthenticatedUser,
+    );
+  }
+
   @Roles(Role.CUSTOMER, Role.PROVIDER, Role.MANAGER, Role.ADMIN)
   @Post(':id/cancel')
   @ApiOperation({

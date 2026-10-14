@@ -6,6 +6,7 @@ import {
   BsListTask,
   BsGear,
   BsLightningCharge,
+  BsPerson,
 } from "react-icons/bs";
 import SideBar, { SidebarItem } from "../shared/Sidebar";
 import UserHeader from "../shared/user-header";
@@ -48,6 +49,11 @@ export default function ProviderLayout() {
           icon={<BsGear />}
           label="Settings"
           to={`${UrlMap.provider}/settings`}
+        />
+        <SidebarItem
+          icon={<BsPerson />}
+          label="Profile"
+          to={`${UrlMap.provider}/profile`}
         />
       </SideBar>
 
