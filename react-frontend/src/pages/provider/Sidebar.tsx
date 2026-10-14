@@ -11,6 +11,7 @@ export default function Sidebar({
 }: SidebarProps) {
     const pages = [
         { label: "Dashboard", page: "Dashboard" },
+        { label: "Incoming Offers", page: "Incoming Offers" },
         { label: "Assigned Jobs", page: "Assigned Jobs" },
         { label: "Calendar", page: "Calendar" },
         { label: "Earnings", page: "Earnings" },
@@ -22,7 +23,7 @@ export default function Sidebar({
             <nav aria-label="Provider navigation" className="space-y-1">
                 {pages.map(({ label, page }) => (
                     <Button
-                        className="w-full justify-start"
+                        className="w-full justify-start cursor-pointer"
                         key={page}
                         onClick={() => onPageChange(page)}
                         variant={activePage === page ? "secondary" : "ghost"}
