@@ -16,11 +16,9 @@ export default function Body({ activePage }: BodyProps) {
     case "Dashboard":
       content = <Dashboard />;
       break;
+    case "Calendar":
     case "Job Calender":
       content = <JobCalender />;
-      break;
-    case "Reports":
-      content = <AssignedJobs />;
       break;
     case "Settings":
       content = <Settings />;

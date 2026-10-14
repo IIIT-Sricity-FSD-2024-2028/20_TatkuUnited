@@ -50,7 +50,7 @@ function App() {
             <Route path="/services" element={<ServiceCatalog />} />
             <Route path="/services/:serviceId" element={<ServicePage />} />
 
-            <Route path="/provider" element={<Provider />} />
+            <Route path="/provider/*" element={<Provider />} />
 
             <Route path="/superuser/*" element={<SuperUser />} />
             <Route path="/manager/*" element={<ManagerRouter />} />
