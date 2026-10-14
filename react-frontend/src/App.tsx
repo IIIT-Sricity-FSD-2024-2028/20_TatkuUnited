@@ -18,6 +18,7 @@ import { Toaster } from "./components/ui/toast";
 import NotFound from "./pages/components/notFound";
 // import ForbiddenAccess from "./pages/components/forbiddenAccess";
 
+
 function App() {
   const [authDetails, setAuthDetails] = useState<AuthInterface | null>(() => {
     try {
