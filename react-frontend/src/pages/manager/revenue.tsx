@@ -4,6 +4,7 @@ import type { RootState } from "../../store";
 import { Skeleton } from "../../components/ui/skeleton";
 import {
   PERIOD_LABELS,
+  categoryBreakdown,
   filterByPeriod,
   formatRupees,
   summarise,
@@ -34,7 +35,7 @@ import {
 
 export default function ManagerRevenue() {
   const [period, setPeriod] = useState<Period>("all");
-  const { bookings, providers, pending } = useSelector(
+  const { bookings, providers, categories, pending } = useSelector(
     (state: RootState) => state.manager,
   );
   const loading = pending > 0;
@@ -45,6 +46,10 @@ export default function ManagerRevenue() {
     [bookings, period],
   );
   const summary = useMemo(() => summarise(inPeriod), [inPeriod]);
+  const categoryRows = useMemo(
+    () => categoryBreakdown(inPeriod, categories),
+    [inPeriod, categories],
+  );
   const activeProviders = providers.filter((p) => p.status === "approved").length;
 
   const stat = (value: string | number) =>
@@ -139,11 +144,51 @@ export default function ManagerRevenue() {
         <div className="flex justify-around">
           <div>Category Revenue Split</div>
         </div>
-        <div>
-          {/* <table></table> */}
-          Table here: Service Category Total Bookings Total Revenue Avg Revenue
-          / Booking
-        </div>
+        <Card className="w-full">
+          <CardHeader>
+            <CardTitle>Revenue by Category</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {loading ? (
+              <Skeleton className="h-24 w-full" />
+            ) : categoryRows.length === 0 ? (
+              <p className="text-sm text-muted-foreground">
+                No completed bookings in this period.
+              </p>
+            ) : (
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="text-left text-muted-foreground border-b">
+                    <th className="py-2 font-medium">Service Category</th>
+                    <th className="py-2 font-medium text-right">
+                      Total Bookings
+                    </th>
+                    <th className="py-2 font-medium text-right">
+                      Total Revenue
+                    </th>
+                    <th className="py-2 font-medium text-right">
+                      Avg Revenue / Booking
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {categoryRows.map((row) => (
+                    <tr key={row.category} className="border-b last:border-0">
+                      <td className="py-2">{row.category}</td>
+                      <td className="py-2 text-right">{row.bookings}</td>
+                      <td className="py-2 text-right">
+                        {formatRupees(row.revenue)}
+                      </td>
+                      <td className="py-2 text-right">
+                        {formatRupees(row.average)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </CardContent>
+        </Card>
       </main>
     </div>
   );
