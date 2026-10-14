@@ -1,10 +1,19 @@
 import SideBar, { SidebarItem } from "../shared/Sidebar";
-import { BsCash, BsGrid, BsPeople, BsPersonAdd } from "react-icons/bs";
+import {
+  BsBoxArrowRight,
+  BsCash,
+  BsGrid,
+  BsPeople,
+  BsPersonAdd,
+} from "react-icons/bs";
 import { Outlet } from "react-router-dom";
 import UserHeader from "../shared/user-header";
 import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch, RootState } from "../../store";
-import { useEffect } from "react";
+import { useContext, useEffect } from "react";
+import AuthContext from "@/common/AuthContext";
+import { handleLogout } from "@/common/services/authService";
+import { Button } from "@/components/ui/button";
 import {
   ManagerActions,
   fetchCatalogue,
@@ -21,10 +30,19 @@ import { toast } from "@/components/ui/toast";
 export default function ManagerLayout() {
   const dispatch = useDispatch<AppDispatch>();
   const { user } = useAuth();
+  const auth = useContext(AuthContext);
   const managerId = user?.id;
   const { regions, selectedRegionId, error } = useSelector(
     (state: RootState) => state.manager,
   );
+
+  // Same as the public navbar: clear the stored session, then clear the
+  // context. ProtectedRoute then sees the user is gone and goes to /auth/login.
+  const onLogout = () => {
+    handleLogout();
+    // the context type doesn't allow null yet, though App starts it as null
+    auth?.setAuthDetails(null as never);
+  };
 
   useEffect(() => {
     if (!managerId) return;
@@ -76,21 +94,27 @@ export default function ManagerLayout() {
       <div className="flex flex-col flex-1 w-full">
         <div className="flex items-center justify-between pr-4">
           <UserHeader header="Manager Dashboard" />
-          {regions.length > 1 && (
-            <select
-              className="border rounded-md px-2 py-1 text-sm bg-white"
-              value={selectedRegionId ?? ""}
-              onChange={(e) =>
-                dispatch(ManagerActions.selectRegion(e.target.value))
-              }
-            >
-              {regions.map((r) => (
-                <option key={r._id} value={r._id}>
-                  {r.name}
-                </option>
-              ))}
-            </select>
-          )}
+          <div className="flex items-center gap-3">
+            {regions.length > 1 && (
+              <select
+                className="border rounded-md px-2 py-1 text-sm bg-white"
+                value={selectedRegionId ?? ""}
+                onChange={(e) =>
+                  dispatch(ManagerActions.selectRegion(e.target.value))
+                }
+              >
+                {regions.map((r) => (
+                  <option key={r._id} value={r._id}>
+                    {r.name}
+                  </option>
+                ))}
+              </select>
+            )}
+            <Button variant="outline" size="sm" onClick={onLogout}>
+              <BsBoxArrowRight className="mr-1" />
+              Logout
+            </Button>
+          </div>
         </div>
         <main className="h-full w-full overflow-y-auto bg-gray-50 p-6">
           <Outlet />
