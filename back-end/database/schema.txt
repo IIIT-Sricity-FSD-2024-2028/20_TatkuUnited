@@ -1,4 +1,4 @@
-User [icon: user, color: blue] {
+  User [icon: user, color: blue] {
   id string pk
   name string
   email string unique

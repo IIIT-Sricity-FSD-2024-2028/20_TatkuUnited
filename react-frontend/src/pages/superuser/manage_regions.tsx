@@ -34,7 +34,12 @@ export default function SuperUser_ManageRegions()
     const [isAdd, setIsAdd] = useState(false);
     const [isEditingID, setIsEditingID] = useState('');
 
-    const filteredRegions = regions;
+    const filteredRegions = regions.filter(reg => {
+        if(!reg.name.toLowerCase().includes(search.toLowerCase())) return false;
+        if(status !== 'all' && status==='active' && !reg.isActive) return false;
+        if(status !== 'all' && status==='inactive' && reg.isActive) return false;
+        return true;
+    });
 
     const columns: Column<RegionDocument>[] = [
         {header: 'Name', render: (row) => <span className="font-medium text-slate-900">{row.name}</span>},
@@ -134,6 +139,32 @@ export default function SuperUser_ManageRegions()
         )}
 
         <SummaryCards stats={SUMMARY_STATS} />
+
+        <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex flex-wrap gap-4 items-end">
+          <div className="flex flex-col gap-1 flex-1 min-w-50">
+            <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Search Regions</label>
+            <input
+              type="text"
+              placeholder="Search by name..."
+              className="w-full p-2 border border-slate-300 rounded-lg text-sm outline-none focus:border-blue-500 bg-white"
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+            />
+          </div>
+          
+          <div className="flex flex-col gap-1 flex-2 min-w-37.5">
+            <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Region Status</label>
+            <select
+              className="w-full p-2 border border-slate-300 rounded-lg text-sm outline-none focus:border-blue-500 bg-white"
+              value={status}
+              onChange={e => setStatus(e.target.value)}
+            >
+              <option value="all">All Statuses</option>
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+            </select>
+          </div>
+        </div>
             
         <DataTable
             columns={columns}
@@ -141,7 +172,7 @@ export default function SuperUser_ManageRegions()
             rowKey={(row) => row._id}
             isLoading={isLoading}
             error={error}
-            emptyMessage='No Regions found'
+            emptyMessage='No Regions found matching your search.'
         />
 
         </div>
@@ -158,7 +189,6 @@ interface AddRegionProps
     userNameMap: Record<string, string>;
 }
 
-// AFTER:
 interface EditRegionProps {
     onClose: () => void;
     token: string | null | undefined;
@@ -182,7 +212,7 @@ function AddRegion({ token, onClose, refreshRegions, allManagers, assignedRegion
 
     const assignedManagerIds = new Set(
         assignedRegions.map(r =>
-            r.manager._id
+            (r.manager as ManagerDocument)._id
         )
     );
     const unassignedManagers = allManagers.filter(m => !assignedManagerIds.has(m._id));
