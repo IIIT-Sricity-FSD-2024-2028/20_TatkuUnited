@@ -156,12 +156,12 @@ export default function ServicePage() {
                 ? service.category
                 : service.category.name}
             </Badge>
-            {service.reviewCount > 0 && (
+            {(service.reviewCount ?? 0) > 0 && (
               <div className="flex items-center gap-2 text-sm">
-                <StarRating value={service.rating} />
-                <span className="font-medium">{service.rating.toFixed(1)}</span>
+                <StarRating value={service.rating ?? 0} />
+                <span className="font-medium">{(service.rating ?? 0).toFixed(1)}</span>
                 <span className="text-muted-foreground">
-                  ({service.reviewCount} reviews)
+                  ({service.reviewCount ?? 0} reviews)
                 </span>
               </div>
             )}
@@ -278,12 +278,12 @@ export default function ServicePage() {
           {/* Rating summary (already available on the service) */}
           <div className="flex items-center gap-4">
             <span className="text-5xl font-semibold">
-              {service.rating.toFixed(1)}
+              {(service.rating ?? 0).toFixed(1)}
             </span>
             <div className="space-y-1">
-              <StarRating value={service.rating} size={20} />
+              <StarRating value={service.rating ?? 0} size={20} />
               <p className="text-sm text-muted-foreground">
-                Based on {service.reviewCount} reviews
+                Based on {service.reviewCount ?? 0} reviews
               </p>
             </div>
           </div>

@@ -1,5 +1,3 @@
-import { useSelector } from "react-redux";
-import type { RootState } from "../../store";
 import {
   Card,
   CardContent,
@@ -8,6 +6,7 @@ import {
 } from "../../components/ui/card";
 import { Skeleton } from "../../components/ui/skeleton";
 import useAuth from "@/hooks/useAuth";
+import { useManager } from "./ManagerContext";
 
 const formatRupees = (paise: number) =>
   `₹${(paise / 100).toLocaleString("en-IN", { maximumFractionDigits: 2 })}`;
@@ -15,7 +14,7 @@ const formatRupees = (paise: number) =>
 export default function ManagerDashboard() {
   const { user } = useAuth();
   const { regions, selectedRegionId, providers, bookings, pending, error } =
-    useSelector((state: RootState) => state.manager);
+    useManager();
 
   const region = regions.find((r) => r._id === selectedRegionId);
   const loading = pending > 0;
@@ -31,46 +30,68 @@ export default function ManagerDashboard() {
     loading ? <Skeleton className="h-6 w-24" /> : value;
 
   return (
-    <div className="p-2">
-      <h1 className="font-semibold text-2xl mb-4">
-        Welcome back, {user?.name ?? "Guest"}
-      </h1>
+    <div className="p-2 space-y-6">
+      <div>
+        <h1 className="font-semibold text-2xl text-slate-900">
+          Welcome back, {user?.name ?? "Guest"}
+        </h1>
+        <p className="text-slate-500 text-sm mt-1">
+          Regional performance overview for operational territory.
+        </p>
+      </div>
       {!loading && !error && regions.length === 0 && (
-        <div className="mb-4 p-3 bg-yellow-50 border border-yellow-300 text-yellow-800 rounded-lg text-sm">
+        <div className="p-3 bg-yellow-50 border border-yellow-300 text-yellow-800 rounded-lg text-sm">
           No region is assigned to your account yet.
         </div>
       )}
-      <div className="grid gap-4 grid-cols-2 grid-rows-2">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader>
-            <CardTitle>Region Name</CardTitle>
+            <CardTitle className="text-sm font-medium text-slate-500">
+              Assigned Region
+            </CardTitle>
           </CardHeader>
-          <CardContent>{stat(region?.name ?? "No region assigned")}</CardContent>
+          <CardContent className="text-2xl font-bold text-slate-900">
+            {stat(region?.name ?? "No region assigned")}
+          </CardContent>
         </Card>
+
         <Card>
           <CardHeader>
-            <CardTitle>Total Providers</CardTitle>
+            <CardTitle className="text-sm font-medium text-slate-500">
+              Active Providers
+            </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="text-2xl font-bold text-slate-900">
             {stat(approved)}
             {!loading && awaitingApproval > 0 && (
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm font-normal text-muted-foreground mt-1">
                 {awaitingApproval} awaiting approval
               </p>
             )}
           </CardContent>
         </Card>
+
         <Card>
           <CardHeader>
-            <CardTitle>Revenue (All time)</CardTitle>
+            <CardTitle className="text-sm font-medium text-slate-500">
+              Completed Services
+            </CardTitle>
           </CardHeader>
-          <CardContent>{stat(formatRupees(revenue))}</CardContent>
+          <CardContent className="text-2xl font-bold text-slate-900">
+            {stat(completed.length)}
+          </CardContent>
         </Card>
+
         <Card>
           <CardHeader>
-            <CardTitle>Completed Services</CardTitle>
+            <CardTitle className="text-sm font-medium text-slate-500">
+              Region Revenue (All time)
+            </CardTitle>
           </CardHeader>
-          <CardContent>{stat(completed.length)}</CardContent>
+          <CardContent className="text-2xl font-bold text-emerald-600">
+            {stat(formatRupees(revenue))}
+          </CardContent>
         </Card>
       </div>
     </div>

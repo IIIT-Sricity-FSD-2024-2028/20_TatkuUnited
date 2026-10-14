@@ -23,7 +23,7 @@ export default function ServiceCard({ service }: { service: ServiceDocument }) {
   return (
     <Card className="w-full max-w-sm pt-0">
       <img
-        src={service.imageUrls[0]}
+        src={service.imageUrls?.[0] || ""}
         alt="Service cover image"
         className="relative z-20 aspect-video w-full object-cover brightness-60 grayscale dark:brightness-40"
       />

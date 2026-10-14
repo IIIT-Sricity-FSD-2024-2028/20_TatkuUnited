@@ -10,8 +10,8 @@ import type {
   CreateUserDto,
   UpdateUserDto,
   UserAddress,
-  CartItem,
-  AddressSnapshotDto,
+  BackendCart,
+  AddCartItemDto,
   UserRole,
 } from "@/models/api.models";
 
@@ -99,25 +99,31 @@ export async function deleteUserAddress(id: string, addressId: string): Promise<
 // ---------------------------------------------------------------------------
 
 /** GET /users/:id/cart */
-export async function getUserCart(id: string): Promise<CartItem[]> {
+export async function getUserCart(id: string): Promise<BackendCart> {
   const url = buildEndpoint(ENDPOINT_ENUM.USERS_CART, { id });
-  return apiService<CartItem[]>(HTTP_METHODS_ENUM.get, url);
+  return apiService<BackendCart>(HTTP_METHODS_ENUM.get, url);
 }
 
 /** POST /users/:id/cart — Add item to cart. */
-export async function addCartItem(id: string, item: CartItem): Promise<UserDocument> {
+export async function addCartItem(id: string, item: AddCartItemDto): Promise<BackendCart> {
   const url = buildEndpoint(ENDPOINT_ENUM.USERS_CART, { id });
-  return apiService<UserDocument, CartItem>(HTTP_METHODS_ENUM.post, url, item);
+  return apiService<BackendCart, AddCartItemDto>(HTTP_METHODS_ENUM.post, url, item);
 }
 
 /** PATCH /users/:id/cart/address — Set cart delivery address. */
-export async function setCartAddress(id: string, address: AddressSnapshotDto): Promise<UserDocument> {
+export async function setCartAddress(id: string, addressId: string): Promise<BackendCart> {
   const url = buildEndpoint(ENDPOINT_ENUM.USERS_CART_ADDRESS, { id });
-  return apiService<UserDocument, AddressSnapshotDto>(HTTP_METHODS_ENUM.patch, url, address);
+  return apiService<BackendCart, { addressId: string }>(HTTP_METHODS_ENUM.patch, url, { addressId });
 }
 
 /** DELETE /users/:id/cart/:index — Remove cart item by index. */
-export async function removeCartItem(id: string, index: number): Promise<UserDocument> {
+export async function removeCartItem(id: string, index: number): Promise<BackendCart> {
   const url = buildEndpoint(ENDPOINT_ENUM.USERS_CART_ITEM, { id, index });
-  return apiService<UserDocument>(HTTP_METHODS_ENUM.delete, url);
+  return apiService<BackendCart>(HTTP_METHODS_ENUM.delete, url);
+}
+
+/** DELETE /users/:id/cart — Clear all items from cart. */
+export async function clearCart(id: string): Promise<BackendCart> {
+  const url = buildEndpoint(ENDPOINT_ENUM.USERS_CART, { id });
+  return apiService<BackendCart>(HTTP_METHODS_ENUM.delete, url);
 }

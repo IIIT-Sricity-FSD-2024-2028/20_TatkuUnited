@@ -84,7 +84,7 @@ export default function ServiceCatalog() {
         <Select
           items={items}
           value={categoryFilter}
-          onValueChange={setCategoryFilter}
+          onValueChange={(val) => setCategoryFilter(val ?? "")}
         >
           <SelectTrigger className="w-full max-w-48">
             <SelectValue />

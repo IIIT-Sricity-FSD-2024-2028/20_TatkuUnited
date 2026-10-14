@@ -1,10 +1,21 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-
-const API_BASE_URL = "http://localhost:3000";
+import { HTTP_METHODS_ENUM } from "@/common/http.methods";
+import { apiService } from "@/common/services/apiService";
+import { ENDPOINT_ENUM } from "@/common/endpoints";
+import { handleLogout, getStoredUser, getStoredUserId } from "@/common/services/authService";
+import { useAuthContext } from "@/common/AuthContext";
+import {
+  getUserById,
+  updateUser,
+  addUserAddress,
+  deleteUserAddress,
+} from "@/services/users.service";
+import { getBookingsByCustomer } from "@/services/bookings.service";
 
 function AccountSettingsPage() {
   const navigate = useNavigate();
+  const authContext = useAuthContext();
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -28,17 +39,13 @@ function AccountSettingsPage() {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
-  const getSession = () => {
-  try {
-    return JSON.parse(sessionStorage.getItem("user") || "null");
-  } catch {
-    return null;
-  }
-};
-
-const getToken = () => {
-  return sessionStorage.getItem("token");
-};
+  const storedUser = getStoredUser();
+  const customerId =
+    authContext.authDetails?.user?.id ||
+    (authContext.authDetails?.user as any)?._id ||
+    getStoredUserId() ||
+    storedUser?.id ||
+    storedUser?._id;
 
   const showMessage = (text: string) => {
     setMessage(text);
@@ -73,32 +80,16 @@ const getToken = () => {
   // Load customer information
   useEffect(() => {
     const loadProfile = async () => {
-      const session = getSession();
-      const token = getToken();
-
-      if (!session || !token) {
+      if (!customerId) {
         navigate("/auth/login");
         return;
       }
 
       try {
-        const response = await fetch(
-          `${API_BASE_URL}/users/${session.id}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          },
-        );
+        const data = await getUserById(customerId);
 
-        if (!response.ok) {
-          throw new Error("Unable to load profile.");
-        }
-
-        const data = await response.json();
-
-        setName(data.name || data.full_name || session.name || "");
-        setEmail(data.email || session.email || "");
+        setName(data.name || (data as any).full_name || storedUser?.name || "");
+        setEmail(data.email || storedUser?.email || "");
 
         const rawPhone = data.phone
           ? String(data.phone).replace(/\D/g, "").slice(-10)
@@ -109,13 +100,11 @@ const getToken = () => {
 
         const savedAddresses = Array.isArray(data.addresses)
           ? data.addresses
-          : Array.isArray(data.saved_addresses)
-            ? data.saved_addresses
-            : [];
+          : [];
         setAddresses(
           savedAddresses.map((address: any) => ({
             id: address.id ?? address._id,
-            tag: address.label || address.tag || "Other",
+            tag: address.label || address.tag || "Home",
             text:
               address.line ||
               address.text ||
@@ -124,38 +113,22 @@ const getToken = () => {
         );
       } catch (err) {
         console.error(err);
-        showError("Could not load your profile.");
+        showError("Could not load your profile from the server.");
       } finally {
         setLoading(false);
       }
     };
 
     loadProfile();
-  }, [navigate]);
+  }, [customerId, navigate]);
 
-  // Load recent activity
+  // Load recent activity from real bookings
   useEffect(() => {
     const loadActivity = async () => {
-      const token = getToken();
-
-      if (!token) return;
+      if (!customerId) return;
 
       try {
-        const session = getSession();
-        if (!session?.id) return;
-
-        const response = await fetch(
-          `${API_BASE_URL}/bookings/customer/${encodeURIComponent(session.id)}`,
-          {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-          },
-        );
-
-        if (!response.ok) return;
-
-        const data = await response.json();
+        const data = await getBookingsByCustomer(customerId);
 
         setActivities(
           (data || [])
@@ -172,7 +145,7 @@ const getToken = () => {
     };
 
     loadActivity();
-  }, []);
+  }, [customerId]);
 
   // Save personal information
   const handleSavePersonalInfo = async () => {
@@ -203,10 +176,7 @@ const getToken = () => {
       return;
     }
 
-    const session = getSession();
-    const token = getToken();
-
-    if (!session || !token) {
+    if (!customerId) {
       navigate("/auth/login");
       return;
     }
@@ -214,49 +184,35 @@ const getToken = () => {
     setSaving(true);
 
     try {
-      const response = await fetch(`${API_BASE_URL}/users/${session.id}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          name: name.trim(),
-          email: email.trim(),
-          phone: `+91${phone}`,
-          dob: dob || undefined,
-        }),
-      });
-
-      if (!response.ok) {
-        const data = await response.json().catch(() => null);
-
-        throw new Error(
-          data?.message || "Failed to save personal information.",
-        );
-      }
-
-      // Update session so UI stays in sync
-      const updatedSession = {
-        ...session,
+      const updatedUserDoc = await updateUser(customerId, {
         name: name.trim(),
         email: email.trim(),
+        phone: phone.startsWith("+91") ? phone : `+91${phone}`,
+        dob: dob || undefined,
+      });
+
+      // Update session storage so UI across the application stays in sync
+      const updatedSession = {
+        ...(storedUser || {}),
+        id: updatedUserDoc._id || customerId,
+        _id: updatedUserDoc._id || customerId,
+        name: updatedUserDoc.name || name.trim(),
+        email: updatedUserDoc.email || email.trim(),
+        phone: updatedUserDoc.phone || `+91${phone}`,
       };
 
-      sessionStorage.setItem(
-        "tu_auth_session",
-        JSON.stringify(updatedSession),
-      );
+      sessionStorage.setItem("user", JSON.stringify(updatedSession));
 
       showMessage("Personal information saved successfully!");
     } catch (err: any) {
-      showError(err.message || "Failed to save changes.");
+      showError(
+        err?.response?.data?.message || err.message || "Failed to save changes.",
+      );
     } finally {
       setSaving(false);
     }
   };
 
-  // Add address
   // Add address
   const handleAddAddress = async () => {
     if (!newAddress.trim()) {
@@ -264,100 +220,68 @@ const getToken = () => {
       return;
     }
 
-    const session = getSession();
-    const token = getToken();
-
-    if (!session || !token) return;
+    if (!customerId) return;
 
     try {
-      const response = await fetch(
-        `${API_BASE_URL}/users/${session.id}/addresses`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-            body: JSON.stringify({
-            line: newAddress.trim(),
-            city: "Unknown",
-            location: {
-              type: "Point",
-              coordinates: [0, 0],
-            },
-          }),
-        }
-      );
+      const savedAddresses = await addUserAddress(customerId, {
+        label: "Home",
+        line: newAddress.trim(),
+        city: "Sri City",
+        location: {
+          type: "Point",
+          coordinates: [80.027, 13.556],
+        },
+      } as any);
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(
-          Array.isArray(errorData.message)
-            ? errorData.message.join(", ")
-            : errorData.message || "Failed to save address."
+      if (Array.isArray(savedAddresses)) {
+        setAddresses(
+          savedAddresses.map((address: any) => ({
+            id: address.id ?? address._id,
+            tag: address.label || "Home",
+            text: address.line || "",
+          })),
         );
       }
-
-      const savedAddresses = await response.json();
-      if (!Array.isArray(savedAddresses)) {
-        throw new Error("The server returned an invalid address list.");
-      }
-      setAddresses(
-        savedAddresses.map((address: any) => ({
-          id: address.id ?? address._id,
-          tag: address.label || "Other",
-          text: address.line || "",
-        })),
-      );
 
       setNewAddress("");
       setShowAddressForm(false);
       showMessage("Address added successfully!");
     } catch (err: any) {
-      showError(err.message || "Failed to save address.");
+      showError(
+        err?.response?.data?.message || err.message || "Failed to save address.",
+      );
     }
   };
 
   // Delete address
   const handleDeleteAddress = async (id: string | number) => {
-    const session = getSession();
-    const token = getToken();
-
-    if (!session || !token) return;
+    if (!customerId) return;
 
     try {
-      const response = await fetch(
-        `${API_BASE_URL}/users/${encodeURIComponent(session.id)}/addresses/${encodeURIComponent(String(id))}`,
-        {
-          method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        },
-      );
+      const savedAddresses = await deleteUserAddress(customerId, String(id));
 
-      if (!response.ok) {
-        throw new Error("Failed to delete address.");
+      if (Array.isArray(savedAddresses)) {
+        setAddresses(
+          savedAddresses.map((address: any) => ({
+            id: address.id ?? address._id,
+            tag: address.label || "Home",
+            text: address.line || "",
+          })),
+        );
+      } else {
+        setAddresses((prev) => prev.filter((a) => a.id !== id));
       }
-
-      const savedAddresses = await response.json();
-      if (!Array.isArray(savedAddresses)) {
-        throw new Error("The server returned an invalid address list.");
-      }
-      setAddresses(
-        savedAddresses.map((address: any) => ({
-          id: address.id ?? address._id,
-          tag: address.label || "Other",
-          text: address.line || "",
-        })),
-      );
       showMessage("Address removed.");
     } catch (err: any) {
-      showError(err.message || "Failed to remove address.");
+      showError(
+        err?.response?.data?.message ||
+          err.message ||
+          "Failed to remove address.",
+      );
     }
   };
 
-  // Change password
+  // Change password: verify current password, then update with bcrypt hash on backend
   const handleChangePassword = async () => {
     if (!currentPassword || !newPassword || !confirmPassword) {
       showError("Please fill in all password fields.");
@@ -374,26 +298,27 @@ const getToken = () => {
       return;
     }
 
-    const token = getToken();
+    if (!customerId || !email) {
+      showError("Session expired. Please log in again.");
+      return;
+    }
 
     try {
-      const response = await fetch(`${API_BASE_URL}/auth/change-password`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          currentPassword,
-          newPassword,
-        }),
-      });
-
-      if (!response.ok) {
-        const data = await response.json().catch(() => null);
-
-        throw new Error(data?.message || "Unable to change password.");
+      // 1. Verify current credentials against backend auth/login endpoint
+      try {
+        await apiService(HTTP_METHODS_ENUM.post, ENDPOINT_ENUM.AUTH_LOGIN, {
+          email: email.trim(),
+          password: currentPassword,
+        });
+      } catch {
+        showError("Current password is incorrect.");
+        return;
       }
+
+      // 2. Update to new password via PATCH /users/:id (bcrypt hashed by usersService.update)
+      await updateUser(customerId, {
+        password: newPassword,
+      });
 
       setCurrentPassword("");
       setNewPassword("");
@@ -402,63 +327,25 @@ const getToken = () => {
 
       showMessage("Password successfully updated!");
     } catch (err: any) {
-      showError(err.message || "Failed to change password.");
+      showError(
+        err?.response?.data?.message ||
+          err.message ||
+          "Failed to change password.",
+      );
     }
   };
 
-  // Logout
-  const handleLogout = async () => {
-    const token = getToken();
-
-    try {
-      if (token) {
-        await fetch(`${API_BASE_URL}/auth/logout`, {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-      }
-    } catch {
-      // Continue logout even if the request fails.
-    }
-
-    sessionStorage.removeItem("tu_auth_token");
-    sessionStorage.removeItem("tu_auth_session");
+  // Logout using canonical authService
+  const onLogoutClick = () => {
+    handleLogout();
     navigate("/auth/login");
   };
 
-  // Delete account
-  const handleDeleteAccount = async () => {
-    const confirmed = window.confirm(
-      "Are you sure you want to permanently delete your account? This cannot be undone.",
+  // Account deletion notice: Self-service account deletion is restricted by backend admin authorization.
+  const handleRequestAccountDeletion = () => {
+    showMessage(
+      "Self-service account deletion is restricted. Please email support@tatkuunited.com to request account closure.",
     );
-
-    if (!confirmed) return;
-
-    const session = getSession();
-    const token = getToken();
-
-    if (!session || !token) return;
-
-    try {
-      const response = await fetch(`${API_BASE_URL}/customers/${session.id}`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to delete account.");
-      }
-
-      sessionStorage.removeItem("tu_auth_token");
-      sessionStorage.removeItem("tu_auth_session");
-      navigate("/auth/login");
-    } catch (err: any) {
-      showError(err.message || "Failed to delete account.");
-    }
   };
 
   if (loading) {
@@ -794,26 +681,56 @@ const getToken = () => {
               </div>
             </div>
 
-            {/* Danger Zone */}
-            <div className="bg-white border border-red-200 rounded-xl shadow-sm">
-              <div className="p-6 border-b border-red-100">
-                <h2 className="text-xl font-semibold text-red-600">
-                  Danger Zone
+            {/* Danger Zone & Account Management */}
+            <div className="bg-white border border-slate-200 rounded-xl shadow-sm">
+              <div className="p-6 border-b border-slate-100">
+                <h2 className="text-xl font-semibold text-slate-800">
+                  Account Management
                 </h2>
               </div>
 
-              <div className="p-6">
-                <p className="text-sm text-slate-500 leading-relaxed">
-                  Deleting your account will permanently remove your data and
-                  booking history.
-                </p>
+              <div className="p-6 space-y-4">
+                <div>
+                  <h3 className="text-sm font-semibold text-slate-700">
+                    Active Session
+                  </h3>
+                  <p className="text-xs text-slate-500 mt-1">
+                    End your active session on this device.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={onLogoutClick}
+                    className="w-full mt-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium py-2.5 rounded-lg cursor-pointer transition text-sm"
+                  >
+                    Log Out of Session
+                  </button>
+                </div>
 
-                <button
-                  onClick={handleDeleteAccount}
-                  className="w-full mt-5 border border-red-300 text-red-600 hover:bg-red-50 font-medium py-3 rounded-lg cursor-pointer"
-                >
-                  Delete My Account
-                </button>
+                <div className="border-t border-slate-100 pt-4">
+                  <h3 className="text-sm font-semibold text-slate-700">
+                    Account Deletion
+                  </h3>
+                  <div className="mt-2 rounded-lg bg-amber-50 p-3 border border-amber-200 text-xs text-amber-800 leading-relaxed">
+                    <p className="font-semibold">Self-service deletion is restricted</p>
+                    <p className="mt-0.5">
+                      To safeguard your active bookings and audit history, accounts cannot be deleted directly from this page. To request permanent account closure and personal data removal, please contact an administrator at{" "}
+                      <a
+                        href="mailto:support@tatkuunited.com"
+                        className="font-medium underline hover:text-amber-900"
+                      >
+                        support@tatkuunited.com
+                      </a>.
+                    </p>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={handleRequestAccountDeletion}
+                    className="w-full mt-3 border border-slate-300 text-slate-600 hover:bg-slate-50 font-medium py-2.5 rounded-lg cursor-pointer transition text-xs"
+                  >
+                    Request Account Deletion via Support
+                  </button>
+                </div>
               </div>
             </div>
           </div>

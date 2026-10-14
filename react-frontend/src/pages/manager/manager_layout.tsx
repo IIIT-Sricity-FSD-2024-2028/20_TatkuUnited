@@ -2,52 +2,11 @@ import SideBar, { SidebarItem } from "../shared/Sidebar";
 import { BsCash, BsGrid, BsPeople, BsPersonAdd } from "react-icons/bs";
 import { Outlet } from "react-router-dom";
 import UserHeader from "../shared/user-header";
-import { useDispatch, useSelector } from "react-redux";
-import type { AppDispatch, RootState } from "../../store";
-import { useEffect } from "react";
-import {
-  ManagerActions,
-  fetchCatalogue,
-  fetchManager,
-  fetchMe,
-  fetchRegionBookings,
-  fetchRegionProviders,
-  fetchRegions,
-} from "../../store/manager/manager-slice";
 import UrlMap from "../../common/urlMap";
-import useAuth from "@/hooks/useAuth";
-import { toast } from "@/components/ui/toast";
+import { useManager } from "./ManagerContext";
 
 export default function ManagerLayout() {
-  const dispatch = useDispatch<AppDispatch>();
-  const { user } = useAuth();
-  const managerId = user?.id;
-  const { regions, selectedRegionId, error } = useSelector(
-    (state: RootState) => state.manager,
-  );
-
-  useEffect(() => {
-    if (!managerId) return;
-    dispatch(fetchMe());
-    dispatch(fetchManager(managerId))
-      .unwrap()
-      .then((m) => dispatch(fetchRegions(m._id)))
-      .catch(() => {}); // the failure is already stored as state.manager.error
-  }, [dispatch, managerId]);
-
-  useEffect(() => {
-    dispatch(fetchCatalogue());
-  }, [dispatch]);
-
-  useEffect(() => {
-    if (error) toast.add({ type: "error", description: error, priority: "high" });
-  }, [error]);
-
-  useEffect(() => {
-    if (!selectedRegionId) return;
-    dispatch(fetchRegionProviders(selectedRegionId));
-    dispatch(fetchRegionBookings(selectedRegionId));
-  }, [dispatch, selectedRegionId]);
+  const { regions, selectedRegionId, selectRegion } = useManager();
 
   return (
     <div className="flex h-screen overflow-hidden">
@@ -80,9 +39,7 @@ export default function ManagerLayout() {
             <select
               className="border rounded-md px-2 py-1 text-sm bg-white"
               value={selectedRegionId ?? ""}
-              onChange={(e) =>
-                dispatch(ManagerActions.selectRegion(e.target.value))
-              }
+              onChange={(e) => selectRegion(e.target.value)}
             >
               {regions.map((r) => (
                 <option key={r._id} value={r._id}>

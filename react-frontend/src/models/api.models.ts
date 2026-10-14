@@ -34,7 +34,7 @@ export interface FaqItemDto {
 // ---------------------------------------------------------------------------
 
 export type UserRole = "customer" | "provider" | "manager" | "admin";
-export type UserStatus = "active" | "blocked" | "pending";
+export type UserStatus = "active" | "blocked";
 
 export interface UserAddress {
   label: string;
@@ -44,8 +44,22 @@ export interface UserAddress {
 }
 
 export interface CartItem {
+  service: string | ServiceDocument;
+  scheduledDate: string;
+  startTime: number;
+  endTime: number;
+}
+
+export interface BackendCart {
+  address: string | null;
+  items: CartItem[];
+}
+
+export interface AddCartItemDto {
   service: string;
-  quantity: number;
+  scheduledDate: string;
+  startTime: number;
+  endTime: number;
 }
 
 export interface UserDocument {
@@ -70,11 +84,12 @@ export interface CreateUserDto {
   password: string;
   phone: string;
   role: UserRole;
+  status?: UserStatus;
   gender?: string;
   dob?: string;
 }
 
-export type UpdateUserDto = Partial<Omit<CreateUserDto, "password"> & { password?: string }>;
+export type UpdateUserDto = Partial<Omit<CreateUserDto, "password"> & { password?: string; status?: UserStatus }>;
 
 // ---------------------------------------------------------------------------
 // Provider
@@ -92,6 +107,8 @@ export interface ProviderDocument {
   workingDays: number[];
   location: GeoLocationDto;
   status: ProviderStatus;
+  rating?: number;
+  ratingCount?: number;
   razorpayAccountId?: string;
   region?: string;
   createdAt: string;
@@ -266,10 +283,9 @@ export type UpdateOrderDto = Partial<{
 // ---------------------------------------------------------------------------
 
 export type BookingStatus =
-  | "pending_offer"
-  | "offered"
-  | "accepted"
-  | "rejected"
+  | "pending"
+  | "awaiting_provider"
+  | "confirmed"
   | "in_progress"
   | "completed"
   | "cancelled";

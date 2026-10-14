@@ -1,5 +1,4 @@
 import { useMemo, useState } from "react";
-import { useSelector } from "react-redux";
 import {
   Bar,
   BarChart,
@@ -9,7 +8,6 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import type { RootState } from "../../store";
 import HorizontalBars from "./revenue-charts";
 import { Skeleton } from "../../components/ui/skeleton";
 import {
@@ -45,12 +43,11 @@ import {
   LucideBadgeIndianRupee,
   PersonStandingIcon,
 } from "lucide-react";
+import { useManager } from "./ManagerContext";
 
 export default function ManagerRevenue() {
   const [period, setPeriod] = useState<Period>("all");
-  const { bookings, providers, categories, pending } = useSelector(
-    (state: RootState) => state.manager,
-  );
+  const { bookings, providers, categories, pending } = useManager();
   const loading = pending > 0;
 
   // recalculated only when the bookings or the chosen period change
@@ -78,11 +75,13 @@ export default function ManagerRevenue() {
     loading ? <Skeleton className="h-6 w-24" /> : value;
 
   return (
-    <div>
-      <header className="flex justify-between">
+    <div className="space-y-6">
+      <header className="flex justify-between items-center">
         <div>
-          <h1>Revenue Overview</h1>
-          <p>Track your platform performance and revenue trends</p>
+          <h1 className="text-2xl font-bold text-slate-900">Revenue Overview</h1>
+          <p className="text-sm text-slate-500 mt-1">
+            Track your platform performance and revenue trends
+          </p>
         </div>
         <DropdownMenu>
           <DropdownMenuTrigger
@@ -115,50 +114,68 @@ export default function ManagerRevenue() {
           </DropdownMenuContent>
         </DropdownMenu>
       </header>
-      <main>
-        <div className="flex gap-2 justify-between">
-          <Card className="w-full max-w-sm">
+
+      <main className="space-y-6">
+        <div className="grid gap-4 sm:grid-cols-3">
+          <Card>
             <CardHeader>
-              <CardTitle>Total Revenue</CardTitle>
+              <CardTitle className="text-sm font-medium text-slate-500">
+                Total Completed Revenue
+              </CardTitle>
               <CardAction>
-                <LucideBadgeIndianRupee />
+                <LucideBadgeIndianRupee className="text-emerald-600" />
               </CardAction>
             </CardHeader>
             <CardContent>
-              {stat(formatRupees(summary.gross))}
+              <div className="text-2xl font-bold text-emerald-600">
+                {stat(formatRupees(summary.gross))}
+              </div>
               {!loading && (
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-muted-foreground mt-1">
                   Platform share {formatRupees(summary.platformShare)}
                 </p>
               )}
             </CardContent>
           </Card>
-          <Card className="w-full max-w-sm">
+
+          <Card>
             <CardHeader>
-              <CardTitle>Number of bookings</CardTitle>
+              <CardTitle className="text-sm font-medium text-slate-500">
+                Completed Bookings
+              </CardTitle>
               <CardAction>
-                <Calendar />
+                <Calendar className="text-blue-600" />
               </CardAction>
             </CardHeader>
             <CardContent>
-              {stat(summary.bookings)}
+              <div className="text-2xl font-bold text-slate-900">
+                {stat(summary.bookings)}
+              </div>
               {!loading && (
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-muted-foreground mt-1">
                   {summary.completed} completed
                 </p>
               )}
             </CardContent>
           </Card>
-          <Card className="w-full max-w-sm">
+
+          <Card>
             <CardHeader>
-              <CardTitle>Active providers</CardTitle>
+              <CardTitle className="text-sm font-medium text-slate-500">
+                Active Service Providers
+              </CardTitle>
               <CardAction>
-                <PersonStandingIcon />
+                <PersonStandingIcon className="text-indigo-600" />
               </CardAction>
             </CardHeader>
-            <CardContent>{stat(activeProviders)}</CardContent>
+            <CardContent>
+              <div className="text-2xl font-bold text-slate-900">
+                {stat(activeProviders)}
+              </div>
+            </CardContent>
           </Card>
         </div>
+
         <div className="flex justify-between gap-2">
           <Card className="w-full">
             <CardHeader>
@@ -218,6 +235,7 @@ export default function ManagerRevenue() {
             </CardContent>
           </Card>
         </div>
+
         <div className="flex gap-2">
           <Card className="w-full">
             <CardHeader>
@@ -263,6 +281,7 @@ export default function ManagerRevenue() {
             </CardContent>
           </Card>
         </div>
+
         <Card className="w-full">
           <CardHeader>
             <CardTitle>Revenue by Category</CardTitle>

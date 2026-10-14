@@ -1,12 +1,10 @@
 import { useState } from "react";
 import { BsStarFill } from "react-icons/bs";
-import { useDispatch, useSelector } from "react-redux";
-import type { AppDispatch, RootState } from "../../store";
 import {
-  ManagerActions,
   getProviderCategoryNames,
   type ProviderStatus,
-} from "../../store/manager/manager-slice";
+  useManager,
+} from "./ManagerContext";
 import { Skeleton } from "../../components/ui/skeleton";
 import { Button } from "../../components/ui/button";
 import {
@@ -46,7 +44,8 @@ const FILTERS: { value: StatusFilter; label: string }[] = [
 type ProviderAction = "approve" | "suspend";
 
 export default function ManagerManageProviders() {
-  const dispatch = useDispatch<AppDispatch>();
+  const { providers, services, categories, pending, providerStatusChanged } =
+    useManager();
   // the provider and action waiting for the manager's confirmation
   const [confirming, setConfirming] = useState<{
     id: string;
@@ -56,9 +55,6 @@ export default function ManagerManageProviders() {
   const [saving, setSaving] = useState(false);
   // only this page cares about the filter, so it stays local, not in Redux
   const [filter, setFilter] = useState<StatusFilter>("all");
-  const { providers, services, categories, pending } = useSelector(
-    (state: RootState) => state.manager,
-  );
   const loading = pending > 0;
 
   const active = providers.filter((p) => p.status === "approved");
@@ -80,12 +76,10 @@ export default function ManagerManageProviders() {
     try {
       const updated =
         action === "approve" ? await approveProvider(id) : await suspendProvider(id);
-      dispatch(
-        ManagerActions.providerStatusChanged({
-          id,
-          status: updated.status as unknown as ProviderStatus,
-        }),
-      );
+      providerStatusChanged({
+        id,
+        status: updated.status as unknown as ProviderStatus,
+      });
       toast.add({
         type: "info",
         description: `${name} ${action === "approve" ? "approved" : "suspended"}`,
@@ -106,10 +100,12 @@ export default function ManagerManageProviders() {
     loading ? <Skeleton className="h-6 w-16" /> : value;
 
   return (
-    <div>
+    <div className="space-y-6">
       <div>
-        <h1>Service Providers</h1>
-        <p>Manage and monitor your service providers</p>
+        <h1 className="text-2xl font-bold text-slate-900">Service Providers</h1>
+        <p className="text-sm text-slate-500 mt-1">
+          Manage and monitor your service providers
+        </p>
       </div>
       <Card className="w-full max-w-sm">
         <CardHeader>

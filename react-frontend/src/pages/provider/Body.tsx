@@ -1,4 +1,7 @@
-import AssignedJobs from "./Sp_dashboard_body";
+import AssignedJobs from "./AssignedJobs";
+import JobCalender from "./JobCalender";
+import Settings from "./Settings";
+import { Card, CardContent } from "@/components/ui/card";
 
 type BodyProps = {
   activePage: string;
@@ -9,30 +12,31 @@ export default function Body({ activePage }: BodyProps) {
 
   switch (activePage) {
     case "Dashboard":
-      content = <h1>Render Dashboard Body content here</h1>;
+      content = <AssignedJobs />;
       break;
-    case "Users":
-      content = <h1>Render Users Body content here</h1>;
+    case "Job Calender":
+      content = <JobCalender />;
       break;
     case "Reports":
-      content = <h1>Render Reports Body content here</h1>;
+      content = <AssignedJobs />;
       break;
     case "Settings":
-      content = <h1>Render Settings Body content here</h1>;
+      content = <Settings />;
       break;
-    case "Profile":
-      content = <h1>Render Profile Body content here</h1>;
+    case "Earnings":
+      content = <Settings />;
       break;
 
     default:
-      content = <h1>Page not found</h1>;
+      content = (
+        <Card>
+          <CardContent className="pt-6">Page not found</CardContent>
+        </Card>
+      );
   }
 
   return (
-    <main className="flex-1 border-2 border-yellow-400 p-8">
-      <div>
-        <AssignedJobs />
-      </div>
+    <main className="flex-1 bg-muted/30 p-4 sm:p-8">
       {content}
     </main>
   );
