@@ -20,6 +20,7 @@ import { useEffect, useState } from "react";
 import type { AuthInterface } from "./models/auth.models";
 import { Toaster } from "./components/ui/toast";
 
+
 function App() {
   const [authDetails, setAuthDetails] = useState<AuthInterface>(null);
 
