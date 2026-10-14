@@ -1,107 +1,124 @@
-import { useEffect, useState } from "react";
-import { getAllBookings } from "@/services/bookings.service";
-import type { BookingDocument } from "@/models/api.models";
+
+import AuthContext from "@/common/AuthContext";
+import { getServices, getCategories, getAllRegions, getAllUsers, getAllProviders, getAllBookings, getAllPayments } from "@/services";
+import { useContext, useEffect, useState } from "react";
+import type { BookingDocument, PaymentDocument } from "@/models/api.models";
+import { BsCart2, BsCheckCircle, BsExclamationCircle } from "react-icons/bs";
+import SummaryCards, { type SummaryStat } from "@/components/superuser/SummaryCards";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 
 export default function SuperUser_Dashboard() {
+  const authContext = useContext(AuthContext);
+  const token = authContext?.authDetails?.token;
+
+  const [totalServices, setTotalServices] = useState(0);
+  const [totalCategories, setTotalCategories] = useState(0);
+  const [totalRegions, setTotalRegions] = useState(0);
+  const [totalCustomers, setTotalCustomers] = useState(0);
+  const [totalProviders, setTotalProviders] = useState(0);
+
   const [bookings, setBookings] = useState<BookingDocument[]>([]);
+  const [payments, setPayments] = useState<PaymentDocument[]>([]);
+
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const SUMMARY_STATS: SummaryStat[] = [
+      { title: "Total Services", count: totalServices, icon: <BsCart2 size={24} />, iconColor: "text-blue-600", bg: "bg-blue-50" },
+      { title: "Total Categories", count: totalCategories, icon: <BsCheckCircle size={24} />, iconColor: "text-green-600", bg: "bg-green-50" },
+      { title: "Total Regions", count: totalRegions, icon: <BsExclamationCircle size={24} />, iconColor: "text-orange-500", bg: "bg-orange-50" },
+      { title: "Total Customers", count: totalCustomers, icon: <BsExclamationCircle size={24} />, iconColor: "text-orange-500", bg: "bg-orange-50" },
+      { title: "Total Providers", count: totalProviders, icon: <BsExclamationCircle size={24} />, iconColor: "text-orange-500", bg: "bg-orange-50" },
+    ];
 
   useEffect(() => {
-    let isMounted = true;
-    async function loadBookings() {
-      setLoading(true);
+    if (!token) return;
+
+    const fetchAll = async () => {
       try {
-        const data = await getAllBookings();
-        if (isMounted) setBookings(data || []);
-      } catch {
-        if (isMounted) setBookings([]);
+        setLoading(true);
+
+        const [services, categories, regions, users, providers, allBookings, allPayments] =
+          await Promise.all([
+            getServices(),
+            getCategories(),
+            getAllRegions(),
+            getAllUsers(),
+            getAllProviders(),
+            getAllBookings(),
+            getAllPayments(),
+          ]);
+
+        setTotalServices(services.length);
+        setTotalCategories(categories.length);
+        setTotalRegions(regions.length);
+
+        setTotalCustomers(users.filter((u) => u.role === "customer").length);
+        setTotalProviders(providers.length);
+
+        setBookings(allBookings);
+        setPayments(allPayments);
+      } catch (err) {
+        setError("Failed to load dashboard data.");
+        console.error(err);
       } finally {
-        if (isMounted) setLoading(false);
+        setLoading(false);
       }
-    }
-
-    loadBookings();
-    return () => {
-      isMounted = false;
     };
-  }, []);
 
-  const completed = bookings.filter((b) => b.status === "completed");
-  const totalGmvPaise = completed.reduce((sum, b) => sum + (b.price || 0), 0);
-  const totalGmvRupees = Math.round(totalGmvPaise / 100);
+    fetchAll();
+  }, [token]);
 
-  const providerSharePaise = completed.reduce(
-    (sum, b) => sum + (b.providerShare || 0),
-    0,
-  );
-  const providerShareRupees = Math.round(providerSharePaise / 100);
+    const buildBookingStatusData = () => {
+      const counts: Record<string, number> = {};
+      bookings.forEach((b) => {
+        counts[b.status] = (counts[b.status] ?? 0) + 1; // ??0 for inital undefined case
+      });
+      return Object.entries(counts).map(([name, value]) => ({ name, value })); // disctionary to object lsit ({a:b} to {name :a, value:b})
+    };
+    const bookingStatusData = buildBookingStatusData();
 
-  const platformSharePaise = completed.reduce(
-    (sum, b) => sum + (b.platformShare || 0),
-    0,
-  );
-  const platformShareRupees = Math.round(platformSharePaise / 100);
-
-  const revenueBreakdown = [
-    {
-      label: "Service Providers Share",
-      amount: `₹${providerShareRupees.toLocaleString("en-IN")}`,
-    },
-    {
-      label: "Platform Revenue Share",
-      amount: `₹${platformShareRupees.toLocaleString("en-IN")}`,
-    },
-  ];
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div>{error}</div>;
 
   return (
-    <div className="max-w-5xl space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-slate-900 mb-1">
-          Platform Revenue Analysis
-        </h1>
-        <p className="text-slate-500 text-sm">
-          Comprehensive breakdown of collective platform revenue based on settled bookings.
-        </p>
-      </div>
+    <div className="p-4 space-y-6 md:p-6 bg-slate-50 min-h-screen">
+        <SummaryCards stats={SUMMARY_STATS} />
 
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200">
-        <div className="p-6 border-b border-slate-100 flex items-center justify-between">
-          <div>
-            <h2 className="text-lg font-bold text-slate-800">
-              Platform Revenue Breakdown
-            </h2>
-            <p className="text-slate-500 text-sm">
-              Fee distributions based on live database records.
-            </p>
-          </div>
-          <span className="text-xs text-slate-400 font-mono">
-            {completed.length} completed bookings
-          </span>
+        {/* Chart Card Container */}
+        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+          <h2 className="text-lg font-semibold text-slate-800 mb-6">
+            Bookings by Status
+          </h2>
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={bookingStatusData}>
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+              <XAxis 
+                dataKey="name" 
+                axisLine={false} 
+                tickLine={false} 
+                tick={{ fill: '#64748b', fontSize: 14, dy: 10 }} 
+              />
+              <YAxis 
+                allowDecimals={false} 
+                axisLine={false} 
+                tickLine={false} 
+                tick={{ fill: '#64748b', fontSize: 14 }} 
+              />
+              <Tooltip 
+                cursor={{ fill: '#f8fafc' }}
+                contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+              />
+              <Bar 
+                dataKey="value" 
+                fill="#4f46e5" 
+                name="Bookings" 
+                radius={[4, 4, 0, 0]}
+              />
+            </BarChart>
+          </ResponsiveContainer>
         </div>
+    </div>
 
-        <div className="p-6">
-          <div className="inline-block border border-slate-200 rounded-lg p-4 mb-8 min-w-[200px] bg-slate-50">
-            <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">
-              Total GMV (Gross Merchandise Value)
-            </p>
-            <p className="text-2xl font-bold text-slate-900">
-              {loading ? "..." : `₹${totalGmvRupees.toLocaleString("en-IN")}`}
-            </p>
-          </div>
-
-          <div className="flex flex-col gap-4">
-            {revenueBreakdown.map((item, idx) => (
-              <div
-                key={idx}
-                className="flex justify-between items-center py-2 border-b border-slate-100 last:border-0 text-sm font-semibold text-slate-700"
-              >
-                <span>{item.label}</span>
-                <span className="text-slate-900 font-bold">{loading ? "..." : item.amount}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div >
-    </div >
   );
 }

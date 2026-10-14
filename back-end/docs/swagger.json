@@ -1980,6 +1980,42 @@
         ]
       }
     },
+    "/upload/image": {
+      "post": {
+        "operationId": "UploadController_uploadImage",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Returns the Cloudinary image URL."
+          }
+        },
+        "security": [
+          {
+            "bearer-token": []
+          }
+        ],
+        "summary": "Upload an image to Cloudinary",
+        "tags": [
+          "Upload"
+        ]
+      }
+    },
     "/orders/checkout": {
       "post": {
         "description": "Validates cart, checks provider availability, creates Order, Bookings (status: awaiting_provider), and Mock Payment in one Mongoose transaction.",

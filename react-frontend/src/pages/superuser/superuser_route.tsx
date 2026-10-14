@@ -5,6 +5,7 @@ import SuperUser_ManageUsers from "./manage_users";
 import SuperUser_ManageServices from "./manage_services";
 import SuperUser_ManageCategories from "./manage_categories";
 import SuperUser_ManageRegions from "./manage_regions";
+import SuperUser_PlatformSettings from "./platform_settings";
 // import the new page here
 
 export default function SuperUser()
@@ -19,6 +20,7 @@ export default function SuperUser()
                 <Route path="manage_categories" element={<SuperUser_ManageCategories />} />
                 <Route path="manage_services" element={<SuperUser_ManageServices />} />
                 <Route path="manage_regions" element={<SuperUser_ManageRegions />} />
+                <Route path="platform_settings" element={<SuperUser_PlatformSettings />} />
                 {/* contue the pattern followed by the above line for the other pages.
                 Now add some lines in superuser sidebar */}
             </Route>
