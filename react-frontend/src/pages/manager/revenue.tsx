@@ -1,4 +1,14 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import { useSelector } from "react-redux";
+import type { RootState } from "../../store";
+import { Skeleton } from "../../components/ui/skeleton";
+import {
+  PERIOD_LABELS,
+  filterByPeriod,
+  formatRupees,
+  summarise,
+  type Period,
+} from "./revenue-utils";
 import { Button } from "../../components/ui/button";
 import {
   DropdownMenu,
@@ -23,7 +33,23 @@ import {
 } from "lucide-react";
 
 export default function ManagerRevenue() {
-  const [filter, setFilter] = useState<string>("");
+  const [period, setPeriod] = useState<Period>("all");
+  const { bookings, providers, pending } = useSelector(
+    (state: RootState) => state.manager,
+  );
+  const loading = pending > 0;
+
+  // recalculated only when the bookings or the chosen period change
+  const inPeriod = useMemo(
+    () => filterByPeriod(bookings, period),
+    [bookings, period],
+  );
+  const summary = useMemo(() => summarise(inPeriod), [inPeriod]);
+  const activeProviders = providers.filter((p) => p.status === "approved").length;
+
+  const stat = (value: string | number) =>
+    loading ? <Skeleton className="h-6 w-24" /> : value;
+
   return (
     <div>
       <header className="flex justify-between">
@@ -33,12 +59,15 @@ export default function ManagerRevenue() {
         </div>
         <DropdownMenu>
           <DropdownMenuTrigger
-            render={<Button variant="outline">Filter</Button>}
+            render={<Button variant="outline">{PERIOD_LABELS[period]}</Button>}
           />
           <DropdownMenuContent className="min-w-56">
             <DropdownMenuGroup>
               <DropdownMenuLabel>Select filter</DropdownMenuLabel>
-              <DropdownMenuRadioGroup value={filter} onValueChange={setFilter}>
+              <DropdownMenuRadioGroup
+                value={period}
+                onValueChange={(value) => setPeriod(value as Period)}
+              >
                 <DropdownMenuRadioItem value="all">
                   All time
                 </DropdownMenuRadioItem>
@@ -48,8 +77,8 @@ export default function ManagerRevenue() {
                 <DropdownMenuRadioItem value="month">
                   This month
                 </DropdownMenuRadioItem>
-                <DropdownMenuRadioItem value="quater">
-                  This quater
+                <DropdownMenuRadioItem value="quarter">
+                  This quarter
                 </DropdownMenuRadioItem>
                 <DropdownMenuRadioItem value="year">
                   This year
@@ -68,7 +97,14 @@ export default function ManagerRevenue() {
                 <LucideBadgeIndianRupee />
               </CardAction>
             </CardHeader>
-            <CardContent>{"total revenue"}</CardContent>
+            <CardContent>
+              {stat(formatRupees(summary.gross))}
+              {!loading && (
+                <p className="text-sm text-muted-foreground">
+                  Platform share {formatRupees(summary.platformShare)}
+                </p>
+              )}
+            </CardContent>
           </Card>
           <Card className="w-full max-w-sm">
             <CardHeader>
@@ -77,7 +113,14 @@ export default function ManagerRevenue() {
                 <Calendar />
               </CardAction>
             </CardHeader>
-            <CardContent>{"total bookings"}</CardContent>
+            <CardContent>
+              {stat(summary.bookings)}
+              {!loading && (
+                <p className="text-sm text-muted-foreground">
+                  {summary.completed} completed
+                </p>
+              )}
+            </CardContent>
           </Card>
           <Card className="w-full max-w-sm">
             <CardHeader>
@@ -86,7 +129,7 @@ export default function ManagerRevenue() {
                 <PersonStandingIcon />
               </CardAction>
             </CardHeader>
-            <CardContent>{"total bookings"}</CardContent>
+            <CardContent>{stat(activeProviders)}</CardContent>
           </Card>
         </div>
         <div className="flex justify-between">

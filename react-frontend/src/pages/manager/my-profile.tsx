@@ -104,10 +104,9 @@ export default function ManagerProfile() {
   // The header and Dashboard greeting read the logged-in user from the
   // session, so copy the saved details there too, in memory and in storage.
   const syncSession = (details: Pick<UserInterface, "name" | "email" | "phone">) => {
-    auth?.setAuthDetails((prev) => ({
-      ...prev,
-      user: { ...prev.user, ...details },
-    }));
+    auth?.setAuthDetails((prev) =>
+      prev ? { ...prev, user: { ...prev.user, ...details } } : prev,
+    );
     try {
       const stored = JSON.parse(sessionStorage.getItem("user") ?? "null");
       if (stored) {
