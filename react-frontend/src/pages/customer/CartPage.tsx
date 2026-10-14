@@ -10,14 +10,11 @@ import { getStoredUser, getStoredUserId } from "@/common/services/authService";
 import {
   getUserCart,
   removeCartItem,
-  clearCart,
-  getUserAddresses,
 } from "@/services/users.service";
-import { createOrder } from "@/services/orders.service";
+import { checkoutCart } from "@/services/orders.service";
 import type {
   BackendCart,
   ServiceDocument,
-  AddressSnapshotDto,
 } from "@/models/api.models";
 
 interface CartItemData {
@@ -26,14 +23,6 @@ interface CartItemData {
   location: string;
   schedule: string;
   price: number;
-}
-
-interface OrderSuccessData {
-  orderId: string;
-  totalAmount: number;
-  paymentStatus: string;
-  expiresAt: string;
-  cartCleanupFailed?: boolean;
 }
 
 function formatSlotTime(minutesFromMidnight: number): string {
@@ -63,12 +52,10 @@ function CartPage() {
   const navigate = useNavigate();
   const authContext = useAuthContext();
 
-  const [rawCart, setRawCart] = useState<BackendCart | null>(null);
   const [cartItems, setCartItems] = useState<CartItemData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [isCheckingOut, setIsCheckingOut] = useState(false);
-  const [orderSuccess, setOrderSuccess] = useState<OrderSuccessData | null>(null);
 
   const storedUser = getStoredUser();
   const customerId =
@@ -110,7 +97,6 @@ function CartPage() {
     setError("");
     try {
       const cart = await getUserCart(customerId);
-      setRawCart(cart);
       setCartItems(transformCartItems(cart));
     } catch (err: any) {
       const msg =
@@ -132,7 +118,6 @@ function CartPage() {
     setError("");
     try {
       const updatedCart = await removeCartItem(customerId, index);
-      setRawCart(updatedCart);
       setCartItems(transformCartItems(updatedCart));
     } catch (err: any) {
       const msg =
@@ -152,89 +137,9 @@ function CartPage() {
     setIsCheckingOut(true);
     setError("");
     try {
-      // 1. Fetch saved addresses: do not silently fallback if missing or API fails
-      let addresses;
-      try {
-        addresses = await getUserAddresses(customerId);
-      } catch (addrErr: any) {
-        const msg =
-          addrErr?.response?.data?.message ||
-          addrErr?.message ||
-          "Unable to verify your saved delivery address. Please try again.";
-        setError(Array.isArray(msg) ? msg.join(", ") : msg);
-        setIsCheckingOut(false);
-        return;
-      }
-
-      if (!Array.isArray(addresses) || addresses.length === 0) {
-        setError(
-          "No saved delivery address found. Please add a delivery address to your account before placing an order.",
-        );
-        setIsCheckingOut(false);
-        return;
-      }
-
-      const found = rawCart?.address
-        ? addresses.find(
-            (a: any) =>
-              a._id === rawCart.address || a.id === rawCart.address,
-          )
-        : addresses[0];
-      const chosen = found || addresses[0];
-
-      if (
-        !chosen ||
-        !chosen.line ||
-        !chosen.city ||
-        !chosen.location?.coordinates ||
-        !Array.isArray(chosen.location.coordinates) ||
-        chosen.location.coordinates.length < 2
-      ) {
-        setError(
-          "Your selected delivery address is incomplete or missing coordinates. Please update your address in Account Settings before proceeding.",
-        );
-        setIsCheckingOut(false);
-        return;
-      }
-
-      const addressSnapshot: AddressSnapshotDto = {
-        line: chosen.line,
-        city: chosen.city,
-        location: {
-          type: "Point",
-          coordinates: [
-            chosen.location.coordinates[0],
-            chosen.location.coordinates[1],
-          ],
-        },
-      };
-
-      const totalAmountInPaise = Math.round(total * 100);
-      const expiresAt = new Date(Date.now() + 15 * 60 * 1000).toISOString();
-
-      const createdOrder = await createOrder({
-        customer: customerId,
-        address: addressSnapshot,
-        totalAmount: totalAmountInPaise,
-        expiresAt,
-      });
-
-      let cartCleanupFailed = false;
-      try {
-        await clearCart(customerId);
-        setRawCart({ address: null, items: [] });
-        setCartItems([]);
-      } catch {
-        cartCleanupFailed = true;
-      }
-
-      setOrderSuccess({
-        orderId: createdOrder._id,
-        totalAmount: createdOrder.totalAmount,
-        paymentStatus: (createdOrder as any).paymentStatus || "created",
-        expiresAt: createdOrder.expiresAt,
-        cartCleanupFailed,
-      });
+      const resp = await checkoutCart();
+      // Per Section 2, step 5: Return {orderId, amount}. Front-end goes to /customer/pay/:orderId
+      navigate(`/customer/pay/${resp.orderId}`);
     } catch (err: any) {
       const msg =
         err?.response?.data?.message ||
@@ -267,8 +172,6 @@ function CartPage() {
                 ? `${cartItems.length} scheduled service${
                     cartItems.length > 1 ? "s" : ""
                   } in your cart`
-                : orderSuccess
-                ? "Your order has been placed"
                 : "Your cart is empty"}
             </p>
           </div>
@@ -291,100 +194,6 @@ function CartPage() {
                 )}
               </div>
             </div>
-          )}
-
-          {/* Order Placement Success View */}
-          {orderSuccess && (
-            <section
-              aria-label="Order confirmation"
-              className="mb-8 rounded-xl border border-blue-200 bg-white p-8 shadow-sm"
-            >
-              <div className="flex items-start gap-4">
-                <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-blue-100 text-2xl text-blue-600">
-                  📋
-                </div>
-                <div className="flex-1">
-                  <h2 className="text-xl font-bold text-slate-900">
-                    Order Placed (Pending Payment)
-                  </h2>
-                  <p className="mt-1 text-sm text-slate-600">
-                    Order ID:{" "}
-                    <span className="font-mono font-medium text-slate-900">
-                      {orderSuccess.orderId}
-                    </span>
-                  </p>
-
-                  <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-4 rounded-lg bg-slate-50 p-4 border border-slate-200">
-                    <div>
-                      <span className="block text-xs font-medium text-slate-500 uppercase">
-                        Total Amount
-                      </span>
-                      <span className="text-lg font-bold text-slate-900">
-                        ₹
-                        {(orderSuccess.totalAmount / 100).toLocaleString(
-                          "en-IN",
-                        )}
-                      </span>
-                    </div>
-                    <div>
-                      <span className="block text-xs font-medium text-slate-500 uppercase">
-                        Order Status
-                      </span>
-                      <span className="inline-flex items-center rounded-full bg-amber-50 px-2.5 py-0.5 text-xs font-medium text-amber-800 ring-1 ring-inset ring-amber-600/20 mt-1">
-                        Created / Pending Payment
-                      </span>
-                    </div>
-                    <div>
-                      <span className="block text-xs font-medium text-slate-500 uppercase">
-                        Cart Status
-                      </span>
-                      {orderSuccess.cartCleanupFailed ? (
-                        <span className="text-sm font-semibold text-amber-700 mt-1 block">
-                          Cleanup Failed
-                        </span>
-                      ) : (
-                        <span className="text-sm font-semibold text-emerald-700 mt-1 block">
-                          Cleared
-                        </span>
-                      )}
-                    </div>
-                  </div>
-
-                  {orderSuccess.cartCleanupFailed && (
-                    <div className="mt-4 rounded-lg bg-amber-50 p-4 border border-amber-200 text-sm text-amber-800">
-                      <p className="font-semibold">Notice: Cart Cleanup Failed</p>
-                      <p className="mt-1">
-                        Your order was recorded in the system, but clearing your backend cart failed. Some items may still appear in your cart until refreshed or removed manually.
-                      </p>
-                    </div>
-                  )}
-
-                  <div className="mt-4 rounded-lg bg-slate-100 p-4 border border-slate-200 text-sm text-slate-700">
-                    <p className="font-semibold">Payment & Booking Notice</p>
-                    <p className="mt-1">
-                      Your order has been recorded with status <strong>Created / Pending Payment</strong> to reserve your slots. Direct payment processing via Razorpay is awaiting gateway production credentials. No payment was charged, and bookings will only be assigned once payment is processed.
-                    </p>
-                  </div>
-
-                  <div className="mt-6 flex flex-wrap gap-4">
-                    <button
-                      type="button"
-                      onClick={() => navigate("/bookings")}
-                      className="rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-blue-700 transition cursor-pointer"
-                    >
-                      View My Bookings
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => navigate("/customer")}
-                      className="rounded-lg border border-slate-300 bg-white px-5 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 transition cursor-pointer"
-                    >
-                      Back to Dashboard
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </section>
           )}
 
           {/* Cart Contents */}
@@ -418,9 +227,9 @@ function CartPage() {
                 />
               </div>
             </div>
-          ) : !orderSuccess ? (
+          ) : (
             <EmptyCart />
-          ) : null}
+          )}
         </main>
       </div>
 

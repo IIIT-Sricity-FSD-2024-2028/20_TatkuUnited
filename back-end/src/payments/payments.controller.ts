@@ -6,6 +6,8 @@ import {
   Patch,
   Param,
   Delete,
+  Req,
+  ForbiddenException,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -18,14 +20,40 @@ import {
 import { PaymentsService } from './payments.service';
 import { CreatePaymentDto } from './dto/create-payment.dto';
 import { UpdatePaymentDto } from './dto/update-payment.dto';
+import { SimulatePaymentDto } from './dto/simulate-payment.dto';
 import { Roles } from '../common/decorators/roles.decorator';
 import { Role } from '../common/enums/roles.enum';
+import type { AuthenticatedUser } from '../common/interfaces/authenticated-user.interface';
 
 @ApiTags('Payments')
 @ApiBearerAuth('bearer-token')
 @Controller('payments')
 export class PaymentsController {
   constructor(private readonly paymentsService: PaymentsService) {}
+
+  @Roles(Role.CUSTOMER, Role.ADMIN)
+  @Post('simulate')
+  @ApiOperation({
+    summary: 'Simulate Razorpay payment (success / failure)',
+    description:
+      'Simulates Razorpay payment callback with idempotency, order expiry handling, cart clearing, and provider matching stub.',
+  })
+  @ApiBody({ type: SimulatePaymentDto })
+  @ApiResponse({ status: 200, description: 'Payment simulation processed.' })
+  @ApiResponse({ status: 404, description: 'Order or payment record not found.' })
+  simulate(@Body() simulateDto: SimulatePaymentDto, @Req() req: any) {
+    if (process.env.MOCK_PAYMENTS !== 'true') {
+      throw new ForbiddenException(
+        'Mock payment simulation is disabled. Set MOCK_PAYMENTS=true to enable.',
+      );
+    }
+    const user = req.user as AuthenticatedUser;
+    return this.paymentsService.simulate(
+      simulateDto.orderId,
+      simulateDto.success,
+      user,
+    );
+  }
 
   @Roles(Role.CUSTOMER, Role.ADMIN)
   @Post()

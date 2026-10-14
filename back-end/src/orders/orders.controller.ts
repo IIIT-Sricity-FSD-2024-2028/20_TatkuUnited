@@ -6,6 +6,8 @@ import {
   Patch,
   Param,
   Delete,
+  Req,
+  ForbiddenException,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -20,12 +22,31 @@ import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { Roles } from '../common/decorators/roles.decorator';
 import { Role } from '../common/enums/roles.enum';
+import type { AuthenticatedUser } from '../common/interfaces/authenticated-user.interface';
 
 @ApiTags('Orders')
 @ApiBearerAuth('bearer-token')
 @Controller('orders')
 export class OrdersController {
   constructor(private readonly ordersService: OrdersService) {}
+
+  @Roles(Role.CUSTOMER, Role.ADMIN)
+  @Post('checkout')
+  @ApiOperation({
+    summary: 'Checkout shopping cart into order, bookings, and mock payment',
+    description:
+      'Validates cart, checks provider availability, creates Order, Bookings (status: awaiting_provider), and Mock Payment in one Mongoose transaction.',
+  })
+  @ApiResponse({ status: 201, description: 'Order and bookings created for checkout.' })
+  @ApiResponse({ status: 400, description: 'Validation failed or no providers available.' })
+  checkout(@Req() req: any, @Body() body?: any) {
+    const user = req.user as AuthenticatedUser;
+    const customerId =
+      body?.customerId && user?.role === Role.ADMIN
+        ? body.customerId
+        : user.userId;
+    return this.ordersService.checkout(customerId);
+  }
 
   @Roles(Role.CUSTOMER, Role.ADMIN)
   @Post()
@@ -65,7 +86,11 @@ export class OrdersController {
     example: '65f1a2b3c4d5e6f7a8b9c0d1',
   })
   @ApiResponse({ status: 200, description: 'List of customer orders.' })
-  findByCustomer(@Param('customerId') customerId: string) {
+  findByCustomer(@Param('customerId') customerId: string, @Req() req: any) {
+    const user = req.user as AuthenticatedUser;
+    if (user.role === Role.CUSTOMER && user.userId !== customerId) {
+      throw new ForbiddenException('Access denied. You can only view your own orders');
+    }
     return this.ordersService.findByCustomer(customerId);
   }
 
@@ -95,8 +120,13 @@ export class OrdersController {
   })
   @ApiResponse({ status: 200, description: 'Order found.' })
   @ApiResponse({ status: 404, description: 'Order not found.' })
-  findOne(@Param('id') id: string) {
-    return this.ordersService.findOne(id);
+  async findOne(@Param('id') id: string, @Req() req: any) {
+    const user = req.user as AuthenticatedUser;
+    const order = await this.ordersService.findOne(id);
+    if (user.role === Role.CUSTOMER && order.customer?.toString() !== user.userId) {
+      throw new ForbiddenException('Access denied. You can only view your own order');
+    }
+    return order;
   }
 
   @Roles(Role.CUSTOMER, Role.MANAGER, Role.ADMIN)
@@ -113,8 +143,14 @@ export class OrdersController {
   })
   @ApiResponse({ status: 200, description: 'Order details found.' })
   @ApiResponse({ status: 404, description: 'Order not found.' })
-  findWithDetails(@Param('id') id: string) {
-    return this.ordersService.findWithDetails(id);
+  async findWithDetails(@Param('id') id: string, @Req() req: any) {
+    const user = req.user as AuthenticatedUser;
+    const order: any = await this.ordersService.findWithDetails(id);
+    const orderCustomer = order.customer?._id?.toString() || order.customer?.toString();
+    if (user.role === Role.CUSTOMER && orderCustomer !== user.userId) {
+      throw new ForbiddenException('Access denied. You can only view your own order details');
+    }
+    return order;
   }
 
   @Roles(Role.CUSTOMER, Role.ADMIN)

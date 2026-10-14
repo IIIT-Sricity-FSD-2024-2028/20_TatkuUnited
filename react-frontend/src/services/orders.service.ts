@@ -70,3 +70,20 @@ export async function deleteOrder(id: string): Promise<void> {
 export async function getOrderHistory(customerId: string): Promise<OrderDocument[]> {
   return getOrdersByCustomer(customerId);
 }
+
+export interface CheckoutResponse {
+  orderId: string;
+  amount: number;
+  currency: string;
+  razorpayOrderId: string;
+}
+
+/** POST /orders/checkout — Checkout shopping cart into order, bookings, and mock payment. */
+export async function checkoutCart(): Promise<CheckoutResponse> {
+  return apiService<CheckoutResponse>(
+    HTTP_METHODS_ENUM.post,
+    `${ENDPOINT_ENUM.ORDERS}/checkout`,
+    {},
+  );
+}
+

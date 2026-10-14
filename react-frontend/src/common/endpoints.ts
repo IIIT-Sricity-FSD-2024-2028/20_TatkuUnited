@@ -78,6 +78,7 @@ export const ENDPOINT_ENUM = {
 
   // --- Payments ---
   PAYMENTS: "/payments",
+  PAYMENTS_SIMULATE: "/payments/simulate",
   PAYMENTS_BY_ORDER: "/payments/order/{orderId}",
   PAYMENTS_BY_ID: "/payments/{id}",
 

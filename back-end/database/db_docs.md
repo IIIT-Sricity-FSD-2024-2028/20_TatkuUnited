@@ -7,10 +7,10 @@ A practical guide to what each collection holds, who writes to it, and exactly w
 ## 1. Actors
 
 | Actor            | `User.role` | Extra document | What they do                                                  |
-| ---------------- | ------------- | -------------- | ------------------------------------------------------------- |
+| ---------------- | ----------- | -------------- | ------------------------------------------------------------- |
 | Customer         | `customer`  | none           | Browse, fill cart, pay, review, cancel                        |
-| Service Provider | `provider`  | `Provider`   | Accepts or rejects job offers, performs jobs, blocks off time |
-| Regional Manager | `manager`   | `Manager`    | Approves providers, monitors bookings in their regions        |
+| Service Provider | `provider`  | `Provider`     | Accepts or rejects job offers, performs jobs, blocks off time |
+| Regional Manager | `manager`   | `Manager`      | Approves providers, monitors bookings in their regions        |
 | Super User       | `admin`     | none           | Configures the platform, creates catalogue, regions, managers |
 
 Every person has exactly one `User` document. Provider and Manager are **profile documents** that point back to a User through `user`.
@@ -19,28 +19,28 @@ Every person has exactly one `User` document. Provider and Manager are **profile
 
 ## 2. Global conventions
 
-| Topic                 | Rule                                                                                                                                                                                                                                              |
-| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| IDs                   | MongoDB`_id` (ObjectId). `id string pk` in the diagram means `_id`.                                                                                                                                                                         |
-| Timestamps            | Enable`timestamps: true` on every schema. This gives `createdAt` and `updatedAt` automatically.                                                                                                                                             |
-| Money                 | Integers in**paise** (₹499 is `49900`). Never use floats. Currency is `"INR"`.                                                                                                                                                         |
-| Percentages           | Whole numbers or decimals such as`20` for 20%. Compute shares with `Math.round`.                                                                                                                                                              |
+| Topic                 | Rule                                                                                                                                                                                                                          |
+| --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| IDs                   | MongoDB`_id` (ObjectId). `id string pk` in the diagram means `_id`.                                                                                                                                                           |
+| Timestamps            | Enable`timestamps: true` on every schema. This gives `createdAt` and `updatedAt` automatically.                                                                                                                               |
+| Money                 | Integers in**paise** (₹499 is `49900`). Never use floats. Currency is `"INR"`.                                                                                                                                                |
+| Percentages           | Whole numbers or decimals such as`20` for 20%. Compute shares with `Math.round`.                                                                                                                                              |
 | Geo                   | Store`{ type: "Point", coordinates: [longitude, latitude] }`. **Longitude first.** Distances in `$nearSphere`/`$geoNear` are in **metres**. `maxAssignmentDistanceKm` must be multiplied by 1000.                             |
-| Time zone             | The platform runs in one zone,`Asia/Kolkata`. Store instants (`expiresAt`, `offerExpiresAt`) in UTC.                                                                                                                                        |
+| Time zone             | The platform runs in one zone,`Asia/Kolkata`. Store instants (`expiresAt`, `offerExpiresAt`) in UTC.                                                                                                                          |
 | Slot date and time    | `scheduledDate` (and `Unavailability.date`) is a date (midnight of the IST calendar day). `startTime` and `endTime` are **minutes from midnight** (9:30 AM is `570`). Use the same unit as `workHourStart` and `workHourEnd`. |
-| Slot grid             | Start times are multiples of`slotIntervalMinutes` (30) from `firstSlotStart` (8:00) to `lastSlotStart` (19:30). A service may end after 19:30; only the start is restricted.                                                                |
-| Travel buffer         | Every booking blocks the provider from`startTime − travelBufferMinutes` to `endTime`. The blocked start is stored as `Booking.blockStartTime`.                                                                                             |
-| Booking window        | Customers can book today and the next`bookingWindowDays − 1` days (3 days in total with the default of 3).                                                                                                                                     |
-| Weekdays              | `workingDays` uses `0 = Sunday … 6 = Saturday`.                                                                                                                                                                                              |
-| Passwords             | Store only a hash (bcrypt or argon2).                                                                                                                                                                                                             |
-| Snapshots             | Copy values onto Booking and Order at creation (price, fee percent, address, blocked start). Never recompute history from current Service or Setting values.                                                                                      |
-| Referential integrity | MongoDB does not enforce`ref`. Your application must validate that referenced documents exist.                                                                                                                                                  |
-| Deletion              | Don't delete business data. Use`status` or `isActive` flags. (Old `Unavailability` rows are the exception; they are safe to purge.)                                                                                                         |
+| Slot grid             | Start times are multiples of`slotIntervalMinutes` (30) from `firstSlotStart` (8:00) to `lastSlotStart` (19:30). A service may end after 19:30; only the start is restricted.                                                  |
+| Travel buffer         | Every booking blocks the provider from`startTime − travelBufferMinutes` to `endTime`. The blocked start is stored as `Booking.blockStartTime`.                                                                                |
+| Booking window        | Customers can book today and the next`bookingWindowDays − 1` days (3 days in total with the default of 3).                                                                                                                    |
+| Weekdays              | `workingDays` uses `0 = Sunday … 6 = Saturday`.                                                                                                                                                                               |
+| Passwords             | Store only a hash (bcrypt or argon2).                                                                                                                                                                                         |
+| Snapshots             | Copy values onto Booking and Order at creation (price, fee percent, address, blocked start). Never recompute history from current Service or Setting values.                                                                  |
+| Referential integrity | MongoDB does not enforce`ref`. Your application must validate that referenced documents exist.                                                                                                                                |
+| Deletion              | Don't delete business data. Use`status` or `isActive` flags. (Old `Unavailability` rows are the exception; they are safe to purge.)                                                                                           |
 
 ### Enum reference
 
-| Field                        | Values                                                                       |
-| ---------------------------- | ---------------------------------------------------------------------------- |
+| Field                      | Values                                                                     |
+| -------------------------- | -------------------------------------------------------------------------- |
 | `User.gender`              | `male, female, other`                                                      |
 | `User.role`                | `customer, provider, manager, admin`                                       |
 | `User.status`              | `active, blocked`                                                          |
@@ -60,50 +60,50 @@ Every person has exactly one `User` document. Provider and Manager are **profile
 
 Created once by the admin before anything else.
 
-| Field                                 | Notes                                                                                                                  |
-| ------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
-| `platformFeePercent`                | Platform commission. The provider's share is`100 − platformFeePercent`, so there is no separate provider-fee field. |
-| `maxAssignmentDistanceKm`           | Maximum distance between a job address and a provider.                                                                 |
-| `slotIntervalMinutes`               | Slot step.`30`.                                                                                                      |
-| `firstSlotStart`, `lastSlotStart` | First and last allowed start time, in minutes.`480` (8:00) and `1170` (19:30).                                     |
-| `bookingWindowDays`                 | How far ahead customers can book.`3` means today plus the next 2 days.                                               |
-| `minLeadMinutes`                    | How soon from now a slot can start, for today's bookings. For example`120`.                                          |
-| `travelBufferMinutes`               | Travel time blocked before each job.`30`.                                                                            |
-| `offerTimeoutMinutes`               | How long a provider has to accept or reject an offer. For example`10`.                                               |
+| Field                             | Notes                                                                                                               |
+| --------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| `platformFeePercent`              | Platform commission. The provider's share is`100 − platformFeePercent`, so there is no separate provider-fee field. |
+| `maxAssignmentDistanceKm`         | Maximum distance between a job address and a provider.                                                              |
+| `slotIntervalMinutes`             | Slot step.`30`.                                                                                                     |
+| `firstSlotStart`, `lastSlotStart` | First and last allowed start time, in minutes.`480` (8:00) and `1170` (19:30).                                      |
+| `bookingWindowDays`               | How far ahead customers can book.`3` means today plus the next 2 days.                                              |
+| `minLeadMinutes`                  | How soon from now a slot can start, for today's bookings. For example`120`.                                         |
+| `travelBufferMinutes`             | Travel time blocked before each job.`30`.                                                                           |
+| `offerTimeoutMinutes`             | How long a provider has to accept or reject an offer. For example`10`.                                              |
 
 Read it on every checkout and slot listing. Changing it only affects **future** bookings.
 
 ### 3.2 User
 
-| Field                | Notes                                                                                                                                             |
-| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `email`, `phone` | Unique indexes. Required for login and OTP.                                                                                                       |
-| `role`, `status` | Check both on every authenticated request.`blocked` users cannot log in or book.                                                                |
-| `addresses[]`      | Each entry needs a self-generated`id` (use an ObjectId string). `location` is GeoJSON.                                                        |
-| `cart`             | Embedded.`cart.address` holds the `id` of one entry in `addresses`. `cart.items[]` hold `{service, scheduledDate, startTime, endTime}`. |
+| Field            | Notes                                                                                                                                   |
+| ---------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| `email`, `phone` | Unique indexes. Required for login and OTP.                                                                                             |
+| `role`, `status` | Check both on every authenticated request.`blocked` users cannot log in or book.                                                        |
+| `addresses[]`    | Each entry needs a self-generated`id` (use an ObjectId string). `location` is GeoJSON.                                                  |
+| `cart`           | Embedded.`cart.address` holds the `id` of one entry in `addresses`. `cart.items[]` hold `{service, scheduledDate, startTime, endTime}`. |
 
 The cart lives on the user: it is small, private, and always read with the user. It stores **no prices**; prices are read from Service at checkout.
 
 ### 3.3 Provider
 
-| Field                                  | Notes                                                                                       |
-| -------------------------------------- | ------------------------------------------------------------------------------------------- |
-| `user`                               | Unique. The User must have`role: provider`.                                               |
-| `offeredServices[]`                  | Services this provider can perform (multikey index).                                        |
+| Field                              | Notes                                                                                       |
+| ---------------------------------- | ------------------------------------------------------------------------------------------- |
+| `user`                             | Unique. The User must have`role: provider`.                                                 |
+| `offeredServices[]`                | Services this provider can perform (multikey index).                                        |
 | `workHourStart/End`, `workingDays` | Weekly availability window.                                                                 |
-| `location`                           | Home or base point. This drives`$near` job assignment.                                    |
-| `status`                             | Only`approved` providers can receive jobs.                                                |
-| `rating`, `ratingCount`            | Running average, updated when a review is added (see §4.13).                               |
-| `region`                             | Management grouping only. It plays no part in assignment.                                   |
-| `razorpayAccountId`                  | The linked account used for payouts. Required before the first payout, not before approval. |
+| `location`                         | Home or base point. This drives`$near` job assignment.                                      |
+| `status`                           | Only`approved` providers can receive jobs.                                                  |
+| `rating`, `ratingCount`            | Running average, updated when a review is added (see §4.13).                                |
+| `region`                           | Management grouping only. It plays no part in assignment.                                   |
+| `razorpayAccountId`                | The linked account used for payouts. Required before the first payout, not before approval. |
 
 ### 3.4 Manager
 
-| Field      | Notes                                                                |
-| ---------- | -------------------------------------------------------------------- |
-| `user`   | Unique. The User must have`role: manager`.                         |
+| Field    | Notes                                                                |
+| -------- | -------------------------------------------------------------------- |
+| `user`   | Unique. The User must have`role: manager`.                           |
 | `salary` | Paise. Informational only, because salary payments are not modelled. |
-| `status` | `active` managers can act on their regions.                        |
+| `status` | `active` managers can act on their regions.                          |
 
 One manager can own several regions (`Region.manager` points at the manager).
 
@@ -111,22 +111,22 @@ One manager can own several regions (`Region.manager` points at the manager).
 
 A region is a management label, **not** a physical boundary.
 
-| Field        | Notes                                                                                            |
-| ------------ | ------------------------------------------------------------------------------------------------ |
-| `manager`  | The manager responsible.                                                                         |
+| Field      | Notes                                                                                           |
+| ---------- | ----------------------------------------------------------------------------------------------- |
+| `manager`  | The manager responsible.                                                                        |
 | `location` | Centroid (see §4.2). The admin sets it at creation. After that it is recomputed from providers. |
-| `isActive` | Inactive regions are skipped when matching addresses.                                            |
+| `isActive` | Inactive regions are skipped when matching addresses.                                           |
 
 ### 3.6 Category and Service
 
 Admin-managed catalogue. Customers only see `isActive: true` records.
 
-| Field                               | Notes                                                                                                                            |
-| ----------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| `Service.price`                   | Paise. The current list price, copied to`Booking.price` at checkout.                                                           |
-| `Service.duration`                | Minutes.`endTime = startTime + duration`.                                                                                      |
-| `Service.rating`, `reviewCount` | Stored counters, updated when reviews are added.                                                                                 |
-| Embedded arrays                     | `howItWorks`, `faq`, `whatIsCovered`, `whatIsNotCovered`, `imageUrls`. These are static content, edited only by admin. |
+| Field                           | Notes                                                                                                                  |
+| ------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| `Service.price`                 | Paise. The current list price, copied to`Booking.price` at checkout.                                                   |
+| `Service.duration`              | Minutes.`endTime = startTime + duration`.                                                                              |
+| `Service.rating`, `reviewCount` | Stored counters, updated when reviews are added.                                                                       |
+| Embedded arrays                 | `howItWorks`, `faq`, `whatIsCovered`, `whatIsNotCovered`, `imageUrls`. These are static content, edited only by admin. |
 
 To retire a service, set `isActive: false`. Existing bookings are unaffected.
 
@@ -134,12 +134,12 @@ To retire a service, set `isActive: false`. Existing bookings are unaffected.
 
 Provider time off, set in whole slots on a single day, for example "8:00 to 10:00 on 12 Oct".
 
-| Field                      | Notes                                                                                                  |
-| -------------------------- | ------------------------------------------------------------------------------------------------------ |
-| `provider`               | Whose time off it is.                                                                                  |
-| `date`                   | The IST calendar day.                                                                                  |
+| Field                  | Notes                                                                                            |
+| ---------------------- | ------------------------------------------------------------------------------------------------ |
+| `provider`             | Whose time off it is.                                                                            |
+| `date`                 | The IST calendar day.                                                                            |
 | `startTime`, `endTime` | Minutes from midnight, both on the slot grid.`startTime < endTime`. For example `480` and `600`. |
-| `reason`                 | Optional text.                                                                                         |
+| `reason`               | Optional text.                                                                                   |
 
 There is no recurrence. Customers can only book a few days ahead, so a provider adds blocks for the days that matter. A fixed weekly day off belongs in `workingDays`. A full day off is one row covering the whole working day.
 
@@ -149,31 +149,34 @@ Blocks only affect **new** assignments (§4.6). Rows for past dates can be purge
 
 The customer's checkout. It is created **before** payment and holds slots until it expires.
 
-| Field             | Notes                                                                               |
-| ----------------- | ----------------------------------------------------------------------------------- |
-| `customer`      | The buyer.                                                                          |
+| Field           | Notes                                                                             |
+| --------------- | --------------------------------------------------------------------------------- |
+| `customer`      | The buyer.                                                                        |
 | `address`       | Snapshot`{line, city, location}` copied from the chosen address.                  |
 | `totalAmount`   | The sum of all its bookings'`price`, in paise.                                    |
 | `payment`       | Ref to Payment. Briefly`null` between order creation and Razorpay order creation. |
-| `paymentStatus` | The only place where payment state lives.                                           |
-| `expiresAt`     | Order creation time plus 15 minutes (configurable).                                 |
+| `paymentStatus` | The only place where payment state lives.                                         |
+| `expiresAt`     | Order creation time plus 15 minutes (configurable).                               |
 
 ### 3.9 Booking
 
 One row per service per slot. An order with 3 services creates 3 bookings, possibly with 3 different providers.
 
-| Field                                                          | Notes                                                                                                                     |
-| -------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
-| `order`, `customer`, `service`, `provider`, `region` | All set at order creation. The provider is auto-assigned and is**tentative** until they accept.                     |
-| `scheduledDate`, `startTime`, `endTime`                  | The slot.                                                                                                                 |
-| `blockStartTime`                                             | `startTime − travelBufferMinutes`. A snapshot. The provider is blocked from here to `endTime`.                       |
-| `price`                                                      | Snapshot of`Service.price`.                                                                                             |
-| `platformFeePercent`                                         | Snapshot of the setting.                                                                                                  |
-| `platformShare`, `providerShare`                           | `platformShare = round(price × fee / 100)`, `providerShare = price − platformShare`.                                |
-| `offerExpiresAt`                                             | Only set while`status` is `awaiting_provider`. When the current provider's offer lapses. Cleared on accept or cancel. |
-| `declinedBy[]`                                               | Providers who rejected, timed out, or cancelled after accepting. They are never offered this booking again.               |
-| `payoutStatus`, `payoutAt`                                 | Provider settlement.                                                                                                      |
-| `status`, `cancelledBy`, `cancelledReason`               | Lifecycle. See §5.                                                                                                       |
+| Field                                      | Notes                                                                                                       |
+| ------------------------------------------ | ----------------------------------------------------------------------------------------------------------- |
+| `order`, `customer`, `service`, `region`   | All set at order creation.                                                                                  |
+| `provider`                                 | Nullable at checkout. Set when the first provider accepts the job offer.                                    |
+| `offers[]`                                 | `[{ provider, status: offered\|declined\|expired\|accepted, offeredAt, expiresAt }]`                        |
+| `offerRound`                               | Current round number (starts at 0).                                                                         |
+| `scheduledDate`, `startTime`, `endTime`    | The slot.                                                                                                   |
+| `blockStartTime`                           | `startTime − travelBufferMinutes`. A snapshot. The provider is blocked from here to `endTime`.              |
+| `price`                                    | Snapshot of `Service.price`.                                                                                |
+| `platformFeePercent`                       | Snapshot of the setting.                                                                                    |
+| `platformShare`, `providerShare`           | `platformShare = round(price × fee / 100)`, `providerShare = price − platformShare`.                        |
+| `offerExpiresAt`                           | Only set while `status` is `awaiting_provider`. Cleared on accept or cancel.                                |
+| `declinedBy[]`                             | Providers who rejected, timed out, or cancelled after accepting. They are never offered this booking again. |
+| `payoutStatus`, `payoutAt`, `completedAt`  | Provider settlement and completion timestamp.                                                               |
+| `status`, `cancelledBy`, `cancelledReason` | Lifecycle (`awaiting_provider` at checkout, transitions to `confirmed` on accept).                          |
 
 The job address is **not** on the Booking. Read it from `Booking.order → Order.address`. Use `$lookup` or populate in the provider's job view.
 
@@ -181,21 +184,21 @@ The job address is **not** on the Booking. Read it from `Booking.order → Order
 
 Gateway data only. One Payment per Order.
 
-| Field                                        | Notes                                                                                    |
-| -------------------------------------------- | ---------------------------------------------------------------------------------------- |
-| `order`                                    | Unique index.                                                                            |
+| Field                                    | Notes                                                                                  |
+| ---------------------------------------- | -------------------------------------------------------------------------------------- |
+| `order`                                  | Unique index.                                                                          |
 | `totalAmount`, `currency`                | Must equal the Order's total and`"INR"`.                                               |
-| `razorpayOrderId`                          | Unique index. This is how the webhook finds the Payment.                                 |
-| `razorpayPaymentId`, `razorpaySignature` | Filled on successful payment.                                                            |
-| `refunds[]`                                | `{booking, amount, razorpayRefundId, status, createdAt}`. Append one entry per refund. |
+| `razorpayOrderId`                        | Unique index. This is how the webhook finds the Payment.                               |
+| `razorpayPaymentId`, `razorpaySignature` | Filled on successful payment.                                                          |
+| `refunds[]`                              | `{booking, amount, razorpayRefundId, status, createdAt}`. Append one entry per refund. |
 
 ### 3.11 Review
 
-| Field                     | Notes                                                          |
-| ------------------------- | -------------------------------------------------------------- |
-| `booking`               | Unique index (one review per booking).                         |
+| Field                 | Notes                                                          |
+| --------------------- | -------------------------------------------------------------- |
+| `booking`             | Unique index (one review per booking).                         |
 | `provider`, `service` | Copied from the booking so ratings can be aggregated directly. |
-| `rating`, `review`    | Rating 1–5, text optional.                                    |
+| `rating`, `review`    | Rating 1–5, text optional.                                     |
 
 ---
 
@@ -364,8 +367,8 @@ The slot was held since checkout, so no new overlap check is needed.
 
 ### 4.11 Doing the job
 
-| Moment                      | Who      | Write                             |
-| --------------------------- | -------- | --------------------------------- |
+| Moment                      | Who      | Write                           |
+| --------------------------- | -------- | ------------------------------- |
 | Provider arrives and starts | Provider | `Booking.status: "in_progress"` |
 | Work finished               | Provider | `Booking.status: "completed"`   |
 
@@ -419,11 +422,11 @@ The sum of `refunds[].amount` must never exceed `Payment.totalAmount`, and a boo
 
 ### 4.16 Manager's day
 
-| Task               | Query                                                                                                                                                                          |
-| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Pending providers  | `Provider` where `region ∈ myRegions`, `status: pending`                                                                                                                |
-| Today's jobs       | `Booking` where `region ∈ myRegions`, `scheduledDate: today`                                                                                                            |
-| Problem bookings   | `Booking` where `region ∈ myRegions` and cancelled by provider or system (including `"no provider available"`)                                                          |
+| Task               | Query                                                                                                                                                                 |
+| ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Pending providers  | `Provider` where `region ∈ myRegions`, `status: pending`                                                                                                              |
+| Today's jobs       | `Booking` where `region ∈ myRegions`, `scheduledDate: today`                                                                                                          |
+| Problem bookings   | `Booking` where `region ∈ myRegions` and cancelled by provider or system (including `"no provider available"`)                                                        |
 | Suspend a provider | Set`status: suspended`, recompute centroid, reassign their future `confirmed` and `awaiting_provider` bookings (push them onto `declinedBy`, then §4.10 reassignment) |
 
 ### 4.17 Admin's day
@@ -454,17 +457,17 @@ pending ──► awaiting_provider ──► confirmed ──► in_progress �
    └───────────────┴────────────────┴───────────────┴──► cancelled   (in_progress: manager or admin only)
 ```
 
-| Transition                                 | Triggered by                                                          |
-| ------------------------------------------ | --------------------------------------------------------------------- |
-| `pending → awaiting_provider`           | Payment success                                                       |
-| `pending → cancelled`                   | Payment failure or expiry (`system`), or the customer               |
+| Transition                              | Triggered by                                                         |
+| --------------------------------------- | -------------------------------------------------------------------- |
+| `pending → awaiting_provider`           | Payment success                                                      |
+| `pending → cancelled`                   | Payment failure or expiry (`system`), or the customer                |
 | `awaiting_provider → awaiting_provider` | Provider rejects or times out, and another provider is found (§4.10) |
-| `awaiting_provider → confirmed`         | Provider accepts                                                      |
-| `awaiting_provider → cancelled`         | Customer, or`system` when no provider is left                       |
-| `confirmed → in_progress`               | Provider                                                              |
-| `in_progress → completed`               | Provider (manager or admin can override)                              |
+| `awaiting_provider → confirmed`         | Provider accepts                                                     |
+| `awaiting_provider → cancelled`         | Customer, or`system` when no provider is left                        |
+| `confirmed → in_progress`               | Provider                                                             |
+| `in_progress → completed`               | Provider (manager or admin can override)                             |
 | `confirmed → awaiting_provider`         | Provider cancels (§4.14, step 5)                                     |
-| `confirmed → cancelled`                 | Customer, manager or admin                                            |
+| `confirmed → cancelled`                 | Customer, manager or admin                                           |
 
 **Slot-holding statuses** (count towards conflicts): `pending`, `awaiting_provider`, `confirmed`, `in_progress`.
 
@@ -472,19 +475,19 @@ pending ──► awaiting_provider ──► confirmed ──► in_progress �
 
 ## 6. Permissions summary
 
-| Action                                        |   Customer   | Provider |   Manager   |  Admin  |
+| Action                                        |   Customer    | Provider |   Manager   |  Admin   |
 | --------------------------------------------- | :-----------: | :------: | :---------: | :------: |
-| Edit own profile, addresses, cart             |      ✅      |    ✅    |     ✅     |    ✅    |
-| Create order, pay                             |      ✅      |          |            |          |
-| Cancel a booking                              |      own      |   own   | own regions |   all   |
-| Accept or reject a job offer                  |              |   own   |            |          |
-| Start or complete a job                       |              |   own   |  override  | override |
-| Add review                                    | own completed |          |            |          |
-| Set unavailability                            |              |   own   |            |          |
-| Approve or suspend providers                  |              |          | own regions |   all   |
-| View bookings                                 |      own      |   own   | own regions |   all   |
-| Manage catalogue, regions, managers, settings |              |          |            |    ✅    |
-| Trigger refunds or payouts manually           |              |          |   limited   |    ✅    |
+| Edit own profile, addresses, cart             |      ✅       |    ✅    |     ✅      |    ✅    |
+| Create order, pay                             |      ✅       |          |             |          |
+| Cancel a booking                              |      own      |   own    | own regions |   all    |
+| Accept or reject a job offer                  |               |   own    |             |          |
+| Start or complete a job                       |               |   own    |  override   | override |
+| Add review                                    | own completed |          |             |          |
+| Set unavailability                            |               |   own    |             |          |
+| Approve or suspend providers                  |               |          | own regions |   all    |
+| View bookings                                 |      own      |   own    | own regions |   all    |
+| Manage catalogue, regions, managers, settings |               |          |             |    ✅    |
+| Trigger refunds or payouts manually           |               |          |   limited   |    ✅    |
 
 Always filter on the server by the authenticated user (customer id, provider id, or manager's regions). Never trust ids sent by the client.
 
@@ -492,31 +495,31 @@ Always filter on the server by the authenticated user (customer id, provider id,
 
 ## 7. Indexes
 
-| Collection     | Index                                                                                                                                      | Purpose                                         |
-| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------- |
-| User           | `email` unique, `phone` unique                                                                                                         | Login                                           |
-| User           | `addresses.location` 2dsphere                                                                                                            | Address-based lookups (optional)                |
-| Provider       | `user` unique                                                                                                                            | One profile per user                            |
-| Provider       | `location` 2dsphere                                                                                                                      | Job assignment                                  |
-| Provider       | `{status, offeredServices}`                                                                                                              | Candidate filtering                             |
-| Provider       | `{region, status}`                                                                                                                       | Manager screens                                 |
-| Manager        | `user` unique, `location` 2dsphere                                                                                                     |                                                 |
-| Region         | `location` 2dsphere, `manager`                                                                                                         | Nearest-region lookup                           |
-| Category       | `name` unique                                                                                                                            |                                                 |
-| Service        | `{category, isActive}`                                                                                                                   | Browsing                                        |
-| Unavailability | `{provider, date}`                                                                                                                       | Availability checks                             |
-| Order          | `{customer, createdAt}`                                                                                                                  | Order history                                   |
-| Order          | `{paymentStatus, expiresAt}`                                                                                                             | Expiry sweep                                    |
+| Collection     | Index                                                                                                                           | Purpose                                         |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------- |
+| User           | `email` unique, `phone` unique                                                                                                  | Login                                           |
+| User           | `addresses.location` 2dsphere                                                                                                   | Address-based lookups (optional)                |
+| Provider       | `user` unique                                                                                                                   | One profile per user                            |
+| Provider       | `location` 2dsphere                                                                                                             | Job assignment                                  |
+| Provider       | `{status, offeredServices}`                                                                                                     | Candidate filtering                             |
+| Provider       | `{region, status}`                                                                                                              | Manager screens                                 |
+| Manager        | `user` unique, `location` 2dsphere                                                                                              |                                                 |
+| Region         | `location` 2dsphere, `manager`                                                                                                  | Nearest-region lookup                           |
+| Category       | `name` unique                                                                                                                   |                                                 |
+| Service        | `{category, isActive}`                                                                                                          | Browsing                                        |
+| Unavailability | `{provider, date}`                                                                                                              | Availability checks                             |
+| Order          | `{customer, createdAt}`                                                                                                         | Order history                                   |
+| Order          | `{paymentStatus, expiresAt}`                                                                                                    | Expiry sweep                                    |
 | Booking        | `{provider, scheduledDate, startTime}` **partial unique** where `status ∈ [pending, awaiting_provider, confirmed, in_progress]` | Blocks identical-start double bookings          |
-| Booking        | `{provider, scheduledDate, status}`                                                                                                      | Overlap checks, provider calendar and job inbox |
-| Booking        | `{status, offerExpiresAt}`                                                                                                               | Offer-expiry sweep                              |
-| Booking        | `{customer, createdAt}`                                                                                                                  | Customer history                                |
-| Booking        | `{region, scheduledDate, status}`                                                                                                        | Manager screens                                 |
-| Booking        | `{order}`                                                                                                                                | Order → bookings                               |
-| Booking        | `{payoutStatus, status}`                                                                                                                 | Payout job                                      |
-| Payment        | `order` unique, `razorpayOrderId` unique                                                                                               | Webhook lookup                                  |
-| Payment        | `razorpayPaymentId` unique sparse                                                                                                        | Idempotency                                     |
-| Review         | `booking` unique, `{service, createdAt}`, `{provider, createdAt}`                                                                    | One review per booking                          |
+| Booking        | `{provider, scheduledDate, status}`                                                                                             | Overlap checks, provider calendar and job inbox |
+| Booking        | `{status, offerExpiresAt}`                                                                                                      | Offer-expiry sweep                              |
+| Booking        | `{customer, createdAt}`                                                                                                         | Customer history                                |
+| Booking        | `{region, scheduledDate, status}`                                                                                               | Manager screens                                 |
+| Booking        | `{order}`                                                                                                                       | Order → bookings                                |
+| Booking        | `{payoutStatus, status}`                                                                                                        | Payout job                                      |
+| Payment        | `order` unique, `razorpayOrderId` unique                                                                                        | Webhook lookup                                  |
+| Payment        | `razorpayPaymentId` unique sparse                                                                                               | Idempotency                                     |
+| Review         | `booking` unique, `{service, createdAt}`, `{provider, createdAt}`                                                               | One review per booking                          |
 
 ---
 

@@ -1,3 +1,4 @@
+import Dashboard from "./Dashboard";
 import AssignedJobs from "./AssignedJobs";
 import JobCalender from "./JobCalender";
 import Settings from "./Settings";
@@ -13,8 +14,7 @@ export default function Body({ activePage }: BodyProps) {
 
   switch (activePage) {
     case "Dashboard":
-    case "Assigned Jobs":
-      content = <AssignedJobs />;
+      content = <Dashboard />;
       break;
     case "Calendar":
     case "Job Calender":

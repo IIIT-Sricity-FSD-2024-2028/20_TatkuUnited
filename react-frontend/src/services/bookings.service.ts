@@ -53,6 +53,11 @@ export async function getProviderOffers(providerId: string): Promise<BookingDocu
   return apiService<BookingDocument[]>(HTTP_METHODS_ENUM.get, url);
 }
 
+/** GET /bookings/provider-offers/me — Pending offers for current authenticated provider. */
+export async function getMyPendingOffers(): Promise<BookingDocument[]> {
+  return apiService<BookingDocument[]>(HTTP_METHODS_ENUM.get, "/bookings/provider-offers/me");
+}
+
 /** GET /bookings/provider/:providerId/schedule — Provider daily schedule. */
 export async function getProviderSchedule(providerId: string): Promise<BookingDocument[]> {
   const url = buildEndpoint(ENDPOINT_ENUM.BOOKINGS_PROVIDER_SCHEDULE, { providerId });
@@ -104,12 +109,12 @@ export async function acceptBooking(id: string, providerId?: string): Promise<Bo
 }
 
 /** POST /bookings/:id/reject — Provider rejects offer. */
-export async function rejectBooking(id: string, providerId: string): Promise<BookingDocument> {
+export async function rejectBooking(id: string, providerId?: string): Promise<BookingDocument> {
   const url = buildEndpoint(ENDPOINT_ENUM.BOOKINGS_REJECT, { id });
-  return apiService<BookingDocument, { providerId: string }>(
+  return apiService<BookingDocument, { providerId?: string }>(
     HTTP_METHODS_ENUM.post,
     url,
-    { providerId },
+    providerId ? { providerId } : undefined,
   );
 }
 

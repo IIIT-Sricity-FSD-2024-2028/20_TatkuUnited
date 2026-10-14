@@ -180,15 +180,22 @@ function ToastIcon({ type }: { type: string | undefined }) {
 function ToastList() {
   const { toasts } = ToastPrimitive.useToastManager()
 
-  return toasts.map((toastItem) => (
+  return toasts.map((toastItem: any) => (
     <Toast key={toastItem.id} toast={toastItem}>
-      <ToastContent>
+      <ToastContent className="items-start">
         <ToastIcon type={toastItem.type} />
         <div className="flex min-w-0 flex-1 flex-col gap-1">
           <ToastTitle />
           <ToastDescription />
+          {toastItem.actions && (
+            <div className="mt-2 flex items-center gap-2">
+              {typeof toastItem.actions === "function"
+                ? toastItem.actions({ id: toastItem.id })
+                : toastItem.actions}
+            </div>
+          )}
         </div>
-        <ToastAction />
+        {!toastItem.actions && <ToastAction />}
         <ToastClose />
       </ToastContent>
     </Toast>

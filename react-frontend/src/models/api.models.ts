@@ -37,6 +37,8 @@ export type UserRole = "customer" | "provider" | "manager" | "admin";
 export type UserStatus = "active" | "blocked";
 
 export interface UserAddress {
+  _id?: string;
+  id?: string;
   label: string;
   line: string;
   city: string;
@@ -60,6 +62,7 @@ export interface AddCartItemDto {
   scheduledDate: string;
   startTime: number;
   endTime: number;
+  addressId?: string;
 }
 
 export interface UserDocument {
@@ -292,6 +295,14 @@ export type BookingStatus =
 
 export type PayoutStatus = "pending" | "transferred" | "failed";
 
+export interface BookingOfferDto {
+  provider: string | ProviderDocument;
+  status: "offered" | "declined" | "expired" | "accepted";
+  offeredAt: string;
+  expiresAt: string;
+  _id?: string;
+}
+
 export interface BookingDocument {
   _id: string;
   service: string | ServiceDocument;
@@ -308,11 +319,15 @@ export interface BookingDocument {
   platformShare: number; // paise
   providerShare: number; // paise
   status: BookingStatus;
+  offers?: BookingOfferDto[];
+  offerRound?: number;
+  declinedBy?: string[];
   cancelledBy?: string;
   cancelledReason?: string;
   offerExpiresAt?: string;
   payoutStatus?: PayoutStatus;
   payoutAt?: string;
+  completedAt?: string;
   createdAt: string;
   updatedAt: string;
 }

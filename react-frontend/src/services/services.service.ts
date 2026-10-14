@@ -48,3 +48,45 @@ export async function deleteService(id: string): Promise<void> {
   const url = buildEndpoint(ENDPOINT_ENUM.SERVICES_BY_ID, { id });
   return apiService<void>(HTTP_METHODS_ENUM.delete, url);
 }
+
+export interface AvailableSlotItem {
+  startTime: number;
+  endTime: number;
+  time: string;
+  available: boolean;
+}
+
+export interface AvailableSlotsResponse {
+  date: string;
+  service?: {
+    id: string;
+    name: string;
+    duration: number;
+    price: number;
+  };
+  slots: AvailableSlotItem[];
+  message?: string;
+}
+
+/** GET /services/:id/available-slots — Public. */
+export async function getAvailableSlots(
+  serviceId: string,
+  params: {
+    date: string;
+    addressId?: string;
+    customerId?: string;
+    lat?: number;
+    lng?: number;
+  },
+): Promise<AvailableSlotsResponse> {
+  const query = new URLSearchParams();
+  query.set("date", params.date);
+  if (params.addressId) query.set("addressId", params.addressId);
+  if (params.customerId) query.set("customerId", params.customerId);
+  if (params.lat !== undefined) query.set("lat", String(params.lat));
+  if (params.lng !== undefined) query.set("lng", String(params.lng));
+
+  const url = `${ENDPOINT_ENUM.SERVICES}/${serviceId}/available-slots?${query.toString()}`;
+  return apiService<AvailableSlotsResponse>(HTTP_METHODS_ENUM.get, url);
+}
+

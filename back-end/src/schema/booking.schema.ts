@@ -4,13 +4,34 @@ import { BookingStatus, CancelledBy, PayoutStatus } from '../common/enums';
 
 export type BookingDocument = Booking & Document;
 
+// -- Embedded: BookingOffer inside Booking.offers[] ---------------------------
+@Schema({ _id: false })
+export class BookingOffer {
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Provider', required: true })
+  provider: Types.ObjectId;
+
+  @Prop({
+    type: String,
+    enum: ['offered', 'declined', 'expired', 'accepted'],
+    required: true,
+    default: 'offered',
+  })
+  status: 'offered' | 'declined' | 'expired' | 'accepted';
+
+  @Prop({ type: Date, default: () => new Date() })
+  offeredAt: Date;
+
+  @Prop({ type: Date, required: true })
+  expiresAt: Date;
+}
+
 @Schema({ timestamps: true })
 export class Booking {
   @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Service', required: true })
   service: Types.ObjectId;
 
-  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Provider', required: true })
-  provider: Types.ObjectId; // tentative until accepted
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Provider', default: null })
+  provider: Types.ObjectId | null; // null until accepted
 
   @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'User', required: true })
   customer: Types.ObjectId;
@@ -38,7 +59,7 @@ export class Booking {
   @Prop({
     type: String,
     enum: Object.values(BookingStatus),
-    default: BookingStatus.PENDING,
+    default: BookingStatus.AWAITING_PROVIDER,
   })
   status: BookingStatus;
 
@@ -52,7 +73,13 @@ export class Booking {
   @Prop({ type: String, default: null })
   cancelledReason: string | null;
 
-  // -- Provider offer --------------------------------------------------------
+  // -- Provider offers (First-accept workflow) -------------------------------
+  @Prop({ type: [BookingOffer], default: [] })
+  offers: BookingOffer[];
+
+  @Prop({ type: Number, default: 0 })
+  offerRound: number;
+
   @Prop({ type: Date, default: null }) // set while awaiting_provider
   offerExpiresAt: Date | null;
 
@@ -82,23 +109,28 @@ export class Booking {
 
   @Prop({ type: Date, default: null })
   payoutAt: Date | null;
+
+  @Prop({ type: Date, default: null })
+  completedAt: Date | null;
 }
 
 export const BookingSchema = SchemaFactory.createForClass(Booking);
 
 // -- Indexes ----------------------------------------------------------------
-// Partial unique index: blocks identical start-time double-bookings for active statuses
+// Partial unique index: blocks identical start-time double-bookings for confirmed/in-progress
 BookingSchema.index(
   { provider: 1, scheduledDate: 1, startTime: 1 },
   {
     unique: true,
     partialFilterExpression: {
       status: {
-        $in: ['pending', 'awaiting_provider', 'confirmed', 'in_progress'],
+        $in: ['confirmed', 'in_progress'],
       },
+      provider: { $type: 'objectId' },
     },
   },
 );
+BookingSchema.index({ status: 1, 'offers.provider': 1 });
 BookingSchema.index({ provider: 1, scheduledDate: 1, status: 1 });
 BookingSchema.index({ status: 1, offerExpiresAt: 1 }); // offer-expiry sweep
 BookingSchema.index({ customer: 1, createdAt: -1 });
