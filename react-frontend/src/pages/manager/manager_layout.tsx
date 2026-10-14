@@ -2,28 +2,11 @@ import SideBar, { SidebarItem } from "../shared/Sidebar";
 import { BsCash, BsGrid, BsPeople, BsPersonAdd } from "react-icons/bs";
 import { Outlet } from "react-router-dom";
 import UserHeader from "../shared/user-header";
-import { useDispatch, useSelector } from "react-redux";
-import type { AppDispatch, RootState } from "../../store";
-import { useEffect } from "react";
-import {
-  fetchCollective,
-  fetchManager,
-  fetchServiceProviders,
-} from "../../store/manager/manager-slice";
 import UrlMap from "../../common/urlMap";
+import { useManager } from "./ManagerContext";
 
 export default function ManagerLayout() {
-  const dispatch = useDispatch<AppDispatch>();
-  const manager = useSelector((state: RootState) => state.auth.user);
-  const managerId = manager?.id;
-
-  useEffect(() => {
-  if (!managerId) return;
-
-  dispatch(fetchManager(managerId));
-  dispatch(fetchCollective(managerId));
-  dispatch(fetchServiceProviders());
-}, [dispatch, managerId]);
+  const { regions, selectedRegionId, selectRegion } = useManager();
 
   return (
     <div className="flex h-screen overflow-hidden">
@@ -50,7 +33,22 @@ export default function ManagerLayout() {
         ></SidebarItem>
       </SideBar>
       <div className="flex flex-col flex-1 w-full">
-        <UserHeader header="Manager Dashboard" />
+        <div className="flex items-center justify-between pr-4">
+          <UserHeader header="Manager Dashboard" />
+          {regions.length > 1 && (
+            <select
+              className="border rounded-md px-2 py-1 text-sm bg-white"
+              value={selectedRegionId ?? ""}
+              onChange={(e) => selectRegion(e.target.value)}
+            >
+              {regions.map((r) => (
+                <option key={r._id} value={r._id}>
+                  {r.name}
+                </option>
+              ))}
+            </select>
+          )}
+        </div>
         <main className="h-full w-full overflow-y-auto bg-gray-50 p-6">
           <Outlet />
         </main>

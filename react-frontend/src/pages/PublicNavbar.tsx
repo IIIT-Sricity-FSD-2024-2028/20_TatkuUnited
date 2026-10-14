@@ -1,6 +1,4 @@
-// import { useSelector } from "react-redux";
 import { Link } from "react-router-dom";
-// import type { RootState } from "../store";
 import { RolesEnum, type Role } from "../common/roles.enum";
 import UrlMap from "../common/urlMap";
 import { handleLogout } from "@/common/services/authService";
@@ -17,8 +15,6 @@ export default function PublicNavbar({
   brandInitials,
   onNavigate,
 }: PublicNavbarProps) {
-  // const token = useSelector((state: RootState) => state.auth.token);
-  // const user = useSelector((state: RootState) => state.auth.user);
   const authContext = useAuthContext();
   const token = authContext.authDetails?.token;
   const user = authContext.authDetails?.user;
@@ -58,6 +54,14 @@ export default function PublicNavbar({
 
       {token && token.length > 0 ? (
         <div className="flex items-center gap-3">
+          {userRole === RolesEnum.CUSTOMER && (
+            <button
+              className="px-4 py-2 text-sm font-medium border border-blue-500 text-blue-500 rounded-lg hover:bg-blue-50 transition-colors cursor-pointer"
+              onClick={() => onNavigate("/bookings")}
+            >
+              My Bookings
+            </button>
+          )}
           <button
             className="px-4 py-2 text-sm font-medium border border-blue-500 text-blue-500 rounded-lg hover:bg-blue-50 transition-colors cursor-pointer"
             onClick={() => onNavigate(redirectUrl)}

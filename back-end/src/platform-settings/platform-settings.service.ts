@@ -26,17 +26,56 @@ export class PlatformSettingsService {
 
   /** Returns the single settings document. Used on every checkout and slot listing. */
   async get() {
-    const doc = await this.settingModel.findOne().exec();
-    if (!doc)
-      throw new NotFoundException(
-        'Platform settings have not been initialised',
-      );
+    let doc = await this.settingModel.findOne().exec();
+    if (!doc) {
+      doc = await new this.settingModel({
+        platformFeePercent: 15,
+        maxAssignmentDistanceKm: 10,
+        slotIntervalMinutes: 30,
+        firstSlotStart: 480,
+        lastSlotStart: 1170,
+        bookingWindowDays: 3,
+        minLeadMinutes: 120,
+        travelBufferMinutes: 30,
+        offerTimeoutMinutes: 5,
+        maxOfferRounds: 3,
+        offerBatchSize: 5,
+        payoutHoldHours: 0,
+        matchWeights: { distance: 0.4, rating: 0.4, availability: 0.2 },
+      }).save();
+    } else {
+      let modified = false;
+      if (doc.offerTimeoutMinutes !== 5) {
+        doc.offerTimeoutMinutes = 5;
+        modified = true;
+      }
+      if (doc.maxOfferRounds === undefined || doc.maxOfferRounds === null) {
+        doc.maxOfferRounds = 3;
+        modified = true;
+      }
+      if (doc.offerBatchSize === undefined || doc.offerBatchSize === null) {
+        doc.offerBatchSize = 5;
+        modified = true;
+      }
+      if (doc.payoutHoldHours === undefined || doc.payoutHoldHours === null) {
+        doc.payoutHoldHours = 0;
+        modified = true;
+      }
+      if (!doc.matchWeights || !doc.matchWeights.distance) {
+        doc.matchWeights = { distance: 0.4, rating: 0.4, availability: 0.2 } as any;
+        modified = true;
+      }
+      if (modified) {
+        await doc.save();
+      }
+    }
     return doc;
   }
 
   /** Alias for controllers that expect findAll. */
-  findAll() {
-    return this.settingModel.find().exec();
+  async findAll() {
+    const doc = await this.get();
+    return [doc];
   }
 
   async findOne(id: string) {

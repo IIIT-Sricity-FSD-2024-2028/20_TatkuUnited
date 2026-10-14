@@ -1,3 +1,4 @@
+
 import AuthContext from "@/common/AuthContext";
 import { getServices, getCategories, getAllRegions, getAllUsers, getAllProviders, getAllBookings, getAllPayments } from "@/services";
 import { useContext, useEffect, useState } from "react";
@@ -118,5 +119,6 @@ export default function SuperUser_Dashboard() {
           </ResponsiveContainer>
         </div>
     </div>
+
   );
 }

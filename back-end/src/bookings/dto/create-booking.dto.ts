@@ -1,11 +1,12 @@
-import { IsDateString, IsMongoId, IsNumber } from 'class-validator';
+import { IsDateString, IsMongoId, IsNumber, IsOptional } from 'class-validator';
 
 export class CreateBookingDto {
   @IsMongoId()
   service: string;
 
+  @IsOptional()
   @IsMongoId()
-  provider: string;
+  provider?: string;
 
   @IsMongoId()
   customer: string;

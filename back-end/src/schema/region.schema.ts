@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document, Types } from 'mongoose';
+import { Document, Schema as MongooseSchema, Types } from 'mongoose';
 import { GeoPointSchema } from './common';
 
 type GeoPointType = { type: string; coordinates: [number, number] };
@@ -11,7 +11,7 @@ export class Region {
   @Prop({ type: String, required: true })
   name: string;
 
-  @Prop({ type: Types.ObjectId, ref: 'Manager', required: true })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Manager', required: true })
   manager: Types.ObjectId;
 
   @Prop({ type: GeoPointSchema, required: true }) // centroid; recomputed as providers join/leave

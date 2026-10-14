@@ -27,7 +27,10 @@ export class UnavailabilityService {
   }
 
   findByProviderAndDate(providerId: string, date: Date) {
-    return this.unavailabilityModel.find({ provider: providerId, date }).exec();
+    const provider = Types.ObjectId.isValid(providerId)
+      ? new Types.ObjectId(providerId)
+      : providerId;
+    return this.unavailabilityModel.find({ provider, date }).exec();
   }
 
   async findByProvider(providerId: string, date?: string) {
@@ -46,7 +49,10 @@ export class UnavailabilityService {
       }
     }
 
-    const filter: Record<string, unknown> = { provider: actualProviderId };
+    const provider = Types.ObjectId.isValid(actualProviderId)
+      ? new Types.ObjectId(actualProviderId)
+      : actualProviderId;
+    const filter: Record<string, unknown> = { provider };
     if (date) {
       const queryDate = new Date(date);
       if (!isNaN(queryDate.getTime())) {

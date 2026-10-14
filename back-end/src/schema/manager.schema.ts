@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document, Types } from 'mongoose';
+import { Document, Schema as MongooseSchema, Types } from 'mongoose';
 import { GeoPointSchema } from './common';
 import { ManagerStatus } from '../common/enums';
 
@@ -9,7 +9,7 @@ export type ManagerDocument = Manager & Document;
 
 @Schema({ timestamps: true })
 export class Manager {
-  @Prop({ type: Types.ObjectId, ref: 'User', required: true, unique: true })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'User', required: true, unique: true })
   user: Types.ObjectId;
 
   @Prop({ type: Number, required: true, default: 0 }) // paise

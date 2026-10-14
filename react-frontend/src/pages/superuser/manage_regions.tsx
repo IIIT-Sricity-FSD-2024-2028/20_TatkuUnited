@@ -16,6 +16,9 @@ export default function SuperUser_ManageRegions()
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
 
+    const [search, setSearch] = useState('');
+    const [status, setStatus] = useState('all');
+
     const [regions, setRegions] = useState<RegionDocument[]>([]);
     const [userNameMap, setUserNameMap] = useState<Record<string, string>>({});
     const [allManagers, setAllManagers] = useState<ManagerDocument[]>([]);
@@ -27,9 +30,6 @@ export default function SuperUser_ManageRegions()
         { title: "Active Regions", count: activeRegions, icon: <BsGeoAltFill size={20} />, iconColor: "text-green-600", bg: "bg-green-50" },
         { title: "Inactive Regions", count: regions.length - activeRegions, icon: <BsGeoAlt size={20} />, iconColor: "text-red-600", bg: "bg-red-50" },
     ];
-
-    const [search, setSearch] = useState('');
-    const [status, setStatus] = useState('all');
 
     const [isAdd, setIsAdd] = useState(false);
     const [isEditingID, setIsEditingID] = useState('');
@@ -43,7 +43,10 @@ export default function SuperUser_ManageRegions()
 
     const columns: Column<RegionDocument>[] = [
         {header: 'Name', render: (row) => <span className="font-medium text-slate-900">{row.name}</span>},
-        {header: 'Manager', render: (row) => <span className="text-slate-500">{userNameMap[row.manager._id]}</span>},
+        {header: 'Manager', render: (row) => {
+            const mgrId = typeof row.manager === 'string' ? row.manager : row.manager?._id;
+            return <span className="text-slate-500">{mgrId ? userNameMap[mgrId] : '—'}</span>;
+        }},
         {header: 'Status', render: (row) => <span className={`px-2 py-1 rounded-full text-xs font-semibold ${row.isActive ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
           {row.isActive ? 'Active' : 'Inactive'}
         </span>},
@@ -212,6 +215,7 @@ function AddRegion({ token, onClose, refreshRegions, allManagers, assignedRegion
 
     const assignedManagerIds = new Set(
         assignedRegions.map(r =>
+
             (r.manager as ManagerDocument)._id
         )
     );

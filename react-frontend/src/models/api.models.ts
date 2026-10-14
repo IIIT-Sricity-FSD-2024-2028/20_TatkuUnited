@@ -34,9 +34,11 @@ export interface FaqItemDto {
 // ---------------------------------------------------------------------------
 
 export type UserRole = "customer" | "provider" | "manager" | "admin";
-export type UserStatus = "active" | "blocked" | "pending";
+export type UserStatus = "active" | "blocked";
 
 export interface UserAddress {
+  _id?: string;
+  id?: string;
   label: string;
   line: string;
   city: string;
@@ -44,8 +46,23 @@ export interface UserAddress {
 }
 
 export interface CartItem {
+  service: string | ServiceDocument;
+  scheduledDate: string;
+  startTime: number;
+  endTime: number;
+}
+
+export interface BackendCart {
+  address: string | null;
+  items: CartItem[];
+}
+
+export interface AddCartItemDto {
   service: string;
-  quantity: number;
+  scheduledDate: string;
+  startTime: number;
+  endTime: number;
+  addressId?: string;
 }
 
 export interface UserDocument {
@@ -70,11 +87,12 @@ export interface CreateUserDto {
   password: string;
   phone: string;
   role: UserRole;
+  status?: UserStatus;
   gender?: string;
   dob?: string;
 }
 
-export type UpdateUserDto = Partial<Omit<CreateUserDto, "password"> & { password?: string }>;
+export type UpdateUserDto = Partial<Omit<CreateUserDto, "password"> & { password?: string; status?: UserStatus }>;
 
 // ---------------------------------------------------------------------------
 // Provider
@@ -92,6 +110,8 @@ export interface ProviderDocument {
   workingDays: number[];
   location: GeoLocationDto;
   status: ProviderStatus;
+  rating?: number;
+  ratingCount?: number;
   razorpayAccountId?: string;
   region?: string;
   createdAt: string;
@@ -198,6 +218,8 @@ export interface ServiceDocument {
   _id: string;
   name: string;
   category: string | CategoryDocument;
+  reviewCount?: number;
+  rating?: number;
   description: string;
   price: number; // paise
   duration: number; // minutes
@@ -223,6 +245,8 @@ export interface CreateServiceDto {
   whatIsNotCovered?: string[];
   howItWorks?: HowItWorksStepDto[];
   faq?: FaqItemDto[];
+  reviewCount?: number;
+  rating?: number;
 }
 
 export type UpdateServiceDto = Partial<CreateServiceDto>;
@@ -262,15 +286,22 @@ export type UpdateOrderDto = Partial<{
 // ---------------------------------------------------------------------------
 
 export type BookingStatus =
-  | "pending_offer"
-  | "offered"
-  | "accepted"
-  | "rejected"
+  | "pending"
+  | "awaiting_provider"
+  | "confirmed"
   | "in_progress"
   | "completed"
   | "cancelled";
 
 export type PayoutStatus = "pending" | "transferred" | "failed";
+
+export interface BookingOfferDto {
+  provider: string | ProviderDocument;
+  status: "offered" | "declined" | "expired" | "accepted";
+  offeredAt: string;
+  expiresAt: string;
+  _id?: string;
+}
 
 export interface BookingDocument {
   _id: string;
@@ -288,11 +319,15 @@ export interface BookingDocument {
   platformShare: number; // paise
   providerShare: number; // paise
   status: BookingStatus;
+  offers?: BookingOfferDto[];
+  offerRound?: number;
+  declinedBy?: string[];
   cancelledBy?: string;
   cancelledReason?: string;
   offerExpiresAt?: string;
   payoutStatus?: PayoutStatus;
   payoutAt?: string;
+  completedAt?: string;
   createdAt: string;
   updatedAt: string;
 }

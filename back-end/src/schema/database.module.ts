@@ -16,6 +16,7 @@ import {
   PlatformSetting,
   PlatformSettingSchema,
 } from './platform-setting.schema';
+import { Notification, NotificationSchema } from './notification.schema';
 
 const models = MongooseModule.forFeature([
   { name: User.name, schema: UserSchema },
@@ -30,6 +31,7 @@ const models = MongooseModule.forFeature([
   { name: Review.name, schema: ReviewSchema },
   { name: Unavailability.name, schema: UnavailabilitySchema },
   { name: PlatformSetting.name, schema: PlatformSettingSchema },
+  { name: Notification.name, schema: NotificationSchema },
 ]);
 
 /**

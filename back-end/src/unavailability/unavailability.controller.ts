@@ -37,8 +37,14 @@ export class UnavailabilityController {
       'Blocks out a provider schedule on a specific date between startTime and endTime (in minutes from midnight).',
   })
   @ApiBody({ type: CreateUnavailabilityDto })
-  @ApiResponse({ status: 201, description: 'Unavailability block successfully created.' })
-  @ApiResponse({ status: 400, description: 'Invalid time bounds or missing fields.' })
+  @ApiResponse({
+    status: 201,
+    description: 'Unavailability block successfully created.',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Invalid time bounds or missing fields.',
+  })
   create(@Body() createUnavailabilityDto: CreateUnavailabilityDto) {
     return this.unavailabilityService.create(createUnavailabilityDto);
   }
@@ -47,9 +53,13 @@ export class UnavailabilityController {
   @Get()
   @ApiOperation({
     summary: 'Get all unavailability records',
-    description: 'Retrieves all blackout periods populated with provider profiles.',
+    description:
+      'Retrieves all blackout periods populated with provider profiles.',
   })
-  @ApiResponse({ status: 200, description: 'List of all unavailability records.' })
+  @ApiResponse({
+    status: 200,
+    description: 'List of all unavailability records.',
+  })
   findAll() {
     return this.unavailabilityService.findAll();
   }
@@ -87,9 +97,14 @@ export class UnavailabilityController {
   @Get(':id')
   @ApiOperation({
     summary: 'Get unavailability by ID',
-    description: 'Retrieves a single unavailability record by its Mongo ObjectId.',
+    description:
+      'Retrieves a single unavailability record by its Mongo ObjectId.',
   })
-  @ApiParam({ name: 'id', description: 'Unavailability Mongo ObjectId', example: '65f1a2b3c4d5e6f7a8b9c0d1' })
+  @ApiParam({
+    name: 'id',
+    description: 'Unavailability Mongo ObjectId',
+    example: '65f1a2b3c4d5e6f7a8b9c0d1',
+  })
   @ApiResponse({ status: 200, description: 'Unavailability record found.' })
   @ApiResponse({ status: 404, description: 'Unavailability record not found.' })
   findOne(@Param('id') id: string) {
@@ -100,11 +115,19 @@ export class UnavailabilityController {
   @Patch(':id')
   @ApiOperation({
     summary: 'Update unavailability record',
-    description: 'Updates date, time slot bounds, or reason on an existing unavailability record.',
+    description:
+      'Updates date, time slot bounds, or reason on an existing unavailability record.',
   })
-  @ApiParam({ name: 'id', description: 'Unavailability Mongo ObjectId', example: '65f1a2b3c4d5e6f7a8b9c0d1' })
+  @ApiParam({
+    name: 'id',
+    description: 'Unavailability Mongo ObjectId',
+    example: '65f1a2b3c4d5e6f7a8b9c0d1',
+  })
   @ApiBody({ type: UpdateUnavailabilityDto })
-  @ApiResponse({ status: 200, description: 'Unavailability record updated successfully.' })
+  @ApiResponse({
+    status: 200,
+    description: 'Unavailability record updated successfully.',
+  })
   @ApiResponse({ status: 404, description: 'Unavailability record not found.' })
   update(
     @Param('id') id: string,
@@ -117,13 +140,20 @@ export class UnavailabilityController {
   @Delete(':id')
   @ApiOperation({
     summary: 'Delete unavailability record',
-    description: 'Deletes a blackout period, freeing the provider calendar slot.',
+    description:
+      'Deletes a blackout period, freeing the provider calendar slot.',
   })
-  @ApiParam({ name: 'id', description: 'Unavailability Mongo ObjectId', example: '65f1a2b3c4d5e6f7a8b9c0d1' })
-  @ApiResponse({ status: 200, description: 'Unavailability record removed successfully.' })
+  @ApiParam({
+    name: 'id',
+    description: 'Unavailability Mongo ObjectId',
+    example: '65f1a2b3c4d5e6f7a8b9c0d1',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Unavailability record removed successfully.',
+  })
   @ApiResponse({ status: 404, description: 'Unavailability record not found.' })
   remove(@Param('id') id: string) {
     return this.unavailabilityService.remove(id);
   }
 }
-

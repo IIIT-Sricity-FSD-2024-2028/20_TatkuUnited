@@ -1,5 +1,5 @@
-﻿import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document, Types } from 'mongoose';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Document, Schema as MongooseSchema, Types } from 'mongoose';
 import { AddressSnapshot } from './common';
 import { PaymentStatus } from '../common/enums';
 
@@ -8,7 +8,7 @@ export type OrderDocument = Order & Document;
 
 @Schema({ timestamps: true })
 export class Order {
-  @Prop({ type: Types.ObjectId, ref: 'User', required: true })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'User', required: true })
   customer: Types.ObjectId;
 
   @Prop({ type: AddressSnapshot, required: true })
@@ -17,7 +17,7 @@ export class Order {
   @Prop({ type: Number, required: true }) // paise
   totalAmount: number;
 
-  @Prop({ type: Types.ObjectId, ref: 'Payment', default: null })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Payment', default: null })
   payment: Types.ObjectId | null;
 
   @Prop({

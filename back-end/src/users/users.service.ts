@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import * as bcrypt from 'bcryptjs';
@@ -24,9 +28,10 @@ export class UsersService {
     }
     const created = new this.userModel({ ...dto, password });
     const saved = await created.save();
-    const result = saved && typeof (saved as any).toObject === 'function'
-      ? (saved as any).toObject()
-      : { ...saved };
+    const result =
+      saved && typeof (saved as any).toObject === 'function'
+        ? (saved as any).toObject()
+        : { ...saved };
     delete result.password;
     return result;
   }
@@ -42,7 +47,10 @@ export class UsersService {
   }
 
   findByEmail(email: string) {
-    return this.userModel.findOne({ email: email.toLowerCase().trim() }).select('+password').exec();
+    return this.userModel
+      .findOne({ email: email.toLowerCase().trim() })
+      .select('+password')
+      .exec();
   }
 
   findByRole(role: Role | string) {
@@ -91,17 +99,47 @@ export class UsersService {
   }
 
   async addToCart(userId: string, item: any) {
-    const user = await this.userModel
-      .findByIdAndUpdate(
-        userId,
-        { $push: { 'cart.items': item } },
-        { new: true },
-      )
+    const user = await this.userModel.findById(userId).exec();
+    if (!user) throw new NotFoundException(`User ${userId} not found`);
+
+    const cartItem =
+      item?.service && Types.ObjectId.isValid(item.service)
+        ? { ...item, service: new Types.ObjectId(item.service) }
+        : item;
+
+    // Acceptance criterion #7: Reject overlapping cart items
+    const newDateStr = new Date(item.scheduledDate).toISOString().slice(0, 10);
+    const hasOverlap = (user.cart?.items || []).some((existing) => {
+      const existingDateStr = new Date(existing.scheduledDate)
+        .toISOString()
+        .slice(0, 10);
+      if (existingDateStr !== newDateStr) return false;
+      return (
+        existing.startTime < item.endTime && existing.endTime > item.startTime
+      );
+    });
+
+    if (hasOverlap) {
+      throw new BadRequestException(
+        'This slot overlaps with another item in your cart',
+      );
+    }
+
+    const updateQuery: any = {
+      $push: { 'cart.items': cartItem },
+    };
+    if (item.addressId) {
+      updateQuery.$set = { 'cart.address': item.addressId };
+    }
+
+    const updatedUser = await this.userModel
+      .findByIdAndUpdate(userId, updateQuery, { new: true })
       .populate('cart.items.service')
       .select('cart')
       .exec();
-    if (!user) throw new NotFoundException(`User ${userId} not found`);
-    return user.cart;
+
+    if (!updatedUser) throw new NotFoundException(`User ${userId} not found`);
+    return updatedUser.cart;
   }
 
   async removeFromCart(userId: string, itemIndex: number) {
@@ -163,4 +201,3 @@ export class UsersService {
     return doc;
   }
 }
-

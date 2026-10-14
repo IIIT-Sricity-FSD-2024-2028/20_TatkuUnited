@@ -12,7 +12,8 @@ export class AppController {
   @Get()
   @ApiOperation({
     summary: 'System health check and welcome endpoint',
-    description: 'Returns a greeting string indicating the backend service is running.',
+    description:
+      'Returns a greeting string indicating the backend service is running.',
   })
   @ApiResponse({
     status: 200,

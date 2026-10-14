@@ -32,7 +32,8 @@ export class RegionsController {
   @Post()
   @ApiOperation({
     summary: 'Create a new region',
-    description: 'Registers a serviceable geographical region assigned to a regional manager with centroid coordinates.',
+    description:
+      'Registers a serviceable geographical region assigned to a regional manager with centroid coordinates.',
   })
   @ApiBody({ type: CreateRegionDto })
   @ApiResponse({ status: 201, description: 'Region successfully created.' })
@@ -45,10 +46,14 @@ export class RegionsController {
   @Get()
   @ApiOperation({
     summary: 'Get all regions',
-    description: 'Retrieves all operational regions. Restricted to regional managers and admins.',
+    description:
+      'Retrieves all operational regions. Restricted to regional managers and admins.',
   })
   @ApiResponse({ status: 200, description: 'List of all regions.' })
-  @ApiResponse({ status: 403, description: 'Forbidden. Requires manager or admin role.' })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden. Requires manager or admin role.',
+  })
   findAll() {
     return this.regionsService.findAll();
   }
@@ -65,8 +70,14 @@ export class RegionsController {
     description: 'Manager Mongo ObjectId or User ObjectId',
     example: '65f1a2b3c4d5e6f7a8b9c0d1',
   })
-  @ApiResponse({ status: 200, description: 'List of regions controlled by manager.' })
-  @ApiResponse({ status: 403, description: 'Forbidden. Requires manager or admin role.' })
+  @ApiResponse({
+    status: 200,
+    description: 'List of regions controlled by manager.',
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden. Requires manager or admin role.',
+  })
   findByManager(@Param('managerId') managerId: string) {
     return this.regionsService.findByManager(managerId);
   }
@@ -75,11 +86,19 @@ export class RegionsController {
   @Get(':id')
   @ApiOperation({
     summary: 'Get region by ID',
-    description: 'Retrieves a single region document by Mongo ObjectId. Restricted to regional managers and admins.',
+    description:
+      'Retrieves a single region document by Mongo ObjectId. Restricted to regional managers and admins.',
   })
-  @ApiParam({ name: 'id', description: 'Region Mongo ObjectId', example: '65f1a2b3c4d5e6f7a8b9c0d1' })
+  @ApiParam({
+    name: 'id',
+    description: 'Region Mongo ObjectId',
+    example: '65f1a2b3c4d5e6f7a8b9c0d1',
+  })
   @ApiResponse({ status: 200, description: 'Region found.' })
-  @ApiResponse({ status: 403, description: 'Forbidden. Requires manager or admin role.' })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden. Requires manager or admin role.',
+  })
   @ApiResponse({ status: 404, description: 'Region not found.' })
   findOne(@Param('id') id: string) {
     return this.regionsService.findOne(id);
@@ -89,9 +108,14 @@ export class RegionsController {
   @Patch(':id')
   @ApiOperation({
     summary: 'Update region',
-    description: 'Updates region properties, such as assigned manager, centroid GeoLocation, or active state.',
+    description:
+      'Updates region properties, such as assigned manager, centroid GeoLocation, or active state.',
   })
-  @ApiParam({ name: 'id', description: 'Region Mongo ObjectId', example: '65f1a2b3c4d5e6f7a8b9c0d1' })
+  @ApiParam({
+    name: 'id',
+    description: 'Region Mongo ObjectId',
+    example: '65f1a2b3c4d5e6f7a8b9c0d1',
+  })
   @ApiBody({ type: UpdateRegionDto })
   @ApiResponse({ status: 200, description: 'Region successfully updated.' })
   @ApiResponse({ status: 404, description: 'Region not found.' })
@@ -103,9 +127,14 @@ export class RegionsController {
   @Post(':id/recompute-centroid')
   @ApiOperation({
     summary: 'Recompute region centroid',
-    description: 'Calculates the mean coordinates of all approved providers in this region and updates the centroid (§4.2, §3.5).',
+    description:
+      'Calculates the mean coordinates of all approved providers in this region and updates the centroid (§4.2, §3.5).',
   })
-  @ApiParam({ name: 'id', description: 'Region Mongo ObjectId', example: '65f1a2b3c4d5e6f7a8b9c0d1' })
+  @ApiParam({
+    name: 'id',
+    description: 'Region Mongo ObjectId',
+    example: '65f1a2b3c4d5e6f7a8b9c0d1',
+  })
   @ApiResponse({ status: 200, description: 'Region centroid recomputed.' })
   recomputeCentroid(@Param('id') id: string) {
     return this.regionsService.recomputeCentroid(id);
@@ -117,11 +146,14 @@ export class RegionsController {
     summary: 'Delete region',
     description: 'Removes a region from the platform.',
   })
-  @ApiParam({ name: 'id', description: 'Region Mongo ObjectId', example: '65f1a2b3c4d5e6f7a8b9c0d1' })
+  @ApiParam({
+    name: 'id',
+    description: 'Region Mongo ObjectId',
+    example: '65f1a2b3c4d5e6f7a8b9c0d1',
+  })
   @ApiResponse({ status: 200, description: 'Region successfully removed.' })
   @ApiResponse({ status: 404, description: 'Region not found.' })
   remove(@Param('id') id: string) {
     return this.regionsService.remove(id);
   }
 }
-

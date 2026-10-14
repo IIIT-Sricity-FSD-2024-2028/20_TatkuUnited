@@ -1792,6 +1792,83 @@
         ]
       }
     },
+    "/services/{id}/available-slots": {
+      "get": {
+        "description": "Calculates available slots for a given service, date, and customer location based on provider qualification and conflict rules.",
+        "operationId": "ServicesController_getAvailableSlots",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "date",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "addressId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "customerId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "lat",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "lng",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer-token": []
+          }
+        ],
+        "summary": "Get available time slots for a service",
+        "tags": [
+          "Services"
+        ]
+      }
+    },
     "/services/{id}": {
       "get": {
         "description": "Retrieves a single service offering by its Mongo ObjectId.",
@@ -1936,6 +2013,30 @@
         "summary": "Upload an image to Cloudinary",
         "tags": [
           "Upload"
+        ]
+      }
+    },
+    "/orders/checkout": {
+      "post": {
+        "description": "Validates cart, checks provider availability, creates Order, Bookings (status: awaiting_provider), and Mock Payment in one Mongoose transaction.",
+        "operationId": "OrdersController_checkout",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "Order and bookings created for checkout."
+          },
+          "400": {
+            "description": "Validation failed or no providers available."
+          }
+        },
+        "security": [
+          {
+            "bearer-token": []
+          }
+        ],
+        "summary": "Checkout shopping cart into order, bookings, and mock payment",
+        "tags": [
+          "Orders"
         ]
       }
     },
@@ -2383,6 +2484,27 @@
         ]
       }
     },
+    "/bookings/provider-offers/me": {
+      "get": {
+        "description": "Retrieves all active unaccepted job offers for the authenticated provider derived strictly from JWT.",
+        "operationId": "BookingsController_findMyPendingOffers",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "List of active job offers."
+          }
+        },
+        "security": [
+          {
+            "bearer-token": []
+          }
+        ],
+        "summary": "Get pending job offers for currently authenticated provider",
+        "tags": [
+          "Bookings"
+        ]
+      }
+    },
     "/bookings/provider/{providerId}/schedule": {
       "get": {
         "description": "Retrieves all confirmed and in-progress jobs assigned to the provider, optionally filtered by date.",
@@ -2612,7 +2734,7 @@
     },
     "/bookings/{id}/accept": {
       "post": {
-        "description": "Accepts an awaiting_provider booking before the offer timeout expires, transitioning it to confirmed.",
+        "description": "Accepts an awaiting_provider booking before the offer timeout expires, transitioning it to confirmed. Identity taken strictly from JWT.",
         "operationId": "BookingsController_acceptOffer",
         "parameters": [
           {
@@ -2626,28 +2748,12 @@
             }
           }
         ],
-        "requestBody": {
-          "required": false,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "providerId": {
-                    "type": "string",
-                    "example": "65f1a2b3c4d5e6f7a8b9c0d1"
-                  }
-                }
-              }
-            }
-          }
-        },
         "responses": {
           "200": {
             "description": "Booking accepted."
           },
-          "400": {
-            "description": "Offer expired or already taken."
+          "409": {
+            "description": "This job was already taken."
           }
         },
         "security": [
@@ -2663,7 +2769,7 @@
     },
     "/bookings/{id}/reject": {
       "post": {
-        "description": "Declines an offer and adds the provider to declinedBy list to trigger reassignment.",
+        "description": "Declines an offer and adds the provider to declinedBy list to trigger reassignment. Identity taken strictly from JWT.",
         "operationId": "BookingsController_rejectOffer",
         "parameters": [
           {
@@ -2677,25 +2783,6 @@
             }
           }
         ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "required": [
-                  "providerId"
-                ],
-                "properties": {
-                  "providerId": {
-                    "type": "string",
-                    "example": "65f1a2b3c4d5e6f7a8b9c0d1"
-                  }
-                }
-              }
-            }
-          }
-        },
         "responses": {
           "200": {
             "description": "Booking offer declined."
@@ -2834,6 +2921,113 @@
         "summary": "Cancel booking",
         "tags": [
           "Bookings"
+        ]
+      }
+    },
+    "/notifications": {
+      "get": {
+        "description": "Retrieves current user notifications with unread count for polling NotificationBell.",
+        "operationId": "NotificationsController_getMyNotifications",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "List of notifications with unreadCount."
+          }
+        },
+        "security": [
+          {
+            "bearer-token": []
+          }
+        ],
+        "summary": "Get notifications for current user",
+        "tags": [
+          "Notifications"
+        ]
+      }
+    },
+    "/notifications/{id}/read": {
+      "patch": {
+        "description": "Sets readAt to now for a specific notification belonging to current user.",
+        "operationId": "NotificationsController_markAsRead",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Notification Mongo ObjectId",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Notification updated."
+          }
+        },
+        "security": [
+          {
+            "bearer-token": []
+          }
+        ],
+        "summary": "Mark notification as read",
+        "tags": [
+          "Notifications"
+        ]
+      }
+    },
+    "/notifications/read-all": {
+      "patch": {
+        "description": "Sets readAt for all unread notifications of the current user.",
+        "operationId": "NotificationsController_markAllAsRead",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "All notifications marked as read."
+          }
+        },
+        "security": [
+          {
+            "bearer-token": []
+          }
+        ],
+        "summary": "Mark all notifications as read",
+        "tags": [
+          "Notifications"
+        ]
+      }
+    },
+    "/payments/simulate": {
+      "post": {
+        "description": "Simulates Razorpay payment callback with idempotency, order expiry handling, cart clearing, and provider matching stub.",
+        "operationId": "PaymentsController_simulate",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SimulatePaymentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Payment simulation processed."
+          },
+          "404": {
+            "description": "Order or payment record not found."
+          }
+        },
+        "security": [
+          {
+            "bearer-token": []
+          }
+        ],
+        "summary": "Simulate Razorpay payment (success / failure)",
+        "tags": [
+          "Payments"
         ]
       }
     },
@@ -3852,6 +4046,13 @@
           },
           "role": {
             "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "blocked"
+            ]
           }
         },
         "required": [
@@ -3924,6 +4125,14 @@
           },
           "location": {
             "$ref": "#/components/schemas/GeoLocationDto"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "approved",
+              "suspended"
+            ]
           }
         },
         "required": [
@@ -4261,7 +4470,6 @@
         },
         "required": [
           "service",
-          "provider",
           "customer",
           "order",
           "region",
@@ -4298,8 +4506,36 @@
           },
           "payoutAt": {
             "type": "string"
+          },
+          "offers": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          },
+          "offerRound": {
+            "type": "number"
           }
         }
+      },
+      "SimulatePaymentDto": {
+        "type": "object",
+        "properties": {
+          "orderId": {
+            "type": "string",
+            "description": "Mongo ObjectId of the order",
+            "example": "65f1a2b3c4d5e6f7a8b9c0d1"
+          },
+          "success": {
+            "type": "boolean",
+            "description": "Whether mock payment succeeded",
+            "example": true
+          }
+        },
+        "required": [
+          "orderId",
+          "success"
+        ]
       },
       "CreatePaymentDto": {
         "type": "object",
@@ -4418,6 +4654,20 @@
           }
         }
       },
+      "MatchWeightsDto": {
+        "type": "object",
+        "properties": {
+          "distance": {
+            "type": "number"
+          },
+          "rating": {
+            "type": "number"
+          },
+          "availability": {
+            "type": "number"
+          }
+        }
+      },
       "CreatePlatformSettingDto": {
         "type": "object",
         "properties": {
@@ -4447,6 +4697,18 @@
           },
           "offerTimeoutMinutes": {
             "type": "number"
+          },
+          "maxOfferRounds": {
+            "type": "number"
+          },
+          "offerBatchSize": {
+            "type": "number"
+          },
+          "payoutHoldHours": {
+            "type": "number"
+          },
+          "matchWeights": {
+            "$ref": "#/components/schemas/MatchWeightsDto"
           }
         },
         "required": [
@@ -4457,8 +4719,7 @@
           "lastSlotStart",
           "bookingWindowDays",
           "minLeadMinutes",
-          "travelBufferMinutes",
-          "offerTimeoutMinutes"
+          "travelBufferMinutes"
         ]
       },
       "UpdatePlatformSettingDto": {

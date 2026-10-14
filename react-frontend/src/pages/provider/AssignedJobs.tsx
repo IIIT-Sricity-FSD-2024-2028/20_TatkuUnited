@@ -1,115 +1,120 @@
-import { useContext, useEffect, useState } from "react";
-import AuthContext from "@/common/AuthContext";
+import { useEffect, useState } from "react";
 import { RolesEnum } from "@/common/roles.enum";
-import {HTTP_METHODS_ENUM} from "@/common/http.methods";
-import { ENDPOINT_ENUM, buildEndpoint } from "@/services/endpoints";
-import { apiService } from "@/services/apiService";
-import DataTable, {type Column} from "./DataTable";
+import { useAuthContext } from "@/common/AuthContext";
+import {
+  getProviderByUser,
+  getProviderSchedule,
+} from "@/services/providers.service";
+import DataTable, { type Column } from "./DataTable";
 
-interface Job
-{
-    assignment_id: string;
-    service_name: string;
-    customer_name: string;
-    service_address: string;
-    scheduled_date: string;
-    hour_start: string;
-    status: string;
+interface Job {
+  bookingId: string;
+  serviceName: string;
+  customerName: string;
+  serviceAddress: string;
+  scheduledDate: string;
+  startTime: string;
+  status: string;
 }
-
 
 interface Booking {
-    _id: string;
-    service?: {
-        _id: string;
-        name: string;
-    };
-    customer?: {
-        _id: string;
-        name: string;
-        phone: string;
-    };
-    order?: {
-        address?: {
-        line?: string;
-        city?: string;
-        };
-    };
-    scheduledDate: string;
-    startTime: number;
-    endTime: number;
-    status: string;
+  _id: string;
+  service?: { name?: string };
+  customer?: { name?: string };
+  order?: { address?: { line?: string; city?: string } };
+  scheduledDate: string;
+  startTime: number;
+  status: string;
 }
 
-const columns = [
-    { key: "service_name", label: "Service Name" },
-    { key: "customer_name", label: "Customer Name" },
-    { key: "service_address", label: "Address" },
-    { key: "scheduled_date", label: "Date" },
-    { key: "hour_start", label: "Time" },
-    { key: "status", label: "Status" },
+const columns: Column<Job>[] = [
+  { key: "serviceName", label: "Service Name" },
+  { key: "customerName", label: "Customer Name" },
+  { key: "serviceAddress", label: "Address" },
+  { key: "scheduledDate", label: "Date" },
+  { key: "startTime", label: "Time" },
+  { key: "status", label: "Status" },
 ];
 
+function formatTime(minutes: number): string {
+  const hours = Math.floor(minutes / 60);
+  const remainingMinutes = minutes % 60;
+  return `${String(hours).padStart(2, "0")}:${String(remainingMinutes).padStart(2, "0")}`;
+}
+
+function formatDate(value: string): string {
+  return new Date(value).toLocaleDateString();
+}
+
 export default function AssignedJobs() {
-    const authContext = useContext(AuthContext);
-    const [jobs, setJobs] = useState<Job[]>([]);
+  const { authDetails } = useAuthContext();
+  const [jobs, setJobs] = useState<Job[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-    const providerId = authContext?.authDetails.user.id;
-    const role = authContext?.authDetails.user.role;
+  useEffect(() => {
+    const user = authDetails?.user;
+    if (!user || user.role !== RolesEnum.PROVIDER) {
+      setLoading(false);
+      return;
+    }
 
-    useEffect(() => {
-        if(!providerId || role !== RolesEnum.PROVIDER) {
-            return;
-        }
+    async function fetchJobs() {
+      if (!user) return;
+      try {
+        setError(null);
+        const provider = await getProviderByUser(user.id);
+        const bookings = (await getProviderSchedule(
+          provider._id,
+        )) as unknown as Booking[];
 
-        async function fetchJobs() {
-            try {
-                const endpoint = buildEndpoint(
-                    ENDPOINT_ENUM.BOOKINGS_BY_PROVIDER,
-                    {providerId,},
-                );
+        setJobs(
+          bookings.map((booking) => ({
+            bookingId: booking._id,
+            serviceName: booking.service?.name ?? "Unknown service",
+            customerName: booking.customer?.name ?? "Unknown customer",
+            serviceAddress: [
+              booking.order?.address?.line,
+              booking.order?.address?.city,
+            ]
+              .filter(Boolean)
+              .join(", "),
+            scheduledDate: formatDate(booking.scheduledDate),
+            startTime: formatTime(booking.startTime),
+            status: booking.status,
+          })),
+        );
+      } catch (requestError) {
+        setError(
+          requestError instanceof Error
+            ? requestError.message
+            : "Unable to load assigned jobs.",
+        );
+      } finally {
+        setLoading(false);
+      }
+    }
 
-                const response = await apiService(
-                    HTTP_METHODS_ENUM.get,
-                    endpoint, 
-                    undefined,
-                );
+    void fetchJobs();
+  }, [authDetails]);
 
-                const formattedJobs: Job[] = response.map(
-                    (job: JobApiResponse) => ({
-                        assignment_id: job.assignment_id,
-                        service_name: job.service_name,
-                        customer_name: job.customer_name,
-                        service_address: job.service_address,
-                        scheduled_date: job.scheduled_date,
-                        hour_start: job.hour_start,
-                        status: job.status,
-                    }),
-                );
-
-                setJobs(formattedJobs);
-            } catch (error) {
-                console.error("Failed to fetch assigned jobs:", error);
-            }
-        }
-        fetchJobs();
-    }, [providerId, role]);
-
+  if (authDetails?.user.role !== RolesEnum.PROVIDER) {
     return (
-        <div className="rounded-lg bg-white p-6 shadow">
-            <h1 className="mb-4 text-2xl font-bold text-slate-800">
-                Assigned Jobs
-            </h1>
-
-            {jobs.length === 0 ? (
-                <p>No jobs assigned.</p>
-            ) : (
-                <DataTable
-                    columns={columns}
-                    data={jobs}
-                    rowKey="assignment_id"
-                />
-            )}
-        </div>
+      <p className="rounded-lg bg-white p-6 shadow">
+        Provider access required.
+      </p>
     );
+  }
+
+  return (
+    <div className="rounded-lg bg-white p-6 shadow">
+      <h1 className="mb-4 text-2xl font-bold text-slate-800">Assigned Jobs</h1>
+      {loading && <p>Loading assigned jobs...</p>}
+      {error && <p className="text-red-600">{error}</p>}
+      {!loading && !error && jobs.length === 0 && <p>No jobs assigned.</p>}
+      {!loading && !error && jobs.length > 0 && (
+        <DataTable columns={columns} data={jobs} rowKey="bookingId" />
+      )}
+    </div>
+  );
 }

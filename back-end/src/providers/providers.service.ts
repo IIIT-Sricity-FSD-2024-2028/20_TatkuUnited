@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { Provider, ProviderDocument } from '../schema/provider.schema';
 import { ProviderStatus } from '../common/enums';
 import { CreateProviderDto } from './dto/create-provider.dto';
@@ -31,23 +31,32 @@ export class ProvidersService {
   }
 
   findByUser(userId: string) {
-    return this.providerModel.findOne({ user: userId }).exec();
+    const user = Types.ObjectId.isValid(userId)
+      ? new Types.ObjectId(userId)
+      : userId;
+    return this.providerModel.findOne({ user }).populate('user', '-password').exec();
   }
 
   findByRegion(regionId: string, status?: ProviderStatus | string) {
-    const filter: Record<string, unknown> = { region: regionId };
+    const region = Types.ObjectId.isValid(regionId)
+      ? new Types.ObjectId(regionId)
+      : regionId;
+    const filter: Record<string, unknown> = { region };
     if (status) {
-      filter.status = status as ProviderStatus;
+      filter.status = status;
     }
-    return this.providerModel.find(filter).exec();
+    return this.providerModel.find(filter).populate('user', '-password').exec();
   }
 
   findByStatus(status: ProviderStatus | string) {
-    return this.providerModel.find({ status: status as ProviderStatus }).exec();
+    return this.providerModel.find({ status: status as ProviderStatus }).populate('user', '-password').exec();
   }
 
   findByService(serviceId: string) {
-    return this.providerModel.find({ offeredServices: serviceId }).exec();
+    const service = Types.ObjectId.isValid(serviceId)
+      ? new Types.ObjectId(serviceId)
+      : serviceId;
+    return this.providerModel.find({ offeredServices: service }).populate('user', '-password').exec();
   }
 
   async update(id: string, dto: UpdateProviderDto) {

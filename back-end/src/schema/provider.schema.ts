@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document, Types } from 'mongoose';
+import { Document, Schema as MongooseSchema, Types } from 'mongoose';
 import { GeoPointSchema } from './common';
 import { ProviderStatus } from '../common/enums';
 
@@ -9,10 +9,10 @@ export type ProviderDocument = Provider & Document;
 
 @Schema({ timestamps: true })
 export class Provider {
-  @Prop({ type: Types.ObjectId, ref: 'User', required: true, unique: true })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'User', required: true, unique: true })
   user: Types.ObjectId;
 
-  @Prop({ type: [{ type: Types.ObjectId, ref: 'Service' }], default: [] })
+  @Prop({ type: [{ type: MongooseSchema.Types.ObjectId, ref: 'Service' }], default: [] })
   offeredServices: Types.ObjectId[];
 
   @Prop({ type: Number, required: true, default: 0 }) // years
@@ -43,7 +43,7 @@ export class Provider {
   @Prop({ type: Number, default: 0 })
   ratingCount: number;
 
-  @Prop({ type: Types.ObjectId, ref: 'Region', default: null })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Region', default: null })
   region: Types.ObjectId | null;
 
   @Prop({ type: String, default: null })

@@ -1,0 +1,15 @@
+{
+    "keep": {
+        "days": true,
+        "amount": 14
+    },
+    "auditLog": "D:\\20_TatkuUnited\\logs\\.2eae069df55b73dbc9d81563f84c3e125d70ef97-audit.json",
+    "files": [
+        {
+            "date": 1792005901819,
+            "name": "D:\\20_TatkuUnited\\logs\\http-2026-10-15.log",
+            "hash": "ab9bde268a3d4009bd3446829a2880d636d13ed1168eab2ccbb7b37079f7c1ad"
+        }
+    ],
+    "hashType": "sha256"
+}

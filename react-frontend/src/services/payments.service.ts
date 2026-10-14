@@ -11,6 +11,28 @@ import type {
   UpdatePaymentDto,
 } from "@/models/api.models";
 
+export interface SimulatePaymentResponse {
+  success: boolean;
+  orderId: string;
+  paymentStatus: string;
+  paymentId?: string;
+  message: string;
+}
+
+/** POST /payments/simulate — Mock payment success or failure */
+export async function simulatePayment(
+  orderId: string,
+  success: boolean,
+): Promise<SimulatePaymentResponse> {
+  return apiService<
+    SimulatePaymentResponse,
+    { orderId: string; success: boolean }
+  >(HTTP_METHODS_ENUM.post, ENDPOINT_ENUM.PAYMENTS_SIMULATE, {
+    orderId,
+    success,
+  });
+}
+
 /** POST /payments — Initialize a Razorpay payment. Requires auth. */
 export async function createPayment(dto: CreatePaymentDto): Promise<PaymentDocument> {
   return apiService<PaymentDocument, CreatePaymentDto>(

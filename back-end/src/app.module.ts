@@ -31,7 +31,11 @@ import { PaymentsModule } from './payments/payments.module';
 import { ReviewsModule } from './reviews/reviews.module';
 import { UnavailabilityModule } from './unavailability/unavailability.module';
 import { PlatformSettingsModule } from './platform-settings/platform-settings.module';
+
 import { UploadModule } from './upload/upload.module';
+import { NotificationsModule } from './notifications/notifications.module';
+import { MatchingModule } from './matching/matching.module';
+
 
 @Module({
   imports: [
@@ -69,7 +73,10 @@ import { UploadModule } from './upload/upload.module';
     ReviewsModule,
     UnavailabilityModule,
     PlatformSettingsModule,
+    NotificationsModule,
+    MatchingModule,
   ],
+
   controllers: [AppController],
   providers: [
     AppService,

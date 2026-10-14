@@ -53,6 +53,11 @@ export async function getProviderOffers(providerId: string): Promise<BookingDocu
   return apiService<BookingDocument[]>(HTTP_METHODS_ENUM.get, url);
 }
 
+/** GET /bookings/provider-offers/me — Pending offers for current authenticated provider. */
+export async function getMyPendingOffers(): Promise<BookingDocument[]> {
+  return apiService<BookingDocument[]>(HTTP_METHODS_ENUM.get, "/bookings/provider-offers/me");
+}
+
 /** GET /bookings/provider/:providerId/schedule — Provider daily schedule. */
 export async function getProviderSchedule(providerId: string): Promise<BookingDocument[]> {
   const url = buildEndpoint(ENDPOINT_ENUM.BOOKINGS_PROVIDER_SCHEDULE, { providerId });
@@ -93,40 +98,49 @@ export async function deleteBooking(id: string): Promise<void> {
 // Status Action Endpoints
 // ---------------------------------------------------------------------------
 
-/** PATCH /bookings/:id/accept — Provider accepts offer. */
-export async function acceptBooking(id: string): Promise<BookingDocument> {
+/** POST /bookings/:id/accept — Provider accepts offer. */
+export async function acceptBooking(id: string, providerId?: string): Promise<BookingDocument> {
   const url = buildEndpoint(ENDPOINT_ENUM.BOOKINGS_ACCEPT, { id });
-  return apiService<BookingDocument>(HTTP_METHODS_ENUM.patch, url);
+  return apiService<BookingDocument, { providerId?: string }>(
+    HTTP_METHODS_ENUM.post,
+    url,
+    providerId ? { providerId } : undefined,
+  );
 }
 
-/** PATCH /bookings/:id/reject — Provider rejects offer. */
-export async function rejectBooking(id: string): Promise<BookingDocument> {
+/** POST /bookings/:id/reject — Provider rejects offer. */
+export async function rejectBooking(id: string, providerId?: string): Promise<BookingDocument> {
   const url = buildEndpoint(ENDPOINT_ENUM.BOOKINGS_REJECT, { id });
-  return apiService<BookingDocument>(HTTP_METHODS_ENUM.patch, url);
+  return apiService<BookingDocument, { providerId?: string }>(
+    HTTP_METHODS_ENUM.post,
+    url,
+    providerId ? { providerId } : undefined,
+  );
 }
 
-/** PATCH /bookings/:id/start — Provider marks job as started. */
+/** POST /bookings/:id/start — Provider marks job as started. */
 export async function startBooking(id: string): Promise<BookingDocument> {
   const url = buildEndpoint(ENDPOINT_ENUM.BOOKINGS_START, { id });
-  return apiService<BookingDocument>(HTTP_METHODS_ENUM.patch, url);
+  return apiService<BookingDocument>(HTTP_METHODS_ENUM.post, url);
 }
 
-/** PATCH /bookings/:id/complete — Provider marks job as completed. */
+/** POST /bookings/:id/complete — Provider marks job as completed. */
 export async function completeBooking(id: string): Promise<BookingDocument> {
   const url = buildEndpoint(ENDPOINT_ENUM.BOOKINGS_COMPLETE, { id });
-  return apiService<BookingDocument>(HTTP_METHODS_ENUM.patch, url);
+  return apiService<BookingDocument>(HTTP_METHODS_ENUM.post, url);
 }
 
-/** PATCH /bookings/:id/cancel — Cancel a booking. */
+/** POST /bookings/:id/cancel — Cancel a booking. */
 export async function cancelBooking(
   id: string,
+  cancelledBy: string = "customer",
   reason?: string,
 ): Promise<BookingDocument> {
   const url = buildEndpoint(ENDPOINT_ENUM.BOOKINGS_CANCEL, { id });
-  return apiService<BookingDocument, { cancelledReason?: string }>(
-    HTTP_METHODS_ENUM.patch,
+  return apiService<BookingDocument, { cancelledBy: string; reason?: string }>(
+    HTTP_METHODS_ENUM.post,
     url,
-    reason ? { cancelledReason: reason } : undefined,
+    { cancelledBy, reason },
   );
 }
 

@@ -1,12 +1,12 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document, Types } from 'mongoose';
+import { Document, Schema as MongooseSchema, Types } from 'mongoose';
 import { UserAddress } from './common';
 import { Role, UserStatus, Gender } from '../common/enums';
 
 // -- Embedded: Cart item inside User.cart.items[] -----------------------------
 @Schema({ _id: false })
 export class CartItem {
-  @Prop({ type: Types.ObjectId, ref: 'Service', required: true })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Service', required: true })
   service: Types.ObjectId;
 
   @Prop({ type: Date, required: true })
