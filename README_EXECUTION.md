@@ -271,19 +271,29 @@ The platform includes dedicated dashboards for each role in the system. You can 
 ---
 
 ### 2. Vasudev
-- **Roll Number**: *[To be filled]*
+- **Roll Number**: *S20240010252*
 - **Role**: Team Member
 
 #### Key Contributions:
 - **Frontend Contributions**:
-  - *[Placeholder: Describe frontend components, user interfaces, or features developed]*
+  - *Developed the superuser dashboard and management interfaces for users, categories, regions, services, and platform settings; added the superuser layout and routes, the DataTable and SummaryCards components, the landing page, and the shared sidebar.*
 - **Backend Contributions**:
-  - *[Placeholder: Describe backend endpoints, controllers, or business logic developed]*
-- **Testing & Documentation**:
-  - *[Placeholder: Describe unit tests, integration tests, or API documentation authored]*
+  - *Contributed to the upload endpoint implementation with the help of AI.*
 
 #### Files Worked On:
-- *[Placeholder: Add links to files worked on, e.g. `react-frontend/src/...` or `back-end/src/...`]*
+- react-frontend/src/pages/superuser/dashboard.tsx
+react-frontend/src/pages/superuser/manage_users.tsx
+react-frontend/src/pages/superuser/manage_categories.tsx
+react-frontend/src/pages/superuser/manage_regions.tsx
+react-frontend/src/pages/superuser/manage_services.tsx
+react-frontend/src/pages/superuser/platform_settings.tsx
+react-frontend/src/pages/superuser/superuser_layout.tsx
+react-frontend/src/pages/superuser/superuser_route.tsx
+react-frontend/src/components/superuser/DataTable.tsx
+react-frontend/src/components/superuser/SummaryCards.tsx
+react-frontend/src/pages/general/landing/LandingPage.tsx
+react-frontend/src/pages/shared/Sidebar.tsx
+back-end/src/upload/upload.controller.ts
 
 ---
 
