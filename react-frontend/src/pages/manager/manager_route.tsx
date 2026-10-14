@@ -4,7 +4,7 @@ import ManagerDashboard from "./dashboard";
 import ManagerProfile from "./my-profile";
 import ManagerRevenue from "./revenue";
 import ManagerManageProviders from "./manage-providers";
-import ProtectedRoute from "../components/ProtectedRoute";
+import ProtectedRoute from "../components/protectedRoute";
 import { RolesEnum } from "@/common/roles.enum";
 
 export default function ManagerRouter() {

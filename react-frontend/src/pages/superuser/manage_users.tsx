@@ -1,26 +1,25 @@
 import React, { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
-import { type RootState } from "../../store";
-import axios from "axios";
-import { BASE_URL, ENDPOINT_ENUM } from "../../common/endpoints";
 import { BsPeople, BsPersonCheck, BsPersonX, BsPlus } from "react-icons/bs";
 import useAuth from "@/hooks/useAuth";
 import { RolesEnum } from "@/common/roles.enum";
-import { apiService } from "@/common/services/apiService";
-import { HTTP_METHODS_ENUM } from "@/common/http.methods";
+import {
+  getAllUsers,
+  createUser,
+  updateUser,
+  deleteUser,
+} from "@/services/users.service";
+import type { UserRole, UserStatus } from "@/models/api.models";
 
 interface UsersResponse {
   id: string;
   name: string;
   email: string;
   role: string;
-  status: boolean;
+  status: string;
   joined: string;
 }
 
 export default function SuperUser_ManageUsers() {
-  // const token = useSelector((state: RootState) => state.auth.token);
-  // const user = useSelector((state: RootState) => state.auth.user);
   const { user, isAuthenticated } = useAuth();
   const super_user_id = user?.id;
 
@@ -29,7 +28,8 @@ export default function SuperUser_ManageUsers() {
   const [error, setError] = useState<string | null>(null);
 
   const totalUsers = users.length;
-  const activeUsers = users.filter((u) => u.status).length;
+  const activeUsers = users.filter((u) => u.status === "active").length;
+  const blockedUsers = users.filter((u) => u.status === "blocked").length;
 
   const SUMMARY_STATS = [
     {
@@ -47,8 +47,8 @@ export default function SuperUser_ManageUsers() {
       bg: "bg-green-50",
     },
     {
-      title: "Suspended Users",
-      count: totalUsers - activeUsers,
+      title: "Blocked Users",
+      count: blockedUsers,
       icon: <BsPersonX size={20} />,
       iconColor: "text-red-600",
       bg: "bg-red-50",
@@ -57,42 +57,54 @@ export default function SuperUser_ManageUsers() {
 
   const [isAddUser, setIsAddUser] = useState(false);
   const [isEditingUserID, setIsEditingUserID] = useState<string | null>(null);
-  const [isEditingUserRole, setIsEditingUserRole] = useState<string | null>(
-    null,
-  );
-  const [isEditingUserStatus, setIsEditingUserStatus] = useState(false);
+  const [isEditingUserRole, setIsEditingUserRole] = useState<string | null>(null);
+  const [isEditingUserStatus, setIsEditingUserStatus] = useState(true);
 
   const [status, setStatus] = useState("all_statuses");
   const [role, setRole] = useState("all-roles");
   const [search, setSearch] = useState("");
 
-  const filtered_users = users.filter((user) => {
-    if (status != "all_statuses") {
-      if (status === "active" && user.status != true) return false;
-      if (status === "suspended" && user.status != false) return false;
+  const filtered_users = users.filter((userItem) => {
+    if (status !== "all_statuses") {
+      if (status === "active" && userItem.status !== "active") return false;
+      if (status === "blocked" && userItem.status !== "blocked") return false;
     }
-    if (role != "all-roles" && user.role != role) return false;
-    if (user.role === "Unit Manager") return false;
-    if (!user.name.toLocaleLowerCase().includes(search.toLocaleLowerCase()))
+    if (role !== "all-roles" && userItem.role.toLowerCase() !== role.toLowerCase()) {
       return false;
+    }
+    if (
+      search &&
+      !userItem.name.toLowerCase().includes(search.toLowerCase()) &&
+      !userItem.email.toLowerCase().includes(search.toLowerCase())
+    ) {
+      return false;
+    }
     return true;
   });
 
   const fetchAllUsers = async () => {
-    if (!isAuthenticated || user.role != RolesEnum.ADMIN) return;
+    if (!isAuthenticated || !user || user.role !== RolesEnum.ADMIN) return;
     try {
       setIsLoading(true);
       setError(null);
 
-      const users_data = await apiService<Array<UsersResponse>, null>(
-        HTTP_METHODS_ENUM.get,
-        ENDPOINT_ENUM.USERS,
+      const users_data = await getAllUsers();
+      setUsers(
+        (users_data || []).map((u) => ({
+          id: u._id,
+          name: u.name,
+          email: u.email,
+          role: u.role,
+          status: u.status || "active",
+          joined: u.createdAt ? new Date(u.createdAt).toLocaleDateString("en-IN") : "-",
+        })),
       );
-      setUsers(users_data);
-      // console.log(users_data);
-    } catch (err) {
-      setError("Failed to fetch users. Please check your connection.");
-      console.log(err);
+    } catch (err: any) {
+      setError(
+        err?.response?.data?.message ||
+          err?.message ||
+          "Failed to fetch users from server.",
+      );
     } finally {
       setIsLoading(false);
     }
@@ -110,12 +122,12 @@ export default function SuperUser_ManageUsers() {
             User Management
           </h1>
           <p className="text-slate-500 text-sm">
-            Manage and moderate platform users, roles, and security status.
+            Manage and moderate platform users, roles, and account security status.
           </p>
         </div>
         <button
           onClick={() => setIsAddUser(true)}
-          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors text-sm"
+          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors text-sm cursor-pointer"
         >
           <BsPlus size={20} />
           Add New User
@@ -124,17 +136,15 @@ export default function SuperUser_ManageUsers() {
 
       {isAddUser && (
         <AddUser
-          super_user_id={super_user_id}
           onClose={() => setIsAddUser(false)}
           refreshUsers={fetchAllUsers}
         />
       )}
       {isEditingUserID && isEditingUserRole && (
         <EditUser
-          super_user_id={super_user_id}
           userId={isEditingUserID}
           role={isEditingUserRole}
-          is_active={isEditingUserStatus}
+          isActive={isEditingUserStatus}
           onClose={() => {
             setIsEditingUserID(null);
             setIsEditingUserRole(null);
@@ -163,21 +173,22 @@ export default function SuperUser_ManageUsers() {
       </div>
 
       <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex flex-wrap gap-4 items-end">
-        {/* Styled Search Bar Section */}
+        {/* Search Bar */}
         <div className="flex flex-col gap-1 flex-[2] min-w-[200px]">
           <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">
             Search Users
           </label>
           <input
             type="text"
-            placeholder="Search by name..."
+            placeholder="Search by name or email..."
             className="w-full p-2 border border-slate-300 rounded-lg text-sm outline-none focus:border-blue-500 bg-white"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
 
-        <div className="flex flex-col gap-1 flex-1 min-w-37.5">
+        {/* Role Filter */}
+        <div className="flex flex-col gap-1 flex-1 min-w-[150px]">
           <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">
             Role Filter
           </label>
@@ -186,115 +197,97 @@ export default function SuperUser_ManageUsers() {
             value={role}
             onChange={(e) => setRole(e.target.value)}
           >
-            <option id="all-roles" value="all-roles">
-              All Roles
-            </option>
-            <option id="provider" value="Service Provider">
-              Service Provider
-            </option>
-            <option id="manager" value="Collective Manager">
-              Manager
-            </option>
-            <option id="customer" value="Customer">
-              Customer
-            </option>
-            <option id="super_user" value="Super User">
-              Super User
-            </option>
+            <option value="all-roles">All Roles</option>
+            <option value="customer">Customer</option>
+            <option value="provider">Provider</option>
+            <option value="manager">Manager</option>
+            <option value="admin">Admin</option>
           </select>
         </div>
 
-        <div className="flex flex-col gap-1 flex-1 min-w-37.5">
+        {/* Status Filter */}
+        <div className="flex flex-col gap-1 flex-1 min-w-[150px]">
           <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">
-            Account Status
+            Status
           </label>
           <select
             className="w-full p-2 border border-slate-300 rounded-lg text-sm outline-none focus:border-blue-500 bg-white"
             value={status}
             onChange={(e) => setStatus(e.target.value)}
           >
-            <option id="all_statuses" value="all_statuses">
-              All Statuses
-            </option>
-            <option id="active" value="active">
-              Active
-            </option>
-            <option id="suspended" value="suspended">
-              Suspended
-            </option>
+            <option value="all_statuses">All Statuses</option>
+            <option value="active">Active</option>
+            <option value="blocked">Blocked</option>
           </select>
         </div>
-
-        <button
-          className="px-4 py-2 border border-slate-300 rounded-lg text-sm font-medium hover:bg-slate-50 transition-colors h-9.5"
-          onClick={() => {
-            setStatus("all_statuses");
-            setRole("all-roles");
-            setSearch("");
-          }}
-        >
-          Reset Filters
-        </button>
       </div>
 
+      {/* Users Table */}
       <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-        <div className="overflow-x-auto">
-          {isLoading ? (
-            <div className="p-8 text-center text-slate-500">
-              Loading Users...
-            </div>
-          ) : error ? (
-            <div className="p-8 text-center text-red-500">{error}</div>
-          ) : (
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="bg-slate-50 border-b border-slate-200 text-xs font-bold text-slate-400 uppercase tracking-wider">
-                  <th className="p-4">User ID</th>
-                  <th className="p-4">Name</th>
-                  <th className="p-4">Email/Phone</th>
-                  <th className="p-4">Role</th>
-                  <th className="p-4">Status</th>
-                  <th className="p-4">Joined</th>
-                  <th className="p-4">Actions</th>
+        {isLoading ? (
+          <div className="p-12 text-center text-slate-500">
+            <div className="inline-block h-6 w-6 animate-spin rounded-full border-2 border-blue-600 border-t-transparent mb-2" />
+            <p>Loading users...</p>
+          </div>
+        ) : error ? (
+          <div className="p-8 text-center text-red-600 bg-red-50">
+            {error}
+          </div>
+        ) : filtered_users.length === 0 ? (
+          <div className="p-12 text-center text-slate-500">
+            No users match the selected criteria.
+          </div>
+        ) : (
+          <table className="w-full text-left border-collapse text-sm">
+            <thead className="bg-slate-50 border-b border-slate-200 text-xs font-semibold text-slate-500 uppercase">
+              <tr>
+                <th className="p-4">Name</th>
+                <th className="p-4">Email</th>
+                <th className="p-4">Role</th>
+                <th className="p-4">Status</th>
+                <th className="p-4">Joined</th>
+                <th className="p-4 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {filtered_users.map((u) => (
+                <tr key={u.id} className="hover:bg-slate-50 transition-colors">
+                  <td className="p-4 font-medium text-slate-900">{u.name}</td>
+                  <td className="p-4 text-slate-600">{u.email}</td>
+                  <td className="p-4 capitalize">
+                    <span className="inline-flex items-center rounded-md bg-slate-100 px-2 py-1 text-xs font-medium text-slate-700">
+                      {u.role}
+                    </span>
+                  </td>
+                  <td className="p-4">
+                    <span
+                      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                        u.status === "active"
+                          ? "bg-green-50 text-green-700 ring-1 ring-inset ring-green-600/20"
+                          : "bg-red-50 text-red-700 ring-1 ring-inset ring-red-600/20"
+                      }`}
+                    >
+                      {u.status}
+                    </span>
+                  </td>
+                  <td className="p-4 text-slate-500 text-xs">{u.joined}</td>
+                  <td className="p-4 text-right">
+                    <button
+                      onClick={() => {
+                        setIsEditingUserID(u.id);
+                        setIsEditingUserRole(u.role);
+                        setIsEditingUserStatus(u.status === "active");
+                      }}
+                      className="text-blue-600 hover:text-blue-800 font-medium text-xs cursor-pointer"
+                    >
+                      Edit
+                    </button>
+                  </td>
                 </tr>
-              </thead>
-              <tbody className="text-sm text-slate-700 divide-y divide-slate-100">
-                {filtered_users.map((user) => (
-                  <tr key={user.id} className="hover:bg-slate-50">
-                    <td className="p-4 font-medium text-slate-900">
-                      {user.id}
-                    </td>
-                    <td className="p-4">{user.name}</td>
-                    <td className="p-4 text-slate-500">{user.email}</td>
-                    <td className="p-4">{user.role}</td>
-                    <td className="p-4">
-                      <span
-                        className={`px-2 py-1 rounded-full text-xs font-semibold ${user.status === true ? "text-green-700" : "text-red-700"}`}
-                      >
-                        {user.status === true ? "Active" : "Suspended"}
-                      </span>
-                    </td>
-                    <td className="p-4">
-                      {new Date(user.joined).toLocaleDateString()}
-                    </td>
-                    <td className="p-4">
-                      <button
-                        onClick={() => {
-                          setIsEditingUserID(user.id);
-                          setIsEditingUserRole(user.role);
-                          setIsEditingUserStatus(user.status);
-                        }}
-                        className="text-blue-600 hover:underline"
-                      >
-                        Edit
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </div>
+              ))}
+            </tbody>
+          </table>
+        )}
       </div>
     </div>
   );
@@ -302,82 +295,55 @@ export default function SuperUser_ManageUsers() {
 
 interface AddUserProps {
   onClose: () => void;
-  token: string | null;
-  super_user_id: string | undefined;
   refreshUsers: () => void;
 }
 
-interface EditUserProps {
-  onClose: () => void;
-  token: string | null;
-  super_user_id: string | undefined;
-  userId: string;
-  role: string;
-  is_active: boolean;
-  refreshUsers: () => void;
-}
-
-function AddUser({
-  onClose,
-  token,
-  super_user_id,
-  refreshUsers,
-}: AddUserProps) {
-  const [role, setRole] = useState("");
+function AddUser({ onClose, refreshUsers }: AddUserProps) {
+  const [role, setRole] = useState<UserRole>("customer");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
+  const [password, setPassword] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const onAddUser = async (newUser: any) => {
-    if (!token || !super_user_id) return;
-
-    let endpoint = "";
-    if (role === "Super User") {
-      endpoint = "super-users";
-    } else if (role === "Collective Manager") {
-      endpoint = "collective-managers";
-    } else {
-      console.log("Unkown role selected");
-      return;
-    }
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setIsSubmitting(true);
 
     try {
-      const response = await axios.post(`${BASE_URL}/${endpoint}`, newUser, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "x-role": "super_user",
-        },
+      await createUser({
+        name: name.trim(),
+        email: email.trim(),
+        phone: phone.startsWith("+91") ? phone : `+91${phone.replace(/\D/g, "")}`,
+        password: password.trim() || "Password@123",
+        role,
+        status: "active" as UserStatus,
       });
 
-      console.log("New User", response.data);
-      onClose();
       refreshUsers();
-    } catch (err) {
-      console.error("Error adding new user: ", err);
+      onClose();
+    } catch (err: any) {
+      const msg =
+        err?.response?.data?.message ||
+        err?.message ||
+        "Failed to create user.";
+      setError(Array.isArray(msg) ? msg.join(", ") : msg);
+    } finally {
+      setIsSubmitting(false);
     }
-  };
-
-  const handleSubmit = (e: React.SyntheticEvent) => {
-    e.preventDefault();
-
-    const newUser = {
-      email: email,
-      name: name,
-      password: "Password@123",
-      phone: phone,
-      is_active: true,
-    };
-
-    onAddUser(newUser);
-
-    setName("");
-    setEmail("");
-    setRole("");
   };
 
   return (
     <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
       <h2 className="text-lg font-bold text-slate-900 mb-4">Create New User</h2>
+
+      {error && (
+        <div role="alert" className="mb-4 rounded-lg bg-red-50 p-3 text-sm text-red-700 border border-red-200">
+          {error}
+        </div>
+      )}
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-5">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -387,15 +353,14 @@ function AddUser({
             </label>
             <select
               value={role}
-              onChange={(e) => setRole(e.target.value)}
+              onChange={(e) => setRole(e.target.value as UserRole)}
               className="w-full p-2 border border-slate-300 rounded-lg text-sm outline-none focus:border-blue-500 bg-white"
               required
             >
-              <option value="" disabled>
-                Select Role
-              </option>
-              <option value="Collective Manager">Collective Manager</option>
-              <option value="Super User">Super User</option>
+              <option value="customer">Customer</option>
+              <option value="provider">Provider</option>
+              <option value="manager">Manager</option>
+              <option value="admin">Admin</option>
             </select>
           </div>
 
@@ -407,7 +372,7 @@ function AddUser({
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="e.g. Jane Doe"
+              placeholder="e.g. John Doe"
               className="w-full p-2 border border-slate-300 rounded-lg text-sm outline-none focus:border-blue-500 bg-white"
               required
             />
@@ -421,7 +386,7 @@ function AddUser({
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="name@company.com"
+              placeholder="user@tatkuunited.com"
               className="w-full p-2 border border-slate-300 rounded-lg text-sm outline-none focus:border-blue-500 bg-white"
               required
             />
@@ -432,12 +397,25 @@ function AddUser({
               Phone Number
             </label>
             <input
-              type="text"
+              type="tel"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
-              placeholder="+1 (555) 000-0000"
+              placeholder="9876543210"
               className="w-full p-2 border border-slate-300 rounded-lg text-sm outline-none focus:border-blue-500 bg-white"
               required
+            />
+          </div>
+
+          <div className="flex flex-col gap-1 md:col-span-2">
+            <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+              Initial Password
+            </label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Defaults to Password@123 if empty"
+              className="w-full p-2 border border-slate-300 rounded-lg text-sm outline-none focus:border-blue-500 bg-white"
             />
           </div>
         </div>
@@ -446,15 +424,16 @@ function AddUser({
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 border border-slate-300 rounded-lg text-sm font-medium hover:bg-slate-50 text-slate-700 transition-colors"
+            className="px-4 py-2 border border-slate-300 rounded-lg text-sm font-medium hover:bg-slate-50 text-slate-700 transition-colors cursor-pointer"
           >
             Cancel
           </button>
           <button
             type="submit"
-            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors text-sm"
+            disabled={isSubmitting}
+            className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 text-white px-4 py-2 rounded-lg font-medium transition-colors text-sm cursor-pointer"
           >
-            Add User
+            {isSubmitting ? "Creating..." : "Add User"}
           </button>
         </div>
       </form>
@@ -462,83 +441,70 @@ function AddUser({
   );
 }
 
+interface EditUserProps {
+  onClose: () => void;
+  userId: string;
+  role: string;
+  isActive: boolean;
+  refreshUsers: () => void;
+}
+
 function EditUser({
   onClose,
-  super_user_id,
   userId,
-  role,
-  is_active,
+  role: initialRole,
+  isActive: initialStatus,
   refreshUsers,
 }: EditUserProps) {
-  const [status, setStatus] = useState(is_active);
+  const [isActive, setIsActive] = useState(initialStatus);
+  const [role, setRole] = useState<UserRole>(initialRole as UserRole);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = async (e: React.SyntheticEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (!super_user_id) return;
-
-    let endpoint = "";
-    if (role === "Super User") {
-      endpoint = "super-users";
-    } else if (role === "Collective Manager") {
-      endpoint = "collective-managers";
-    } else if (role === "Service Provider") {
-      endpoint = "service-providers";
-    } else if (role === "Customer") {
-      endpoint = "customers";
-    } else {
-      console.log("Unkown role selected");
-      return;
-    }
+    setIsSubmitting(true);
+    setError(null);
 
     try {
-      const res_data = await apiService(
-        HTTP_METHODS_ENUM.patch,
-        `${endpoint}/${userId}`,
-        {
-          is_active: status,
-        },
-      );
+      await updateUser(userId, {
+        status: isActive ? "active" : "blocked",
+        role,
+      });
 
-      console.log(res_data);
-      onClose();
       refreshUsers();
-    } catch (err) {
-      console.error("Error updating the user", err);
+      onClose();
+    } catch (err: any) {
+      const msg =
+        err?.response?.data?.message ||
+        err?.message ||
+        "Failed to update user.";
+      setError(Array.isArray(msg) ? msg.join(", ") : msg);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  const DeleteUser = async (e: React.SyntheticEvent) => {
-    e.preventDefault();
+  const handleDelete = async () => {
+    const confirmed = window.confirm(
+      "Are you sure you want to permanently delete this user account?",
+    );
+    if (!confirmed) return;
 
-    if (!token || !super_user_id) return;
-
-    let endpoint = "";
-    if (role === "Super User") {
-      endpoint = "super-users";
-    } else if (role === "Collective Manager") {
-      endpoint = "collective-managers";
-    } else if (role === "Service Provider") {
-      endpoint = "service-providers";
-    } else if (role === "Customer") {
-      endpoint = "customers";
-    } else {
-      console.log("Unkown role selected");
-      return;
-    }
-
+    setIsSubmitting(true);
+    setError(null);
     try {
-      const response = await axios.delete(`${BASE_URL}/${endpoint}/${userId}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "x-role": "super_user",
-        },
-      });
-      console.log(response.data);
-      onClose();
+      await deleteUser(userId);
       refreshUsers();
-    } catch (err) {
-      console.error("Error deleting the user", err);
+      onClose();
+    } catch (err: any) {
+      const msg =
+        err?.response?.data?.message ||
+        err?.message ||
+        "Failed to delete user.";
+      setError(Array.isArray(msg) ? msg.join(", ") : msg);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -546,12 +512,18 @@ function EditUser({
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
       <div className="bg-white p-6 rounded-xl shadow-lg w-full max-w-md border border-slate-200">
         <h2 className="text-lg font-bold text-slate-900 mb-1">
-          Edit User Status
+          Edit User Account
         </h2>
         <p className="text-sm text-slate-500 mb-6">
-          Modify account access for user ID:{" "}
+          Modify account access and role for ID:{" "}
           <span className="font-mono text-slate-700 text-xs">{userId}</span>
         </p>
+
+        {error && (
+          <div role="alert" className="mb-4 rounded-lg bg-red-50 p-3 text-sm text-red-700 border border-red-200">
+            {error}
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-6">
           <div className="flex items-center justify-between p-4 border border-slate-200 rounded-lg bg-slate-50">
@@ -560,46 +532,66 @@ function EditUser({
                 Account Status
               </label>
               <span
-                className={`text-sm font-semibold ${status ? "text-green-700" : "text-slate-500"}`}
+                className={`text-sm font-semibold ${
+                  isActive ? "text-green-700" : "text-red-700"
+                }`}
               >
-                {status ? "Active" : "Suspended"}
+                {isActive ? "Active (Can log in)" : "Blocked (Suspended)"}
               </span>
             </div>
-
-            {/* Sliding Toggle Switch */}
-            <label className="relative inline-flex items-center cursor-pointer">
-              <input
-                type="checkbox"
-                className="sr-only peer"
-                checked={status}
-                onChange={(e) => setStatus(e.target.checked)}
-              />
-              <div className="w-11 h-6 bg-slate-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-600"></div>
-            </label>
-          </div>
-
-          <div className="flex justify-between items-center mt-2 border-t border-slate-100 pt-4">
             <button
               type="button"
-              onClick={DeleteUser}
-              className="px-4 py-2 bg-red-50 border border-red-100 hover:bg-red-100 text-red-600 rounded-lg text-sm font-medium transition-colors"
+              onClick={() => setIsActive(!isActive)}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer transition ${
+                isActive
+                  ? "bg-red-100 text-red-700 hover:bg-red-200"
+                  : "bg-green-100 text-green-700 hover:bg-green-200"
+              }`}
+            >
+              {isActive ? "Block Account" : "Activate"}
+            </button>
+          </div>
+
+          <div className="flex flex-col gap-1">
+            <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+              Assigned Role
+            </label>
+            <select
+              value={role}
+              onChange={(e) => setRole(e.target.value as UserRole)}
+              className="w-full p-2 border border-slate-300 rounded-lg text-sm outline-none focus:border-blue-500 bg-white"
+            >
+              <option value="customer">Customer</option>
+              <option value="provider">Provider</option>
+              <option value="manager">Manager</option>
+              <option value="admin">Admin</option>
+            </select>
+          </div>
+
+          <div className="flex justify-between items-center border-t border-slate-100 pt-4">
+            <button
+              type="button"
+              onClick={handleDelete}
+              disabled={isSubmitting}
+              className="text-red-600 hover:text-red-800 text-xs font-semibold cursor-pointer"
             >
               Delete User
             </button>
 
-            <div className="flex gap-3">
+            <div className="flex gap-2">
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2 border border-slate-300 rounded-lg text-sm font-medium hover:bg-slate-50 text-slate-700 transition-colors"
+                className="px-4 py-2 border border-slate-300 rounded-lg text-sm font-medium hover:bg-slate-50 text-slate-700 cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors text-sm"
+                disabled={isSubmitting}
+                className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 text-white px-4 py-2 rounded-lg font-medium text-sm cursor-pointer"
               >
-                Save Changes
+                {isSubmitting ? "Saving..." : "Save Changes"}
               </button>
             </div>
           </div>
