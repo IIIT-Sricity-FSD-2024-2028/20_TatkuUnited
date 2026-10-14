@@ -101,7 +101,7 @@ export default function SuperUser_Dashboard() {
             ))}
           </div>
         </div>
-      </div>
-    </div>
+      </div >
+    </div >
   );
 }

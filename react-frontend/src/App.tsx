@@ -7,13 +7,6 @@ import Login from "./pages/general/LoginPage";
 import Provider from "./pages/general/Provider";
 import SuperUser from "./pages/superuser/superuser_route";
 import ManagerRouter from "./pages/manager/manager_route";
-import CustomerDashboard from "./pages/customer/CustomerDashboard";
-
-import Cart from "./pages/customer/CartPage";
-import Schedule from "./pages/customer/SchedulePage";
-import AccountSettings from "./pages/customer/AccountSettingsPage";
-import RatingsFeedback from "./pages/customer/RatingsFeedbackPage";
-import BookingHistory from "./pages/customer/BookingHistoryPage";
 
 import { Provider as ReduxProvider } from "react-redux";
 import { store } from "./store";
@@ -22,9 +15,9 @@ import { useState } from "react";
 import type { AuthInterface } from "./models/auth.models";
 import { Toaster } from "./components/ui/toast";
 import NotFound from "./pages/components/notFound";
-import ProtectedRoute from "./pages/components/protectedRoute";
-import { RolesEnum } from "./common/roles.enum";
+import CustomerRouter from "./pages/customer/customer_route";
 // import ForbiddenAccess from "./pages/components/forbiddenAccess";
+
 
 function App() {
   const [authDetails, setAuthDetails] = useState<AuthInterface | null>(() => {
@@ -57,48 +50,13 @@ function App() {
 
             <Route path="/superuser/*" element={<SuperUser />} />
             <Route path="/manager/*" element={<ManagerRouter />} />
+            <Route path="/customer/*" element={<CustomerRouter />} />
 
-            <Route
-              path="/customer"
-              element={
-                <ProtectedRoute allowedRoles={[RolesEnum.CUSTOMER]}>
-                  <CustomerDashboard />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/bookings"
-              element={
-                <ProtectedRoute allowedRoles={[RolesEnum.CUSTOMER]}>
-                  <BookingHistory />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/cart"
-              element={
-                <ProtectedRoute allowedRoles={[RolesEnum.CUSTOMER]}>
-                  <Cart />
-                </ProtectedRoute>
-              }
-            />
-            <Route path="/schedule" element={<Schedule />} />
-            <Route
-              path="/account-settings"
-              element={
-                <ProtectedRoute allowedRoles={[RolesEnum.CUSTOMER]}>
-                  <AccountSettings />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/ratings-feedback"
-              element={
-                <ProtectedRoute allowedRoles={[RolesEnum.CUSTOMER]}>
-                  <RatingsFeedback />
-                </ProtectedRoute>
-              }
-            />
+            {/* Backwards-compatible route redirects
+            <Route path="/cart" element={<Navigate to="/customer/cart" replace />} />
+            <Route path="/schedule" element={<Navigate to="/customer/schedule" replace />} />
+            <Route path="/account-settings" element={<Navigate to="/customer/account-settings" replace />} />
+            <Route path="/ratings-feedback" element={<Navigate to="/customer/ratings-feedback" replace />} /> */}
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

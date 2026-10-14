@@ -16,8 +16,8 @@ export class ServicesService {
     return new this.serviceModel(dto).save();
   }
 
-  findAll(categoryId?: string) {
-    const filter: Record<string, unknown> = { isActive: true };
+  findAll(categoryId?: string, includeAll = false) {
+    const filter: Record<string, unknown> = includeAll ? {} : { isActive: true };
     if (categoryId) filter.category = categoryId;
     return this.serviceModel.find(filter).populate('category').exec();
   }
