@@ -82,6 +82,31 @@ export class ServicesController {
   }
 
   @Public()
+  @Get(':id/available-slots')
+  @ApiOperation({
+    summary: 'Get available time slots for a service',
+    description:
+      'Calculates available slots for a given service, date, and customer location based on provider qualification and conflict rules.',
+  })
+  getAvailableSlots(
+    @Param('id') serviceId: string,
+    @Query('date') date: string,
+    @Query('addressId') addressId?: string,
+    @Query('customerId') customerId?: string,
+    @Query('lat') lat?: number,
+    @Query('lng') lng?: number,
+  ) {
+    return this.servicesService.getAvailableSlots(
+      serviceId,
+      date,
+      addressId,
+      customerId,
+      lat ? Number(lat) : undefined,
+      lng ? Number(lng) : undefined,
+    );
+  }
+
+  @Public()
   @Get(':id')
   @ApiOperation({
     summary: 'Get service by ID',

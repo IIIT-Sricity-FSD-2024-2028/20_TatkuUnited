@@ -198,6 +198,18 @@ export class UsersController {
     return this.usersService.remove(id);
   }
 
+  private checkAccess(req: any, targetUserId: string) {
+    const user = req.user as AuthenticatedUser | undefined;
+    if (!user) {
+      throw new ForbiddenException('User is not authenticated');
+    }
+    if (user.role !== Role.ADMIN && user.userId !== targetUserId) {
+      throw new ForbiddenException(
+        'Access denied. You can only access your own user profile and cart',
+      );
+    }
+  }
+
   // -- Addresses (§4.3) --------------------------------------------------------
 
   @Get(':id/addresses')
@@ -211,7 +223,8 @@ export class UsersController {
     example: '65f1a2b3c4d5e6f7a8b9c0d1',
   })
   @ApiResponse({ status: 200, description: 'List of saved addresses.' })
-  async getAddresses(@Param('id') id: string) {
+  async getAddresses(@Param('id') id: string, @Req() req: any) {
+    this.checkAccess(req, id);
     const user = await this.usersService.findOne(id);
     return user.addresses || [];
   }
@@ -250,7 +263,8 @@ export class UsersController {
     },
   })
   @ApiResponse({ status: 201, description: 'Address added.' })
-  addAddress(@Param('id') id: string, @Body() address: any) {
+  addAddress(@Param('id') id: string, @Body() address: any, @Req() req: any) {
+    this.checkAccess(req, id);
     return this.usersService.addAddress(id, address);
   }
 
@@ -273,7 +287,9 @@ export class UsersController {
   removeAddress(
     @Param('id') id: string,
     @Param('addressId') addressId: string,
+    @Req() req: any,
   ) {
+    this.checkAccess(req, id);
     return this.usersService.removeAddress(id, addressId);
   }
 
@@ -291,7 +307,8 @@ export class UsersController {
     example: '65f1a2b3c4d5e6f7a8b9c0d1',
   })
   @ApiResponse({ status: 200, description: 'User cart.' })
-  getCart(@Param('id') id: string) {
+  getCart(@Param('id') id: string, @Req() req: any) {
+    this.checkAccess(req, id);
     return this.usersService.getCart(id);
   }
 
@@ -318,7 +335,8 @@ export class UsersController {
     },
   })
   @ApiResponse({ status: 201, description: 'Item added to cart.' })
-  addToCart(@Param('id') id: string, @Body() item: any) {
+  addToCart(@Param('id') id: string, @Body() item: any, @Req() req: any) {
+    this.checkAccess(req, id);
     return this.usersService.addToCart(id, item);
   }
 
@@ -338,7 +356,12 @@ export class UsersController {
     example: '0',
   })
   @ApiResponse({ status: 200, description: 'Cart updated.' })
-  removeFromCart(@Param('id') id: string, @Param('index') index: string) {
+  removeFromCart(
+    @Param('id') id: string,
+    @Param('index') index: string,
+    @Req() req: any,
+  ) {
+    this.checkAccess(req, id);
     return this.usersService.removeFromCart(id, parseInt(index, 10));
   }
 
@@ -353,7 +376,8 @@ export class UsersController {
     example: '65f1a2b3c4d5e6f7a8b9c0d1',
   })
   @ApiResponse({ status: 200, description: 'Cart cleared.' })
-  clearCart(@Param('id') id: string) {
+  clearCart(@Param('id') id: string, @Req() req: any) {
+    this.checkAccess(req, id);
     return this.usersService.clearCart(id);
   }
 
@@ -381,7 +405,10 @@ export class UsersController {
   selectCartAddress(
     @Param('id') id: string,
     @Body('addressId') addressId: string,
+    @Req() req: any,
   ) {
+    this.checkAccess(req, id);
     return this.usersService.selectCartAddress(id, addressId);
   }
 }
+

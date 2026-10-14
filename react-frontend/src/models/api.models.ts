@@ -37,6 +37,8 @@ export type UserRole = "customer" | "provider" | "manager" | "admin";
 export type UserStatus = "active" | "blocked";
 
 export interface UserAddress {
+  _id?: string;
+  id?: string;
   label: string;
   line: string;
   city: string;
@@ -60,6 +62,7 @@ export interface AddCartItemDto {
   scheduledDate: string;
   startTime: number;
   endTime: number;
+  addressId?: string;
 }
 
 export interface UserDocument {

@@ -7,6 +7,10 @@ import {
   Param,
   Delete,
   Query,
+  Req,
+  HttpCode,
+  HttpStatus,
+  ForbiddenException,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -18,18 +22,24 @@ import {
   ApiBearerAuth,
 } from '@nestjs/swagger';
 import { BookingsService } from './bookings.service';
+import { ProvidersService } from '../providers/providers.service';
 import { CreateBookingDto } from './dto/create-booking.dto';
 import { UpdateBookingDto } from './dto/update-booking.dto';
 import { Roles } from '../common/decorators/roles.decorator';
 import { Role } from '../common/enums/roles.enum';
+import type { AuthenticatedUser } from '../common/interfaces/authenticated-user.interface';
 
 @ApiTags('Bookings')
 @ApiBearerAuth('bearer-token')
 @Controller('bookings')
 export class BookingsController {
-  constructor(private readonly bookingsService: BookingsService) {}
+  constructor(
+    private readonly bookingsService: BookingsService,
+    private readonly providersService: ProvidersService,
+  ) {}
 
   @Roles(Role.CUSTOMER, Role.ADMIN)
+
   @Post()
   @ApiOperation({
     summary: 'Create a new service booking',
@@ -71,7 +81,13 @@ export class BookingsController {
     example: '65f1a2b3c4d5e6f7a8b9c0d1',
   })
   @ApiResponse({ status: 200, description: 'List of customer bookings.' })
-  findByCustomer(@Param('customerId') customerId: string) {
+  findByCustomer(@Param('customerId') customerId: string, @Req() req: any) {
+    const user = req.user as AuthenticatedUser;
+    if (user.role === Role.CUSTOMER && user.userId !== customerId) {
+      throw new ForbiddenException(
+        'Access denied. You can only view your own bookings',
+      );
+    }
     return this.bookingsService.findByCustomer(customerId);
   }
 
@@ -88,7 +104,16 @@ export class BookingsController {
     example: '65f1a2b3c4d5e6f7a8b9c0d1',
   })
   @ApiResponse({ status: 200, description: 'List of provider bookings.' })
-  findByProvider(@Param('providerId') providerId: string) {
+  async findByProvider(@Param('providerId') providerId: string, @Req() req: any) {
+    const user = req.user as AuthenticatedUser;
+    if (user.role === Role.PROVIDER) {
+      const providerDoc = await this.providersService.findByUser(user.userId);
+      if (!providerDoc || providerDoc._id.toString() !== providerId) {
+        throw new ForbiddenException(
+          'Access denied. You can only view your own assigned bookings',
+        );
+      }
+    }
     return this.bookingsService.findByProvider(providerId);
   }
 
@@ -105,8 +130,22 @@ export class BookingsController {
     example: '65f1a2b3c4d5e6f7a8b9c0d1',
   })
   @ApiResponse({ status: 200, description: 'List of bookings for the order.' })
-  findByOrder(@Param('orderId') orderId: string) {
-    return this.bookingsService.findByOrder(orderId);
+  async findByOrder(@Param('orderId') orderId: string, @Req() req: any) {
+    const user = req.user as AuthenticatedUser;
+    const bookings = await this.bookingsService.findByOrder(orderId);
+    if (user.role === Role.CUSTOMER) {
+      const hasForeign = bookings.some(
+        (b) =>
+          b.customer?.toString() !== user.userId &&
+          (b.customer as any)?._id?.toString() !== user.userId,
+      );
+      if (hasForeign) {
+        throw new ForbiddenException(
+          'Access denied. You do not own the bookings for this order',
+        );
+      }
+    }
+    return bookings;
   }
 
   @Roles(Role.PROVIDER, Role.MANAGER, Role.ADMIN)
@@ -122,8 +161,39 @@ export class BookingsController {
     example: '65f1a2b3c4d5e6f7a8b9c0d1',
   })
   @ApiResponse({ status: 200, description: 'List of active job offers.' })
-  findPendingOffers(@Param('providerId') providerId: string) {
+  async findPendingOffers(
+    @Param('providerId') providerId: string,
+    @Req() req: any,
+  ) {
+    const user = req.user as AuthenticatedUser;
+    if (user.role === Role.PROVIDER) {
+      const providerDoc = await this.providersService.findByUser(user.userId);
+      if (!providerDoc || providerDoc._id.toString() !== providerId) {
+        throw new ForbiddenException(
+          'Access denied. You can only view your own offers',
+        );
+      }
+    }
     return this.bookingsService.findPendingOffersForProvider(providerId);
+  }
+
+  @Roles(Role.PROVIDER)
+  @Get('provider-offers/me')
+  @ApiOperation({
+    summary: 'Get pending job offers for currently authenticated provider',
+    description:
+      'Retrieves all active unaccepted job offers for the authenticated provider derived strictly from JWT.',
+  })
+  @ApiResponse({ status: 200, description: 'List of active job offers.' })
+  async findMyPendingOffers(@Req() req: any) {
+    const user = req.user as AuthenticatedUser;
+    const providerDoc = await this.providersService.findByUser(user.userId);
+    if (!providerDoc) {
+      throw new ForbiddenException('Provider profile not found');
+    }
+    return this.bookingsService.findPendingOffersForProvider(
+      providerDoc._id.toString(),
+    );
   }
 
   @Roles(Role.PROVIDER, Role.MANAGER, Role.ADMIN)
@@ -145,12 +215,23 @@ export class BookingsController {
     example: '2026-10-15',
   })
   @ApiResponse({ status: 200, description: 'List of scheduled jobs.' })
-  findSchedule(
+  async findSchedule(
     @Param('providerId') providerId: string,
+    @Req() req: any,
     @Query('date') date?: string,
   ) {
+    const user = req.user as AuthenticatedUser;
+    if (user.role === Role.PROVIDER) {
+      const providerDoc = await this.providersService.findByUser(user.userId);
+      if (!providerDoc || providerDoc._id.toString() !== providerId) {
+        throw new ForbiddenException(
+          'Access denied. You can only view your own schedule',
+        );
+      }
+    }
     return this.bookingsService.findScheduleForProvider(providerId, date);
   }
+
 
   @Roles(Role.MANAGER, Role.ADMIN)
   @Get('region/:regionId/problems')
@@ -208,65 +289,75 @@ export class BookingsController {
   })
   @ApiResponse({ status: 200, description: 'Booking found.' })
   @ApiResponse({ status: 404, description: 'Booking not found.' })
-  findOne(@Param('id') id: string) {
-    return this.bookingsService.findOne(id);
+  async findOne(@Param('id') id: string, @Req() req: any) {
+    const user = req.user as AuthenticatedUser;
+    const booking: any = await this.bookingsService.findOne(id);
+    if (user.role === Role.CUSTOMER) {
+      const customerId =
+        booking.customer?._id?.toString() || booking.customer?.toString();
+      if (customerId !== user.userId) {
+        throw new ForbiddenException(
+          'Access denied. You can only view your own booking',
+        );
+      }
+    } else if (user.role === Role.PROVIDER) {
+      const providerDoc = await this.providersService.findByUser(user.userId);
+      const bookingProviderId =
+        booking.provider?._id?.toString() || booking.provider?.toString();
+      if (!providerDoc || bookingProviderId !== providerDoc._id.toString()) {
+        throw new ForbiddenException(
+          'Access denied. You can only view your own assigned booking',
+        );
+      }
+    }
+    return booking;
   }
 
   @Roles(Role.PROVIDER, Role.ADMIN)
   @Post(':id/accept')
+  @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'Provider accepts booking offer',
     description:
-      'Accepts an awaiting_provider booking before the offer timeout expires, transitioning it to confirmed.',
+      'Accepts an awaiting_provider booking before the offer timeout expires, transitioning it to confirmed. Identity taken strictly from JWT.',
   })
   @ApiParam({
     name: 'id',
     description: 'Booking Mongo ObjectId',
     example: '65f1a2b3c4d5e6f7a8b9c0d1',
   })
-  @ApiBody({
-    schema: {
-      type: 'object',
-      properties: {
-        providerId: { type: 'string', example: '65f1a2b3c4d5e6f7a8b9c0d1' },
-      },
-    },
-    required: false,
-  })
   @ApiResponse({ status: 200, description: 'Booking accepted.' })
-  @ApiResponse({ status: 400, description: 'Offer expired or already taken.' })
+  @ApiResponse({ status: 409, description: 'This job was already taken.' })
   acceptOffer(
     @Param('id') id: string,
-    @Body('providerId') providerId?: string,
+    @Req() req: any,
   ) {
-    return this.bookingsService.acceptOffer(id, providerId);
+    const user = req.user as AuthenticatedUser;
+    return this.bookingsService.acceptOffer(id, user);
   }
 
   @Roles(Role.PROVIDER, Role.ADMIN)
   @Post(':id/reject')
+  @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'Provider declines booking offer',
     description:
-      'Declines an offer and adds the provider to declinedBy list to trigger reassignment.',
+      'Declines an offer and adds the provider to declinedBy list to trigger reassignment. Identity taken strictly from JWT.',
   })
   @ApiParam({
     name: 'id',
     description: 'Booking Mongo ObjectId',
     example: '65f1a2b3c4d5e6f7a8b9c0d1',
   })
-  @ApiBody({
-    schema: {
-      type: 'object',
-      required: ['providerId'],
-      properties: {
-        providerId: { type: 'string', example: '65f1a2b3c4d5e6f7a8b9c0d1' },
-      },
-    },
-  })
   @ApiResponse({ status: 200, description: 'Booking offer declined.' })
-  rejectOffer(@Param('id') id: string, @Body('providerId') providerId: string) {
-    return this.bookingsService.rejectOffer(id, providerId);
+  rejectOffer(
+    @Param('id') id: string,
+    @Req() req: any,
+  ) {
+    const user = req.user as AuthenticatedUser;
+    return this.bookingsService.rejectOffer(id, user);
   }
+
 
   @Roles(Role.PROVIDER, Role.MANAGER, Role.ADMIN)
   @Post(':id/start')

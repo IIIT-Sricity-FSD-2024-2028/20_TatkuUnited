@@ -55,4 +55,10 @@ export class Payment {
 export const PaymentSchema = SchemaFactory.createForClass(Payment);
 
 // -- Indexes ----------------------------------------------------------------
-PaymentSchema.index({ razorpayPaymentId: 1 }, { unique: true, sparse: true });
+PaymentSchema.index(
+  { razorpayPaymentId: 1 },
+  {
+    unique: true,
+    partialFilterExpression: { razorpayPaymentId: { $type: 'string' } },
+  },
+);

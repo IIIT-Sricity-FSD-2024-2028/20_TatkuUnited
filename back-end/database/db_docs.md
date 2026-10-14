@@ -164,16 +164,19 @@ One row per service per slot. An order with 3 services creates 3 bookings, possi
 
 | Field                                                | Notes                                                                                                                  |
 | ---------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
-| `order`, `customer`, `service`, `provider`, `region` | All set at order creation. The provider is auto-assigned and is **tentative** until they accept.                       |
+| `order`, `customer`, `service`, `region`             | All set at order creation.                                                                                             |
+| `provider`                                           | Nullable at checkout. Set when the first provider accepts the job offer.                                               |
+| `offers[]`                                           | `[{ provider, status: offered\|declined\|expired\|accepted, offeredAt, expiresAt }]`                                   |
+| `offerRound`                                         | Current round number (starts at 0).                                                                                    |
 | `scheduledDate`, `startTime`, `endTime`              | The slot.                                                                                                              |
 | `blockStartTime`                                     | `startTime − travelBufferMinutes`. A snapshot. The provider is blocked from here to `endTime`.                         |
 | `price`                                              | Snapshot of `Service.price`.                                                                                           |
 | `platformFeePercent`                                 | Snapshot of the setting.                                                                                               |
 | `platformShare`, `providerShare`                     | `platformShare = round(price × fee / 100)`, `providerShare = price − platformShare`.                                   |
-| `offerExpiresAt`                                     | Only set while `status` is `awaiting_provider`. When the current provider's offer lapses. Cleared on accept or cancel. |
+| `offerExpiresAt`                                     | Only set while `status` is `awaiting_provider`. Cleared on accept or cancel.                                           |
 | `declinedBy[]`                                       | Providers who rejected, timed out, or cancelled after accepting. They are never offered this booking again.            |
-| `payoutStatus`, `payoutAt`                           | Provider settlement.                                                                                                   |
-| `status`, `cancelledBy`, `cancelledReason`           | Lifecycle. See §5.                                                                                                     |
+| `payoutStatus`, `payoutAt`, `completedAt`            | Provider settlement and completion timestamp.                                                                          |
+| `status`, `cancelledBy`, `cancelledReason`           | Lifecycle (`awaiting_provider` at checkout, transitions to `confirmed` on accept).                                     |
 
 The job address is **not** on the Booking. Read it from `Booking.order → Order.address`. Use `$lookup` or populate in the provider's job view.
 

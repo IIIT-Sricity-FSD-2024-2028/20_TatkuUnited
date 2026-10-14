@@ -43,4 +43,11 @@ export class UpdateBookingDto {
   @IsOptional()
   @IsDateString()
   payoutAt?: string;
+
+  @IsOptional()
+  offers?: any[];
+
+  @IsOptional()
+  offerRound?: number;
 }
+

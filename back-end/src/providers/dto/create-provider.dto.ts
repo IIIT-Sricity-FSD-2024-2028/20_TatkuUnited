@@ -1,6 +1,14 @@
 import { Type } from 'class-transformer';
-import { IsArray, IsMongoId, IsNumber, ValidateNested } from 'class-validator';
+import {
+  IsArray,
+  IsEnum,
+  IsMongoId,
+  IsNumber,
+  IsOptional,
+  ValidateNested,
+} from 'class-validator';
 import { GeoLocationDto } from '../../common/dto/geo-location.dto';
+import { ProviderStatus } from '../../common/enums/provider-status.enum';
 
 export class CreateProviderDto {
   @IsMongoId()
@@ -29,4 +37,9 @@ export class CreateProviderDto {
   @ValidateNested()
   @Type(() => GeoLocationDto)
   location: GeoLocationDto;
+
+  @IsOptional()
+  @IsEnum(ProviderStatus)
+  status?: ProviderStatus;
 }
+

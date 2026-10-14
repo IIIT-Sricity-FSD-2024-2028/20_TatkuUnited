@@ -201,7 +201,13 @@ export default function ServicePage() {
             {service.isActive ? "Active" : "Unavailable"}
           </Badge>
           <div>
-            <Button disabled={!service.isActive}>Book now</Button>
+            <Button
+              disabled={!service.isActive}
+              onClick={() => navigate(`/customer/schedule/${service._id}`)}
+              className="cursor-pointer"
+            >
+              Book now
+            </Button>
           </div>
         </div>
 

@@ -354,10 +354,12 @@ export default function BookingHistoryPage() {
                 const providerName =
                   typeof booking.provider === "object" &&
                   booking.provider !== null
-                    ? (booking.provider as any).name ||
+                    ? (booking.provider as any).user?.name ||
+                      (booking.provider as any).name ||
                       (booking.provider as any).businessName ||
                       undefined
                     : undefined;
+
 
                 const displayPrice = formatPriceDisplay(booking.price);
 
