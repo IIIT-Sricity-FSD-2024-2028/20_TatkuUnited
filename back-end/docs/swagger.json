@@ -2827,6 +2827,114 @@
         ]
       }
     },
+    "/bookings/{id}/request-completion": {
+      "post": {
+        "operationId": "BookingsController_requestCompletion",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer-token": []
+          }
+        ],
+        "summary": "Request customer confirmation to complete a job",
+        "tags": [
+          "Bookings"
+        ]
+      }
+    },
+    "/bookings/{id}/confirm-completion": {
+      "post": {
+        "operationId": "BookingsController_confirmCompletion",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer-token": []
+          }
+        ],
+        "summary": "Confirm that a provider completed the service",
+        "tags": [
+          "Bookings"
+        ]
+      }
+    },
+    "/bookings/{id}/reject-completion": {
+      "post": {
+        "operationId": "BookingsController_rejectCompletion",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer-token": []
+          }
+        ],
+        "summary": "Reject a provider completion request",
+        "tags": [
+          "Bookings"
+        ]
+      }
+    },
     "/bookings/{id}/cancel": {
       "post": {
         "description": "Cancels a booking with reason and actor (customer, provider, manager, admin).",

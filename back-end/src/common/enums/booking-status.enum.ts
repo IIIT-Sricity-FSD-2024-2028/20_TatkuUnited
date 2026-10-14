@@ -3,6 +3,7 @@ export enum BookingStatus {
   AWAITING_PROVIDER = 'awaiting_provider',
   CONFIRMED = 'confirmed',
   IN_PROGRESS = 'in_progress',
+  COMPLETION_REQUESTED = 'completion_requested',
   COMPLETED = 'completed',
   CANCELLED = 'cancelled',
 }

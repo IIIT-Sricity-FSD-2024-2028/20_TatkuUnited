@@ -290,6 +290,7 @@ export type BookingStatus =
   | "awaiting_provider"
   | "confirmed"
   | "in_progress"
+  | "completion_requested"
   | "completed"
   | "cancelled";
 
