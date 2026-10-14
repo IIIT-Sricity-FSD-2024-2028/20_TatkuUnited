@@ -1,5 +1,14 @@
 import { useMemo, useState } from "react";
 import { useSelector } from "react-redux";
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
 import type { RootState } from "../../store";
 import { Skeleton } from "../../components/ui/skeleton";
 import {
@@ -7,6 +16,7 @@ import {
   categoryBreakdown,
   filterByPeriod,
   formatRupees,
+  revenueTrend,
   summarise,
   type Period,
 } from "./revenue-utils";
@@ -46,6 +56,8 @@ export default function ManagerRevenue() {
     [bookings, period],
   );
   const summary = useMemo(() => summarise(inPeriod), [inPeriod]);
+  const trend = useMemo(() => revenueTrend(inPeriod, period), [inPeriod, period]);
+  const hasRevenue = trend.some((point) => point.revenue > 0);
   const categoryRows = useMemo(
     () => categoryBreakdown(inPeriod, categories),
     [inPeriod, categories],
@@ -137,8 +149,64 @@ export default function ManagerRevenue() {
             <CardContent>{stat(activeProviders)}</CardContent>
           </Card>
         </div>
-        <div className="flex justify-between">
-          <div>Revenue Trends chart</div>
+        <div className="flex justify-between gap-2">
+          <Card className="w-full">
+            <CardHeader>
+              <CardTitle>Revenue Trends</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {loading ? (
+                <Skeleton className="h-64 w-full" />
+              ) : !hasRevenue ? (
+                <p className="text-sm text-muted-foreground">
+                  No completed bookings in this period.
+                </p>
+              ) : (
+                <div className="h-64 w-full">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={trend} margin={{ top: 8, right: 8, left: 0 }}>
+                      <CartesianGrid
+                        vertical={false}
+                        stroke="var(--border)"
+                        strokeDasharray="3 3"
+                      />
+                      <XAxis
+                        dataKey="label"
+                        tickLine={false}
+                        axisLine={false}
+                        tick={{ fontSize: 12, fill: "var(--muted-foreground)" }}
+                        minTickGap={16}
+                      />
+                      <YAxis
+                        tickLine={false}
+                        axisLine={false}
+                        width={56}
+                        tick={{ fontSize: 12, fill: "var(--muted-foreground)" }}
+                        tickFormatter={(paise: number) =>
+                          `₹${new Intl.NumberFormat("en-IN", {
+                            notation: "compact",
+                          }).format(paise / 100)}`
+                        }
+                      />
+                      <Tooltip
+                        cursor={{ fill: "var(--muted)" }}
+                        formatter={(value) => [
+                          formatRupees(Number(value)),
+                          "Revenue",
+                        ]}
+                      />
+                      <Bar
+                        dataKey="revenue"
+                        fill="var(--primary)"
+                        radius={[4, 4, 0, 0]}
+                        maxBarSize={32}
+                      />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              )}
+            </CardContent>
+          </Card>
           <div>Booking distribution chart</div>
         </div>
         <div className="flex justify-around">

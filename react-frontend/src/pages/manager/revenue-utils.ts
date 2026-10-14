@@ -181,7 +181,7 @@ export function revenueTrend(
     points.push({
       label: byDay
         ? cursor.toLocaleDateString("en-IN", { day: "numeric", month: "short" })
-        : cursor.toLocaleDateString("en-IN", { month: "short", year: "2-digit" }),
+        : `${cursor.toLocaleDateString("en-IN", { month: "short" })} '${String(cursor.getFullYear()).slice(-2)}`,
       revenue: totals.get(keyOf(cursor)) ?? 0,
     });
     if (byDay) cursor.setDate(cursor.getDate() + 1);
