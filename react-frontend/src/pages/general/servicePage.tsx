@@ -258,7 +258,7 @@ export default function ServicePage() {
               <h3 className="text-xl font-semibold">
                 Frequently asked questions
               </h3>
-              <Accordion type="single" collapsible className="w-full">
+              <Accordion className="w-full">
                 {service.faq.map((item, idx) => (
                   <AccordionItem key={idx} value={`faq-${idx}`}>
                     <AccordionTrigger>{item.question}</AccordionTrigger>

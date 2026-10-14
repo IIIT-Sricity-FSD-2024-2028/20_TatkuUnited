@@ -1,0 +1,5 @@
+mongosh "mongodb+srv://rshricharan29:tCz8HGbSmFtqwHOo@shricluster.7nqbyw5.mongodb.net/tatku_united" --file .\20_TatkuUnited\back-end\database\seed\seed-users.js
+mongosh "mongodb+srv://rshricharan29:tCz8HGbSmFtqwHOo@shricluster.7nqbyw5.mongodb.net/tatku_united" --file .\20_TatkuUnited\back-end\database\seed\seed-catalog.js
+mongosh "mongodb+srv://rshricharan29:tCz8HGbSmFtqwHOo@shricluster.7nqbyw5.mongodb.net/tatku_united" --file .\20_TatkuUnited\back-end\database\seed\seed-layer2.js
+mongosh "mongodb+srv://rshricharan29:tCz8HGbSmFtqwHOo@shricluster.7nqbyw5.mongodb.net/tatku_united" --file .\20_TatkuUnited\back-end\database\seed\seed-layer3.js
+mongosh "mongodb+srv://rshricharan29:tCz8HGbSmFtqwHOo@shricluster.7nqbyw5.mongodb.net/tatku_united" --file .\20_TatkuUnited\back-end\database\seed\seed-layer4.js
