@@ -1,13 +1,12 @@
-export default function SuperUser_Dashboard()
-{
+export default function SuperUser_Dashboard() {
     const total_gmv = 10000;
     const revenue = [
-  { label: "Providers (80%)", amount: "₹8,000", percentage: 78},
-  { label: "Managers (15%)", amount: "₹1,500", percentage: 12},
-  { label: "Platform / Super User (10%)", amount: "₹500", percentage: 10},
-];
+        { label: "Providers (80%)", amount: "₹8,000", percentage: 78 },
+        { label: "Managers (15%)", amount: "₹1,500", percentage: 12 },
+        { label: "Platform / Super User (10%)", amount: "₹500", percentage: 10 },
+    ];
 
-    return(
+    return (
         <div className="max-w-5xl">
             <div className="mb-8">
                 <h1 className="text-2xl font-bold text-slate-900 mb-1">
@@ -17,7 +16,7 @@ export default function SuperUser_Dashboard()
                     Comprehensive breakdown of collective revenue distribution.
                 </p>
             </div>
-            <div className="bg-white rounded-xlshadow-sm border border-slate-200">
+            <div className="bg-white rounded-xl shadow-sm border border-slate-200">
                 <div className="p-6 border-b border-slate-100">
                     <h2 className="text-lg font-bold text-slate-800">Collective Revenue Breakdown</h2>
                     <p className="text-slate-500 text-sm">Distribution by role based on settled ledger entries.</p>

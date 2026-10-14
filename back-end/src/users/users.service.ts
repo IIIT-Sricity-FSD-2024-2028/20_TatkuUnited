@@ -41,9 +41,8 @@ export class UsersService {
     return doc;
   }
 
-  /** Used by auth — returns the password hash. */
   findByEmail(email: string) {
-    return this.userModel.findOne({ email }).select('+password').exec();
+    return this.userModel.findOne({ email: email.toLowerCase().trim() }).select('+password').exec();
   }
 
   findByRole(role: Role | string) {

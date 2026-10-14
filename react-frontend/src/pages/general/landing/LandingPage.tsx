@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
-import PublicNavbar from "../PublicNavbar";
-import Hero from "../Hero";
-import CTA from "../CTA";
+import PublicNavbar from "../../PublicNavbar";
+import Hero from "./Hero";
+import CTA from "./CTA";
 
 function LandingPage() {
   const navigate = useNavigate();

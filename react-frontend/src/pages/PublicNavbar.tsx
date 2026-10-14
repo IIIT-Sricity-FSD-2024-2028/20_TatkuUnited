@@ -3,9 +3,8 @@ import { Link } from "react-router-dom";
 // import type { RootState } from "../store";
 import { RolesEnum, type Role } from "../common/roles.enum";
 import UrlMap from "../common/urlMap";
-import { handleLogout } from "@/services/auth";
-import { useContext } from "react";
-import AuthContext from "@/common/AuthContext";
+import { handleLogout } from "@/common/services/authService";
+import { useAuthContext } from "@/common/AuthContext";
 
 interface PublicNavbarProps {
   brandName: string;
@@ -20,7 +19,7 @@ export default function PublicNavbar({
 }: PublicNavbarProps) {
   // const token = useSelector((state: RootState) => state.auth.token);
   // const user = useSelector((state: RootState) => state.auth.user);
-  const authContext = useContext(AuthContext);
+  const authContext = useAuthContext();
   const token = authContext.authDetails?.token;
   const user = authContext.authDetails?.user;
 

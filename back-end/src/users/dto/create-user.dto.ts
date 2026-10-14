@@ -9,26 +9,26 @@ import {
 
 export class CreateUserDto {
   @IsString()
-  name: string;
+  name!: string;
 
   @IsEmail()
-  email: string;
+  email!: string;
 
   @IsString()
   @MinLength(8)
-  password: string;
+  password!: string;
 
   @IsOptional()
   @IsEnum(['male', 'female', 'other'])
   gender?: string;
 
   @IsString()
-  phone: string;
+  phone!: string;
 
   @IsOptional()
   @IsDateString()
   dob?: string;
 
   @IsEnum(['customer', 'provider', 'manager', 'admin'])
-  role: string;
+  role!: string;
 }
