@@ -7,7 +7,7 @@
 
 import { Outlet } from 'react-router-dom'
 import SideBar, { SidebarItem } from "../shared/Sidebar";
-import SuperUser_Header from "../shared/superuser_header";
+import UserHeader from "../shared/user-header.tsx";
 import { BsGrid , BsPeopleFill, BsCollection, BsTools, BsHouseGearFill, BsPinMapFill } from "react-icons/bs";
 
 export const SuperUser_Layout = () => {
@@ -22,7 +22,7 @@ export const SuperUser_Layout = () => {
                 <SidebarItem to="/superuser/platform_settings" label="Platform Settings" icon={<BsHouseGearFill />} />
             </SideBar>
             <div className='flex flex-col flex-1 w-full'>
-                <SuperUser_Header />
+                <UserHeader header='Super User' />
                 <main className="h-full w-full overflow-y-auto bg-gray-50 p-6">
                     <Outlet />
                 </main>
