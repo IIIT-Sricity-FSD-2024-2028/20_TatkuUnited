@@ -8,7 +8,7 @@
 import { Outlet } from 'react-router-dom'
 import SideBar, { SidebarItem } from "../shared/Sidebar";
 import SuperUser_Header from "../shared/superuser_header";
-import { BsGrid , BsPeopleFill, BsCollection, BsTools } from "react-icons/bs";
+import { BsGrid , BsPeopleFill, BsCollection, BsTools, BsHouseGearFill, BsPinMapFill } from "react-icons/bs";
 
 export const SuperUser_Layout = () => {
     return(
@@ -18,7 +18,8 @@ export const SuperUser_Layout = () => {
                 <SidebarItem to="/superuser/manage_users" label="User Management" icon={<BsPeopleFill />} />
                 <SidebarItem to="/superuser/manage_categories" label="Category Management" icon={<BsCollection />} />
                 <SidebarItem to="/superuser/manage_services" label="Service Management" icon={<BsTools />} />
-                <SidebarItem to="/superuser/manage_regions" label="Region Management" icon={<BsTools />} />
+                <SidebarItem to="/superuser/manage_regions" label="Region Management" icon={<BsPinMapFill />} />
+                <SidebarItem to="/superuser/platform_settings" label="Platform Settings" icon={<BsHouseGearFill />} />
             </SideBar>
             <div className='flex flex-col flex-1 w-full'>
                 <SuperUser_Header />
