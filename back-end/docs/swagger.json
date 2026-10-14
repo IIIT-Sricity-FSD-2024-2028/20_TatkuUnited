@@ -1903,6 +1903,42 @@
         ]
       }
     },
+    "/upload/image": {
+      "post": {
+        "operationId": "UploadController_uploadImage",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Returns the Cloudinary image URL."
+          }
+        },
+        "security": [
+          {
+            "bearer-token": []
+          }
+        ],
+        "summary": "Upload an image to Cloudinary",
+        "tags": [
+          "Upload"
+        ]
+      }
+    },
     "/orders": {
       "post": {
         "description": "Creates a checkout order record snapshotting address and total amount in paise, with a 15-minute expiration timestamp.",

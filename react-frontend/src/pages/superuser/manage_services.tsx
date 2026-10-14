@@ -78,7 +78,6 @@ export default function SuperUser_ManageServices() {
   const [isAddService, setIsAddService] = useState(false);
   const [editingService, setEditingService] = useState<ServicesResponse | null>(null);
 
-  // Hardcoded stats for UI - replace with dynamic counts
   const SUMMARY_STATS: SummaryStat[] = [
     { title: "Total Services", count: totalServices, icon: <BsCart2 size={24} />, iconColor: "text-blue-600", bg: "bg-blue-50" },
     { title: "Active Services", count: activeServices, icon: <BsCheckCircle size={24} />, iconColor: "text-green-600", bg: "bg-green-50" },
@@ -306,13 +305,30 @@ function AddService({ onClose, token, super_user_id, refreshServices, categories
   const [duration, setDuration] = useState<number | ''>('');
   const [isAvailable, setIsAvailable] = useState(true);
   const [imageUrls, setImageUrls] = useState<string[]>([]);
-  const [newImageUrl, setNewImageUrl] = useState('');
 
-  const handleAddImage = () => {
-    if (!newImageUrl.trim()) return;
-    setImageUrls([...imageUrls, newImageUrl.trim()]);
-    setNewImageUrl('');
+  
+  const handleImageFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const response = await axios.post(`${BASE_URL}/upload/image`, formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      const uploadedUrl: string = response.data.url;
+      setImageUrls((prev) => [...prev, uploadedUrl]);
+    } catch (err) {
+      console.error('Image upload failed:', err);
+    }
   };
+
 
   const handleRemoveImage = (index: number) => {
     setImageUrls(imageUrls.filter((_, i) => i !== index));
@@ -438,22 +454,18 @@ function AddService({ onClose, token, super_user_id, refreshServices, categories
                 ))}
               </div>
             )}
-            <div className="flex gap-2">
-              <input
-                type="text"
-                placeholder="Enter image URL (e.g. https://example.com/photo.jpg)"
-                value={newImageUrl}
-                onChange={(e) => setNewImageUrl(e.target.value)}
-                className="flex-1 p-2 border border-slate-300 rounded-lg text-sm bg-white outline-none focus:border-blue-500"
-              />
-              <button
-                type="button"
-                onClick={handleAddImage}
-                className="px-3 py-2 bg-slate-800 text-white rounded-lg text-xs font-medium hover:bg-slate-900 transition-colors shrink-0"
-              >
-                Add Image
-              </button>
+            <div className="flex gap-2 items-center">
+              <label className="flex-1 flex items-center justify-center gap-2 p-2 border border-dashed border-slate-300 rounded-lg text-sm text-slate-500 cursor-pointer hover:border-blue-500 hover:text-blue-500 transition-colors bg-white">
+                <span>Click to upload an image</span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleImageFileChange}
+                />
+              </label>
             </div>
+
           </div>
 
 
@@ -517,7 +529,6 @@ function EditService({ onClose, token, super_user_id, refreshServices, categorie
 
 
   const [imageUrls, setImageUrls] = useState<string[]>(service.imageUrls || []);
-  const [newImageUrl, setNewImageUrl] = useState('');
 
 
   const [whatIsCovered, setWhatIsCovered] = useState(service.whatIsCovered?.join(', ') || '');
@@ -538,11 +549,28 @@ function EditService({ onClose, token, super_user_id, refreshServices, categorie
 
 
 
-  const handleAddImage = () => {
-    if (!newImageUrl.trim()) return;
-    setImageUrls([...imageUrls, newImageUrl.trim()]);
-    setNewImageUrl('');
+  const handleImageFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const response = await axios.post(`${BASE_URL}/upload/image`, formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      const uploadedUrl: string = response.data.url;
+      setImageUrls((prev) => [...prev, uploadedUrl]);
+    } catch (err) {
+      console.error('Image upload failed:', err);
+    }
   };
+
+
 
   const handleRemoveImage = (index: number) => {
     setImageUrls(imageUrls.filter((_, i) => i !== index));
@@ -703,23 +731,19 @@ function EditService({ onClose, token, super_user_id, refreshServices, categorie
                     ))}
                   </div>
                 )}
-                {/* Input to add a new image URL */}
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    placeholder="Enter image URL (e.g. https://example.com/photo.jpg)"
-                    value={newImageUrl}
-                    onChange={(e) => setNewImageUrl(e.target.value)}
-                    className="flex-1 p-2 border border-slate-300 rounded-lg text-sm bg-white outline-none focus:border-blue-500"
-                  />
-                  <button
-                    type="button"
-                    onClick={handleAddImage}
-                    className="px-3 py-2 bg-slate-800 text-white rounded-lg text-xs font-medium hover:bg-slate-900 transition-colors shrink-0"
-                  >
-                    Add Image
-                  </button>
+                {/* Input to add a new image */}
+                <div className="flex gap-2 items-center">
+                  <label className="flex-1 flex items-center justify-center gap-2 p-2 border border-dashed border-slate-300 rounded-lg text-sm text-slate-500 cursor-pointer hover:border-blue-500 hover:text-blue-500 transition-colors bg-white">
+                    <span>Click to upload an image</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handleImageFileChange}
+                    />
+                  </label>
                 </div>
+
               </div>
 
               <div className="flex flex-col gap-1 md:col-span-2">

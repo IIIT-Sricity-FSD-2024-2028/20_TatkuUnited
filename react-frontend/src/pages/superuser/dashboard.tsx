@@ -1,43 +1,72 @@
+import AuthContext from "@/common/AuthContext";
+import { getServices, getCategories, getAllRegions, getAllUsers, getAllProviders, getAllBookings, getAllPayments } from "@/services";
+import { useContext, useEffect, useState } from "react";
+import type { BookingDocument, PaymentDocument } from "@/models/api.models";
+
 export default function SuperUser_Dashboard() {
-    const total_gmv = 10000;
-    const revenue = [
-        { label: "Providers (80%)", amount: "₹8,000", percentage: 78 },
-        { label: "Managers (15%)", amount: "₹1,500", percentage: 12 },
-        { label: "Platform / Super User (10%)", amount: "₹500", percentage: 10 },
-    ];
+  const authContext = useContext(AuthContext);
+  const token = authContext?.authDetails?.token;
 
-    return (
-        <div className="max-w-5xl">
-            <div className="mb-8">
-                <h1 className="text-2xl font-bold text-slate-900 mb-1">
-                    Platform Revenue Analysis
-                </h1>
-                <p className="text-slate-500 text-sm">
-                    Comprehensive breakdown of collective revenue distribution.
-                </p>
-            </div>
-            <div className="bg-white rounded-xl shadow-sm border border-slate-200">
-                <div className="p-6 border-b border-slate-100">
-                    <h2 className="text-lg font-bold text-slate-800">Collective Revenue Breakdown</h2>
-                    <p className="text-slate-500 text-sm">Distribution by role based on settled ledger entries.</p>
-                </div>
+  const [totalServices, setTotalServices] = useState(0);
+  const [totalCategories, setTotalCategories] = useState(0);
+  const [totalRegions, setTotalRegions] = useState(0);
+  const [totalCustomers, setTotalCustomers] = useState(0);
+  const [totalProviders, setTotalProviders] = useState(0);
 
-                <div className="p-6">
-                    <div className="inline-block border border-slate-200 rounded-lg p-4 mb-8 min-w-50">
-                        <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Total GMV</p>
-                        <p className="text-2xl font-bold text-slate-900">{total_gmv}</p>
-                    </div>
+  const [bookings, setBookings] = useState<BookingDocument[]>([]);
+  const [payments, setPayments] = useState<PaymentDocument[]>([]);
 
-                    <div className="flex flex-col gap-6">
-                        {revenue.map((item) => (
-                            <div className="flex justify-between items-end mb-2 text-sm font-semibold text-slate-700">
-                                <span>{item.label}</span>
-                                <span>{item.amount}</span>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            </div>
-        </div>
-    )
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!token) return;
+
+    const fetchAll = async () => {
+      try {
+        setLoading(true);
+
+        const [services, categories, regions, users, providers, allBookings, allPayments] =
+          await Promise.all([
+            getServices(),
+            getCategories(),
+            getAllRegions(),
+            getAllUsers(),
+            getAllProviders(),
+            getAllBookings(),
+            getAllPayments(),
+          ]);
+
+        setTotalServices(services.length);
+        setTotalCategories(categories.length);
+        setTotalRegions(regions.length);
+
+        setTotalCustomers(users.filter((u) => u.role === "customer").length);
+        setTotalProviders(providers.length);
+
+        setBookings(allBookings);
+        setPayments(allPayments);
+      } catch (err) {
+        setError("Failed to load dashboard data.");
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAll();
+  }, [token]);
+
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div>{error}</div>;
+
+  return (
+    <div>
+      <p>Services: {totalServices}</p>
+      <p>Categories: {totalCategories}</p>
+      <p>Regions: {totalRegions}</p>
+      <p>Customers: {totalCustomers}</p>
+      <p>Providers: {totalProviders}</p>
+    </div>
+  );
 }

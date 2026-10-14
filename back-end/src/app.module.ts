@@ -31,6 +31,7 @@ import { PaymentsModule } from './payments/payments.module';
 import { ReviewsModule } from './reviews/reviews.module';
 import { UnavailabilityModule } from './unavailability/unavailability.module';
 import { PlatformSettingsModule } from './platform-settings/platform-settings.module';
+import { UploadModule } from './upload/upload.module';
 
 @Module({
   imports: [
@@ -61,6 +62,7 @@ import { PlatformSettingsModule } from './platform-settings/platform-settings.mo
     RegionsModule,
     CategoriesModule,
     ServicesModule,
+    UploadModule,
     OrdersModule,
     BookingsModule,
     PaymentsModule,
