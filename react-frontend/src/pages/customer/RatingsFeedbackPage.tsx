@@ -176,7 +176,7 @@ function RatingsFeedbackPage() {
               </p>
               <button
                 type="button"
-                onClick={() => navigate("/bookings")}
+                onClick={() => navigate("/customer/bookings")}
                 className="mt-5 rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-blue-700 transition cursor-pointer"
               >
                 View My Bookings

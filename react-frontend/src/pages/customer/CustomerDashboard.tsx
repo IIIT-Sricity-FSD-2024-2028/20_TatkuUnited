@@ -46,7 +46,7 @@ export default function CustomerDashboard() {
         </button>
 
         <button
-          onClick={() => navigate("/bookings")}
+          onClick={() => navigate("/customer/bookings")}
           className="rounded-xl border bg-white p-6 text-left shadow-sm hover:shadow-md cursor-pointer"
         >
           <h2 className="text-lg font-semibold">Booking History</h2>
