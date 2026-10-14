@@ -4,7 +4,7 @@ import { RolesEnum } from "@/common/roles.enum";
 import { HTTP_METHODS_ENUM } from "@/common/http.methods";
 import { ENDPOINT_ENUM, buildEndpoint } from "@/common/endpoints";
 import { apiService } from "@/services/apiService";
-import DataTable from "./DataTable";
+import DataTable, { type Column } from "./DataTable";
 
 interface Job {
   assignment_id: string;
@@ -16,7 +16,17 @@ interface Job {
   status: string;
 }
 
-const columns: Array<Job> = [
+export interface JobApiResponse {
+  assignment_id: string;
+  service_name: string;
+  customer_name: string;
+  service_address: string;
+  scheduled_date: string;
+  hour_start: string;
+  status: string;
+}
+
+const columns: Column<Job>[] = [
   { key: "service_name", label: "Service Name" },
   { key: "customer_name", label: "Customer Name" },
   { key: "service_address", label: "Address" },
@@ -29,18 +39,20 @@ export default function AssignedJobs() {
   const authContext = useContext(AuthContext);
   const [jobs, setJobs] = useState<Job[]>([]);
 
-  const providerId = authContext?.authDetails.user.id;
-  const role = authContext?.authDetails.user.role;
+  const providerId = authContext?.authDetails?.user.id;
+  const role = authContext?.authDetails?.user.role;
 
   useEffect(() => {
     if (!providerId || role !== RolesEnum.PROVIDER) {
       return;
     }
 
+    const currentProviderId = providerId;
+
     async function fetchJobs() {
       try {
         const endpoint = buildEndpoint(ENDPOINT_ENUM.BOOKINGS_BY_PROVIDER, {
-          providerId,
+          providerId: currentProviderId,
         });
 
         const response = await apiService(

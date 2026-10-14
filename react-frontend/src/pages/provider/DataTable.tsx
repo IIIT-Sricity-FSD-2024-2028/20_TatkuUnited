@@ -1,12 +1,12 @@
 import { type ReactNode } from "react";
 
-interface Column<T> {
+export interface Column<T> {
   key: keyof T;
   label: string;
   render?: (value: T[keyof T], row: T) => ReactNode;
 }
 
-interface DataTableProps<T> {
+export interface DataTableProps<T> {
   columns: Column<T>[];
   data: T[];
   rowKey?: keyof T;

@@ -13,35 +13,64 @@ import {
   SelectItem,
 } from "@/components/ui/select";
 import ServiceCard from "../components/serviceCard";
+import { Spinner } from "@/components/ui/spinner";
 
 export default function ServiceCatalog() {
   const navigate = useNavigate();
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
   const [services, setServices] = useState<Array<ServiceDocument>>([]);
   const [categories, setCategories] = useState<Array<CategoryDocument>>([]);
+  const [loading, setLoading] = useState<boolean>(false);
 
   useEffect(() => {
-    async function fetCategories() {
-      setCategories(await getCategories());
+    try {
+      async function fetCategories() {
+        setCategories(await getCategories());
+      }
+
+      setLoading(true);
+      fetCategories();
+    } finally {
+      setLoading(false);
     }
-    fetCategories();
   }, []);
 
   useEffect(() => {
-    async function fetchServices() {
-      if (categoryFilter === "all") {
-        setServices(await getServices());
-      } else {
-        setServices(await getServicesByCategory(categoryFilter));
+    try {
+      async function fetchServices() {
+        if (categoryFilter === "all") {
+          setServices(await getServices());
+        } else {
+          setServices(await getServicesByCategory(categoryFilter));
+        }
       }
+
+      setLoading(true);
+      fetchServices();
+    } finally {
+      setLoading(false);
     }
-    fetchServices();
   }, [categoryFilter]);
 
   const items = [
     { label: "All", value: "all" },
     ...categories.map((cat) => ({ label: cat.name, value: cat._id })),
   ];
+
+  if (loading)
+    return (
+      <div>
+        <PublicNavbar
+          brandInitials="TU"
+          brandName="Tatku United"
+          key={categoryFilter}
+          onNavigate={navigate}
+        />
+        <div className="flex h-dvh justify-center items-center">
+          <Spinner />
+        </div>
+      </div>
+    );
 
   return (
     <div>
