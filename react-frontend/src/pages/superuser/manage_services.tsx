@@ -215,7 +215,6 @@ export default function SuperUser_ManageServices() {
         />
       )}
 
-      {/* Summary Cards — uses reusable SummaryCards component */}
       <SummaryCards stats={SUMMARY_STATS} />
 
       {/* Standardized Filter Bar */}
