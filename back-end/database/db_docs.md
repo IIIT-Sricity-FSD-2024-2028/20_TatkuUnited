@@ -527,7 +527,7 @@ Always filter on the server by the authenticated user (customer id, provider id,
 - Wrap checkout, payment success, reassignment and cancellation in **transactions**. Several documents change together.
 - Make webhook handlers **idempotent**. Razorpay can deliver the same event more than once, and the client verification call may race the webhook.
 - Accept, reject and timeout all use **filtered atomic updates** (provider, status and expiry in the filter), so a late accept and the expiry sweep cannot both win.
-- Never take prices or amounts from the client. Recompute from Service and compare with the Razorpay amount.
+- Never take prices or amos from the client. Recompute from Service and compare with the Razorpay amount.
 - Keep Razorpay key secrets and webhook secrets on the server only.
 - Never return `password` in API responses.
 
