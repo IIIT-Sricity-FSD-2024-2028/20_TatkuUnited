@@ -6,10 +6,13 @@ import { BASE_URL } from '@/common/endpoints';
 import { BsPeople, BsPersonCheck, BsPersonX, BsPlus } from 'react-icons/bs';
 import SummaryCards, { type SummaryStat } from '@/components/superuser/SummaryCards';
 import DataTable, { type Column } from '@/components/superuser/DataTable';
+import { createManager } from '@/services';
+import type { CreateManagerDto } from '@/models/api.models';
 
 
 
-interface UsersResponse {
+
+export interface UsersResponse {
   _id: string;
   name: string;
   email: string;
@@ -139,12 +142,12 @@ export default function SuperUser_ManageUsers() {
           onClose={() => { setIsEditingUserID(null); setIsEditingUserRole(null) }}
           refreshUsers={fetchAllUsers} />)}
 
-      {/* Summary Cards — uses reusable SummaryCards component */}
+      
       <SummaryCards stats={SUMMARY_STATS} />
 
       <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex flex-wrap gap-4 items-end">
 
-        {/* Styled Search Bar Section */}
+       
         <div className="flex flex-col gap-1 flex-2 min-w-50">
           <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Search Users</label>
           <input
@@ -219,7 +222,6 @@ export default function SuperUser_ManageUsers() {
 
       </div>
 
-      {/* Data Table — uses reusable DataTable component */}
       <DataTable
         columns={columns}
         data={filtered_users}
@@ -257,48 +259,71 @@ function AddUser({ onClose, token, super_user_id, refreshUsers }: AddUserProps) 
   const [phone, setPhone] = useState('');
   const [dob, setDob] = useState('');
   const [gender, setGender] = useState('');
+  const [managerLng, setManagerLng] = useState('');
+  const [managerLat, setManagerLat] = useState('');
+
 
   const onAddUser = async (newUser: any) => {
-
     try {
-      if(!token && !super_user_id) return;
-      const response = await axios.post(`${BASE_URL}/users`, newUser, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+        if (!token && !super_user_id) return;
 
-      console.log('New User', response.data);
-      onClose();
-      refreshUsers();
-    }
-    catch (err) {
-      console.error("Error adding new user: ", err);
-    }
-  }
+        const response = await axios.post(`${BASE_URL}/users`, newUser, {
+            headers: { Authorization: `Bearer ${token}` },
+        });
+        const createdUser = response.data;
+        console.log('New User', createdUser);
 
+        if (newUser.role === 'manager') {
+            const managerDto: CreateManagerDto = {
+                user: createdUser._id,
+                salary: 0,
+                experience: 0,
+                location: {
+                    type: 'Point',
+                    coordinates: [parseFloat(managerLng), parseFloat(managerLat)],
+                },
+            };
+            await createManager(managerDto);
+            console.log('Manager object created');
+        }
+
+        onClose();
+        refreshUsers();
+    } catch (err) {
+        console.error('Error adding new user: ', err);
+    }
+  };
+  
   const handleSubmit = (e: React.SyntheticEvent) => {
-    e.preventDefault();
+      e.preventDefault();
+  
+      if (role === 'manager' && (!managerLng || !managerLat)) {
+          alert('Please enter manager location coordinates.');
+          return;
+      }
+    
+      const newUser = {
+          name,
+          email,
+          password: 'Password@123',
+          gender,
+          phone,
+          dob,
+          role,
+      };
+    
+      onAddUser(newUser);
+    
+      setName('');
+      setEmail('');
+      setPhone('');
+      setRole('');
+      setDob('');
+      setGender('');
+      setManagerLng('');
+      setManagerLat('');
+  };
 
-    const newUser = {
-      name: name,
-      email: email,
-      password: "Password@123",
-      gender: gender,
-      phone: phone,
-      dob: dob,
-      role: role,
-    }
-
-    onAddUser(newUser);
-
-    setName('');
-    setEmail('');
-    setPhone('');
-    setRole('');
-    setDob('');
-    setGender('');
-  }
 
   return (
     <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
@@ -314,7 +339,7 @@ function AddUser({ onClose, token, super_user_id, refreshUsers }: AddUserProps) 
               required
             >
               <option value="" disabled>Select Role</option>
-              <option value="manager">Collective Manager</option>
+              <option value="manager">Manager</option>
               <option value="admin">Super User</option>
             </select>
           </div>
@@ -358,6 +383,41 @@ function AddUser({ onClose, token, super_user_id, refreshUsers }: AddUserProps) 
               <option value="female">Female</option>
             </select>
           </div>
+
+          {role === 'manager' && (
+            <>
+                <div className="flex flex-col gap-1">
+                    <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                        Manager Longitude
+                    </label>
+                    <input
+                        type="number"
+                        step="any"
+                        value={managerLng}
+                        onChange={(e) => setManagerLng(e.target.value)}
+                        className="w-full p-2 border border-slate-300 rounded-lg text-sm"
+                        placeholder="e.g. 78.4867"
+                        required
+                    />
+                </div>
+                <div className="flex flex-col gap-1">
+                    <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                        Manager Latitude
+                    </label>
+                    <input
+                        type="number"
+                        step="any"
+                        value={managerLat}
+                        onChange={(e) => setManagerLat(e.target.value)}
+                        className="w-full p-2 border border-slate-300 rounded-lg text-sm"
+                        placeholder="e.g. 17.385"
+                        required
+                    />
+                </div>
+            </>
+        )}
+        
+
         </div>
 
         <div className="flex justify-end items-center gap-3 mt-2 border-t border-slate-100 pt-4">

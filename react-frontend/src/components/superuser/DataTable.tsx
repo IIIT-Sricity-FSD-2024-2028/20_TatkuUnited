@@ -61,40 +61,42 @@ export default function DataTable<T>({
       <div className="overflow-x-auto">
         {isLoading ? (
           <div className="p-8 text-center text-slate-500">Loading...</div>
-        ) : error ? (
-          <div className="p-8 text-center text-red-500">{error}</div>
-        ) : (
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="bg-slate-50 border-b border-slate-200 text-xs font-bold text-slate-400 uppercase tracking-wider">
-                {columns.map((col, i) => (
-                  <th key={i} className="p-4">
-                    {col.header}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody className="text-sm text-slate-700 divide-y divide-slate-100">
-              {data.map((row) => (
-                <tr key={rowKey(row)} className="hover:bg-slate-50 transition-colors">
-                  {columns.map((col, i) => (
-                    <td key={i} className={`p-4 ${col.cellClassName || ''}`}>
-                      {col.render(row)}
-                    </td>
+        ) : 
+            error ? (
+              <div className="p-8 text-center text-red-500">{error}</div>
+            ) : 
+            (
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="bg-slate-50 border-b border-slate-200 text-xs font-bold text-slate-400 uppercase tracking-wider">
+                    {columns.map((col, i) => (
+                      <th key={i} className="p-4">
+                        {col.header}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody className="text-sm text-slate-700 divide-y divide-slate-100">
+                  {data.map((row) => (
+                    <tr key={rowKey(row)} className="hover:bg-slate-50 transition-colors">
+                      {columns.map((col, i) => (
+                        <td key={i} className={`p-4 ${col.cellClassName || ''}`}>
+                          {col.render(row)}
+                        </td>
+                      ))}
+                    </tr>
                   ))}
-                </tr>
-              ))}
-
-              {data.length === 0 && (
-                <tr>
-                  <td colSpan={columns.length} className="p-8 text-center text-slate-500">
-                    {emptyMessage}
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        )}
+    
+                  {data.length === 0 && (
+                    <tr>
+                      <td colSpan={columns.length} className="p-8 text-center text-slate-500">
+                        {emptyMessage}
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            )}
       </div>
     </div>
   );

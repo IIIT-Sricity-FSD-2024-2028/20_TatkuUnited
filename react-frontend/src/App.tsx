@@ -20,6 +20,7 @@ import ServiceCatalog from "./pages/general/serviceCatalog";
 import ServicePage from "./pages/general/servicePage";
 // import ForbiddenAccess from "./pages/components/forbiddenAccess";
 
+
 function App() {
   const [authDetails, setAuthDetails] = useState<AuthInterface | null>(() => {
     try {
