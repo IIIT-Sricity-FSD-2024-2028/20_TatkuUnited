@@ -75,6 +75,17 @@ export function summarise(bookings: RegionBooking[]): RevenueSummary {
   };
 }
 
+const STATUS_NAMES: Record<string, string> = {
+  pending: "Pending",
+  awaiting_provider: "Awaiting provider",
+  confirmed: "Confirmed",
+  in_progress: "In progress",
+  completed: "Completed",
+  cancelled: "Cancelled",
+};
+
+export const statusLabel = (status: string) => STATUS_NAMES[status] ?? status;
+
 /** How many bookings are in each status, skipping statuses with none. */
 export function countByStatus(
   bookings: RegionBooking[],

@@ -10,10 +10,13 @@ import {
   YAxis,
 } from "recharts";
 import type { RootState } from "../../store";
+import HorizontalBars from "./revenue-charts";
 import { Skeleton } from "../../components/ui/skeleton";
 import {
   PERIOD_LABELS,
   categoryBreakdown,
+  countByStatus,
+  statusLabel,
   filterByPeriod,
   formatRupees,
   revenueTrend,
@@ -58,6 +61,13 @@ export default function ManagerRevenue() {
   const summary = useMemo(() => summarise(inPeriod), [inPeriod]);
   const trend = useMemo(() => revenueTrend(inPeriod, period), [inPeriod, period]);
   const hasRevenue = trend.some((point) => point.revenue > 0);
+  const statusData = useMemo(
+    () =>
+      countByStatus(inPeriod)
+        .map((s) => ({ name: statusLabel(s.status), value: s.count }))
+        .sort((a, b) => b.value - a.value),
+    [inPeriod],
+  );
   const categoryRows = useMemo(
     () => categoryBreakdown(inPeriod, categories),
     [inPeriod, categories],
@@ -207,10 +217,51 @@ export default function ManagerRevenue() {
               )}
             </CardContent>
           </Card>
-          <div>Booking distribution chart</div>
         </div>
-        <div className="flex justify-around">
-          <div>Category Revenue Split</div>
+        <div className="flex gap-2">
+          <Card className="w-full">
+            <CardHeader>
+              <CardTitle>Booking Distribution</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {loading ? (
+                <Skeleton className="h-32 w-full" />
+              ) : statusData.length === 0 ? (
+                <p className="text-sm text-muted-foreground">
+                  No bookings in this period.
+                </p>
+              ) : (
+                <HorizontalBars
+                  data={statusData}
+                  formatValue={(n) => String(n)}
+                  tooltipLabel="Bookings"
+                />
+              )}
+            </CardContent>
+          </Card>
+          <Card className="w-full">
+            <CardHeader>
+              <CardTitle>Category Revenue Split</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {loading ? (
+                <Skeleton className="h-32 w-full" />
+              ) : categoryRows.length === 0 ? (
+                <p className="text-sm text-muted-foreground">
+                  No completed bookings in this period.
+                </p>
+              ) : (
+                <HorizontalBars
+                  data={categoryRows.map((r) => ({
+                    name: r.category,
+                    value: r.revenue,
+                  }))}
+                  formatValue={formatRupees}
+                  tooltipLabel="Revenue"
+                />
+              )}
+            </CardContent>
+          </Card>
         </div>
         <Card className="w-full">
           <CardHeader>
