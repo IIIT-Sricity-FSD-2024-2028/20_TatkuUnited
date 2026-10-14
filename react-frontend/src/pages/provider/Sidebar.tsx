@@ -18,9 +18,9 @@ export default function Sidebar({
 
         <button
             className="h-26 border-b-4 border-green-500"
-            onClick={() => onPageChange("Users")}
+            onClick={() => onPageChange("Job Calender")}
         >
-            Users
+            Job Calender
         </button>
 
         <button
