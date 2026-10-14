@@ -58,6 +58,14 @@ export default function PublicNavbar({
 
       {token && token.length > 0 ? (
         <div className="flex items-center gap-3">
+          {userRole === RolesEnum.CUSTOMER && (
+            <button
+              className="px-4 py-2 text-sm font-medium border border-blue-500 text-blue-500 rounded-lg hover:bg-blue-50 transition-colors cursor-pointer"
+              onClick={() => onNavigate("/bookings")}
+            >
+              My Bookings
+            </button>
+          )}
           <button
             className="px-4 py-2 text-sm font-medium border border-blue-500 text-blue-500 rounded-lg hover:bg-blue-50 transition-colors cursor-pointer"
             onClick={() => onNavigate(redirectUrl)}

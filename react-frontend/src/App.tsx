@@ -13,6 +13,7 @@ import Cart from "./pages/customer/CartPage";
 import Schedule from "./pages/customer/SchedulePage";
 import AccountSettings from "./pages/customer/AccountSettingsPage";
 import RatingsFeedback from "./pages/customer/RatingsFeedbackPage";
+import BookingHistory from "./pages/customer/BookingHistoryPage";
 
 import { Provider as ReduxProvider } from "react-redux";
 import { store } from "./store";
@@ -21,6 +22,8 @@ import { useState } from "react";
 import type { AuthInterface } from "./models/auth.models";
 import { Toaster } from "./components/ui/toast";
 import NotFound from "./pages/components/notFound";
+import ProtectedRoute from "./pages/components/protectedRoute";
+import { RolesEnum } from "./common/roles.enum";
 // import ForbiddenAccess from "./pages/components/forbiddenAccess";
 
 function App() {
@@ -55,10 +58,47 @@ function App() {
             <Route path="/superuser/*" element={<SuperUser />} />
             <Route path="/manager/*" element={<ManagerRouter />} />
 
-            <Route path="/cart" element={<Cart />} />
+            <Route
+              path="/customer"
+              element={
+                <ProtectedRoute allowedRoles={[RolesEnum.CUSTOMER]}>
+                  <CustomerDashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/bookings"
+              element={
+                <ProtectedRoute allowedRoles={[RolesEnum.CUSTOMER]}>
+                  <BookingHistory />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/cart"
+              element={
+                <ProtectedRoute allowedRoles={[RolesEnum.CUSTOMER]}>
+                  <Cart />
+                </ProtectedRoute>
+              }
+            />
             <Route path="/schedule" element={<Schedule />} />
-            <Route path="/account-settings" element={<AccountSettings />} />
-            <Route path="/ratings-feedback" element={<RatingsFeedback />} />
+            <Route
+              path="/account-settings"
+              element={
+                <ProtectedRoute allowedRoles={[RolesEnum.CUSTOMER]}>
+                  <AccountSettings />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/ratings-feedback"
+              element={
+                <ProtectedRoute allowedRoles={[RolesEnum.CUSTOMER]}>
+                  <RatingsFeedback />
+                </ProtectedRoute>
+              }
+            />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

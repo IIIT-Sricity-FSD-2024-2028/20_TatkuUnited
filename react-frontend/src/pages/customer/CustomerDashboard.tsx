@@ -43,11 +43,21 @@ export default function CustomerDashboard() {
 
           <button
             onClick={() => navigate("/account-settings")}
-            className="rounded-xl border bg-white p-6 text-left shadow-sm hover:shadow-md"
+            className="rounded-xl border bg-white p-6 text-left shadow-sm hover:shadow-md cursor-pointer"
           >
             <h2 className="text-lg font-semibold">Account Settings</h2>
             <p className="mt-2 text-sm text-slate-600">
               Manage your account details.
+            </p>
+          </button>
+
+          <button
+            onClick={() => navigate("/bookings")}
+            className="rounded-xl border bg-white p-6 text-left shadow-sm hover:shadow-md cursor-pointer"
+          >
+            <h2 className="text-lg font-semibold">Booking History</h2>
+            <p className="mt-2 text-sm text-slate-600">
+              View your past and upcoming service bookings.
             </p>
           </button>
         </div>

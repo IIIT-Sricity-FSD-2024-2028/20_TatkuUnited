@@ -10,8 +10,12 @@ import {
 
 
 
+import { store } from "@/store";
+import { AuthActions } from "@/store/auth/auth-slice";
+
 export function handleLogout() {
   sessionStorage.clear();
+  store.dispatch(AuthActions.logout());
 }
 
 export function getStoredUser(): (UserInterface & { _id?: string }) | null {
@@ -35,6 +39,7 @@ export async function handleLogin(email: string, password: string): Promise<stri
       const user = data.user;
       sessionStorage.setItem("token", access_token);
       sessionStorage.setItem("user", JSON.stringify(user));
+      store.dispatch(AuthActions.login({ user, token: access_token }));
     });
     return {token: data.access_token, user: data.user};
   } catch(error: any) {
