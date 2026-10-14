@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { Region, RegionDocument } from '../schema/region.schema';
 import { Manager, ManagerDocument } from '../schema/manager.schema';
 import { Provider, ProviderDocument } from '../schema/provider.schema';
@@ -29,8 +29,11 @@ export class RegionsService {
 
   /** Recomputes region centroid from mean coordinates of all approved providers (§4.2, §3.5) */
   async recomputeCentroid(regionId: string) {
+    const region = Types.ObjectId.isValid(regionId)
+      ? new Types.ObjectId(regionId)
+      : regionId;
     const providers = await this.providerModel
-      .find({ region: regionId, status: ProviderStatus.APPROVED })
+      .find({ region, status: ProviderStatus.APPROVED })
       .exec();
 
     if (!providers || providers.length === 0) return null;
@@ -70,14 +73,17 @@ export class RegionsService {
   }
 
   async findByManager(managerId: string) {
+    const manager = Types.ObjectId.isValid(managerId)
+      ? new Types.ObjectId(managerId)
+      : managerId;
     let regions = await this.regionModel
-      .find({ manager: managerId })
+      .find({ manager })
       .populate('manager')
       .exec();
 
     if (!regions || regions.length === 0) {
       const managerDoc = await this.managerModel
-        .findOne({ user: managerId })
+        .findOne({ user: manager })
         .exec();
       if (managerDoc) {
         regions = await this.regionModel

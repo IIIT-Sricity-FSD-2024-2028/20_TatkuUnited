@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { Manager, ManagerDocument } from '../schema/manager.schema';
 import { CreateManagerDto } from './dto/create-manager.dto';
 import { UpdateManagerDto } from './dto/update-manager.dto';
@@ -30,7 +30,10 @@ export class ManagersService {
   }
 
   findByUser(userId: string) {
-    return this.managerModel.findOne({ user: userId }).exec();
+    const user = Types.ObjectId.isValid(userId)
+      ? new Types.ObjectId(userId)
+      : userId;
+    return this.managerModel.findOne({ user }).populate('user', '-password').exec();
   }
 
   async update(id: string, dto: UpdateManagerDto) {

@@ -3816,6 +3816,13 @@
           },
           "role": {
             "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "blocked"
+            ]
           }
         },
         "required": [

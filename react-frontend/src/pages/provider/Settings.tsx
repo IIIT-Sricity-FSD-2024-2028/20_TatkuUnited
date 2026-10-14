@@ -57,6 +57,7 @@ export default function Settings() {
     }
 
     async function loadSettings() {
+        if (!user) return;
         try {
         const provider = await getProviderByUser(user.id);
         setProviderId(provider._id);

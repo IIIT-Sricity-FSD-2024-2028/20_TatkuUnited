@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { Payment, PaymentDocument } from '../schema/payment.schema';
 import { CreatePaymentDto } from './dto/create-payment.dto';
 import { UpdatePaymentDto } from './dto/update-payment.dto';
@@ -27,7 +27,10 @@ export class PaymentsService {
   }
 
   findByOrder(orderId: string) {
-    return this.paymentModel.findOne({ order: orderId }).exec();
+    const order = Types.ObjectId.isValid(orderId)
+      ? new Types.ObjectId(orderId)
+      : orderId;
+    return this.paymentModel.findOne({ order }).exec();
   }
 
   /** Used by Razorpay webhook to look up the payment. */

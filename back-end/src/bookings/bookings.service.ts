@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Booking, BookingDocument } from '../schema/booking.schema';
@@ -22,34 +26,49 @@ export class BookingsService {
   }
 
   findByOrder(orderId: string) {
-    return this.bookingModel.find({ order: orderId }).exec();
+    const order = Types.ObjectId.isValid(orderId)
+      ? new Types.ObjectId(orderId)
+      : orderId;
+    return this.bookingModel.find({ order }).exec();
   }
 
   findByCustomer(customerId: string) {
+    const customer = Types.ObjectId.isValid(customerId)
+      ? new Types.ObjectId(customerId)
+      : customerId;
     return this.bookingModel
-      .find({ customer: customerId })
+      .find({ customer })
       .sort({ createdAt: -1 })
       .populate('service provider order')
       .exec();
   }
 
   findByProvider(providerId: string) {
+    const provider = Types.ObjectId.isValid(providerId)
+      ? new Types.ObjectId(providerId)
+      : providerId;
     return this.bookingModel
-      .find({ provider: providerId })
+      .find({ provider })
       .sort({ scheduledDate: 1, startTime: 1 })
       .populate('service customer order')
       .exec();
   }
 
   findByRegionAndDate(regionId: string, date: Date) {
+    const region = Types.ObjectId.isValid(regionId)
+      ? new Types.ObjectId(regionId)
+      : regionId;
     return this.bookingModel
-      .find({ region: regionId, scheduledDate: date })
+      .find({ region, scheduledDate: date })
       .populate('service provider customer')
       .exec();
   }
 
   findByRegion(regionId: string, date?: string) {
-    const filter: Record<string, unknown> = { region: regionId };
+    const region = Types.ObjectId.isValid(regionId)
+      ? new Types.ObjectId(regionId)
+      : regionId;
+    const filter: Record<string, unknown> = { region };
     if (date) {
       filter.scheduledDate = new Date(date);
     }
@@ -62,9 +81,12 @@ export class BookingsService {
 
   /** Provider job offer inbox: awaiting_provider offers where offerExpiresAt is in future (§4.10) */
   findPendingOffersForProvider(providerId: string) {
+    const provider = Types.ObjectId.isValid(providerId)
+      ? new Types.ObjectId(providerId)
+      : providerId;
     return this.bookingModel
       .find({
-        provider: providerId,
+        provider,
         status: BookingStatus.AWAITING_PROVIDER,
         offerExpiresAt: { $gt: new Date() },
       })
@@ -75,8 +97,11 @@ export class BookingsService {
 
   /** Provider active/confirmed schedule (§4.10, §4.11) */
   findScheduleForProvider(providerId: string, date?: string) {
+    const provider = Types.ObjectId.isValid(providerId)
+      ? new Types.ObjectId(providerId)
+      : providerId;
     const filter: Record<string, unknown> = {
-      provider: providerId,
+      provider,
       status: { $in: [BookingStatus.CONFIRMED, BookingStatus.IN_PROGRESS] },
     };
     if (date) {
@@ -91,9 +116,12 @@ export class BookingsService {
 
   /** Manager screen: Problem bookings in region (cancelled by provider or system) (§4.16) */
   findProblemBookingsByRegion(regionId: string) {
+    const region = Types.ObjectId.isValid(regionId)
+      ? new Types.ObjectId(regionId)
+      : regionId;
     return this.bookingModel
       .find({
-        region: regionId,
+        region,
         status: BookingStatus.CANCELLED,
         cancelledBy: { $in: [CancelledBy.PROVIDER, CancelledBy.SYSTEM] },
       })
@@ -110,7 +138,9 @@ export class BookingsService {
       offerExpiresAt: { $gt: new Date() },
     };
     if (providerId) {
-      filter.provider = providerId;
+      filter.provider = Types.ObjectId.isValid(providerId)
+        ? new Types.ObjectId(providerId)
+        : providerId;
     }
 
     const booking = await this.bookingModel
@@ -140,7 +170,9 @@ export class BookingsService {
       status: BookingStatus.AWAITING_PROVIDER,
     };
     if (providerId) {
-      filter.provider = providerId;
+      filter.provider = Types.ObjectId.isValid(providerId)
+        ? new Types.ObjectId(providerId)
+        : providerId;
     }
 
     const pushId = Types.ObjectId.isValid(providerId)
@@ -170,7 +202,9 @@ export class BookingsService {
       status: BookingStatus.CONFIRMED,
     };
     if (providerId) {
-      filter.provider = providerId;
+      filter.provider = Types.ObjectId.isValid(providerId)
+        ? new Types.ObjectId(providerId)
+        : providerId;
     }
 
     const booking = await this.bookingModel
@@ -197,7 +231,9 @@ export class BookingsService {
       status: BookingStatus.IN_PROGRESS,
     };
     if (providerId) {
-      filter.provider = providerId;
+      filter.provider = Types.ObjectId.isValid(providerId)
+        ? new Types.ObjectId(providerId)
+        : providerId;
     }
 
     const booking = await this.bookingModel
@@ -238,9 +274,12 @@ export class BookingsService {
 
   /** Slot-holding bookings for a provider on a given date (for overlap checks). */
   findActiveByProviderAndDate(providerId: string, date: Date) {
+    const provider = Types.ObjectId.isValid(providerId)
+      ? new Types.ObjectId(providerId)
+      : providerId;
     return this.bookingModel
       .find({
-        provider: providerId,
+        provider,
         scheduledDate: date,
         status: {
           $in: [

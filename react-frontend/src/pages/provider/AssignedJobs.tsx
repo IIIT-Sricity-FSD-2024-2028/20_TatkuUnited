@@ -5,7 +5,7 @@ import {
   getProviderByUser,
   getProviderSchedule,
 } from "@/services/providers.service";
-import DataTable from "./DataTable";
+import DataTable, { type Column } from "./DataTable";
 
 interface Job {
   bookingId: string;
@@ -27,14 +27,14 @@ interface Booking {
   status: string;
 }
 
-const columns = [
+const columns: Column<Job>[] = [
   { key: "serviceName", label: "Service Name" },
   { key: "customerName", label: "Customer Name" },
   { key: "serviceAddress", label: "Address" },
   { key: "scheduledDate", label: "Date" },
   { key: "startTime", label: "Time" },
   { key: "status", label: "Status" },
-] as const;
+];
 
 function formatTime(minutes: number): string {
   const hours = Math.floor(minutes / 60);
@@ -60,10 +60,13 @@ export default function AssignedJobs() {
     }
 
     async function fetchJobs() {
+      if (!user) return;
       try {
         setError(null);
         const provider = await getProviderByUser(user.id);
-        const bookings = (await getProviderSchedule(provider._id)) as unknown as Booking[];
+        const bookings = (await getProviderSchedule(
+          provider._id,
+        )) as unknown as Booking[];
 
         setJobs(
           bookings.map((booking) => ({
@@ -96,7 +99,11 @@ export default function AssignedJobs() {
   }, [authDetails]);
 
   if (authDetails?.user.role !== RolesEnum.PROVIDER) {
-    return <p className="rounded-lg bg-white p-6 shadow">Provider access required.</p>;
+    return (
+      <p className="rounded-lg bg-white p-6 shadow">
+        Provider access required.
+      </p>
+    );
   }
 
   return (
@@ -111,5 +118,3 @@ export default function AssignedJobs() {
     </div>
   );
 }
-
-

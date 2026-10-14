@@ -36,32 +36,22 @@ export default function CustomerDashboard() {
         </button>
 
         <button
-          onClick={() => navigate("/customer/schedule")}
-          className="rounded-xl border border-slate-200 bg-white p-6 text-left shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+          onClick={() => navigate("/account-settings")}
+          className="rounded-xl border bg-white p-6 text-left shadow-sm hover:shadow-md cursor-pointer"
         >
-          <h2 className="text-lg font-semibold text-slate-800">Schedule Service</h2>
+          <h2 className="text-lg font-semibold">Account Settings</h2>
           <p className="mt-2 text-sm text-slate-600">
-            Choose when you want your services provided.
+            Manage your account details.
           </p>
         </button>
 
         <button
-          onClick={() => navigate("/customer/account-settings")}
-          className="rounded-xl border border-slate-200 bg-white p-6 text-left shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+          onClick={() => navigate("/bookings")}
+          className="rounded-xl border bg-white p-6 text-left shadow-sm hover:shadow-md cursor-pointer"
         >
-          <h2 className="text-lg font-semibold text-slate-800">Account Settings</h2>
+          <h2 className="text-lg font-semibold">Booking History</h2>
           <p className="mt-2 text-sm text-slate-600">
-            Manage your personal details and addresses.
-          </p>
-        </button>
-
-        <button
-          onClick={() => navigate("/customer/ratings-feedback")}
-          className="rounded-xl border border-slate-200 bg-white p-6 text-left shadow-sm hover:shadow-md transition-shadow cursor-pointer"
-        >
-          <h2 className="text-lg font-semibold text-slate-800">Ratings & Feedback</h2>
-          <p className="mt-2 text-sm text-slate-600">
-            Review completed services and give feedback.
+            View your past and upcoming service bookings.
           </p>
         </button>
       </div>

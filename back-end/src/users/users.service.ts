@@ -24,9 +24,10 @@ export class UsersService {
     }
     const created = new this.userModel({ ...dto, password });
     const saved = await created.save();
-    const result = saved && typeof (saved as any).toObject === 'function'
-      ? (saved as any).toObject()
-      : { ...saved };
+    const result =
+      saved && typeof (saved as any).toObject === 'function'
+        ? (saved as any).toObject()
+        : { ...saved };
     delete result.password;
     return result;
   }
@@ -42,7 +43,10 @@ export class UsersService {
   }
 
   findByEmail(email: string) {
-    return this.userModel.findOne({ email: email.toLowerCase().trim() }).select('+password').exec();
+    return this.userModel
+      .findOne({ email: email.toLowerCase().trim() })
+      .select('+password')
+      .exec();
   }
 
   findByRole(role: Role | string) {
@@ -91,10 +95,14 @@ export class UsersService {
   }
 
   async addToCart(userId: string, item: any) {
+    const cartItem =
+      item?.service && Types.ObjectId.isValid(item.service)
+        ? { ...item, service: new Types.ObjectId(item.service) }
+        : item;
     const user = await this.userModel
       .findByIdAndUpdate(
         userId,
-        { $push: { 'cart.items': item } },
+        { $push: { 'cart.items': cartItem } },
         { new: true },
       )
       .populate('cart.items.service')
@@ -163,4 +171,3 @@ export class UsersService {
     return doc;
   }
 }
-

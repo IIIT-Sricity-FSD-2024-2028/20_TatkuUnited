@@ -1,11 +1,11 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document, Types } from 'mongoose';
+import { Document, Schema as MongooseSchema, Types } from 'mongoose';
 import { RefundStatus } from '../common/enums';
 
 // -- Embedded: Refund entry inside Payment.refunds[] --------------------------
 @Schema({ _id: false })
 export class RefundEntry {
-  @Prop({ type: Types.ObjectId, ref: 'Booking', required: true })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Booking', required: true })
   booking: Types.ObjectId;
 
   @Prop({ type: Number, required: true }) // paise
@@ -30,7 +30,7 @@ export type PaymentDocument = Payment & Document;
 
 @Schema({ timestamps: true })
 export class Payment {
-  @Prop({ type: Types.ObjectId, ref: 'Order', required: true, unique: true })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Order', required: true, unique: true })
   order: Types.ObjectId;
 
   @Prop({ type: Number, required: true }) // paise - must match Order.totalAmount

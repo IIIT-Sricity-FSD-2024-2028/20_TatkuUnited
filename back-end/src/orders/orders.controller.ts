@@ -73,7 +73,8 @@ export class OrdersController {
   @Get('status/:status')
   @ApiOperation({
     summary: 'Get orders by payment status',
-    description: 'Retrieves all orders matching paymentStatus (created, paid, failed, refunded, partially_refunded).',
+    description:
+      'Retrieves all orders matching paymentStatus (created, paid, failed, refunded, partially_refunded).',
   })
   @ApiParam({ name: 'status', description: 'Payment status', example: 'paid' })
   @ApiResponse({ status: 200, description: 'List of orders with status.' })
@@ -87,7 +88,11 @@ export class OrdersController {
     summary: 'Get order by ID',
     description: 'Retrieves single order details by its Mongo ObjectId.',
   })
-  @ApiParam({ name: 'id', description: 'Order Mongo ObjectId', example: '65f1a2b3c4d5e6f7a8b9c0d1' })
+  @ApiParam({
+    name: 'id',
+    description: 'Order Mongo ObjectId',
+    example: '65f1a2b3c4d5e6f7a8b9c0d1',
+  })
   @ApiResponse({ status: 200, description: 'Order found.' })
   @ApiResponse({ status: 404, description: 'Order not found.' })
   findOne(@Param('id') id: string) {
@@ -98,9 +103,14 @@ export class OrdersController {
   @Get(':id/details')
   @ApiOperation({
     summary: 'Get order with populated customer and payment details',
-    description: 'Retrieves single order details populated with customer and payment references.',
+    description:
+      'Retrieves single order details populated with customer and payment references.',
   })
-  @ApiParam({ name: 'id', description: 'Order Mongo ObjectId', example: '65f1a2b3c4d5e6f7a8b9c0d1' })
+  @ApiParam({
+    name: 'id',
+    description: 'Order Mongo ObjectId',
+    example: '65f1a2b3c4d5e6f7a8b9c0d1',
+  })
   @ApiResponse({ status: 200, description: 'Order details found.' })
   @ApiResponse({ status: 404, description: 'Order not found.' })
   findWithDetails(@Param('id') id: string) {
@@ -111,9 +121,14 @@ export class OrdersController {
   @Patch(':id')
   @ApiOperation({
     summary: 'Update order',
-    description: 'Updates order status (e.g. paid, failed, refunded) or associated fields.',
+    description:
+      'Updates order status (e.g. paid, failed, refunded) or associated fields.',
   })
-  @ApiParam({ name: 'id', description: 'Order Mongo ObjectId', example: '65f1a2b3c4d5e6f7a8b9c0d1' })
+  @ApiParam({
+    name: 'id',
+    description: 'Order Mongo ObjectId',
+    example: '65f1a2b3c4d5e6f7a8b9c0d1',
+  })
   @ApiBody({ type: UpdateOrderDto })
   @ApiResponse({ status: 200, description: 'Order updated successfully.' })
   @ApiResponse({ status: 404, description: 'Order not found.' })
@@ -127,11 +142,14 @@ export class OrdersController {
     summary: 'Delete order',
     description: 'Removes an order document from the database.',
   })
-  @ApiParam({ name: 'id', description: 'Order Mongo ObjectId', example: '65f1a2b3c4d5e6f7a8b9c0d1' })
+  @ApiParam({
+    name: 'id',
+    description: 'Order Mongo ObjectId',
+    example: '65f1a2b3c4d5e6f7a8b9c0d1',
+  })
   @ApiResponse({ status: 200, description: 'Order successfully removed.' })
   @ApiResponse({ status: 404, description: 'Order not found.' })
   remove(@Param('id') id: string) {
     return this.ordersService.remove(id);
   }
 }
-

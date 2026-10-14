@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document, Types } from 'mongoose';
+import { Document, Schema as MongooseSchema, Types } from 'mongoose';
 
 // -- Embedded sub-schemas -----------------------------------------------------
 @Schema({ _id: false })
@@ -28,7 +28,11 @@ export class Service {
   @Prop({ type: String, required: true, trim: true })
   name: string;
 
-  @Prop({ type: Types.ObjectId, ref: 'Category', required: true })
+  @Prop({
+    type: MongooseSchema.Types.ObjectId,
+    ref: 'Category',
+    required: true,
+  })
   category: Types.ObjectId;
 
   @Prop({ type: Number, default: 0 })

@@ -81,17 +81,47 @@ async function bootstrap() {
     )
     .addTag('System', 'Health checks and root welcome endpoint')
     .addTag('Users', 'User accounts, customer records, and identity management')
-    .addTag('Providers', 'Service providers, catalog offerings, working days, and location tracking')
-    .addTag('Managers', 'Regional managers overseeing service provider collectives')
-    .addTag('Regions', 'Operational territories, area centroids, and manager assignments')
+    .addTag(
+      'Providers',
+      'Service providers, catalog offerings, working days, and location tracking',
+    )
+    .addTag(
+      'Managers',
+      'Regional managers overseeing service provider collectives',
+    )
+    .addTag(
+      'Regions',
+      'Operational territories, area centroids, and manager assignments',
+    )
     .addTag('Categories', 'Service category taxonomy and catalog groupings')
-    .addTag('Services', 'Service catalog offerings, durations, pricing in paise, and FAQs')
-    .addTag('Orders', 'Multi-item customer checkout orders and 15-minute expiration timers')
-    .addTag('Bookings', 'Service booking schedules, time slot grids, and provider assignments')
-    .addTag('Payments', 'Razorpay payment transactions, webhooks, and refund lifecycles')
-    .addTag('Reviews', 'Verified customer ratings and textual feedback for completed bookings')
-    .addTag('Unavailability', 'Provider calendar blackout periods and unavailable time intervals')
-    .addTag('Platform Settings', 'Global system parameters, commission splits, and scheduling rules')
+    .addTag(
+      'Services',
+      'Service catalog offerings, durations, pricing in paise, and FAQs',
+    )
+    .addTag(
+      'Orders',
+      'Multi-item customer checkout orders and 15-minute expiration timers',
+    )
+    .addTag(
+      'Bookings',
+      'Service booking schedules, time slot grids, and provider assignments',
+    )
+    .addTag(
+      'Payments',
+      'Razorpay payment transactions, webhooks, and refund lifecycles',
+    )
+    .addTag(
+      'Reviews',
+      'Verified customer ratings and textual feedback for completed bookings',
+    )
+    .addTag(
+      'Unavailability',
+      'Provider calendar blackout periods and unavailable time intervals',
+    )
+    .addTag(
+      'Platform Settings',
+      'Global system parameters, commission splits, and scheduling rules',
+    )
     .build();
 
   const document = SwaggerModule.createDocument(app, swaggerConfig);
@@ -121,15 +151,24 @@ async function bootstrap() {
       JSON.stringify(document, null, 2),
       'utf8',
     );
-    logger.log('Swagger JSON successfully written to docs/swagger.json', 'Swagger');
+    logger.log(
+      'Swagger JSON successfully written to docs/swagger.json',
+      'Swagger',
+    );
   } catch (err) {
-    logger.warn(`Could not write swagger.json: ${(err as Error).message}`, 'Swagger');
+    logger.warn(
+      `Could not write swagger.json: ${(err as Error).message}`,
+      'Swagger',
+    );
   }
 
   const port = process.env.PORT ?? 3000;
   await app.listen(port);
   logger.log(`Application successfully started on port ${port}`, 'Bootstrap');
-  logger.log(`Swagger UI available at http://localhost:${port}/docs and http://localhost:${port}/api/docs`, 'Bootstrap');
+  logger.log(
+    `Swagger UI available at http://localhost:${port}/docs and http://localhost:${port}/api/docs`,
+    'Bootstrap',
+  );
 }
 
 void bootstrap();

@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { Review, ReviewDocument } from '../schema/review.schema';
 import { Provider, ProviderDocument } from '../schema/provider.schema';
 import { Service, ServiceDocument } from '../schema/service.schema';
@@ -61,22 +61,31 @@ export class ReviewsService {
   }
 
   findByService(serviceId: string) {
+    const service = Types.ObjectId.isValid(serviceId)
+      ? new Types.ObjectId(serviceId)
+      : serviceId;
     return this.reviewModel
-      .find({ service: serviceId })
+      .find({ service })
       .sort({ createdAt: -1 })
       .populate('booking', 'scheduledDate')
       .exec();
   }
 
   findByProvider(providerId: string) {
+    const provider = Types.ObjectId.isValid(providerId)
+      ? new Types.ObjectId(providerId)
+      : providerId;
     return this.reviewModel
-      .find({ provider: providerId })
+      .find({ provider })
       .sort({ createdAt: -1 })
       .exec();
   }
 
   findByBooking(bookingId: string) {
-    return this.reviewModel.findOne({ booking: bookingId }).exec();
+    const booking = Types.ObjectId.isValid(bookingId)
+      ? new Types.ObjectId(bookingId)
+      : bookingId;
+    return this.reviewModel.findOne({ booking }).exec();
   }
 
   async findOne(id: string) {

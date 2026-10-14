@@ -10,7 +10,7 @@ const axiosInstance = axios.create({
 axiosInstance.interceptors.request.use(
     (config) => {
         const token = localStorage.getItem("token");
-        if(token) {
+        if (token) {
             config.headers.Authorization = `Bearer ${token}`;
         }
         return config;
@@ -24,7 +24,7 @@ export const apiService = async (method: HTTP_METHOD_TYPE, endpoint: ENDPOINT_TY
         });
         onSuccess?.(response.data);
         return response.data;
-    } catch(error) {
+    } catch (error) {
         const errorMessage = axios.isAxiosError(error)
             ? error.response?.data?.message || "Something went wrong"
             : error instanceof Error

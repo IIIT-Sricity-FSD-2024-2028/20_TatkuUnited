@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import Landing from "./pages/general/landing/LandingPage";
 import Register from "./pages/general/RegisterPage";
@@ -7,7 +7,6 @@ import Login from "./pages/general/LoginPage";
 import Provider from "./pages/general/Provider";
 import SuperUser from "./pages/superuser/superuser_route";
 import ManagerRouter from "./pages/manager/manager_route";
-import CustomerRouter from "./pages/customer/customer_route";
 
 import { Provider as ReduxProvider } from "react-redux";
 import { store } from "./store";
@@ -16,8 +15,10 @@ import { useState } from "react";
 import type { AuthInterface } from "./models/auth.models";
 import { Toaster } from "./components/ui/toast";
 import NotFound from "./pages/components/notFound";
+import CustomerRouter from "./pages/customer/customer_route";
+import ServiceCatalog from "./pages/general/serviceCatalog";
+import ServicePage from "./pages/general/servicePage";
 // import ForbiddenAccess from "./pages/components/forbiddenAccess";
-
 
 function App() {
   const [authDetails, setAuthDetails] = useState<AuthInterface | null>(() => {
@@ -45,6 +46,9 @@ function App() {
               <Route path="register" element={<Register />} />
               <Route path="login" element={<Login />} />
             </Route>
+
+            <Route path="/services" element={<ServiceCatalog />} />
+            <Route path="/services/:serviceId" element={<ServicePage />} />
 
             <Route path="/provider" element={<Provider />} />
 
