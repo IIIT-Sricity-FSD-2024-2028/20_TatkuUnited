@@ -1,11 +1,11 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document, Types } from 'mongoose';
+import { Document, Schema as MongooseSchema, Types } from 'mongoose';
 
 export type UnavailabilityDocument = Unavailability & Document;
 
 @Schema({ timestamps: true })
 export class Unavailability {
-  @Prop({ type: Types.ObjectId, ref: 'Provider', required: true })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Provider', required: true })
   provider: Types.ObjectId;
 
   @Prop({ type: Date, required: true }) // midnight of the IST calendar day

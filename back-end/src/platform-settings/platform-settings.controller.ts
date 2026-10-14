@@ -38,7 +38,10 @@ export class PlatformSettingsController {
       'Creates system-wide configuration including commission percentage, max assignment distance, slot intervals, lead times, and timeouts.',
   })
   @ApiBody({ type: CreatePlatformSettingDto })
-  @ApiResponse({ status: 201, description: 'Platform settings created successfully.' })
+  @ApiResponse({
+    status: 201,
+    description: 'Platform settings created successfully.',
+  })
   @ApiResponse({ status: 400, description: 'Invalid setting parameters.' })
   create(@Body() createPlatformSettingDto: CreatePlatformSettingDto) {
     return this.platformSettingsService.create(createPlatformSettingDto);
@@ -48,7 +51,8 @@ export class PlatformSettingsController {
   @Get()
   @ApiOperation({
     summary: 'Get all platform settings',
-    description: 'Retrieves all configuration entries for platform policies and scheduling constraints.',
+    description:
+      'Retrieves all configuration entries for platform policies and scheduling constraints.',
   })
   @ApiResponse({ status: 200, description: 'List of platform settings.' })
   findAll() {
@@ -59,9 +63,14 @@ export class PlatformSettingsController {
   @Get(':id')
   @ApiOperation({
     summary: 'Get platform setting by ID',
-    description: 'Retrieves a specific configuration document by Mongo ObjectId.',
+    description:
+      'Retrieves a specific configuration document by Mongo ObjectId.',
   })
-  @ApiParam({ name: 'id', description: 'Setting Mongo ObjectId', example: '65f1a2b3c4d5e6f7a8b9c0d1' })
+  @ApiParam({
+    name: 'id',
+    description: 'Setting Mongo ObjectId',
+    example: '65f1a2b3c4d5e6f7a8b9c0d1',
+  })
   @ApiResponse({ status: 200, description: 'Platform setting found.' })
   @ApiResponse({ status: 404, description: 'Platform setting not found.' })
   findOne(@Param('id') id: string) {
@@ -72,11 +81,19 @@ export class PlatformSettingsController {
   @Patch(':id')
   @ApiOperation({
     summary: 'Update platform setting',
-    description: 'Updates commission fee percent, slot interval, buffer times, or offer timeout limits.',
+    description:
+      'Updates commission fee percent, slot interval, buffer times, or offer timeout limits.',
   })
-  @ApiParam({ name: 'id', description: 'Setting Mongo ObjectId', example: '65f1a2b3c4d5e6f7a8b9c0d1' })
+  @ApiParam({
+    name: 'id',
+    description: 'Setting Mongo ObjectId',
+    example: '65f1a2b3c4d5e6f7a8b9c0d1',
+  })
   @ApiBody({ type: UpdatePlatformSettingDto })
-  @ApiResponse({ status: 200, description: 'Platform setting updated successfully.' })
+  @ApiResponse({
+    status: 200,
+    description: 'Platform setting updated successfully.',
+  })
   @ApiResponse({ status: 404, description: 'Platform setting not found.' })
   update(
     @Param('id') id: string,
@@ -91,11 +108,17 @@ export class PlatformSettingsController {
     summary: 'Delete platform setting',
     description: 'Removes a setting configuration document.',
   })
-  @ApiParam({ name: 'id', description: 'Setting Mongo ObjectId', example: '65f1a2b3c4d5e6f7a8b9c0d1' })
-  @ApiResponse({ status: 200, description: 'Platform setting removed successfully.' })
+  @ApiParam({
+    name: 'id',
+    description: 'Setting Mongo ObjectId',
+    example: '65f1a2b3c4d5e6f7a8b9c0d1',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Platform setting removed successfully.',
+  })
   @ApiResponse({ status: 404, description: 'Platform setting not found.' })
   remove(@Param('id') id: string) {
     return this.platformSettingsService.remove(id);
   }
 }
-

@@ -1,24 +1,24 @@
-﻿import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document, Types } from 'mongoose';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Document, Schema as MongooseSchema, Types } from 'mongoose';
 import { BookingStatus, CancelledBy, PayoutStatus } from '../common/enums';
 
 export type BookingDocument = Booking & Document;
 
 @Schema({ timestamps: true })
 export class Booking {
-  @Prop({ type: Types.ObjectId, ref: 'Service', required: true })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Service', required: true })
   service: Types.ObjectId;
 
-  @Prop({ type: Types.ObjectId, ref: 'Provider', required: true })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Provider', required: true })
   provider: Types.ObjectId; // tentative until accepted
 
-  @Prop({ type: Types.ObjectId, ref: 'User', required: true })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'User', required: true })
   customer: Types.ObjectId;
 
-  @Prop({ type: Types.ObjectId, ref: 'Order', required: true })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Order', required: true })
   order: Types.ObjectId;
 
-  @Prop({ type: Types.ObjectId, ref: 'Region', required: true })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Region', required: true })
   region: Types.ObjectId;
 
   // -- Slot ------------------------------------------------------------------
@@ -56,7 +56,7 @@ export class Booking {
   @Prop({ type: Date, default: null }) // set while awaiting_provider
   offerExpiresAt: Date | null;
 
-  @Prop({ type: [{ type: Types.ObjectId, ref: 'Provider' }], default: [] })
+  @Prop({ type: [{ type: MongooseSchema.Types.ObjectId, ref: 'Provider' }], default: [] })
   declinedBy: Types.ObjectId[]; // providers who rejected / timed out / cancelled
 
   // -- Financials (snapshots) ------------------------------------------------

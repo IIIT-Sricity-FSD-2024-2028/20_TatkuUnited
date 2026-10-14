@@ -124,7 +124,7 @@ export class AuthController {
       (role as any) === 'admin' ||
       (role as any) === 'manager'
     ) {
-      const user = (req as any)?.user as AuthenticatedUser | undefined;
+      const user = req?.user as AuthenticatedUser | undefined;
       if (!user || user.role !== Role.ADMIN) {
         throw new ForbiddenException(
           'Cannot register as admin or manager through public registration. Only admins can create admin and manager accounts.',
@@ -142,7 +142,7 @@ export class AuthController {
       email: registerDto.email,
       password: registerDto.password,
       phone: registerDto.phone,
-      role: role as any,
+      role: role,
       gender: registerDto.gender,
       dob: registerDto.dob,
     });

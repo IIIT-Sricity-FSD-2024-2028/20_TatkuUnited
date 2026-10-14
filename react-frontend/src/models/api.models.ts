@@ -198,6 +198,8 @@ export interface ServiceDocument {
   _id: string;
   name: string;
   category: string | CategoryDocument;
+  reviewCount?: number;
+  rating?: number;
   description: string;
   price: number; // paise
   duration: number; // minutes
@@ -223,6 +225,8 @@ export interface CreateServiceDto {
   whatIsNotCovered?: string[];
   howItWorks?: HowItWorksStepDto[];
   faq?: FaqItemDto[];
+  reviewCount?: number;
+  rating?: number;
 }
 
 export type UpdateServiceDto = Partial<CreateServiceDto>;

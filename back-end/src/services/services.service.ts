@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { Service, ServiceDocument } from '../schema/service.schema';
 import { CreateServiceDto } from './dto/create-service.dto';
 import { UpdateServiceDto } from './dto/update-service.dto';
@@ -17,8 +17,14 @@ export class ServicesService {
   }
 
   findAll(categoryId?: string, includeAll = false) {
-    const filter: Record<string, unknown> = includeAll ? {} : { isActive: true };
-    if (categoryId) filter.category = categoryId;
+    const filter: Record<string, unknown> = includeAll
+      ? {}
+      : { isActive: true };
+    if (categoryId && categoryId !== 'all') {
+      filter.category = Types.ObjectId.isValid(categoryId)
+        ? new Types.ObjectId(categoryId)
+        : categoryId;
+    }
     return this.serviceModel.find(filter).populate('category').exec();
   }
 

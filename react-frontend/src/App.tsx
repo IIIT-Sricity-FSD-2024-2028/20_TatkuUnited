@@ -16,6 +16,8 @@ import { useState } from "react";
 import type { AuthInterface } from "./models/auth.models";
 import { Toaster } from "./components/ui/toast";
 import NotFound from "./pages/components/notFound";
+import ServiceCatalog from "./pages/general/serviceCatalog";
+import ServicePage from "./pages/general/servicePage";
 // import ForbiddenAccess from "./pages/components/forbiddenAccess";
 
 function App() {
@@ -44,6 +46,9 @@ function App() {
               <Route path="register" element={<Register />} />
               <Route path="login" element={<Login />} />
             </Route>
+
+            <Route path="/services" element={<ServiceCatalog />} />
+            <Route path="/services/:serviceId" element={<ServicePage />} />
 
             <Route path="/provider" element={<Provider />} />
 
