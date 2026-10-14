@@ -6,24 +6,48 @@ import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch, RootState } from "../../store";
 import { useEffect } from "react";
 import {
-  fetchCollective,
+  ManagerActions,
+  fetchCatalogue,
   fetchManager,
-  fetchServiceProviders,
+  fetchMe,
+  fetchRegionBookings,
+  fetchRegionProviders,
+  fetchRegions,
 } from "../../store/manager/manager-slice";
 import UrlMap from "../../common/urlMap";
+import useAuth from "@/hooks/useAuth";
+import { toast } from "@/components/ui/toast";
 
 export default function ManagerLayout() {
   const dispatch = useDispatch<AppDispatch>();
-  const manager = useSelector((state: RootState) => state.auth.user);
-  const managerId = manager?.id;
+  const { user } = useAuth();
+  const managerId = user?.id;
+  const { regions, selectedRegionId, error } = useSelector(
+    (state: RootState) => state.manager,
+  );
 
   useEffect(() => {
-  if (!managerId) return;
+    if (!managerId) return;
+    dispatch(fetchMe());
+    dispatch(fetchManager(managerId))
+      .unwrap()
+      .then((m) => dispatch(fetchRegions(m._id)))
+      .catch(() => {}); // the failure is already stored as state.manager.error
+  }, [dispatch, managerId]);
 
-  dispatch(fetchManager(managerId));
-  dispatch(fetchCollective(managerId));
-  dispatch(fetchServiceProviders());
-}, [dispatch, managerId]);
+  useEffect(() => {
+    dispatch(fetchCatalogue());
+  }, [dispatch]);
+
+  useEffect(() => {
+    if (error) toast.add({ type: "error", description: error, priority: "high" });
+  }, [error]);
+
+  useEffect(() => {
+    if (!selectedRegionId) return;
+    dispatch(fetchRegionProviders(selectedRegionId));
+    dispatch(fetchRegionBookings(selectedRegionId));
+  }, [dispatch, selectedRegionId]);
 
   return (
     <div className="flex h-screen overflow-hidden">
@@ -50,7 +74,24 @@ export default function ManagerLayout() {
         ></SidebarItem>
       </SideBar>
       <div className="flex flex-col flex-1 w-full">
-        <UserHeader header="Manager Dashboard" />
+        <div className="flex items-center justify-between pr-4">
+          <UserHeader header="Manager Dashboard" />
+          {regions.length > 1 && (
+            <select
+              className="border rounded-md px-2 py-1 text-sm bg-white"
+              value={selectedRegionId ?? ""}
+              onChange={(e) =>
+                dispatch(ManagerActions.selectRegion(e.target.value))
+              }
+            >
+              {regions.map((r) => (
+                <option key={r._id} value={r._id}>
+                  {r.name}
+                </option>
+              ))}
+            </select>
+          )}
+        </div>
         <main className="h-full w-full overflow-y-auto bg-gray-50 p-6">
           <Outlet />
         </main>

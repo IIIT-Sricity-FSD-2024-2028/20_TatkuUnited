@@ -1,148 +1,249 @@
-import { createSlice } from "@reduxjs/toolkit";
-import axios from "axios";
-import { BASE_URL } from "../../common/endpoints";
-import type { RootState } from "..";
+import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import createAsyncThunkTyped from "../asyncThunk";
+import { getManagerByUser } from "@/services/managers.service";
+import { getRegionsByManager } from "@/services/regions.service";
+import { getProvidersByRegion, getProviderById } from "@/services/providers.service";
+import { getBookingsByRegion } from "@/services/bookings.service";
+import { getMe } from "@/services/users.service";
+import { getServices } from "@/services/services.service";
+import { getCategories } from "@/services/categories.service";
+import type {
+  BookingDocument,
+  CategoryDocument,
+  ManagerDocument,
+  ProviderDocument,
+  RegionDocument,
+  ServiceDocument,
+  UserDocument,
+} from "@/models/api.models";
 
-export interface CollectiveManager {
-  cm_id: string;
-  name: string;
-  email: string;
-//   password_hash: string;
-  phone: string;
-  is_active: boolean;
-  created_at: string;
-  updated_at: string;
-  collective_id: string;
-}
+// The back-end's status values differ from the ones in api.models, so
+// override them here with what the API actually returns.
+export type ProviderStatus = "pending" | "approved" | "suspended";
+export type BookingStatus =
+  | "pending"
+  | "awaiting_provider"
+  | "confirmed"
+  | "in_progress"
+  | "completed"
+  | "cancelled";
 
-export interface Collective {
-  collective_id: string;
-  collective_name: string;
-  is_active: boolean;
-  created_at: string;
-}
-
-export interface ServiceProvider {
-  sp_id: string;
-  name: string;
-  email: string;
-//   password_hash: string;
-  phone: string;
-  dob: string;
-  address: string;
-  gender: string;
-  rating: number;
-  rating_count: number;
-  is_active: boolean;
-  account_status: string;
-//   deactivation_requested: boolean;
-//   hour_start: string;
-//   hour_end: string;
-//   created_at: string;
-//   updated_at: string;
-  unit_id: string;
-  home_sector_id: string;
-}
-
+export type RegionProvider = Omit<ProviderDocument, "status"> & {
+  status: ProviderStatus;
+  rating?: number;
+  ratingCount?: number;
+};
+export type RegionBooking = Omit<BookingDocument, "status"> & {
+  status: BookingStatus;
+};
 
 interface ManagerState {
-    managerInfo: CollectiveManager | null,
-    collectiveInfo: Collective | null,
-    providersInfo: ServiceProvider[],
+  managerInfo: ManagerDocument | null;
+  userInfo: UserDocument | null; // the manager's own name, email and phone
+  regions: RegionDocument[];
+  selectedRegionId: string | null;
+  providers: RegionProvider[];
+  bookings: RegionBooking[];
+  services: ServiceDocument[];
+  categories: CategoryDocument[];
+  pending: number; // in-flight requests
+  error: string | null;
 }
 
 const initialState: ManagerState = {
-    managerInfo: null,
-    collectiveInfo: null,
-    providersInfo: [],
-}
+  managerInfo: null,
+  userInfo: null,
+  regions: [],
+  selectedRegionId: null,
+  providers: [],
+  bookings: [],
+  services: [],
+  categories: [],
+  pending: 0,
+  error: null,
+};
 
 export const fetchManager = createAsyncThunkTyped(
-    "manager/fetchManager",
-    async (managerId: string, thunkAPI):Promise<CollectiveManager> => {
-        const globalState: RootState = thunkAPI.getState();
-        const token = globalState.auth.token;
-
-        try {
-            const response = await axios.get<CollectiveManager>(`${BASE_URL}/collective-managers/${managerId}`,
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                        "x-role": "collective_manager"
-                    }
-                }
-            );
-            return response.data;
-        } catch(err) {
-            throw new Error("Fetching manager details failed");
-        }
+  "manager/fetchManager",
+  async (userId: string): Promise<ManagerDocument> => {
+    let manager: ManagerDocument | null;
+    try {
+      // the API answers 200 with an empty body when there is no profile
+      manager = (await getManagerByUser(userId)) || null;
+    } catch {
+      throw new Error("Fetching manager details failed");
     }
-)
+    if (!manager) throw new Error("No manager profile found for this account");
+    return manager;
+  },
+);
 
-export const fetchCollective = createAsyncThunkTyped(
-    "manager/fetchCollective",
-    async (managerId: string, thunkAPI): Promise<Collective> => {
-        const globalState: RootState = thunkAPI.getState();
-        const token = globalState.auth.token;
-
-        try {
-            const response = await axios.get<Collective>(`${BASE_URL}/collectives/manager/${managerId}`,
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                        "x-role": "collective_manager"
-                    }
-                }
-            );
-            return response.data;
-        } catch(err) {
-            throw new Error("Fetching manager details failed");
-        }
+export const fetchMe = createAsyncThunkTyped(
+  "manager/fetchMe",
+  async (): Promise<UserDocument> => {
+    try {
+      return await getMe();
+    } catch {
+      throw new Error("Fetching your profile failed");
     }
-)
+  },
+);
 
-export const fetchServiceProviders = createAsyncThunkTyped(
-    "manager/fetchServiceProviders",
-    async (_, thunkAPI): Promise<ServiceProvider[]> => {
-        const globalState: RootState = thunkAPI.getState();
-        const token = globalState.auth.token;
-        const collective_id = globalState.manager.collectiveInfo?.collective_id;
-
-        try {
-            if (!collective_id) {
-                throw new Error("Manager collective information is not available");
-            }
-            const response = await axios.get<ServiceProvider[]>(`${BASE_URL}/service-providers/collective/${collective_id}`,
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                        "x-role": "collective_manager"
-                    }
-                }
-            );
-            console.log(response.data);
-            return response.data;
-        } catch(err) {
-            throw new Error("Fetching service providers details failed");
-        }
+export const fetchRegions = createAsyncThunkTyped(
+  "manager/fetchRegions",
+  async (managerId: string): Promise<RegionDocument[]> => {
+    try {
+      return await getRegionsByManager(managerId);
+    } catch {
+      throw new Error("Fetching regions failed");
     }
-)
+  },
+);
+
+export const fetchRegionProviders = createAsyncThunkTyped(
+  "manager/fetchRegionProviders",
+  async (regionId: string): Promise<RegionProvider[]> => {
+    let list: RegionProvider[];
+    try {
+      list = (await getProvidersByRegion(regionId)) as unknown as RegionProvider[];
+    } catch {
+      throw new Error("Fetching service providers failed");
+    }
+    // The region list only has the user's id. The single-provider endpoint
+    // populates it with name and email, so fetch every provider's details in
+    // parallel. If one lookup fails, keep that provider's basic data.
+    return Promise.all(
+      list.map(async (p) => {
+        try {
+          return (await getProviderById(p._id)) as unknown as RegionProvider;
+        } catch {
+          return p;
+        }
+      }),
+    );
+  },
+);
+
+export const fetchRegionBookings = createAsyncThunkTyped(
+  "manager/fetchRegionBookings",
+  async (regionId: string): Promise<RegionBooking[]> => {
+    try {
+      return (await getBookingsByRegion(regionId)) as unknown as RegionBooking[];
+    } catch {
+      throw new Error("Fetching bookings failed");
+    }
+  },
+);
+
+export const fetchCatalogue = createAsyncThunkTyped(
+  "manager/fetchCatalogue",
+  async (): Promise<{
+    services: ServiceDocument[];
+    categories: CategoryDocument[];
+  }> => {
+    try {
+      // categories are only used for names, so a failure there isn't fatal
+      const [services, categories] = await Promise.all([
+        getServices(),
+        getCategories().catch(() => [] as CategoryDocument[]),
+      ]);
+      return { services, categories };
+    } catch {
+      throw new Error("Fetching services failed");
+    }
+  },
+);
+
+/** Names of the categories a provider works in, via their offered services. */
+export function getProviderCategoryNames(
+  provider: RegionProvider,
+  services: ServiceDocument[],
+  categories: CategoryDocument[],
+): string[] {
+  const names = new Set<string>();
+  for (const id of provider.offeredServices) {
+    const category = services.find((s) => s._id === id)?.category;
+    if (!category) continue;
+    const name =
+      typeof category === "string"
+        ? categories.find((c) => c._id === category)?.name
+        : category.name;
+    if (name) names.add(name);
+  }
+  return [...names];
+}
 
 const ManagerSlice = createSlice({
-    name: "manager",
-    initialState,
-    reducers: {},
-    extraReducers: (builder) => {
-        builder.addCase(fetchManager.fulfilled, (state, action) => {
-            state.managerInfo = action.payload;
-        }).addCase(fetchCollective.fulfilled, (state, action) => {
-            state.collectiveInfo = action.payload;
-        }).addCase(fetchServiceProviders.fulfilled, (state, action) => {
-            state.providersInfo = action.payload;
-        })
+  name: "manager",
+  initialState,
+  reducers: {
+    selectRegion(state, action: PayloadAction<string>) {
+      state.selectedRegionId = action.payload;
+      state.providers = [];
+      state.bookings = [];
     },
-})
+    // replace the stored user after a successful profile save
+    userUpdated(state, action: PayloadAction<UserDocument>) {
+      state.userInfo = action.payload;
+    },
+    // update one provider in place, so the list doesn't reload after approve/suspend
+    providerStatusChanged(
+      state,
+      action: PayloadAction<{ id: string; status: ProviderStatus }>,
+    ) {
+      const provider = state.providers.find((p) => p._id === action.payload.id);
+      if (provider) provider.status = action.payload.status;
+    },
+  },
+  extraReducers: (builder) => {
+    builder
+      .addCase(fetchManager.fulfilled, (state, action) => {
+        state.managerInfo = action.payload;
+      })
+      .addCase(fetchMe.fulfilled, (state, action) => {
+        state.userInfo = action.payload;
+      })
+      .addCase(fetchRegions.fulfilled, (state, action) => {
+        state.regions = action.payload;
+        const stillValid = action.payload.some(
+          (r) => r._id === state.selectedRegionId,
+        );
+        if (!stillValid) state.selectedRegionId = action.payload[0]?._id ?? null;
+      })
+      .addCase(fetchRegionProviders.fulfilled, (state, action) => {
+        state.providers = action.payload;
+      })
+      .addCase(fetchCatalogue.fulfilled, (state, action) => {
+        state.services = action.payload.services;
+        state.categories = action.payload.categories;
+      })
+      .addCase(fetchRegionBookings.fulfilled, (state, action) => {
+        state.bookings = action.payload;
+      })
+      .addMatcher(
+        (a) => a.type.startsWith("manager/") && a.type.endsWith("/pending"),
+        (state) => {
+          state.pending += 1;
+          state.error = null;
+        },
+      )
+      .addMatcher(
+        (a) => a.type.startsWith("manager/") && a.type.endsWith("/fulfilled"),
+        (state) => {
+          state.pending -= 1;
+        },
+      )
+      .addMatcher(
+        (a) => a.type.startsWith("manager/") && a.type.endsWith("/rejected"),
+        (state, action) => {
+          state.pending -= 1;
+          state.error =
+            (action as { error?: { message?: string } }).error?.message ??
+            "Something went wrong";
+        },
+      );
+  },
+});
 
 export const ManagerReducer = ManagerSlice.reducer;
 export const ManagerActions = ManagerSlice.actions;
