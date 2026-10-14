@@ -11,7 +11,7 @@ export default function Layout() {
         <div className="min-h-screen flex flex-col">
             <Header />
             <div className="flex flex-1">
-                <Sidebar onPageChange={setActivePage}/>
+                <Sidebar activePage={activePage} onPageChange={setActivePage}/>
                 <Body activePage={activePage}/>
             </div>
             <div><Footer/></div>

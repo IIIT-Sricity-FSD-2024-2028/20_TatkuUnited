@@ -1,5 +1,5 @@
-import Layout from "../provider/layout";
+import ProviderRouter from "../provider/provider_route";
 
 export default function Provider() {
-  return <Layout />;
+  return <ProviderRouter />;
 }

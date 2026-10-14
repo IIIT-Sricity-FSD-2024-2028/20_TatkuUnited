@@ -1,49 +1,36 @@
+import { Button } from "@/components/ui/button";
+
 type SidebarProps = {
     onPageChange: (page: string) => void;
+    activePage: string;
 };
 
 export default function Sidebar({
     onPageChange,
+    activePage,
 }: SidebarProps) {
+    const pages = [
+        { label: "Dashboard", page: "Dashboard" },
+        { label: "Assigned Jobs", page: "Assigned Jobs" },
+        { label: "Calendar", page: "Calendar" },
+        { label: "Earnings", page: "Earnings" },
+        { label: "Settings", page: "Settings" },
+    ];
 
     return (
-        <aside className="w-64 border-4 border-black flex flex-col">
-
-        <button
-            className="h-30 border-b-4 border-green-500"
-            onClick={() => onPageChange("Dashboard")}
-        >
-            Dashboard
-        </button>
-
-        <button
-            className="h-26 border-b-4 border-green-500"
-            onClick={() => onPageChange("Job Calender")}
-        >
-            Job Calender
-        </button>
-
-        <button
-            className="h-26 border-b-4 border-green-500"
-            onClick={() => onPageChange("Reports")}
-        >
-            Reports
-        </button>
-
-        <button
-            className="h-26 border-b-4 border-green-500"
-            onClick={() => onPageChange("Settings")}
-        >
-            Settings
-        </button>
-
-        <button
-            className="h-26 border-b-4 border-green-500"
-            onClick={() => onPageChange("Profile")}
-        >
-            Profile
-        </button>
-
+        <aside className="w-64 border-r bg-background p-3">
+            <nav aria-label="Provider navigation" className="space-y-1">
+                {pages.map(({ label, page }) => (
+                    <Button
+                        className="w-full justify-start"
+                        key={page}
+                        onClick={() => onPageChange(page)}
+                        variant={activePage === page ? "secondary" : "ghost"}
+                    >
+                        {label}
+                    </Button>
+                ))}
+            </nav>
         </aside>
     );
 }
