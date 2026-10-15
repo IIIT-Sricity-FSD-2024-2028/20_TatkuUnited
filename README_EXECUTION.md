@@ -241,33 +241,38 @@ The platform includes dedicated dashboards for each role in the system. You can 
 
 #### Key Contributions:
 
-1. **Backend Architecture Redesign**:
-   - Re-architected and modernized the entire backend from legacy prototypes into an NestJS modular system.
-   - Designed clean dependency injection hierarchies across controllers, services, guards, interceptors, and DTOs.
-   - Built the centralized HTTP exception handling (`AllExceptionsFilter`) and Winston rotating file logging.
+- Backend: While developing the react project, I noticed that the backend
+  was messed up due to poor management last semester. So, I completely
+  redesigned the backend.
 
-2. **NoSQL Database Architecture & Migration**:
-   - Designed the complete NoSQL schema in MongoDB with cross-collection relationships (Users, Providers, Managers, Regions, Categories, Services, Orders, Bookings, Payments, Reviews).
-   - Migrated the application from inconsistent mock datasets to a robust MongoDB database with multi-document transactions and schema validations.
-   - Authored comprehensive database documentation and multi-tiered seed workflows.
+- Database: I designed the database schema which is NoSQL based. I migrated
+  from inconsistent mock data to consistent MongoDB database.
 
-3. **Authentication & Authorization System**:
-   - Built end-to-end authentication infrastructure on the frontend and backend.
-   - Developed the React Auth Context (`AuthContext.ts`), custom `useAuth.ts` hook, and secure session management.
-   - Implemented JWT token handling, login flow, register flow, and logout workflows.
+- React: I mainly contributed towards implementing the Auth system in the
+  frontend, as well as the login and register pages. I also implemented
+  service discovery and service details page. I implemented the customer
+  service booking workflow and provider job assignment logic.
+  I utilized the Shadcn (industry leading) UI library for polished
+  components like toast, caurosel, card, item, button, spinner, etc.
 
-4. **Service Discovery & Catalog**:
-   - Implemented dynamic service catalog browsing with real-time category filtering.
-   - Created individual service details pages featuring pricing, duration, included coverage, FAQs, and ratings.
+#### I worked on:
 
-5. **Customer Booking & Provider Workflow**:
-   - Designed and built the customer service booking workflow (cart management, address selection, scheduling, and checkout).
-   - Built provider job assignment logic, real-time incoming offer response, and status updates.
-
-6. **Frontend Infrastructure & UI Integration**:
-   - Integrated Shadcn UI component library and Tailwind CSS styling system.
-   - Developed centralized API caller (`apiService.ts` with Axios interceptors for bearer tokens and error normalization).
-   - Structured routing logic (`App.tsx`), backend endpoint map (`endpoints.ts`), HTTP methods enum, and Role-Based definitions.
+1. Login page - LoginPage.tsx
+2. Register page - RegisterPage.tsx
+3. Auth services (login, register, logout) - authService.ts
+4. Api service (axios) to make api calls simple - apiService.ts
+5. Auth custom hook - useAuth.ts
+6. Used Shadcn UI library
+7. Worked on Customer service booking workflow - Customer and provider pages
+8. Services for easing communication with backend - services/\*
+9. Auth context api - AuthContext.ts
+10. Service catalog - ServiceCatalog.tsx
+11. Service details - ServicePage.tsx
+12. Routing logic - App.tsx
+13. Backend endpoint map - endpoints.ts
+14. Http and roles enum
+15. Protected route guard - protectedRoute.tsx
+16. Error pages - notFound.tsx and forbiddenAccess.tsx
 
 #### Files Worked On:
 
