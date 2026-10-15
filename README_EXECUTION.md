@@ -398,18 +398,30 @@ The platform includes dedicated dashboards for each role in the system. You can 
 
 ### 5. Warshith
 
-- **Roll Number**: _[To be filled]_
-- **Role**: Team Member
+- **Roll Number**: _S20240010021_
+- **Role**: Team Member / Customer-Side Frontend Developer
 
 #### Key Contributions:
 
 - **Frontend Contributions**:
-  - _[Placeholder: Describe frontend components, user interfaces, or features developed]_
+  - Worked on customer-facing React and TypeScript pages, including scheduling, cart, booking history, account settings, and ratings and feedback.
+  - Implemented customer scheduling functionality with date and time selection, input validation, and adding services to the cart.
+  - Integrated customer pages into the application using React Router and role-based protected routes.
+  - Used React hooks such as `useState` and `useEffect`, controlled inputs, event handling, conditional rendering, and list rendering.
+  - Integrated customer-side functionality with the existing backend service layer.
+
 - **Backend Contributions**:
-  - _[Placeholder: Describe backend endpoints, controllers, or business logic developed]_
+  - Contributed to the integration of customer-side frontend workflows with existing backend APIs and services.
+
 - **Testing & Documentation**:
-  - _[Placeholder: Describe unit tests, integration tests, or API documentation authored]_
+  - Verified frontend builds and checked customer-side page integration during development.
+  - Contributed to Git-based version control and integration of project changes.
 
 #### Files Worked On:
 
-- _[Placeholder: Add links to files worked on, e.g. `react-frontend/src/...` or `back-end/src/...`]_
+- `react-frontend/src/App.tsx`
+- `react-frontend/src/pages/customer/SchedulePage.tsx`
+- `react-frontend/src/pages/customer/CartPage.tsx`
+- `react-frontend/src/pages/customer/BookingHistoryPage.tsx`
+- `react-frontend/src/pages/customer/AccountSettingsPage.tsx`
+- `react-frontend/src/pages/customer/RatingsFeedbackPage.tsx`
