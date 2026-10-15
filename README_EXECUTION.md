@@ -377,23 +377,21 @@ The platform includes dedicated dashboards for each role in the system. You can 
 ---
 
 ### 4. Sambhav
-
-- **Roll Number**: _[To be filled]_
-- **Role**: Team Member
+- *Roll Number: *S20240010210
+- *Role*: Manager Pages
 
 #### Key Contributions:
+- Redesigned the manager pages from scratch after decision to remove older actors unit_manager and collective_manager
 
-- **Frontend Contributions**:
-  - _[Placeholder: Describe frontend components, user interfaces, or features developed]_
-- **Backend Contributions**:
-  - _[Placeholder: Describe backend endpoints, controllers, or business logic developed]_
-- **Testing & Documentation**:
-  - _[Placeholder: Describe unit tests, integration tests, or API documentation authored]_
 
 #### Files Worked On:
-
-- _[Placeholder: Add links to files worked on, e.g. `react-frontend/src/...` or `back-end/src/...`]_
-
+- manager-slice.ts
+- manager_layout.tsx
+- manage-providers.tsx
+- manager/my-profile.tsx
+- manager/revenue.tsx
+- revenue-utils.ts
+- revenue-charts.tsx
 ---
 
 ### 5. Warshith
