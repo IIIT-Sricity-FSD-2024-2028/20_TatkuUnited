@@ -345,34 +345,50 @@ The platform includes dedicated dashboards for each role in the system. You can 
 - Added the customer and provider service completion confirmation flow.
 
 #### Frontend Contributions:
-
-- Developed [`AssignedJobs.tsx`](./pages/provider/AssignedJobs.tsx) with provider booking retrieval, job statuses, `Start job`, `Mark completed`, and `Awaiting customer` actions.
-- Developed [`JobCalender.tsx`](./pages/provider/JobCalender.tsx) with month navigation, date-specific jobs, unavailability records, job details, and add/edit unavailability actions.
-- Updated [`Revenue.tsx`](./pages/provider/Revenue.tsx) to calculate provider earnings from completed bookings.
-- Used the existing revenue split fields to show provider earnings and total revenue.
-- Developed [`Settings.tsx`](./pages/provider/Settings.tsx) for editing provider experience, working hours, and working days.
-- Developed [`Profile.tsx`](./pages/provider/Profile.tsx) for editing provider name, email, phone, gender, and date of birth.
-- Reused existing UI components for the provider pages.
-- Fixed customer booking navigation so customer booking links correctly use `/customer/bookings`.
+- Primarily contribute in building the 'Provider' user interface for the app using React.
+- Worked on the following provider components:
+1. AssignedJobs.tsx - Displays the provider’s assigned bookings and job status actions.
+2. JobCalender.tsx - Shows provider jobs and unavailable time slots on a calendar. 
+3. Revenue.tsx - Calculates and displays the provider’s earnings and total revenue.
+4. Settings.tsx - Allows the provider to update work experience, working hours, and working days.
+5. Profile.tsx - Allows the provider to view and edit personal profile details.
+6. DataTable.tsx - Reusable table component for displaying structured data.
+7. Dashboard.tsx - Displays the provider overview, incoming offers, and assigned jobs.
 
 #### Backend Contributions:
 
-- Added the `completion_requested` booking status to support provider-requested completion confirmation.
-- Added provider/customer booking completion endpoints:
+- _Added the following endpoints using AI to complete few workflows_( Customer Booking, Revenue Split, Service fulfilment confirmation )
+- provider/customer booking completion endpoints:
   - `POST /bookings/:id/request-completion`
   - `POST /bookings/:id/confirm-completion`
   - `POST /bookings/:id/reject-completion`
-- Added status-transition checks for the completion flow.
-- Added frontend booking service helpers and endpoint constants for the new completion APIs.
-
+  - booking status to support provider-requested completion confirmation.
+  - `completion_requested` booking status to support provider-requested completion confirmation.
+    
 #### Testing & Documentation:
-
 - Tested the customer booking, job assignment, revenue, unavailability, and completion workflows.
-- Reviewed the backend APIs before connecting the frontend pages.
 
 #### Files Worked On:
+- Provider Pages :
+- `react-frontend/src/pages/provider/AssignedJobs.tsx`
+- `react-frontend/src/pages/provider/JobCalender.tsx`
+- `react-frontend/src/pages/provider/Revenue.tsx`
+- `react-frontend/src/pages/provider/Settings.tsx`
+- `react-frontend/src/pages/provider/Profile.tsx`
+- `react-frontend/src/pages/provider/Dashboard.tsx`
+- `react-frontend/src/pages/provider/DataTable.tsx`
+  
+- Customer Booking (small nuances):
+- `react-frontend/src/pages/customer/BookingHistoryPage.tsx`
+- `react-frontend/src/pages/customer/CustomerDashboard.tsx`
+- `react-frontend/src/pages/customer/RatingsFeedbackPage.tsx`
+- `react-frontend/src/pages/PublicNavbar.tsx`
 
-- _[Placeholder: Add links to files worked on, e.g. `react-frontend/src/...` or `back-end/src/...`]_
+- Front end and Backend (Single function corrections using AI)
+- `react-frontend/src/services/bookings.service.ts`
+- `back-end/src/bookings/bookings.controller.ts`
+- `back-end/src/bookings/bookings.service.ts`
+- `back-end/src/common/enums/booking-status.enum.ts`
 
 ---
 
