@@ -33,3 +33,24 @@
 #### Testing & Documentation:
 - Tested the customer booking, job assignment, revenue, unavailability, and completion workflows.
 - Reviewed the backend APIs before connecting the frontend pages.
+
+#### Files Worked On:
+
+- `react-frontend/src/pages/provider/AssignedJobs.tsx`
+- `react-frontend/src/pages/provider/JobCalender.tsx`
+- `react-frontend/src/pages/provider/Revenue.tsx`
+- `react-frontend/src/pages/provider/Settings.tsx`
+- `react-frontend/src/pages/provider/Profile.tsx`
+- `react-frontend/src/pages/provider/provider_layout.tsx`
+- `react-frontend/src/pages/provider/provider_route.tsx`
+- `react-frontend/src/pages/customer/BookingHistoryPage.tsx`
+- `react-frontend/src/pages/customer/CustomerDashboard.tsx`
+- `react-frontend/src/pages/customer/RatingsFeedbackPage.tsx`
+- `react-frontend/src/pages/PublicNavbar.tsx`
+- `react-frontend/src/services/bookings.service.ts`
+- `react-frontend/src/common/endpoints.ts`
+- `react-frontend/src/models/api.models.ts`
+- `back-end/src/bookings/bookings.controller.ts`
+- `back-end/src/bookings/bookings.service.ts`
+- `back-end/src/common/enums/booking-status.enum.ts`
+- `back-end/docs/swagger.json`
