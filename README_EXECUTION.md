@@ -7,13 +7,17 @@ A comprehensive technical execution manual, setup guide, and individual contribu
 ## 1. System Architecture & Prerequisites
 
 ### 1.1 Architecture Overview
+
 The platform consists of a decoupled, full-stack architecture:
+
 - **Backend**: Built with **NestJS (Node.js/TypeScript)**, employing **Mongoose (MongoDB)** for data persistence, JWT-based authentication, Role-Based Access Control (RBAC), and Helmet/Throttler security middlewares.
 - **Frontend**: Built with **React 19, TypeScript, and Vite**, utilizing **Tailwind CSS v4**, **Shadcn UI** component primitives, and **Redux Toolkit** / React Context for state management.
 - **Database**: **MongoDB** (Replica Set required for multi-document ACID transactions during booking and checkout).
 
 ### 1.2 Prerequisites
+
 Ensure the following tools and runtimes are installed on your system before proceeding:
+
 - **Runtime**: [Node.js](https://nodejs.org/) (v18.0.0 or higher, recommended v20+) OR [Bun](https://bun.sh/) (v1.0+)
 - **Package Manager**: `bun`, `npm`, or `pnpm` (bun and pnpm supported)
 - **Database Engine**: [MongoDB Community Server](https://www.mongodb.com/try/download/community) (v6.0+) or a free [MongoDB Atlas Cluster](https://www.mongodb.com/atlas)
@@ -25,6 +29,7 @@ Ensure the following tools and runtimes are installed on your system before proc
 ## 2. Environment Configuration
 
 ### 2.1 Backend Environment Setup (`back-end/.env`)
+
 Navigate to the `back-end` directory and create a `.env` file (or duplicate `.env.example`):
 
 ```bash
@@ -60,11 +65,14 @@ RAZORPAY_WEBHOOK_SECRET=your_webhook_secret
 ```
 
 ### 2.2 Frontend Configuration (`react-frontend`)
+
 The React frontend communicates with the backend via `react-frontend/src/common/endpoints.ts`.
 By default, the backend API URL is configured to:
+
 ```typescript
 export const BASE_URL = "http://localhost:3000";
 ```
+
 If your backend is running on a different port or host, update `BASE_URL` in `react-frontend/src/common/endpoints.ts`.
 
 ---
@@ -97,6 +105,7 @@ mongosh "<MONGODB_URI>" --file back-end/database/seed/seed-layer4.js
 
 > **Note on Windows PowerShell:**
 > You can also run the seed scripts directly using backslashes:
+>
 > ```powershell
 > mongosh "<MONGODB_URI>" --file .\back-end\database\seed\seed-users.js
 > mongosh "<MONGODB_URI>" --file .\back-end\database\seed\seed-catalog.js
@@ -110,7 +119,9 @@ mongosh "<MONGODB_URI>" --file back-end/database/seed/seed-layer4.js
 ## 4. Step-by-Step Execution Procedure
 
 ### Step 1: Install Backend Dependencies
+
 Open a terminal in the project root:
+
 ```bash
 cd back-end
 
@@ -122,6 +133,7 @@ npm install
 ```
 
 ### Step 2: Start the Backend Server
+
 ```bash
 # Development mode with hot-reloading
 bun run start:dev
@@ -129,6 +141,7 @@ bun run start:dev
 # OR using npm
 npm run start:dev
 ```
+
 The backend server will start on `http://localhost:3000`.
 
 - **Health Check**: Visit `http://localhost:3000/` in your browser.
@@ -137,7 +150,9 @@ The backend server will start on `http://localhost:3000`.
 ---
 
 ### Step 3: Install Frontend Dependencies
+
 Open a second terminal window:
+
 ```bash
 cd react-frontend
 
@@ -149,6 +164,7 @@ npm install
 ```
 
 ### Step 4: Start the Frontend Application
+
 ```bash
 # Start Vite development server
 bun run dev
@@ -156,13 +172,17 @@ bun run dev
 # OR using npm
 npm run dev
 ```
+
 The React development server will start at:
+
 - **Local URL**: `http://localhost:5173/`
 
 ---
 
 ### Step 5: Running Tests (Backend)
+
 To verify database validations, auth guards, RBAC, and booking workflows:
+
 ```bash
 cd back-end
 
@@ -180,17 +200,18 @@ npm run test:cov
 
 The platform includes dedicated dashboards for each role in the system. You can log in with any of the pre-seeded accounts below (or create new accounts via the Registration page at `/auth/register`):
 
-| Role | Name | Email | Sample Access / Route |
-| :--- | :--- | :--- | :--- |
-| **Customer** | Olivia | `olivia@customer.com` | `/customer` (Service browsing, cart checkout, bookings) |
-| **Customer** | Emily | `emily@customer.com` | `/customer` (Bookings, schedule management) |
-| **Provider** | David | `david@provider.com` | `/provider` (Job calendar, accept/decline offers, status updates) |
-| **Provider** | James | `james@provider.com` | `/provider` (Assigned jobs, active work status) |
-| **Manager** | Michael | `michael@manager.com` | `/manager` (Regional collective oversight, provider allocations) |
-| **Manager** | Sarah | `sarah@manager.com` | `/manager` (Regional unit management) |
-| **Super User** | John | `john@admin.com` | `/superuser` (Platform settings, commission split, global audit) |
+| Role           | Name    | Email                 | Sample Access / Route                                             |
+| :------------- | :------ | :-------------------- | :---------------------------------------------------------------- |
+| **Customer**   | Olivia  | `olivia@customer.com` | `/customer` (Service browsing, cart checkout, bookings)           |
+| **Customer**   | Emily   | `emily@customer.com`  | `/customer` (Bookings, schedule management)                       |
+| **Provider**   | David   | `david@provider.com`  | `/provider` (Job calendar, accept/decline offers, status updates) |
+| **Provider**   | James   | `james@provider.com`  | `/provider` (Assigned jobs, active work status)                   |
+| **Manager**    | Michael | `michael@manager.com` | `/manager` (Regional collective oversight, provider allocations)  |
+| **Manager**    | Sarah   | `sarah@manager.com`   | `/manager` (Regional unit management)                             |
+| **Super User** | John    | `john@admin.com`      | `/superuser` (Platform settings, commission split, global audit)  |
 
 ### Key Web Routes:
+
 - **Landing Page**: `http://localhost:5173/`
 - **Service Catalog**: `http://localhost:5173/services`
 - **Service Details**: `http://localhost:5173/services/:serviceId`
@@ -206,6 +227,7 @@ The platform includes dedicated dashboards for each role in the system. You can 
 ## 6. Team Contributions
 
 ### Team Information
+
 - **Team**: 20_TatkuUnited
 - **Course**: Full Stack Development (FSD), IIIT Sri City
 - **Project**: Digital Marketplace for Non-Retail Services (On-Demand Service Scheduling & Fulfillment System)
@@ -213,18 +235,20 @@ The platform includes dedicated dashboards for each role in the system. You can 
 ---
 
 ### 1. R Shri Charan — Team Lead
+
 - **Roll Number**: `S20240010196`
 - **Role**: Team Lead / Full-Stack & System Architect
 
 #### Key Contributions:
+
 1. **Backend Architecture Redesign**:
-   - Re-architected and modernized the entire backend from legacy prototypes into an enterprise-grade NestJS modular system.
+   - Re-architected and modernized the entire backend from legacy prototypes into an NestJS modular system.
    - Designed clean dependency injection hierarchies across controllers, services, guards, interceptors, and DTOs.
-   - Built the centralized HTTP exception handling (`AllExceptionsFilter`), request correlation tracking with `X-Request-Id`, and Winston rotating file logging.
+   - Built the centralized HTTP exception handling (`AllExceptionsFilter`) and Winston rotating file logging.
 
 2. **NoSQL Database Architecture & Migration**:
-   - Designed the complete normalized NoSQL schema in MongoDB with cross-collection relationships (Users, Providers, Managers, Regions, Categories, Services, Orders, Bookings, Payments, Reviews).
-   - Migrated the application from inconsistent mock datasets to a robust MongoDB database with multi-document ACID transactions and schema validations.
+   - Designed the complete NoSQL schema in MongoDB with cross-collection relationships (Users, Providers, Managers, Regions, Categories, Services, Orders, Bookings, Payments, Reviews).
+   - Migrated the application from inconsistent mock datasets to a robust MongoDB database with multi-document transactions and schema validations.
    - Authored comprehensive database documentation and multi-tiered seed workflows.
 
 3. **Authentication & Authorization System**:
@@ -246,6 +270,7 @@ The platform includes dedicated dashboards for each role in the system. You can 
    - Structured routing logic (`App.tsx`), backend endpoint map (`endpoints.ts`), HTTP methods enum, and Role-Based definitions.
 
 #### Files Worked On:
+
 - **Authentication & Forms**:
   - `react-frontend/src/pages/general/LoginPage.tsx`
   - `react-frontend/src/pages/general/RegisterPage.tsx`
@@ -271,34 +296,39 @@ The platform includes dedicated dashboards for each role in the system. You can 
 ---
 
 ### 2. Vasudev
-- **Roll Number**: *S20240010252*
+
+- **Roll Number**: S20240010252
 - **Role**: Team Member
 
 #### Key Contributions:
+
 - **Frontend Contributions**:
-  - *Developed the superuser dashboard and management interfaces for users, categories, regions, services, and platform settings; added the superuser layout and routes, the DataTable and SummaryCards components, the landing page, and the shared sidebar.*
+  - _Developed the superuser dashboard and management interfaces for users, categories, regions, services, and platform settings; added the superuser layout and routes, the DataTable and SummaryCards components, the landing page, and the shared sidebar._
 - **Backend Contributions**:
-  - *Contributed to the upload endpoint implementation with the help of AI.*
+  - _Contributed to the upload endpoint implementation with the help of AI._
 
 #### Files Worked On:
+
 - react-frontend/src/pages/superuser/dashboard.tsx
-react-frontend/src/pages/superuser/manage_users.tsx
-react-frontend/src/pages/superuser/manage_categories.tsx
-react-frontend/src/pages/superuser/manage_regions.tsx
-react-frontend/src/pages/superuser/manage_services.tsx
-react-frontend/src/pages/superuser/platform_settings.tsx
-react-frontend/src/pages/superuser/superuser_layout.tsx
-react-frontend/src/pages/superuser/superuser_route.tsx
-react-frontend/src/components/superuser/DataTable.tsx
-react-frontend/src/components/superuser/SummaryCards.tsx
-react-frontend/src/pages/general/landing/LandingPage.tsx
-react-frontend/src/pages/shared/Sidebar.tsx
-back-end/src/upload/upload.controller.ts
+  react-frontend/src/pages/superuser/manage_users.tsx
+  react-frontend/src/pages/superuser/manage_categories.tsx
+  react-frontend/src/pages/superuser/manage_regions.tsx
+  react-frontend/src/pages/superuser/manage_services.tsx
+  react-frontend/src/pages/superuser/platform_settings.tsx
+  react-frontend/src/pages/superuser/superuser_layout.tsx
+  react-frontend/src/pages/superuser/superuser_route.tsx
+  react-frontend/src/components/superuser/DataTable.tsx
+  react-frontend/src/components/superuser/SummaryCards.tsx
+  react-frontend/src/pages/general/landing/LandingPage.tsx
+  react-frontend/src/pages/shared/Sidebar.tsx
+  back-end/src/upload/upload.controller.ts
 
 ---
 
 ### 3. Prajwal
-**Roll Number**: `S20240010196`
+
+**Roll Number**: `S20240010079`
+
 - **Role**: Provider Application / Frontend Integration
 
 #### Key Contributions:
@@ -331,42 +361,50 @@ back-end/src/upload/upload.controller.ts
 - Added frontend booking service helpers and endpoint constants for the new completion APIs.
 
 #### Testing & Documentation:
+
 - Tested the customer booking, job assignment, revenue, unavailability, and completion workflows.
 - Reviewed the backend APIs before connecting the frontend pages.
 
 #### Files Worked On:
-- *[Placeholder: Add links to files worked on, e.g. `react-frontend/src/...` or `back-end/src/...`]*
+
+- _[Placeholder: Add links to files worked on, e.g. `react-frontend/src/...` or `back-end/src/...`]_
 
 ---
 
 ### 4. Sambhav
-- **Roll Number**: *[To be filled]*
+
+- **Roll Number**: _[To be filled]_
 - **Role**: Team Member
 
 #### Key Contributions:
+
 - **Frontend Contributions**:
-  - *[Placeholder: Describe frontend components, user interfaces, or features developed]*
+  - _[Placeholder: Describe frontend components, user interfaces, or features developed]_
 - **Backend Contributions**:
-  - *[Placeholder: Describe backend endpoints, controllers, or business logic developed]*
+  - _[Placeholder: Describe backend endpoints, controllers, or business logic developed]_
 - **Testing & Documentation**:
-  - *[Placeholder: Describe unit tests, integration tests, or API documentation authored]*
+  - _[Placeholder: Describe unit tests, integration tests, or API documentation authored]_
 
 #### Files Worked On:
-- *[Placeholder: Add links to files worked on, e.g. `react-frontend/src/...` or `back-end/src/...`]*
+
+- _[Placeholder: Add links to files worked on, e.g. `react-frontend/src/...` or `back-end/src/...`]_
 
 ---
 
 ### 5. Warshith
-- **Roll Number**: *[To be filled]*
+
+- **Roll Number**: _[To be filled]_
 - **Role**: Team Member
 
 #### Key Contributions:
+
 - **Frontend Contributions**:
-  - *[Placeholder: Describe frontend components, user interfaces, or features developed]*
+  - _[Placeholder: Describe frontend components, user interfaces, or features developed]_
 - **Backend Contributions**:
-  - *[Placeholder: Describe backend endpoints, controllers, or business logic developed]*
+  - _[Placeholder: Describe backend endpoints, controllers, or business logic developed]_
 - **Testing & Documentation**:
-  - *[Placeholder: Describe unit tests, integration tests, or API documentation authored]*
+  - _[Placeholder: Describe unit tests, integration tests, or API documentation authored]_
 
 #### Files Worked On:
-- *[Placeholder: Add links to files worked on, e.g. `react-frontend/src/...` or `back-end/src/...`]*
+
+- _[Placeholder: Add links to files worked on, e.g. `react-frontend/src/...` or `back-end/src/...`]_
