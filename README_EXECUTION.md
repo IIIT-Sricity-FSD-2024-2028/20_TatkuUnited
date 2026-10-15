@@ -7,13 +7,17 @@ A comprehensive technical execution manual, setup guide, and individual contribu
 ## 1. System Architecture & Prerequisites
 
 ### 1.1 Architecture Overview
+
 The platform consists of a decoupled, full-stack architecture:
+
 - **Backend**: Built with **NestJS (Node.js/TypeScript)**, employing **Mongoose (MongoDB)** for data persistence, JWT-based authentication, Role-Based Access Control (RBAC), and Helmet/Throttler security middlewares.
 - **Frontend**: Built with **React 19, TypeScript, and Vite**, utilizing **Tailwind CSS v4**, **Shadcn UI** component primitives, and **Redux Toolkit** / React Context for state management.
 - **Database**: **MongoDB** (Replica Set required for multi-document ACID transactions during booking and checkout).
 
 ### 1.2 Prerequisites
+
 Ensure the following tools and runtimes are installed on your system before proceeding:
+
 - **Runtime**: [Node.js](https://nodejs.org/) (v18.0.0 or higher, recommended v20+) OR [Bun](https://bun.sh/) (v1.0+)
 - **Package Manager**: `bun`, `npm`, or `pnpm` (bun and pnpm supported)
 - **Database Engine**: [MongoDB Community Server](https://www.mongodb.com/try/download/community) (v6.0+) or a free [MongoDB Atlas Cluster](https://www.mongodb.com/atlas)
@@ -25,6 +29,7 @@ Ensure the following tools and runtimes are installed on your system before proc
 ## 2. Environment Configuration
 
 ### 2.1 Backend Environment Setup (`back-end/.env`)
+
 Navigate to the `back-end` directory and create a `.env` file (or duplicate `.env.example`):
 
 ```bash
@@ -60,11 +65,14 @@ RAZORPAY_WEBHOOK_SECRET=your_webhook_secret
 ```
 
 ### 2.2 Frontend Configuration (`react-frontend`)
+
 The React frontend communicates with the backend via `react-frontend/src/common/endpoints.ts`.
 By default, the backend API URL is configured to:
+
 ```typescript
 export const BASE_URL = "http://localhost:3000";
 ```
+
 If your backend is running on a different port or host, update `BASE_URL` in `react-frontend/src/common/endpoints.ts`.
 
 ---
@@ -97,6 +105,7 @@ mongosh "<MONGODB_URI>" --file back-end/database/seed/seed-layer4.js
 
 > **Note on Windows PowerShell:**
 > You can also run the seed scripts directly using backslashes:
+>
 > ```powershell
 > mongosh "<MONGODB_URI>" --file .\back-end\database\seed\seed-users.js
 > mongosh "<MONGODB_URI>" --file .\back-end\database\seed\seed-catalog.js
@@ -110,7 +119,9 @@ mongosh "<MONGODB_URI>" --file back-end/database/seed/seed-layer4.js
 ## 4. Step-by-Step Execution Procedure
 
 ### Step 1: Install Backend Dependencies
+
 Open a terminal in the project root:
+
 ```bash
 cd back-end
 
@@ -122,6 +133,7 @@ npm install
 ```
 
 ### Step 2: Start the Backend Server
+
 ```bash
 # Development mode with hot-reloading
 bun run start:dev
@@ -129,6 +141,7 @@ bun run start:dev
 # OR using npm
 npm run start:dev
 ```
+
 The backend server will start on `http://localhost:3000`.
 
 - **Health Check**: Visit `http://localhost:3000/` in your browser.
@@ -137,7 +150,9 @@ The backend server will start on `http://localhost:3000`.
 ---
 
 ### Step 3: Install Frontend Dependencies
+
 Open a second terminal window:
+
 ```bash
 cd react-frontend
 
@@ -149,6 +164,7 @@ npm install
 ```
 
 ### Step 4: Start the Frontend Application
+
 ```bash
 # Start Vite development server
 bun run dev
@@ -156,13 +172,17 @@ bun run dev
 # OR using npm
 npm run dev
 ```
+
 The React development server will start at:
+
 - **Local URL**: `http://localhost:5173/`
 
 ---
 
 ### Step 5: Running Tests (Backend)
+
 To verify database validations, auth guards, RBAC, and booking workflows:
+
 ```bash
 cd back-end
 
@@ -180,17 +200,18 @@ npm run test:cov
 
 The platform includes dedicated dashboards for each role in the system. You can log in with any of the pre-seeded accounts below (or create new accounts via the Registration page at `/auth/register`):
 
-| Role | Name | Email | Sample Access / Route |
-| :--- | :--- | :--- | :--- |
-| **Customer** | Olivia | `olivia@customer.com` | `/customer` (Service browsing, cart checkout, bookings) |
-| **Customer** | Emily | `emily@customer.com` | `/customer` (Bookings, schedule management) |
-| **Provider** | David | `david@provider.com` | `/provider` (Job calendar, accept/decline offers, status updates) |
-| **Provider** | James | `james@provider.com` | `/provider` (Assigned jobs, active work status) |
-| **Manager** | Michael | `michael@manager.com` | `/manager` (Regional collective oversight, provider allocations) |
-| **Manager** | Sarah | `sarah@manager.com` | `/manager` (Regional unit management) |
-| **Super User** | John | `john@admin.com` | `/superuser` (Platform settings, commission split, global audit) |
+| Role           | Name    | Email                 | Sample Access / Route                                             |
+| :------------- | :------ | :-------------------- | :---------------------------------------------------------------- |
+| **Customer**   | Olivia  | `olivia@customer.com` | `/customer` (Service browsing, cart checkout, bookings)           |
+| **Customer**   | Emily   | `emily@customer.com`  | `/customer` (Bookings, schedule management)                       |
+| **Provider**   | David   | `david@provider.com`  | `/provider` (Job calendar, accept/decline offers, status updates) |
+| **Provider**   | James   | `james@provider.com`  | `/provider` (Assigned jobs, active work status)                   |
+| **Manager**    | Michael | `michael@manager.com` | `/manager` (Regional collective oversight, provider allocations)  |
+| **Manager**    | Sarah   | `sarah@manager.com`   | `/manager` (Regional unit management)                             |
+| **Super User** | John    | `john@admin.com`      | `/superuser` (Platform settings, commission split, global audit)  |
 
 ### Key Web Routes:
+
 - **Landing Page**: `http://localhost:5173/`
 - **Service Catalog**: `http://localhost:5173/services`
 - **Service Details**: `http://localhost:5173/services/:serviceId`
@@ -206,6 +227,7 @@ The platform includes dedicated dashboards for each role in the system. You can 
 ## 6. Team Contributions
 
 ### Team Information
+
 - **Team**: 20_TatkuUnited
 - **Course**: Full Stack Development (FSD), IIIT Sri City
 - **Project**: Digital Marketplace for Non-Retail Services (On-Demand Service Scheduling & Fulfillment System)
@@ -213,39 +235,47 @@ The platform includes dedicated dashboards for each role in the system. You can 
 ---
 
 ### 1. R Shri Charan — Team Lead
+
 - **Roll Number**: `S20240010196`
 - **Role**: Team Lead / Full-Stack & System Architect
 
 #### Key Contributions:
-1. **Backend Architecture Redesign**:
-   - Re-architected and modernized the entire backend from legacy prototypes into an enterprise-grade NestJS modular system.
-   - Designed clean dependency injection hierarchies across controllers, services, guards, interceptors, and DTOs.
-   - Built the centralized HTTP exception handling (`AllExceptionsFilter`), request correlation tracking with `X-Request-Id`, and Winston rotating file logging.
 
-2. **NoSQL Database Architecture & Migration**:
-   - Designed the complete normalized NoSQL schema in MongoDB with cross-collection relationships (Users, Providers, Managers, Regions, Categories, Services, Orders, Bookings, Payments, Reviews).
-   - Migrated the application from inconsistent mock datasets to a robust MongoDB database with multi-document ACID transactions and schema validations.
-   - Authored comprehensive database documentation and multi-tiered seed workflows.
+- Backend: While developing the react project, I noticed that the backend
+  was messed up due to poor management last semester. So, I completely
+  redesigned the backend.
 
-3. **Authentication & Authorization System**:
-   - Built end-to-end authentication infrastructure on the frontend and backend.
-   - Developed the React Auth Context (`AuthContext.ts`), custom `useAuth.ts` hook, and secure session management.
-   - Implemented JWT token handling, login flow, register flow, and logout workflows.
+- Database: I designed the database schema which is NoSQL based. I migrated
+  from inconsistent mock data to consistent MongoDB database.
 
-4. **Service Discovery & Catalog**:
-   - Implemented dynamic service catalog browsing with real-time category filtering.
-   - Created individual service details pages featuring pricing, duration, included coverage, FAQs, and ratings.
+- React: I mainly contributed towards implementing the Auth system in the
+  frontend, as well as the login and register pages. I also implemented
+  service discovery and service details page. I implemented the customer
+  service booking workflow and provider job assignment logic.
+  I utilized the Shadcn (industry leading) UI library for polished
+  components like toast, caurosel, card, item, button, spinner, etc.
 
-5. **Customer Booking & Provider Workflow**:
-   - Designed and built the customer service booking workflow (cart management, address selection, scheduling, and checkout).
-   - Built provider job assignment logic, real-time incoming offer response, and status updates.
+#### I worked on:
 
-6. **Frontend Infrastructure & UI Integration**:
-   - Integrated Shadcn UI component library and Tailwind CSS styling system.
-   - Developed centralized API caller (`apiService.ts` with Axios interceptors for bearer tokens and error normalization).
-   - Structured routing logic (`App.tsx`), backend endpoint map (`endpoints.ts`), HTTP methods enum, and Role-Based definitions.
+1. Login page - LoginPage.tsx
+2. Register page - RegisterPage.tsx
+3. Auth services (login, register, logout) - authService.ts
+4. Api service (axios) to make api calls simple - apiService.ts
+5. Auth custom hook - useAuth.ts
+6. Used Shadcn UI library
+7. Worked on Customer service booking workflow - Customer and provider pages
+8. Services for easing communication with backend - services/\*
+9. Auth context api - AuthContext.ts
+10. Service catalog - ServiceCatalog.tsx
+11. Service details - ServicePage.tsx
+12. Routing logic - App.tsx
+13. Backend endpoint map - endpoints.ts
+14. Http and roles enum
+15. Protected route guard - protectedRoute.tsx
+16. Error pages - notFound.tsx and forbiddenAccess.tsx
 
 #### Files Worked On:
+
 - **Authentication & Forms**:
   - `react-frontend/src/pages/general/LoginPage.tsx`
   - `react-frontend/src/pages/general/RegisterPage.tsx`
@@ -271,24 +301,39 @@ The platform includes dedicated dashboards for each role in the system. You can 
 ---
 
 ### 2. Vasudev
-- **Roll Number**: *[To be filled]*
+
+- **Roll Number**: S20240010252
 - **Role**: Team Member
 
 #### Key Contributions:
+
 - **Frontend Contributions**:
-  - *[Placeholder: Describe frontend components, user interfaces, or features developed]*
+  - _Developed the superuser dashboard and management interfaces for users, categories, regions, services, and platform settings; added the superuser layout and routes, the DataTable and SummaryCards components, the landing page, and the shared sidebar._
 - **Backend Contributions**:
-  - *[Placeholder: Describe backend endpoints, controllers, or business logic developed]*
-- **Testing & Documentation**:
-  - *[Placeholder: Describe unit tests, integration tests, or API documentation authored]*
+  - _Contributed to the upload endpoint implementation with the help of AI._
 
 #### Files Worked On:
-- *[Placeholder: Add links to files worked on, e.g. `react-frontend/src/...` or `back-end/src/...`]*
+
+- react-frontend/src/pages/superuser/dashboard.tsx
+  react-frontend/src/pages/superuser/manage_users.tsx
+  react-frontend/src/pages/superuser/manage_categories.tsx
+  react-frontend/src/pages/superuser/manage_regions.tsx
+  react-frontend/src/pages/superuser/manage_services.tsx
+  react-frontend/src/pages/superuser/platform_settings.tsx
+  react-frontend/src/pages/superuser/superuser_layout.tsx
+  react-frontend/src/pages/superuser/superuser_route.tsx
+  react-frontend/src/components/superuser/DataTable.tsx
+  react-frontend/src/components/superuser/SummaryCards.tsx
+  react-frontend/src/pages/general/landing/LandingPage.tsx
+  react-frontend/src/pages/shared/Sidebar.tsx
+  back-end/src/upload/upload.controller.ts
 
 ---
 
 ### 3. Prajwal
-**Roll Number**: `S20240010196`
+
+**Roll Number**: `S20240010079`
+
 - **Role**: Provider Application / Frontend Integration
 
 #### Key Contributions:
@@ -300,63 +345,97 @@ The platform includes dedicated dashboards for each role in the system. You can 
 - Added the customer and provider service completion confirmation flow.
 
 #### Frontend Contributions:
-
-- Developed [`AssignedJobs.tsx`](./pages/provider/AssignedJobs.tsx) with provider booking retrieval, job statuses, `Start job`, `Mark completed`, and `Awaiting customer` actions.
-- Developed [`JobCalender.tsx`](./pages/provider/JobCalender.tsx) with month navigation, date-specific jobs, unavailability records, job details, and add/edit unavailability actions.
-- Updated [`Revenue.tsx`](./pages/provider/Revenue.tsx) to calculate provider earnings from completed bookings.
-- Used the existing revenue split fields to show provider earnings and total revenue.
-- Developed [`Settings.tsx`](./pages/provider/Settings.tsx) for editing provider experience, working hours, and working days.
-- Developed [`Profile.tsx`](./pages/provider/Profile.tsx) for editing provider name, email, phone, gender, and date of birth.
-- Reused existing UI components for the provider pages.
-- Fixed customer booking navigation so customer booking links correctly use `/customer/bookings`.
+- Primarily contribute in building the 'Provider' user interface for the app using React.
+- Worked on the following provider components:
+1. AssignedJobs.tsx - Displays the provider’s assigned bookings and job status actions.
+2. JobCalender.tsx - Shows provider jobs and unavailable time slots on a calendar. 
+3. Revenue.tsx - Calculates and displays the provider’s earnings and total revenue.
+4. Settings.tsx - Allows the provider to update work experience, working hours, and working days.
+5. Profile.tsx - Allows the provider to view and edit personal profile details.
+6. DataTable.tsx - Reusable table component for displaying structured data.
+7. Dashboard.tsx - Displays the provider overview, incoming offers, and assigned jobs.
 
 #### Backend Contributions:
 
-- Added the `completion_requested` booking status to support provider-requested completion confirmation.
-- Added provider/customer booking completion endpoints:
+- _Added the following endpoints using AI to complete few workflows_( Customer Booking, Revenue Split, Service fulfilment confirmation )
+- provider/customer booking completion endpoints:
   - `POST /bookings/:id/request-completion`
   - `POST /bookings/:id/confirm-completion`
   - `POST /bookings/:id/reject-completion`
-- Added status-transition checks for the completion flow.
-- Added frontend booking service helpers and endpoint constants for the new completion APIs.
-
+  - booking status to support provider-requested completion confirmation.
+  - `completion_requested` booking status to support provider-requested completion confirmation.
+    
 #### Testing & Documentation:
 - Tested the customer booking, job assignment, revenue, unavailability, and completion workflows.
-- Reviewed the backend APIs before connecting the frontend pages.
 
 #### Files Worked On:
-- *[Placeholder: Add links to files worked on, e.g. `react-frontend/src/...` or `back-end/src/...`]*
+- Provider Pages :
+- `react-frontend/src/pages/provider/AssignedJobs.tsx`
+- `react-frontend/src/pages/provider/JobCalender.tsx`
+- `react-frontend/src/pages/provider/Revenue.tsx`
+- `react-frontend/src/pages/provider/Settings.tsx`
+- `react-frontend/src/pages/provider/Profile.tsx`
+- `react-frontend/src/pages/provider/Dashboard.tsx`
+- `react-frontend/src/pages/provider/DataTable.tsx`
+  
+- Customer Booking (small nuances):
+- `react-frontend/src/pages/customer/BookingHistoryPage.tsx`
+- `react-frontend/src/pages/customer/CustomerDashboard.tsx`
+- `react-frontend/src/pages/customer/RatingsFeedbackPage.tsx`
+- `react-frontend/src/pages/PublicNavbar.tsx`
+
+- Front end and Backend (Single function corrections using AI)
+- `react-frontend/src/services/bookings.service.ts`
+- `back-end/src/bookings/bookings.controller.ts`
+- `back-end/src/bookings/bookings.service.ts`
+- `back-end/src/common/enums/booking-status.enum.ts`
 
 ---
 
 ### 4. Sambhav
-- **Roll Number**: *[To be filled]*
-- **Role**: Team Member
+- *Roll Number: *S20240010210
+- *Role*: Manager Pages
 
 #### Key Contributions:
-- **Frontend Contributions**:
-  - *[Placeholder: Describe frontend components, user interfaces, or features developed]*
-- **Backend Contributions**:
-  - *[Placeholder: Describe backend endpoints, controllers, or business logic developed]*
-- **Testing & Documentation**:
-  - *[Placeholder: Describe unit tests, integration tests, or API documentation authored]*
+- Redesigned the manager pages from scratch after decision to remove older actors unit_manager and collective_manager
+
 
 #### Files Worked On:
-- *[Placeholder: Add links to files worked on, e.g. `react-frontend/src/...` or `back-end/src/...`]*
-
+- manager-slice.ts
+- manager_layout.tsx
+- manage-providers.tsx
+- manager/my-profile.tsx
+- manager/revenue.tsx
+- revenue-utils.ts
+- revenue-charts.tsx
 ---
 
 ### 5. Warshith
-- **Roll Number**: *[To be filled]*
-- **Role**: Team Member
+
+- **Roll Number**: _S20240010021_
+- **Role**: Team Member / Customer-Side Frontend Developer
 
 #### Key Contributions:
+
 - **Frontend Contributions**:
-  - *[Placeholder: Describe frontend components, user interfaces, or features developed]*
+  - Worked on customer-facing React and TypeScript pages, including scheduling, cart, booking history, account settings, and ratings and feedback.
+  - Implemented customer scheduling functionality with date and time selection, input validation, and adding services to the cart.
+  - Integrated customer pages into the application using React Router and role-based protected routes.
+  - Used React hooks such as `useState` and `useEffect`, controlled inputs, event handling, conditional rendering, and list rendering.
+  - Integrated customer-side functionality with the existing backend service layer.
+
 - **Backend Contributions**:
-  - *[Placeholder: Describe backend endpoints, controllers, or business logic developed]*
+  - Contributed to the integration of customer-side frontend workflows with existing backend APIs and services.
+
 - **Testing & Documentation**:
-  - *[Placeholder: Describe unit tests, integration tests, or API documentation authored]*
+  - Verified frontend builds and checked customer-side page integration during development.
+  - Contributed to Git-based version control and integration of project changes.
 
 #### Files Worked On:
-- *[Placeholder: Add links to files worked on, e.g. `react-frontend/src/...` or `back-end/src/...`]*
+
+- `react-frontend/src/App.tsx`
+- `react-frontend/src/pages/customer/SchedulePage.tsx`
+- `react-frontend/src/pages/customer/CartPage.tsx`
+- `react-frontend/src/pages/customer/BookingHistoryPage.tsx`
+- `react-frontend/src/pages/customer/AccountSettingsPage.tsx`
+- `react-frontend/src/pages/customer/RatingsFeedbackPage.tsx`

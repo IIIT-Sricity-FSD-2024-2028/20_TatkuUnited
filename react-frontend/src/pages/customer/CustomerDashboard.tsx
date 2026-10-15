@@ -16,10 +16,12 @@ export default function CustomerDashboard() {
 
       <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
         <button
-          onClick={() => navigate("/")}
+          onClick={() => navigate("/services")}
           className="rounded-xl border border-slate-200 bg-white p-6 text-left shadow-sm hover:shadow-md transition-shadow cursor-pointer"
         >
-          <h2 className="text-lg font-semibold text-slate-800">Browse Services</h2>
+          <h2 className="text-lg font-semibold text-slate-800">
+            Browse Services
+          </h2>
           <p className="mt-2 text-sm text-slate-600">
             Explore services available on Tatku United.
           </p>
@@ -36,7 +38,7 @@ export default function CustomerDashboard() {
         </button>
 
         <button
-          onClick={() => navigate("/account-settings")}
+          onClick={() => navigate("/customer/account-settings")}
           className="rounded-xl border bg-white p-6 text-left shadow-sm hover:shadow-md cursor-pointer"
         >
           <h2 className="text-lg font-semibold">Account Settings</h2>
