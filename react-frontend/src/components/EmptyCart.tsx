@@ -19,7 +19,7 @@ function EmptyCart() {
 
       <button
         type="button"
-        onClick={() => navigate("/customer")}
+        onClick={() => navigate("/services")}
         className="bg-blue-500 hover:bg-blue-600 text-white font-medium py-3 px-6 rounded-lg cursor-pointer transition"
       >
         Browse Services
