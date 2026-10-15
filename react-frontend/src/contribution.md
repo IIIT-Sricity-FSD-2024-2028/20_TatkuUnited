@@ -1,4 +1,7 @@
+
+
 **Roll Number**: `S20240010196`
+
 - **Role**: Provider Application / Frontend Integration
 
 #### Key Contributions:
@@ -31,6 +34,7 @@
 - Added frontend booking service helpers and endpoint constants for the new completion APIs.
 
 #### Testing & Documentation:
+
 - Tested the customer booking, job assignment, revenue, unavailability, and completion workflows.
 - Reviewed the backend APIs before connecting the frontend pages.
 
