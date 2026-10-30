@@ -1,4 +1,4 @@
-export const BASE_URL = "http://localhost:3000";
+export const BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000";
 
 /**
  * Backend API Endpoints specification mapped directly from OpenAPI / Swagger 3.0 documentation.

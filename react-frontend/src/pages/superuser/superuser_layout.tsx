@@ -8,7 +8,7 @@
 import { Outlet } from 'react-router-dom'
 import SideBar, { SidebarItem } from "../shared/Sidebar";
 import UserHeader from "../shared/user-header.tsx";
-import { BsGrid , BsPeopleFill, BsCollection, BsTools, BsHouseGearFill, BsPinMapFill, BsPersonFillCheck } from "react-icons/bs";
+import { BsGrid , BsPeopleFill, BsCollection, BsTools, BsHouseGearFill, BsPinMapFill } from "react-icons/bs";
 
 export const SuperUser_Layout = () => {
     return(

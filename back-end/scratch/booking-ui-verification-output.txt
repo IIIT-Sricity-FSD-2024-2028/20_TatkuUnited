@@ -1,0 +1,52 @@
+09:05:35.921 [35mhttp[39m [HTTP] (d3198a6e-1cdd-4b04-8dce-97e66cb147cc) [35mGET / 200 4ms - 12b [IP: 127.0.0.1] [UA: node][39m
+GET / -> 200 "Hello World!"
+09:05:35.989 [35mhttp[39m [HTTP] (1e9e9cc0-2aef-4a94-8411-27e47c233cf6) [35mGET /platform-settings 200 52ms - 456b [IP: 127.0.0.1] [UA: node][39m
+GET /platform-settings -> 200 {"offerBatchSize":5,"maxOfferRounds":3}
+09:05:36.138 [35mhttp[39m [HTTP] (a4576fe4-c552-4a4f-8e2b-93f89edce0c0) [35mGET /services/6ae410870730320417d709de/available-slots?date=2026-10-31&lat=12.9716&lng=77.5946 200 140ms - 101b [IP: 127.0.0.1] [UA: node][39m
+GET /services/6ae410870730320417d709de/available-slots?date=2026-10-31&lat=12.9716&lng=77.5946 -> 200 {"date":"2026-10-31","slots":[],"message":"No eligible service providers in your area for this date"}
+09:05:36.242 [33mwarn[39m [HTTP] [33mPOST /orders/checkout 400 84ms - 75b [IP: 127.0.0.1] [UA: node][39m
+POST /orders/checkout -> 400 {"message":"Shopping cart is empty","error":"Bad Request","statusCode":400}
+(node:8464) [MONGOOSE] Warning: mongoose: the `new` option for `findOneAndUpdate()` and `findOneAndReplace()` is deprecated. Use `returnDocument: 'after'` instead.
+(Use `node --trace-warnings ...` to show where the warning was created)
+09:05:36.624 [35mhttp[39m [HTTP] (d67330e4-b97b-46a7-a2e4-10c284e137cc) [35mPOST /bookings/6ae410880730320417d709e3/start 201 210ms - 2336b [IP: 127.0.0.1] [UA: node][39m
+POST /bookings/6ae410880730320417d709e3/start -> 201 {"status":"in_progress","payoutStatus":"pending","completionRejectedAt":null}
+(node:8464) [MONGOOSE] Warning: mongoose: the `new` option for `findOneAndUpdate()` and `findOneAndReplace()` is deprecated. Use `returnDocument: 'after'` instead.
+09:05:36.786 [35mhttp[39m [HTTP] (e82040dd-9c0e-4c12-9ca8-d96e27a781a2) [35mPOST /bookings/6ae410880730320417d709e3/request-completion 200 155ms - 2345b [IP: 127.0.0.1] [UA: node][39m
+POST /bookings/6ae410880730320417d709e3/request-completion -> 200 {"status":"completion_requested","payoutStatus":"pending","completionRejectedAt":null}
+(node:8464) [MONGOOSE] Warning: mongoose: the `new` option for `findOneAndUpdate()` and `findOneAndReplace()` is deprecated. Use `returnDocument: 'after'` instead.
+09:05:36.990 [35mhttp[39m [HTTP] (eab48739-5eea-4adf-a638-c4ed1569b4a0) [35mPOST /bookings/6ae410880730320417d709e3/reject-completion 200 201ms - 2355b [IP: 127.0.0.1] [UA: node][39m
+POST /bookings/6ae410880730320417d709e3/reject-completion -> 200 {"status":"disputed","payoutStatus":"pending","completionRejectedAt":"2026-10-30T03:35:36.790Z"}
+(node:8464) [MONGOOSE] Warning: mongoose: the `new` option for `findOneAndUpdate()` and `findOneAndReplace()` is deprecated. Use `returnDocument: 'after'` instead.
+09:05:37.068 [33mwarn[39m [HTTP] [33mPOST /bookings/6ae410880730320417d709e3/request-completion 400 75ms - 112b [IP: 127.0.0.1] [UA: node][39m
+POST /bookings/6ae410880730320417d709e3/request-completion -> 400 {"message":"Only an in-progress assigned booking can request completion","error":"Bad Request","statusCode":400}
+09:05:37.073 [33mwarn[39m [HTTP] [33mPOST /bookings/6ae410880730320417d709e3/complete 403 1ms - 143b [IP: 127.0.0.1] [UA: node][39m
+POST /bookings/6ae410880730320417d709e3/complete -> 403 {"message":"Access denied. Requires one of the following roles: [manager, admin]. Current role: provider","error":"Forbidden","statusCode":403}
+09:05:37.077 [33mwarn[39m [HTTP] [33mPATCH /bookings/6ae410880730320417d709e3 403 1ms - 134b [IP: 127.0.0.1] [UA: node][39m
+PATCH /bookings/6ae410880730320417d709e3 -> 403 {"message":"Access denied. Requires one of the following roles: [admin]. Current role: provider","error":"Forbidden","statusCode":403}
+09:05:37.249 [33mwarn[39m [HTTP] [33mPOST /bookings/6ae410880730320417d709e3/cancel 400 170ms - 105b [IP: 127.0.0.1] [UA: node][39m
+POST /bookings/6ae410880730320417d709e3/cancel -> 400 {"message":"Only confirmed jobs can be cancelled by the provider","error":"Bad Request","statusCode":400}
+(node:8464) [MONGOOSE] Warning: mongoose: the `new` option for `findOneAndUpdate()` and `findOneAndReplace()` is deprecated. Use `returnDocument: 'after'` instead.
+09:05:37.290 [33mwarn[39m [HTTP] [33mPOST /bookings/6ae410880730320417d709e3/confirm-completion 400 38ms - 99b [IP: 127.0.0.1] [UA: node][39m
+POST /bookings/6ae410880730320417d709e3/confirm-completion -> 400 {"message":"Completion request not found for this customer","error":"Bad Request","statusCode":400}
+(node:8464) [MONGOOSE] Warning: mongoose: the `new` option for `findOneAndUpdate()` and `findOneAndReplace()` is deprecated. Use `returnDocument: 'after'` instead.
+09:05:37.443 [35mhttp[39m [HTTP] (099f4cd9-1a87-4ed3-bd99-80b853217988) [35mPOST /bookings/6ae410880730320417d709e3/complete 201 150ms - 2378b [IP: 127.0.0.1] [UA: node][39m
+POST /bookings/6ae410880730320417d709e3/complete -> 201 {"status":"completed","payoutStatus":"pending","completionRejectedAt":"2026-10-30T03:35:36.790Z"}
+(node:8464) [MONGOOSE] Warning: mongoose: the `new` option for `findOneAndUpdate()` and `findOneAndReplace()` is deprecated. Use `returnDocument: 'after'` instead.
+09:05:37.698 [35mhttp[39m [HTTP] (126580c5-2104-4dcf-b636-3d75b7e043a9) [35mPOST /bookings/6ae410890730320417d709e7/confirm-completion 200 111ms - 2356b [IP: 127.0.0.1] [UA: node][39m
+POST /bookings/6ae410890730320417d709e7/confirm-completion -> 200 {"status":"completed","payoutStatus":"pending","completionRejectedAt":null}
+(node:8464) [MONGOOSE] Warning: mongoose: the `new` option for `findOneAndUpdate()` and `findOneAndReplace()` is deprecated. Use `returnDocument: 'after'` instead.
+09:05:37.732 [33mwarn[39m [HTTP] [33mPOST /bookings/6ae410890730320417d709e7/confirm-completion 400 33ms - 99b [IP: 127.0.0.1] [UA: node][39m
+POST /bookings/6ae410890730320417d709e7/confirm-completion -> 400 {"message":"Completion request not found for this customer","error":"Bad Request","statusCode":400}
+(node:8464) [MONGOOSE] Warning: mongoose: the `new` option for `findOneAndUpdate()` and `findOneAndReplace()` is deprecated. Use `returnDocument: 'after'` instead.
+09:05:38.048 [35mhttp[39m [HTTP] (9f63ee5d-b635-4474-b465-17cc7171db8f) [35mPOST /payments/simulate 201 160ms - 150b [IP: 127.0.0.1] [UA: node][39m
+POST /payments/simulate -> 201 {"success":false,"orderId":"6ae410890730320417d709e8","paymentStatus":"failed","message":"Payment failed. You may retry your checkout from the cart."}
+09:05:38.237 [35mhttp[39m [HTTP] (1c59ac88-ef25-4d95-9f52-c62f7daddce3) [35mGET /orders/6ae410890730320417d709e8/details 200 154ms - 2207b [IP: 127.0.0.1] [UA: node][39m
+GET /orders/6ae410890730320417d709e8/details -> 200 {"paymentStatus":"failed"}
+09:05:38.751 [35mhttp[39m [HTTP] (2bfc70f0-4cc3-492e-8931-785a276d4b5f) [35mPOST /payments/simulate 201 293ms - 166b [IP: 127.0.0.1] [UA: node][39m
+POST /payments/simulate -> 201 {"success":false,"orderId":"6ae4108a0730320417d709eb","paymentStatus":"refunded","message":"Order expired before payment. Payment not confirmed and refund recorded."}
+09:05:40.029 [35mhttp[39m [HTTP] (16fb5956-0074-44af-924c-f58ca08a88c2) [35mGET /bookings/6ae4108a0730320417d709f0 200 83ms - 1891b [IP: 127.0.0.1] [UA: node][39m
+GET /bookings/6ae4108a0730320417d709f0 -> 200 {"status":"cancelled","reason":"no provider available","offerRound":2,"paymentStatus":"refunded"}
+09:05:41.454 [35mhttp[39m [HTTP] (b2a9fae4-1efe-4d4e-bd7d-d8914d706970) [35mGET /bookings/6ae4108c0730320417d709f4 200 84ms - 1891b [IP: 127.0.0.1] [UA: node][39m
+GET /bookings/6ae4108c0730320417d709f4 -> 200 {"status":"cancelled","paymentStatus":"refunded"}
+PASS: completion confirmation, bounded denial, role guards, payment failure, no-provider cancellation and full refund.
+Removed all fixtures from isolated database: booking_ui_verify_5acccba9

@@ -13,7 +13,10 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Booking, BookingDocument } from '../schema/booking.schema';
 import { Provider, ProviderDocument } from '../schema/provider.schema';
-import { Unavailability, UnavailabilityDocument } from '../schema/unavailability.schema';
+import {
+  Unavailability,
+  UnavailabilityDocument,
+} from '../schema/unavailability.schema';
 import { User, UserDocument } from '../schema/user.schema';
 import {
   PlatformSetting,
@@ -27,6 +30,7 @@ import {
   BookingStatus,
   CancelledBy,
   ProviderStatus,
+  UserStatus,
   Role,
 } from '../common/enums';
 import type { AuthenticatedUser } from '../common/interfaces/authenticated-user.interface';
@@ -198,8 +202,13 @@ export class BookingsService {
     return this.bookingModel
       .find({
         region,
-        status: BookingStatus.CANCELLED,
-        cancelledBy: { $in: [CancelledBy.PROVIDER, CancelledBy.SYSTEM] },
+        $or: [
+          { status: BookingStatus.DISPUTED },
+          {
+            status: BookingStatus.CANCELLED,
+            cancelledBy: { $in: [CancelledBy.PROVIDER, CancelledBy.SYSTEM] },
+          },
+        ],
       })
       .sort({ scheduledDate: -1, startTime: 1 })
       .populate('service provider customer order')
@@ -418,7 +427,9 @@ export class BookingsService {
 
     for (const off of booking.offers || []) {
       if (off.provider?.toString() !== me.toString()) {
-        const otherProv = await this.providerModel.findById(off.provider).exec();
+        const otherProv = await this.providerModel
+          .findById(off.provider)
+          .exec();
         if (otherProv?.user) {
           await this.notificationsService.create(
             otherProv.user,
@@ -506,6 +517,32 @@ export class BookingsService {
   }
 
   /** Provider starts job (§4.11) */
+  async assertExecutionAccess(bookingId: string, user: AuthenticatedUser) {
+    const booking = await this.bookingModel.findById(bookingId).exec();
+    if (!booking) throw new NotFoundException('Booking not found');
+    if (user.role === Role.ADMIN) return;
+    if (user.role === Role.PROVIDER) {
+      const provider = await this.providerModel
+        .findOne({ user: user.userId })
+        .exec();
+      if (provider && booking.provider?.toString() === provider._id.toString())
+        return;
+    }
+    if (user.role === Role.MANAGER) {
+      const manager = await this.bookingModel.db
+        .model('Manager')
+        .findOne({ user: user.userId, status: 'active' });
+      if (
+        manager &&
+        (await this.bookingModel.db
+          .model('Region')
+          .exists({ _id: booking.region, manager: manager._id }))
+      )
+        return;
+    }
+    throw new ForbiddenException('You cannot change this booking');
+  }
+
   async startJob(bookingId: string, providerId?: string) {
     const filter: any = {
       _id: bookingId,
@@ -545,7 +582,13 @@ export class BookingsService {
   async completeJob(bookingId: string, providerId?: string) {
     const filter: any = {
       _id: bookingId,
-      status: BookingStatus.IN_PROGRESS,
+      status: {
+        $in: [
+          BookingStatus.IN_PROGRESS,
+          BookingStatus.COMPLETION_REQUESTED,
+          BookingStatus.DISPUTED,
+        ],
+      },
     };
     if (providerId) {
       filter.provider = Types.ObjectId.isValid(providerId)
@@ -581,7 +624,9 @@ export class BookingsService {
   }
 
   async requestCompletion(bookingId: string, user: AuthenticatedUser) {
-    const provider = await this.providerModel.findOne({ user: user.userId }).exec();
+    const provider = await this.providerModel
+      .findOne({ user: user.userId })
+      .exec();
     if (!provider) throw new ForbiddenException('Provider profile not found');
 
     const booking = await this.bookingModel
@@ -595,7 +640,10 @@ export class BookingsService {
         { new: true },
       )
       .populate('service customer order region')
-      .populate({ path: 'provider', populate: { path: 'user', select: 'name email phone' } })
+      .populate({
+        path: 'provider',
+        populate: { path: 'user', select: 'name email phone' },
+      })
       .exec();
 
     if (!booking) {
@@ -609,12 +657,19 @@ export class BookingsService {
   async confirmCompletion(bookingId: string, user: AuthenticatedUser) {
     const booking = await this.bookingModel
       .findOneAndUpdate(
-        { _id: bookingId, customer: user.userId, status: BookingStatus.COMPLETION_REQUESTED },
+        {
+          _id: bookingId,
+          customer: user.userId,
+          status: BookingStatus.COMPLETION_REQUESTED,
+        },
         { status: BookingStatus.COMPLETED, completedAt: new Date() },
         { new: true },
       )
       .populate('service customer order region')
-      .populate({ path: 'provider', populate: { path: 'user', select: 'name email phone' } })
+      .populate({
+        path: 'provider',
+        populate: { path: 'user', select: 'name email phone' },
+      })
       .exec();
 
     if (!booking) {
@@ -628,17 +683,46 @@ export class BookingsService {
   async rejectCompletion(bookingId: string, user: AuthenticatedUser) {
     const booking = await this.bookingModel
       .findOneAndUpdate(
-        { _id: bookingId, customer: user.userId, status: BookingStatus.COMPLETION_REQUESTED },
-        { status: BookingStatus.IN_PROGRESS },
+        {
+          _id: bookingId,
+          customer: user.userId,
+          status: BookingStatus.COMPLETION_REQUESTED,
+        },
+        { status: BookingStatus.DISPUTED, completionRejectedAt: new Date() },
         { new: true },
       )
       .populate('service customer order region')
-      .populate({ path: 'provider', populate: { path: 'user', select: 'name email phone' } })
+      .populate({
+        path: 'provider',
+        populate: { path: 'user', select: 'name email phone' },
+      })
       .exec();
 
     if (!booking) {
       throw new BadRequestException(
         'Completion request not found for this customer',
+      );
+    }
+    // The persisted dispute remains actionable even if notification delivery fails.
+    try {
+      const admins = await this.userModel
+        .find({ role: Role.ADMIN, status: UserStatus.ACTIVE })
+        .select('_id')
+        .exec();
+      await Promise.all(
+        admins.map((admin) =>
+          this.notificationsService.create(
+            admin._id as Types.ObjectId,
+            'completion_disputed',
+            'A customer reported incomplete work. Review the disputed booking before resolving it.',
+            booking._id as Types.ObjectId,
+          ),
+        ),
+      );
+    } catch (error) {
+      this.logger.error(
+        'Unable to notify administrators of persisted booking dispute',
+        error,
       );
     }
     return booking;

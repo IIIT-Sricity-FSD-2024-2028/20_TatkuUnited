@@ -11,6 +11,7 @@ import {
   HttpCode,
   HttpStatus,
   ForbiddenException,
+  BadRequestException,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -39,7 +40,6 @@ export class BookingsController {
   ) {}
 
   @Roles(Role.CUSTOMER, Role.ADMIN)
-
   @Post()
   @ApiOperation({
     summary: 'Create a new service booking',
@@ -104,7 +104,10 @@ export class BookingsController {
     example: '65f1a2b3c4d5e6f7a8b9c0d1',
   })
   @ApiResponse({ status: 200, description: 'List of provider bookings.' })
-  async findByProvider(@Param('providerId') providerId: string, @Req() req: any) {
+  async findByProvider(
+    @Param('providerId') providerId: string,
+    @Req() req: any,
+  ) {
     const user = req.user as AuthenticatedUser;
     if (user.role === Role.PROVIDER) {
       const providerDoc = await this.providersService.findByUser(user.userId);
@@ -232,7 +235,6 @@ export class BookingsController {
     return this.bookingsService.findScheduleForProvider(providerId, date);
   }
 
-
   @Roles(Role.MANAGER, Role.ADMIN)
   @Get('region/:regionId/problems')
   @ApiOperation({
@@ -328,10 +330,7 @@ export class BookingsController {
   })
   @ApiResponse({ status: 200, description: 'Booking accepted.' })
   @ApiResponse({ status: 409, description: 'This job was already taken.' })
-  acceptOffer(
-    @Param('id') id: string,
-    @Req() req: any,
-  ) {
+  acceptOffer(@Param('id') id: string, @Req() req: any) {
     const user = req.user as AuthenticatedUser;
     return this.bookingsService.acceptOffer(id, user);
   }
@@ -350,14 +349,10 @@ export class BookingsController {
     example: '65f1a2b3c4d5e6f7a8b9c0d1',
   })
   @ApiResponse({ status: 200, description: 'Booking offer declined.' })
-  rejectOffer(
-    @Param('id') id: string,
-    @Req() req: any,
-  ) {
+  rejectOffer(@Param('id') id: string, @Req() req: any) {
     const user = req.user as AuthenticatedUser;
     return this.bookingsService.rejectOffer(id, user);
   }
-
 
   @Roles(Role.PROVIDER, Role.MANAGER, Role.ADMIN)
   @Post(':id/start')
@@ -372,11 +367,12 @@ export class BookingsController {
     example: '65f1a2b3c4d5e6f7a8b9c0d1',
   })
   @ApiResponse({ status: 200, description: 'Job started.' })
-  startJob(@Param('id') id: string) {
+  async startJob(@Param('id') id: string, @Req() req: any) {
+    await this.bookingsService.assertExecutionAccess(id, req.user);
     return this.bookingsService.startJob(id);
   }
 
-  @Roles(Role.PROVIDER, Role.MANAGER, Role.ADMIN)
+  @Roles(Role.MANAGER, Role.ADMIN)
   @Post(':id/complete')
   @ApiOperation({
     summary: 'Complete job',
@@ -389,7 +385,8 @@ export class BookingsController {
     example: '65f1a2b3c4d5e6f7a8b9c0d1',
   })
   @ApiResponse({ status: 200, description: 'Job completed.' })
-  completeJob(@Param('id') id: string) {
+  async completeJob(@Param('id') id: string, @Req() req: any) {
+    await this.bookingsService.assertExecutionAccess(id, req.user);
     return this.bookingsService.completeJob(id);
   }
 
@@ -452,15 +449,33 @@ export class BookingsController {
     },
   })
   @ApiResponse({ status: 200, description: 'Booking cancelled.' })
-  cancelBooking(
+  async cancelBooking(
     @Param('id') id: string,
+    @Req() req: any,
     @Body('cancelledBy') cancelledBy: any,
     @Body('reason') reason?: string,
   ) {
-    return this.bookingsService.cancelBooking(id, cancelledBy, reason);
+    const user = req.user as AuthenticatedUser;
+    const booking = await this.findOne(id, req);
+    if (
+      user.role === Role.CUSTOMER &&
+      !['pending', 'awaiting_provider', 'confirmed'].includes(booking.status)
+    ) {
+      throw new BadRequestException(
+        'This booking can no longer be cancelled by the customer',
+      );
+    }
+    if (user.role === Role.PROVIDER && booking.status !== 'confirmed') {
+      throw new BadRequestException(
+        'Only confirmed jobs can be cancelled by the provider',
+      );
+    }
+    if (user.role === Role.MANAGER)
+      await this.bookingsService.assertExecutionAccess(id, user);
+    return this.bookingsService.cancelBooking(id, user.role as any, reason);
   }
 
-  @Roles(Role.CUSTOMER, Role.PROVIDER, Role.MANAGER, Role.ADMIN)
+  @Roles(Role.ADMIN)
   @Patch(':id')
   @ApiOperation({
     summary: 'Update booking status or details',

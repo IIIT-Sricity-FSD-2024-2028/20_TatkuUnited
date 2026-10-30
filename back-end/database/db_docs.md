@@ -4,6 +4,9 @@ A practical guide to what each collection holds, who writes to it, and exactly w
 
 ---
 
+> Booking assignment follows `booking_workflow.md`: checkout creates an unassigned booking, payment starts batched offers, and the first eligible acceptance wins. The older sequential-assignment examples below are superseded by that workflow.
+> Completion requires customer confirmation. Rejection enters `disputed` and records `completionRejectedAt`; it does not return to `in_progress`. Only a regional manager or administrator can resolve it through the completion override. Disputes appear in the regional problem-booking query and notify administrators.
+
 ## 1. Actors
 
 | Actor            | `User.role` | Extra document | What they do                                                  |
@@ -47,7 +50,7 @@ Every person has exactly one `User` document. Provider and Manager are **profile
 | `Provider.status`          | `pending, approved, suspended`                                             |
 | `Manager.status`           | `active, suspended, inactive`                                              |
 | `Order.paymentStatus`      | `created, paid, failed, refunded, partially_refunded`                      |
-| `Booking.status`           | `pending, awaiting_provider, confirmed, in_progress, completed, cancelled` |
+| `Booking.status`           | `pending, awaiting_provider, confirmed, in_progress, completion_requested, disputed, completed, cancelled` |
 | `Booking.cancelledBy`      | `customer, provider, manager, admin, system`                               |
 | `Booking.payoutStatus`     | `pending, paid`                                                            |
 | `Payment.refunds[].status` | `initiated, processed, failed`                                             |
@@ -265,7 +268,7 @@ Then compute `endTime = startTime + duration` and `blockStartTime = startTime �
 3. Within `maxAssignmentDistanceKm × 1000` metres of the order address (`$nearSphere` or `$geoNear`, nearest first).
 4. `workingDays` contains the weekday of `scheduledDate`.
 5. The service itself fits in work hours: `workHourStart ≤ startTime` and `endTime ≤ workHourEnd`. The travel buffer is not counted here.
-6. No overlapping **active** booking. Same date, `status ∈ [pending, awaiting_provider, confirmed, in_progress]`, and:
+6. No overlapping **active** booking. Same date, `status ∈ [confirmed, in_progress]`, and:
    `existing.blockStartTime < new.endTime` **and** `existing.endTime > new.blockStartTime`.
 7. No overlapping **unavailability**. Same date, and:
    `unavailability.startTime < new.endTime` **and** `unavailability.endTime > new.blockStartTime`.
@@ -469,7 +472,7 @@ pending ──► awaiting_provider ──► confirmed ──► in_progress �
 | `confirmed → awaiting_provider`         | Provider cancels (§4.14, step 5)                                     |
 | `confirmed → cancelled`                 | Customer, manager or admin                                           |
 
-**Slot-holding statuses** (count towards conflicts): `pending`, `awaiting_provider`, `confirmed`, `in_progress`.
+**Slot-holding statuses** (count towards conflicts): `confirmed`, `in_progress`, with a provider assigned. Unassigned awaiting-provider bookings do not reserve providers.
 
 ---
 
@@ -551,7 +554,7 @@ Always filter on the server by the authenticated user (customer id, provider id,
 **Known simplifications (add later if needed)**
 
 - There is no audit log, support ticket, notification history, per-region pricing, or payout batches. All can be added as new collections without changing the existing ones.
-- Offers are sequential (one provider at a time) and only the list of providers who declined is kept, so there is no per-offer history or acceptance-rate data. Add a `JobOffer` collection if you need that, or want to offer to several providers at once.
+- Offers are sent in batches and tracked in `Booking.offers`. `offerRound` is bounded by `maxOfferRounds`; exhausted matching cancels and refunds the booking. Matching continues for remaining bookings on partially refunded orders.
 - Unavailability is one block on one day, with no recurrence.
 - Manager salary is stored but not processed by this system.
 - A user holds one role. Becoming both a customer and a provider needs a second account, or a change to a `roles` array.

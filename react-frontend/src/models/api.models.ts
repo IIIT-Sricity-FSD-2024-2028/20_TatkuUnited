@@ -255,7 +255,7 @@ export type UpdateServiceDto = Partial<CreateServiceDto>;
 // Order
 // ---------------------------------------------------------------------------
 
-export type OrderPaymentStatus = "pending" | "paid" | "failed" | "refunded";
+export type OrderPaymentStatus = "created" | "paid" | "failed" | "refunded" | "partially_refunded";
 
 export interface OrderDocument {
   _id: string;
@@ -291,10 +291,11 @@ export type BookingStatus =
   | "confirmed"
   | "in_progress"
   | "completion_requested"
+  | "disputed"
   | "completed"
   | "cancelled";
 
-export type PayoutStatus = "pending" | "transferred" | "failed";
+export type PayoutStatus = "pending" | "paid" | "transferred" | "failed";
 
 export interface BookingOfferDto {
   provider: string | ProviderDocument;
@@ -307,7 +308,7 @@ export interface BookingOfferDto {
 export interface BookingDocument {
   _id: string;
   service: string | ServiceDocument;
-  provider: string | ProviderDocument;
+  provider: string | ProviderDocument | null;
   customer: string | UserDocument;
   order: string | OrderDocument;
   region: string | RegionDocument;

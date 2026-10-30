@@ -1,9 +1,9 @@
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import PublicNavbar from "../PublicNavbar";
-import Footer from "../general/landing/Footer";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import { useAuthContext } from "@/common/AuthContext";
-import { getStoredUser, getStoredUserId } from "@/common/services/authService";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   confirmBookingCompletion,
   getBookingsByCustomer,
@@ -11,499 +11,289 @@ import {
 } from "@/services/bookings.service";
 import type { BookingDocument } from "@/models/api.models";
 
-function formatSlotTime(minutesFromMidnight: number): string {
-  const hours = Math.floor(minutesFromMidnight / 60);
-  const mins = minutesFromMidnight % 60;
-  const ampm = hours >= 12 ? "PM" : "AM";
-  const displayHours = hours % 12 === 0 ? 12 : hours % 12;
-  return `${displayHours}:${String(mins).padStart(2, "0")} ${ampm}`;
+const labels: Record<string, string> = {
+  awaiting_provider: "Finding a provider",
+  confirmed: "Confirmed",
+  in_progress: "In progress",
+  completion_requested: "Confirm completion",
+  disputed: "Completion disputed",
+  cancelled: "Cancelled",
+  completed: "Completed",
+  pending: "Pending",
+};
+function time(minutes: number) {
+  return (
+    String(Math.floor(minutes / 60)).padStart(2, "0") +
+    ":" +
+    String(minutes % 60).padStart(2, "0")
+  );
 }
-
-function formatBookingDate(dateVal?: string | Date): string {
-  if (!dateVal) return "Date not specified";
-  try {
-    const d = new Date(dateVal);
-    if (isNaN(d.getTime())) return String(dateVal);
-    return d.toLocaleDateString("en-IN", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
-  } catch {
-    return String(dateVal);
-  }
-}
-
-function formatPriceDisplay(priceInPaise?: number): string {
-  if (typeof priceInPaise !== "number" || isNaN(priceInPaise)) {
-    return "Unavailable";
-  }
-  // All monetary values in backend schema are in paise (1 INR = 100 paise)
-  const rupees = priceInPaise / 100;
-  return `₹${rupees}`;
-}
-
-function getStatusBadge(status?: string) {
-  const normalized = (status || "").toLowerCase().replace(/_/g, " ");
-
-  switch (status) {
-    case "completed":
-      return (
-        <span className="inline-flex items-center rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700 ring-1 ring-inset ring-emerald-600/20">
-          Completed
-        </span>
-      );
-    case "confirmed":
-    case "accepted":
-      return (
-        <span className="inline-flex items-center rounded-full bg-blue-50 px-2.5 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-700/10">
-          Confirmed
-        </span>
-      );
-    case "in_progress":
-      return (
-        <span className="inline-flex items-center rounded-full bg-indigo-50 px-2.5 py-1 text-xs font-medium text-indigo-700 ring-1 ring-inset ring-indigo-700/10">
-          In Progress
-        </span>
-      );
-    case "completion_requested":
-      return (
-        <span className="inline-flex items-center rounded-full bg-violet-50 px-2.5 py-1 text-xs font-medium text-violet-700 ring-1 ring-inset ring-violet-700/10">
-          Confirmation Required
-        </span>
-      );
-    case "pending":
-    case "awaiting_provider":
-    case "offered":
-    case "pending_offer":
-      return (
-        <span className="inline-flex items-center rounded-full bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-700 ring-1 ring-inset ring-amber-600/20">
-          Pending
-        </span>
-      );
-    case "cancelled":
-    case "rejected":
-      return (
-        <span className="inline-flex items-center rounded-full bg-rose-50 px-2.5 py-1 text-xs font-medium text-rose-700 ring-1 ring-inset ring-rose-600/10">
-          Cancelled
-        </span>
-      );
-    default:
-      return (
-        <span className="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-700 ring-1 ring-inset ring-slate-600/10 capitalize">
-          {normalized || "Unknown"}
-        </span>
-      );
-  }
+function notice(booking: BookingDocument) {
+  const order = typeof booking.order === "object" ? booking.order : null;
+  if (booking.status === "disputed")
+    return "You reported that the work is incomplete. Completion and payout are paused for administrator review. The provider cannot send repeated completion requests.";
+  if (order?.paymentStatus === "failed")
+    return "Payment failed or expired. Return to your cart and check out again.";
+  if (booking.status === "cancelled")
+    return [
+      booking.cancelledReason || "This booking was cancelled.",
+      order?.paymentStatus === "refunded"
+        ? "Payment refunded."
+        : order?.paymentStatus === "partially_refunded"
+          ? "This order has a partial refund; see payment details."
+          : "",
+    ]
+      .filter(Boolean)
+      .join(" ");
+  if (order?.paymentStatus === "created")
+    return "Payment is required before we contact providers.";
+  if (booking.status === "awaiting_provider")
+    return "We are contacting available providers. If no one accepts after the matching rounds, this booking will be cancelled and refunded.";
+  if (booking.status === "completion_requested")
+    return "Your provider marked the work done. Confirm only if the service is complete. Reporting incomplete work pauses completion for administrator review.";
+  return "";
 }
 
 export default function BookingHistoryPage() {
   const navigate = useNavigate();
-  const authContext = useAuthContext();
-
+  const { id } = useParams();
+  const { authDetails } = useAuthContext();
+  const customerId = authDetails?.user.id;
   const [bookings, setBookings] = useState<BookingDocument[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [completionLoading, setCompletionLoading] = useState(false);
-
-  const storedUser = getStoredUser();
-  const customerId =
-    authContext.authDetails?.user?.id ||
-    (authContext.authDetails?.user as any)?._id ||
-    getStoredUserId() ||
-    storedUser?.id ||
-    storedUser?._id;
-
-  const fetchBookings = async () => {
-    if (!customerId) {
-      setLoading(false);
-      return;
-    }
-
-    setLoading(true);
-    setError("");
-
-    try {
-      const data = await getBookingsByCustomer(customerId);
-      const list = Array.isArray(data)
-        ? data
-        : (data as any)?.bookings && Array.isArray((data as any).bookings)
-          ? (data as any).bookings
-          : [];
-
-      // Sort newest first
-      list.sort((a: BookingDocument, b: BookingDocument) => {
-        const timeB = new Date(b.createdAt || b.scheduledDate).getTime();
-        const timeA = new Date(a.createdAt || a.scheduledDate).getTime();
-        return timeB - timeA;
-      });
-
-      setBookings(list);
-    } catch (err: any) {
-      console.error("Failed to load booking history:", err);
-      setError(
-        err?.response?.data?.message ||
-          "Unable to load your bookings. Please try again.",
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleCompletionDecision = async (
-    booking: BookingDocument,
-    confirmed: boolean,
-  ) => {
-    setCompletionLoading(true);
-    setError("");
-    try {
-      if (confirmed) {
-        await confirmBookingCompletion(booking._id);
-        navigate(`/customer/ratings-feedback?bookingId=${booking._id}`);
-      } else {
-        await rejectBookingCompletion(booking._id);
-      }
-      await fetchBookings();
-    } catch (err: any) {
-      setError(
-        err?.response?.data?.message ||
-          "Unable to update the completion request. Please try again.",
-      );
-    } finally {
-      setCompletionLoading(false);
-    }
-  };
+  const [acting, setActing] = useState<string | null>(null);
+  const busy = useRef(false);
+  const [reload, setReload] = useState(0);
 
   useEffect(() => {
-    fetchBookings();
-  }, [customerId]);
-
-  const extractServiceName = (booking: BookingDocument): string | undefined => {
-    if (
-      typeof booking.service === "object" &&
-      booking.service !== null &&
-      "name" in booking.service &&
-      typeof (booking.service as any).name === "string" &&
-      (booking.service as any).name.trim()
-    ) {
-      return (booking.service as any).name.trim();
-    }
-    if (
-      typeof (booking as any).service_name === "string" &&
-      (booking as any).service_name.trim()
-    ) {
-      return (booking as any).service_name.trim();
-    }
-    return undefined;
-  };
-
-  const extractLocation = (booking: BookingDocument): string | undefined => {
-    // 1. Direct location on booking
-    if (
-      typeof (booking as any).location === "string" &&
-      (booking as any).location.trim()
-    ) {
-      return (booking as any).location.trim();
-    }
-
-    // 2. Address from populated order
-    if (
-      typeof booking.order === "object" &&
-      booking.order !== null &&
-      (booking.order as any).address
-    ) {
-      const addr = (booking.order as any).address;
-      if (typeof addr.city === "string" && addr.city.trim()) {
-        return addr.city.trim();
+    let active = true;
+    let timer: ReturnType<typeof setTimeout>;
+    async function refresh() {
+      if (!customerId) {
+        setLoading(false);
+        return;
       }
-      if (typeof addr.line === "string" && addr.line.trim()) {
-        return addr.line.trim();
+      try {
+        const data = await getBookingsByCustomer(customerId);
+        if (active && !busy.current) {
+          setBookings(data);
+          setError("");
+        }
+      } catch {
+        if (active)
+          setError(
+            "Unable to refresh bookings. Displayed details may be out of date.",
+          );
+      } finally {
+        if (active) {
+          setLoading(false);
+          timer = setTimeout(refresh, 6000);
+        }
       }
     }
+    void refresh();
+    return () => {
+      active = false;
+      clearTimeout(timer);
+    };
+  }, [customerId, reload]);
 
-    // 3. Populated region name
-    if (
-      typeof booking.region === "object" &&
-      booking.region !== null &&
-      typeof (booking.region as any).name === "string" &&
-      (booking.region as any).name.trim()
-    ) {
-      return (booking.region as any).name.trim();
-    }
+  const decide = useCallback(
+    async (booking: BookingDocument, complete: boolean) => {
+      if (busy.current) return;
+      busy.current = true;
+      setActing(booking._id);
+      setError("");
+      try {
+        const updated = await (complete
+          ? confirmBookingCompletion(booking._id)
+          : rejectBookingCompletion(booking._id));
+        setBookings((items) =>
+          items.map((item) => (item._id === booking._id ? updated : item)),
+        );
+        if (complete)
+          navigate("/customer/ratings-feedback?bookingId=" + booking._id);
+      } catch {
+        setError(
+          "This booking may have changed. Refresh to check its current status before trying again.",
+        );
+      } finally {
+        busy.current = false;
+        setActing(null);
+      }
+    },
+    [navigate],
+  );
 
-    // 4. Customer's saved address city
-    const savedAddresses = (storedUser as any)?.addresses;
-    if (Array.isArray(savedAddresses) && savedAddresses.length > 0) {
-      const city = savedAddresses.find(
-        (a: any) => typeof a.city === "string" && a.city.trim(),
-      )?.city;
-      if (city) return city.trim();
-    }
-
-    return undefined;
-  };
-
-  const handleRebook = (booking: BookingDocument) => {
-    const serviceName = extractServiceName(booking);
-    const location = extractLocation(booking);
-
-    const priceInPaise =
-      typeof booking.price === "number" && !isNaN(booking.price)
-        ? booking.price
-        : typeof booking.service === "object" &&
-            booking.service !== null &&
-            typeof (booking.service as any).price === "number" &&
-            !isNaN((booking.service as any).price)
-          ? (booking.service as any).price
-          : undefined;
-
-    if (!serviceName) {
-      alert(
-        "Service name is unavailable for this booking record. Please browse available services to book.",
-      );
-      return;
-    }
-
-    if (!location) {
-      alert(
-        "Location details are unavailable for this booking record. Please select your service from the catalog.",
-      );
-      return;
-    }
-
-    if (priceInPaise === undefined) {
-      alert(
-        "Pricing information is unavailable for this booking record. Please select the service from the catalog to rebook.",
-      );
-      return;
-    }
-
-    // In backend schema, price is in paise (1 INR = 100 paise). SchedulePage expects price in rupees.
-    const priceInRupees = priceInPaise / 100;
-
-    navigate(`/schedule/${encodeURIComponent(booking.service._id)}}`);
-  };
-
+  const visible = id
+    ? bookings.filter((booking) => booking._id === id)
+    : bookings;
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col justify-between">
-      <div>
-        <PublicNavbar
-          brandName="TatkuUnited"
-          brandInitials="TU"
-          onNavigate={(path) => navigate(path)}
-        />
-
-        <main className="mx-auto max-w-4xl px-6 pt-32 pb-12">
-          {/* Page Header */}
-          <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-slate-900">
-                Booking History
-              </h1>
-              <p className="mt-2 text-slate-500">
-                View your past and upcoming service bookings.
-              </p>
-            </div>
-
-            <button
-              type="button"
-              onClick={() => navigate("/")}
-              className="inline-flex items-center justify-center rounded-lg bg-blue-500 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-blue-600 cursor-pointer"
+    <section className="mx-auto max-w-5xl space-y-6">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-semibold">My bookings</h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Your appointments, payments and service updates.
+          </p>
+        </div>
+        <Button variant="outline" onClick={() => navigate("/services")}>
+          Browse services
+        </Button>
+      </div>
+      {error && (
+        <div
+          role="alert"
+          className="rounded-lg border border-destructive p-4 text-sm"
+        >
+          {error}{" "}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setReload((v) => v + 1)}
+          >
+            Refresh
+          </Button>
+        </div>
+      )}
+      {loading ? (
+        <p role="status">Loading bookings…</p>
+      ) : visible.length === 0 ? (
+        <Card>
+          <CardContent className="py-8 text-center">
+            <p>{id ? "Booking not found." : "You have no bookings yet."}</p>
+            <Button
+              className="mt-4"
+              onClick={() => navigate(id ? "/customer/bookings" : "/services")}
             >
-              Browse Services
-            </button>
-          </div>
-
-          {/* Error Alert */}
-          {error && (
-            <div
-              role="alert"
-              className="mb-6 flex items-center justify-between rounded-lg border border-red-200 bg-red-50 p-4 text-red-700"
-            >
-              <span>{error}</span>
-              <button
-                type="button"
-                onClick={fetchBookings}
-                className="font-medium underline hover:no-underline cursor-pointer"
-              >
-                Retry
-              </button>
-            </div>
-          )}
-
-          {/* Content States */}
-          {!customerId ? (
-            <div className="rounded-xl border border-slate-200 bg-white p-12 text-center shadow-sm">
-              <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-blue-50 text-2xl text-blue-500">
-                🔒
-              </div>
-              <h2 className="text-lg font-semibold text-slate-900">
-                Please Sign In
-              </h2>
-              <p className="mt-2 text-sm text-slate-600">
-                You must be logged in as a customer to view your booking
-                history.
-              </p>
-              <button
-                type="button"
-                onClick={() => navigate("/auth/login")}
-                className="mt-6 inline-flex rounded-lg bg-blue-500 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-blue-600 cursor-pointer"
-              >
-                Sign In
-              </button>
-            </div>
-          ) : loading ? (
-            <div
-              role="status"
-              className="rounded-xl border border-slate-200 bg-white p-12 text-center text-slate-500 shadow-sm"
-            >
-              <div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-4 border-blue-500 border-t-transparent" />
-              <p className="font-medium text-slate-700">
-                Loading your bookings...
-              </p>
-            </div>
-          ) : bookings.length === 0 ? (
-            <div className="rounded-xl border border-slate-200 bg-white p-12 text-center shadow-sm">
-              <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 text-2xl">
-                📅
-              </div>
-              <h2 className="text-lg font-semibold text-slate-900">
-                No bookings found
-              </h2>
-              <p className="mt-2 text-sm text-slate-600">
-                You haven't made any service bookings yet. Once you book a
-                service, you'll see it here.
-              </p>
-              <button
-                type="button"
-                onClick={() => navigate("/")}
-                className="mt-6 inline-flex rounded-lg bg-blue-500 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-blue-600 cursor-pointer"
-              >
-                Explore Services
-              </button>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {bookings.map((booking) => {
-                const serviceName =
-                  extractServiceName(booking) || "Service Booking";
-
-                const providerName =
-                  typeof booking.provider === "object" &&
-                  booking.provider !== null
-                    ? (booking.provider as any).user?.name ||
-                      (booking.provider as any).name ||
-                      (booking.provider as any).businessName ||
-                      undefined
-                    : undefined;
-
-                const displayPrice = formatPriceDisplay(booking.price);
-
-                return (
-                  <div
-                    key={booking._id}
-                    className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm transition hover:shadow-md"
-                  >
-                    <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                      <div className="space-y-2">
-                        <div className="flex flex-wrap items-center gap-3">
-                          <h2 className="text-xl font-semibold text-slate-900">
-                            {serviceName}
-                          </h2>
-                          {getStatusBadge(booking.status)}
-                        </div>
-
-                        <div className="flex flex-wrap items-center gap-y-1 gap-x-4 text-sm text-slate-600">
-                          <span className="flex items-center gap-1.5">
-                            <span aria-hidden="true">📅</span>
-                            <span>
-                              {formatBookingDate(booking.scheduledDate)}
-                            </span>
-                          </span>
-
-                          {typeof booking.startTime === "number" && (
-                            <span className="flex items-center gap-1.5">
-                              <span aria-hidden="true">🕒</span>
-                              <span>{formatSlotTime(booking.startTime)}</span>
-                            </span>
-                          )}
-
-                          {providerName && (
-                            <span className="flex items-center gap-1.5">
-                              <span aria-hidden="true">👤</span>
-                              <span>Provider: {providerName}</span>
-                            </span>
-                          )}
-                        </div>
-                      </div>
-
-                      <div className="flex items-center justify-between gap-4 border-t border-slate-100 pt-4 sm:flex-col sm:items-end sm:border-t-0 sm:pt-0">
-                        <div className="text-right">
-                          <span className="block text-xs text-slate-500">
-                            Price
-                          </span>
-                          <span
-                            className={
-                              displayPrice === "Unavailable"
-                                ? "text-sm font-medium text-slate-400"
-                                : "text-xl font-bold text-blue-600"
-                            }
-                          >
-                            {displayPrice}
-                          </span>
-                        </div>
-
-                        <button
-                          type="button"
-                          onClick={() => handleRebook(booking)}
-                          className="rounded-lg bg-blue-500 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-600 cursor-pointer"
-                        >
-                          Book Again
-                        </button>
-                      </div>
-                    </div>
-                    {booking.status === "completion_requested" && (
-                      <div className="mt-5 rounded-lg border border-blue-200 bg-blue-50 p-4">
-                        <p className="font-medium text-blue-900">
-                          Your provider has requested confirmation that this
-                          service is complete.
-                        </p>
-                        <p className="mt-1 text-sm text-blue-800">
-                          Please confirm whether the service was completed.
-                        </p>
-                        <div className="mt-3 flex gap-2">
-                          <button
-                            className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
-                            disabled={completionLoading}
-                            onClick={() => {
-                              void handleCompletionDecision(booking, true);
-                            }}
-                            type="button"
-                          >
-                            Yes, service is complete
-                          </button>
-                          <button
-                            className="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 disabled:opacity-50"
-                            disabled={completionLoading}
-                            onClick={() => {
-                              void handleCompletionDecision(booking, false);
-                            }}
-                            type="button"
-                          >
-                            No
-                          </button>
-                        </div>
-                      </div>
+              {id ? "All bookings" : "Find a service"}
+            </Button>
+          </CardContent>
+        </Card>
+      ) : (
+        visible.map((booking) => {
+          const service =
+            typeof booking.service === "object" ? booking.service : null;
+          const provider =
+            typeof booking.provider === "object" ? booking.provider : null;
+          const providerUser =
+            provider && typeof provider.user === "object"
+              ? provider.user
+              : null;
+          const order =
+            typeof booking.order === "object" ? booking.order : null;
+          return (
+            <Card key={booking._id}>
+              <CardContent className="space-y-4 pt-5">
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div>
+                    <h2 className="font-semibold">
+                      {service?.name || "Service booking"}
+                    </h2>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      {new Date(booking.scheduledDate).toLocaleDateString(
+                        "en-IN",
+                        {
+                          timeZone: "Asia/Kolkata",
+                          day: "numeric",
+                          month: "short",
+                          year: "numeric",
+                        },
+                      )}{" "}
+                      · {time(booking.startTime)}–{time(booking.endTime)} IST
+                    </p>
+                  </div>
+                  <Badge variant="secondary">
+                    {order?.paymentStatus === "created"
+                      ? "Awaiting payment"
+                      : labels[booking.status] || booking.status}
+                  </Badge>
+                </div>
+                <div className="flex flex-wrap justify-between gap-3 text-sm">
+                  <div>
+                    {providerUser?.name && <p>Provider: {providerUser.name}</p>}
+                    {order?.address && (
+                      <p className="text-muted-foreground">
+                        {order.address.line}, {order.address.city}
+                      </p>
                     )}
                   </div>
-                );
-              })}
-            </div>
-          )}
-        </main>
-      </div>
-
-      <Footer />
-    </div>
+                  <p className="font-medium">
+                    {new Intl.NumberFormat("en-IN", {
+                      style: "currency",
+                      currency: "INR",
+                    }).format(booking.price / 100)}
+                  </p>
+                </div>
+                {notice(booking) && (
+                  <p className="rounded-lg bg-muted p-3 text-sm">
+                    {notice(booking)}
+                  </p>
+                )}
+                {booking.status === "completion_requested" && (
+                  <div className="flex flex-wrap gap-3">
+                    <Button
+                      disabled={acting !== null}
+                      onClick={() => void decide(booking, true)}
+                    >
+                      Confirm complete
+                    </Button>
+                    <Button
+                      variant="outline"
+                      disabled={acting !== null}
+                      onClick={() => void decide(booking, false)}
+                    >
+                      Report incomplete work
+                    </Button>
+                  </div>
+                )}
+                <div className="flex flex-wrap gap-2">
+                  {order && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => navigate("/customer/pay/" + order._id)}
+                    >
+                      Payment details
+                    </Button>
+                  )}
+                  {booking.status === "completed" && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() =>
+                        navigate(
+                          "/customer/ratings-feedback?bookingId=" + booking._id,
+                        )
+                      }
+                    >
+                      Rate service
+                    </Button>
+                  )}
+                  {["completed", "cancelled"].includes(booking.status) && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() =>
+                        navigate(
+                          service?._id
+                            ? "/customer/schedule/" + service._id
+                            : typeof booking.service === "string"
+                              ? "/customer/schedule/" + booking.service
+                              : "/services",
+                        )
+                      }
+                    >
+                      Book again
+                    </Button>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })
+      )}
+    </section>
   );
 }

@@ -3,8 +3,6 @@ import { useNavigate } from "react-router-dom";
 import CartList from "../../components/CartList";
 import CartSummary from "../../components/CartSummary";
 import EmptyCart from "../../components/EmptyCart";
-import PublicNavbar from "../PublicNavbar";
-import Footer from "../general/landing/Footer";
 import { useAuthContext } from "@/common/AuthContext";
 import { getStoredUser, getStoredUserId } from "@/common/services/authService";
 import {
@@ -152,15 +150,9 @@ function CartPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col justify-between">
+    <div className="mx-auto w-full max-w-6xl">
       <div>
-        <PublicNavbar
-          brandName="TatkuUnited"
-          brandInitials="TU"
-          onNavigate={(path) => navigate(path)}
-        />
-
-        <main className="max-w-6xl mx-auto px-6 pt-32 pb-16">
+<section className="space-y-6">
           {/* Page Header */}
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-slate-900">Your Cart</h1>
@@ -230,10 +222,10 @@ function CartPage() {
           ) : (
             <EmptyCart />
           )}
-        </main>
+        </section>
       </div>
 
-      <Footer />
+
     </div>
   );
 }

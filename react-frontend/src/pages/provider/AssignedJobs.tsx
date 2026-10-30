@@ -1,14 +1,13 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { RolesEnum } from "@/common/roles.enum";
 import { useAuthContext } from "@/common/AuthContext";
-import {
-  getProviderByUser,
-} from "@/services/providers.service";
+import { getProviderByUser } from "@/services/providers.service";
 import {
   getBookingsByProvider,
   requestBookingCompletion,
   startBooking,
 } from "@/services/bookings.service";
+import { Button } from "@/components/ui/button";
 import DataTable, { type Column } from "./DataTable";
 
 interface Job {
@@ -40,7 +39,9 @@ function formatTime(minutes: number): string {
 }
 
 function formatDate(value: string): string {
-  return new Date(value).toLocaleDateString();
+  return new Date(value).toLocaleDateString("en-IN", {
+    timeZone: "Asia/Kolkata",
+  });
 }
 
 export default function AssignedJobs() {
@@ -49,14 +50,24 @@ export default function AssignedJobs() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const [acting, setActing] = useState(false);
+  const busy = useRef(false);
+
   const requestCompletion = async (bookingId: string) => {
+    if (busy.current) return;
+    busy.current = true;
+    setActing(true);
     try {
       setError(null);
       await requestBookingCompletion(bookingId);
       setJobs((current) =>
         current.map((job) =>
           job.bookingId === bookingId
-            ? { ...job, status: "completion_requested", canRequestCompletion: false }
+            ? {
+                ...job,
+                status: "completion_requested",
+                canRequestCompletion: false,
+              }
             : job,
         ),
       );
@@ -66,16 +77,27 @@ export default function AssignedJobs() {
           ? requestError.message
           : "Unable to request completion confirmation.",
       );
+    } finally {
+      busy.current = false;
+      setActing(false);
     }
   };
   const startJob = async (bookingId: string) => {
+    if (busy.current) return;
+    busy.current = true;
+    setActing(true);
     try {
       setError(null);
       await startBooking(bookingId);
       setJobs((current) =>
         current.map((job) =>
           job.bookingId === bookingId
-            ? { ...job, status: "in_progress", canStartJob: false, canRequestCompletion: true }
+            ? {
+                ...job,
+                status: "in_progress",
+                canStartJob: false,
+                canRequestCompletion: true,
+              }
             : job,
         ),
       );
@@ -85,6 +107,9 @@ export default function AssignedJobs() {
           ? startError.message
           : "Unable to start this job.",
       );
+    } finally {
+      busy.current = false;
+      setActing(false);
     }
   };
   const columns: Column<Job>[] = [
@@ -99,24 +124,30 @@ export default function AssignedJobs() {
       label: "Action",
       render: (_, row) =>
         row.canStartJob ? (
-          <button
-            className="rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-indigo-700"
+          <Button
+            disabled={acting}
+            size="sm"
             onClick={() => void startJob(row.bookingId)}
             type="button"
           >
             Start job
-          </button>
+          </Button>
         ) : row.canRequestCompletion ? (
-          <button
-            className="rounded-md bg-blue-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-blue-700"
+          <Button
+            disabled={acting}
+            size="sm"
             onClick={() => void requestCompletion(row.bookingId)}
             type="button"
           >
-            Mark completed
-          </button>
+            Request completion
+          </Button>
         ) : (
           <span className="text-xs text-slate-500">
-            {row.status === "completion_requested" ? "Awaiting customer" : "—"}
+            {row.status === "completion_requested"
+              ? "Awaiting customer"
+              : row.status === "disputed"
+                ? "Disputed · awaiting review"
+                : "—"}
           </span>
         ),
     },
@@ -129,13 +160,18 @@ export default function AssignedJobs() {
       return;
     }
 
+    let active = true;
+    let timer: ReturnType<typeof setTimeout>;
     async function fetchJobs() {
       if (!user) return;
       try {
         setError(null);
         const provider = await getProviderByUser(user.id);
-        const bookings = (await getBookingsByProvider(provider._id)) as unknown as Booking[];
+        const bookings = (await getBookingsByProvider(
+          provider._id,
+        )) as unknown as Booking[];
 
+        if (!active || busy.current) return;
         setJobs(
           bookings.map((booking) => ({
             bookingId: booking._id,
@@ -155,29 +191,35 @@ export default function AssignedJobs() {
           })),
         );
       } catch (requestError) {
+        if (!active) return;
         setError(
           requestError instanceof Error
             ? requestError.message
             : "Unable to load assigned jobs.",
         );
       } finally {
-        setLoading(false);
+        if (active) {
+          setLoading(false);
+          timer = setTimeout(fetchJobs, 6000);
+        }
       }
     }
 
     void fetchJobs();
-  });
+    return () => {
+      active = false;
+      clearTimeout(timer);
+    };
+  }, [authDetails?.user.id, authDetails?.user.role]);
 
   if (authDetails?.user.role !== RolesEnum.PROVIDER) {
     return (
-      <p className="rounded-lg bg-white p-6 shadow">
-        Provider access required.
-      </p>
+      <p className="rounded-xl border bg-card p-6">Provider access required.</p>
     );
   }
 
   return (
-    <div className="rounded-lg bg-white p-6 shadow">
+    <div className="rounded-xl border bg-card p-6">
       <h1 className="mb-4 text-2xl font-bold text-slate-800">Assigned Jobs</h1>
       {loading && <p>Loading assigned jobs...</p>}
       {error && <p className="text-red-600">{error}</p>}

@@ -137,6 +137,7 @@ function SchedulePage() {
       );
       const coords = chosenAddr?.location?.coordinates;
 
+      setSlots([]);
       setLoadingSlots(true);
       setSlotMessage("");
       setSelectedSlot(null);
@@ -151,7 +152,7 @@ function SchedulePage() {
 
         if (!isMounted) return;
         setSlots(resp.slots || []);
-        if (!resp.slots || resp.slots.length === 0) {
+        if (!resp.slots || !resp.slots.some(slot => slot.available)) {
           setSlotMessage(resp.message || "No eligible providers available for this slot or date. Please choose another date.");
         }
       } catch (err: any) {

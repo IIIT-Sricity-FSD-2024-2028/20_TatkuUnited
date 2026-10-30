@@ -11,7 +11,10 @@ import { Model, Types } from 'mongoose';
 import { Booking, BookingDocument } from '../schema/booking.schema';
 import { Order, OrderDocument } from '../schema/order.schema';
 import { Provider, ProviderDocument } from '../schema/provider.schema';
-import { Unavailability, UnavailabilityDocument } from '../schema/unavailability.schema';
+import {
+  Unavailability,
+  UnavailabilityDocument,
+} from '../schema/unavailability.schema';
 import { Service, ServiceDocument } from '../schema/service.schema';
 import {
   PlatformSetting,
@@ -127,7 +130,11 @@ export class MatchingService implements OnModuleInit, OnModuleDestroy {
       return false;
     }
 
-    if (order.paymentStatus !== PaymentStatus.PAID) {
+    if (
+      ![PaymentStatus.PAID, PaymentStatus.PARTIALLY_REFUNDED].includes(
+        order.paymentStatus,
+      )
+    ) {
       this.logger.warn(
         `offerBooking: Order ${order._id} is not paid (status: ${order.paymentStatus}). Skipping offer dispatch.`,
       );
@@ -137,6 +144,7 @@ export class MatchingService implements OnModuleInit, OnModuleDestroy {
     const serviceDoc = await this.serviceModel.findById(booking.service).exec();
     if (!serviceDoc) {
       this.logger.warn(`offerBooking: Service ${booking.service} not found`);
+      await this.handleOfferTimeoutOrDeclined(bookingId);
       return false;
     }
 
@@ -145,6 +153,7 @@ export class MatchingService implements OnModuleInit, OnModuleDestroy {
       this.logger.warn(
         `offerBooking: Invalid location coordinates for order ${order._id}`,
       );
+      await this.handleOfferTimeoutOrDeclined(bookingId);
       return false;
     }
 
@@ -226,7 +235,6 @@ export class MatchingService implements OnModuleInit, OnModuleDestroy {
           .exec(),
       ]);
     }
-
 
     const eligibleCandidates = candidates.filter((candidate) => {
       // 1. Overlapping active booking
@@ -376,7 +384,12 @@ export class MatchingService implements OnModuleInit, OnModuleDestroy {
     for (const b of awaitingBookings) {
       try {
         const order = await this.orderModel.findById(b.order).exec();
-        if (!order || order.paymentStatus !== PaymentStatus.PAID) {
+        if (
+          !order ||
+          ![PaymentStatus.PAID, PaymentStatus.PARTIALLY_REFUNDED].includes(
+            order.paymentStatus,
+          )
+        ) {
           continue;
         }
 

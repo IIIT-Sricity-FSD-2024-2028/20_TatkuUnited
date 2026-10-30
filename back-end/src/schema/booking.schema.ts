@@ -112,6 +112,10 @@ export class Booking {
 
   @Prop({ type: Date, default: null })
   completedAt: Date | null;
+
+  // A rejected completion is escalated, never automatically sent back to work.
+  @Prop({ type: Date, default: null })
+  completionRejectedAt: Date | null;
 }
 
 export const BookingSchema = SchemaFactory.createForClass(Booking);

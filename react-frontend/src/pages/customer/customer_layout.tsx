@@ -13,6 +13,7 @@ export default function CustomerLayout() {
   return (
     <div className="flex h-screen overflow-hidden bg-slate-50">
       <SideBar>
+        <SidebarItem to="/customer/bookings" label="My Bookings" icon={<BsCalendarEvent />} />
         <SidebarItem
           to="/customer/dashboard"
           label="Dashboard"

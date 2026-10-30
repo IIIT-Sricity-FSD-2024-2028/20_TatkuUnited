@@ -1,11 +1,15 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import {
   getMyPendingOffers,
   getProviderOffers,
   acceptBooking,
   rejectBooking,
 } from "@/services/bookings.service";
-import type { BookingDocument, ServiceDocument, UserDocument } from "@/models/api.models";
+import type {
+  BookingDocument,
+  ServiceDocument,
+  UserDocument,
+} from "@/models/api.models";
 import { toast } from "@/components/ui/toast";
 import { Button } from "@/components/ui/button";
 import { notifiedOfferIds } from "./useIncomingOfferNotifier";
@@ -63,6 +67,9 @@ export default function IncomingOffers({
   providerId,
   onJobAccepted,
 }: IncomingOffersProps) {
+  const actionBusy = useRef(false);
+  const fetchBusy = useRef(false);
+  const [error, setError] = useState("");
   const [offers, setOffers] = useState<BookingDocument[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -77,6 +84,8 @@ export default function IncomingOffers({
 
   const handleAccept = useCallback(
     async (bookingId: string, toastId?: string) => {
+      if (actionBusy.current) return;
+      actionBusy.current = true;
       setActingId(bookingId);
       try {
         const accepted = await acceptBooking(bookingId, providerId);
@@ -100,11 +109,15 @@ export default function IncomingOffers({
           err?.message ||
           "Could not accept offer.";
 
-        if (status === 409 || (typeof msg === "string" && msg.includes("already taken"))) {
+        if (
+          status === 409 ||
+          (typeof msg === "string" && msg.includes("already taken"))
+        ) {
           toast.add({
             type: "warning",
             title: "Job Already Taken",
-            description: "Another service provider accepted this job offer first.",
+            description:
+              "Another service provider accepted this job offer first.",
             priority: "high",
           });
           // Remove since it's taken
@@ -118,6 +131,7 @@ export default function IncomingOffers({
         }
         if (toastId) toast.close(toastId);
       } finally {
+        actionBusy.current = false;
         setActingId(null);
       }
     },
@@ -126,6 +140,8 @@ export default function IncomingOffers({
 
   const handleDecline = useCallback(
     async (bookingId: string, toastId?: string) => {
+      if (actionBusy.current) return;
+      actionBusy.current = true;
       setActingId(bookingId);
       try {
         await rejectBooking(bookingId, providerId);
@@ -150,104 +166,115 @@ export default function IncomingOffers({
         });
         if (toastId) toast.close(toastId);
       } finally {
+        actionBusy.current = false;
         setActingId(null);
       }
     },
     [providerId],
   );
 
-  const fetchOffers = useCallback(async (isInitial = false) => {
-    if (isInitial) setLoading(true);
-    else setRefreshing(true);
+  const fetchOffers = useCallback(
+    async (isInitial = false) => {
+      if (fetchBusy.current || actionBusy.current) return;
+      fetchBusy.current = true;
+      if (isInitial) setLoading(true);
+      else setRefreshing(true);
 
-    try {
-      const data = providerId
-        ? await getProviderOffers(providerId)
-        : await getMyPendingOffers();
+      try {
+        const data = providerId
+          ? await getProviderOffers(providerId)
+          : await getMyPendingOffers();
 
-      const activeOffers = (data || []).filter((b) => {
-        // Find provider's offer entry or general expiry
-        const myOffer = b.offers?.find(
-          (o) =>
-            (!providerId || String(o.provider) === String(providerId)) &&
-            o.status === "offered",
+        const activeOffers = (data || []).filter((b) => {
+          // Find provider's offer entry or general expiry
+          const myOffer = b.offers?.find(
+            (o) =>
+              (!providerId || String(o.provider) === String(providerId)) &&
+              o.status === "offered",
+          );
+          if (myOffer && myOffer.expiresAt) {
+            return new Date(myOffer.expiresAt).getTime() > Date.now();
+          }
+          if (b.offerExpiresAt) {
+            return new Date(b.offerExpiresAt).getTime() > Date.now();
+          }
+          return b.status === "awaiting_provider";
+        });
+
+        if (actionBusy.current) return;
+        setError("");
+        setOffers(activeOffers);
+
+        // Check for new offers that haven't been toasted yet
+        let hasNewOffer = false;
+        for (const booking of activeOffers) {
+          if (!notifiedOfferIds.has(booking._id)) {
+            notifiedOfferIds.add(booking._id);
+            hasNewOffer = true;
+
+            const serviceName =
+              typeof booking.service === "object" && booking.service !== null
+                ? (booking.service as ServiceDocument).name
+                : "Service Job";
+
+            const customerName =
+              typeof booking.customer === "object" && booking.customer !== null
+                ? (booking.customer as UserDocument).name
+                : "Customer";
+
+            const payout = booking.providerShare
+              ? Math.round(booking.providerShare / 100)
+              : Math.round(booking.price / 100);
+
+            const timeSlot = `${formatSlotTime(booking.startTime)} - ${formatSlotTime(booking.endTime)}`;
+
+            // Fire toast with Accept and Decline buttons
+            toast.add({
+              type: "info",
+              title: `⚡ New Job Offer: ${serviceName}`,
+              description: `${customerName} • ${timeSlot} • Payout: ₹${payout}`,
+              priority: "high",
+              timeout: 60000, // 60s
+              actions: ({ id }: { id: string }) => (
+                <div className="flex items-center gap-2 mt-1">
+                  <Button
+                    size="sm"
+                    className="bg-emerald-600 hover:bg-emerald-700 text-white font-medium text-xs h-7 px-3 cursor-pointer shadow-sm"
+                    onClick={() => handleAccept(booking._id, id)}
+                  >
+                    <CheckCircle2 className="w-3.5 h-3.5 mr-1" />
+                    Accept
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="text-xs h-7 px-2.5 text-slate-600 hover:text-red-600 hover:border-red-300 hover:bg-red-50 cursor-pointer"
+                    onClick={() => handleDecline(booking._id, id)}
+                  >
+                    <X className="w-3.5 h-3.5 mr-1" />
+                    Decline
+                  </Button>
+                </div>
+              ),
+            } as any);
+          }
+        }
+
+        if (hasNewOffer) {
+          playOfferChime();
+        }
+      } catch {
+        setError(
+          "Unable to refresh offers. Please refresh before accepting a job.",
         );
-        if (myOffer && myOffer.expiresAt) {
-          return new Date(myOffer.expiresAt).getTime() > Date.now();
-        }
-        if (b.offerExpiresAt) {
-          return new Date(b.offerExpiresAt).getTime() > Date.now();
-        }
-        return b.status === "awaiting_provider";
-      });
-
-      setOffers(activeOffers);
-
-      // Check for new offers that haven't been toasted yet
-      let hasNewOffer = false;
-      for (const booking of activeOffers) {
-        if (!notifiedOfferIds.has(booking._id)) {
-          notifiedOfferIds.add(booking._id);
-          hasNewOffer = true;
-
-          const serviceName =
-            typeof booking.service === "object" && booking.service !== null
-              ? (booking.service as ServiceDocument).name
-              : "Service Job";
-
-          const customerName =
-            typeof booking.customer === "object" && booking.customer !== null
-              ? (booking.customer as UserDocument).name
-              : "Customer";
-
-          const payout = booking.providerShare
-            ? Math.round(booking.providerShare / 100)
-            : Math.round(booking.price / 100);
-
-          const timeSlot = `${formatSlotTime(booking.startTime)} - ${formatSlotTime(booking.endTime)}`;
-
-          // Fire toast with Accept and Decline buttons
-          toast.add({
-            type: "info",
-            title: `⚡ New Job Offer: ${serviceName}`,
-            description: `${customerName} • ${timeSlot} • Payout: ₹${payout}`,
-            priority: "high",
-            timeout: 60000, // 60s
-            actions: ({ id }: { id: string }) => (
-              <div className="flex items-center gap-2 mt-1">
-                <Button
-                  size="sm"
-                  className="bg-emerald-600 hover:bg-emerald-700 text-white font-medium text-xs h-7 px-3 cursor-pointer shadow-sm"
-                  onClick={() => handleAccept(booking._id, id)}
-                >
-                  <CheckCircle2 className="w-3.5 h-3.5 mr-1" />
-                  Accept
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="text-xs h-7 px-2.5 text-slate-600 hover:text-red-600 hover:border-red-300 hover:bg-red-50 cursor-pointer"
-                  onClick={() => handleDecline(booking._id, id)}
-                >
-                  <X className="w-3.5 h-3.5 mr-1" />
-                  Decline
-                </Button>
-              </div>
-            ),
-          } as any);
-        }
+      } finally {
+        setLoading(false);
+        fetchBusy.current = false;
+        setRefreshing(false);
       }
-
-      if (hasNewOffer) {
-        playOfferChime();
-      }
-    } catch {
-      // Background poll silently fails on network jitter
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  }, [providerId, handleAccept, handleDecline]);
+    },
+    [providerId, handleAccept, handleDecline],
+  );
 
   // Initial fetch and periodic background poll every 6 seconds
   useEffect(() => {
@@ -261,8 +288,16 @@ export default function IncomingOffers({
 
   return (
     <div className="space-y-4">
+      {error && (
+        <p
+          role="alert"
+          className="rounded-lg border border-destructive p-4 text-sm"
+        >
+          {error}
+        </p>
+      )}
       {/* Header bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent border border-amber-200/80 rounded-2xl p-4 sm:p-5">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-card border border-border rounded-xl p-4 sm:p-5">
         <div className="flex items-center gap-3">
           <div className="relative flex items-center justify-center w-10 h-10 rounded-xl bg-amber-500 text-white shadow-sm shadow-amber-500/20">
             <Radio className="w-5 h-5 animate-pulse" />
@@ -273,7 +308,9 @@ export default function IncomingOffers({
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="text-lg font-bold text-slate-900">Incoming Job Offers</h2>
+              <h2 className="text-lg font-bold text-slate-900">
+                Incoming Job Offers
+              </h2>
               {offers.length > 0 && (
                 <span className="inline-flex items-center rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-semibold text-amber-800">
                   {offers.length} Pending
@@ -281,7 +318,7 @@ export default function IncomingOffers({
               )}
             </div>
             <p className="text-xs text-slate-500 mt-0.5">
-              Live matching engine dispatches offers in real-time. Accept fast before the timer lapses!
+              Review the service, location and earnings before accepting.
             </p>
           </div>
         </div>
@@ -308,15 +345,17 @@ export default function IncomingOffers({
           <div className="inline-block h-6 w-6 animate-spin rounded-full border-2 border-amber-500 border-t-transparent mb-2" />
           <p className="text-sm">Checking for available job offers...</p>
         </div>
-      ) : offers.length === 0 ? (
+      ) : offers.length === 0 && error ? null : offers.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-slate-200 bg-white/60 p-8 sm:p-12 text-center shadow-xs">
           <div className="mx-auto w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 mb-3">
             <Radio className="w-6 h-6 text-slate-400" />
           </div>
-          <h3 className="text-sm font-semibold text-slate-800">No Pending Job Offers</h3>
+          <h3 className="text-sm font-semibold text-slate-800">
+            No Pending Job Offers
+          </h3>
           <p className="text-xs text-slate-500 mt-1 max-w-md mx-auto">
-            You are online and eligible. When a customer in your service radius books a matching
-            service, an offer card and notification will appear here automatically.
+            When a customer in your service radius books a matching service, an
+            offer card and notification will appear here automatically.
           </p>
         </div>
       ) : (
@@ -365,13 +404,16 @@ export default function IncomingOffers({
                 ? new Date(booking.offerExpiresAt).getTime()
                 : now + 120000;
 
-            const secondsRemaining = Math.max(0, Math.floor((expiresAtMs - now) / 1000));
+            const secondsRemaining = Math.max(
+              0,
+              Math.floor((expiresAtMs - now) / 1000),
+            );
             const mins = Math.floor(secondsRemaining / 60);
             const secs = secondsRemaining % 60;
             const timeStr = `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
 
             const isUrgent = secondsRemaining < 30;
-            const isActing = actingId === booking._id;
+            const isActing = actingId !== null || Boolean(error);
 
             const dateStr = booking.scheduledDate
               ? new Date(booking.scheduledDate).toLocaleDateString("en-IN", {
@@ -384,7 +426,7 @@ export default function IncomingOffers({
             return (
               <div
                 key={booking._id}
-                className="relative flex flex-col justify-between rounded-2xl border-2 border-amber-300 bg-white p-5 shadow-sm hover:shadow-md transition-shadow"
+                className="relative flex flex-col justify-between rounded-xl border bg-card p-5"
               >
                 {/* Top badge row */}
                 <div>
@@ -402,14 +444,18 @@ export default function IncomingOffers({
                       }`}
                     >
                       <Clock className="w-3.5 h-3.5" />
-                      <span>{secondsRemaining > 0 ? `${timeStr} left` : "Expired"}</span>
+                      <span>
+                        {secondsRemaining > 0 ? `${timeStr} left` : "Expired"}
+                      </span>
                     </div>
                   </div>
 
                   {/* Title & Payout */}
                   <div className="flex items-start justify-between gap-3 mb-4">
                     <div>
-                      <h3 className="text-base font-bold text-slate-900">{serviceName}</h3>
+                      <h3 className="text-base font-bold text-slate-900">
+                        {serviceName}
+                      </h3>
                       {serviceDuration && (
                         <p className="text-xs text-slate-400 mt-0.5">
                           Estimated duration: {serviceDuration} minutes
@@ -418,8 +464,7 @@ export default function IncomingOffers({
                     </div>
                     <div className="text-right shrink-0">
                       <div className="flex items-center gap-1 text-emerald-600 font-extrabold text-lg">
-                        <Coins className="w-4 h-4 text-emerald-500" />
-                        ₹{payout}
+                        <Coins className="w-4 h-4 text-emerald-500" />₹{payout}
                       </div>
                       <span className="text-[10px] text-slate-400 font-medium uppercase">
                         Net Payout
@@ -431,10 +476,13 @@ export default function IncomingOffers({
                   <div className="grid grid-cols-1 gap-2 rounded-xl bg-slate-50 p-3 text-xs mb-4">
                     <div className="flex items-center gap-2 text-slate-700">
                       <Calendar className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                      <span className="font-medium text-slate-900">{dateStr}</span>
+                      <span className="font-medium text-slate-900">
+                        {dateStr}
+                      </span>
                       <span className="text-slate-400">•</span>
                       <span className="font-mono text-slate-700">
-                        {formatSlotTime(booking.startTime)} - {formatSlotTime(booking.endTime)}
+                        {formatSlotTime(booking.startTime)} -{" "}
+                        {formatSlotTime(booking.endTime)}
                       </span>
                     </div>
 
@@ -447,8 +495,17 @@ export default function IncomingOffers({
                     </div>
 
                     <div className="flex items-center justify-between text-slate-600 pt-1 border-t border-slate-200/60">
-                      <span>Customer: <strong className="text-slate-800">{customerName}</strong></span>
-                      {customerPhone && <span className="font-mono text-[11px] text-slate-500">{customerPhone}</span>}
+                      <span>
+                        Customer:{" "}
+                        <strong className="text-slate-800">
+                          {customerName}
+                        </strong>
+                      </span>
+                      {customerPhone && (
+                        <span className="font-mono text-[11px] text-slate-500">
+                          {customerPhone}
+                        </span>
+                      )}
                     </div>
                   </div>
                 </div>

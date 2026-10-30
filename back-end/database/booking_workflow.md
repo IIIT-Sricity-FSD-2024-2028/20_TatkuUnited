@@ -30,6 +30,12 @@ Required schema changes:
 
 ---
 
+### Existing implementation and completion extension
+
+The repository uses NestJS/Mongoose and React/TypeScript; reuse those modules and installed shadcn components. Section 0 is already implemented. `Booking.status` additionally supports `completion_requested` and `disputed`, with nullable `completionRejectedAt` for the customer decision. Existing documents require no backfill for this optional field.
+
+Completion: `in_progress -> completion_requested -> completed` on customer confirmation. A customer denial instead transitions once to `disputed`, records its timestamp, and notifies administrators. Providers cannot restart, cancel, repeat completion requests, or directly complete a disputed job. A manager for the booking region or an administrator can resolve it through `POST /bookings/:id/complete`; there is no automatic retry or automatic payout while disputed. General booking PATCH is administrator-only to prevent bypassing these transitions.
+
 ## 1. Book now -> Schedule
 
 1. "Book now" on `/services` and in `ServicePage` navigates to `/customer/schedule/:service_id`.
@@ -121,7 +127,7 @@ Put the mock behind a `paymentService` (`createOrder`, `simulate`, `refund`) so 
 ## 5. Job execution
 
 - Only the **assigned provider** can change their booking (manager of the region or admin can override).
-- Allowed transitions: `confirmed -> in_progress -> completed`. Anything else is rejected with 400.
+- Allowed provider transitions: `confirmed -> in_progress -> completion_requested`. The customer confirms completion or opens a dispute; see the completion extension above. Invalid transitions are rejected with 400.
 - On `completed`: set `completedAt`, notify the customer ("Please rate your service"), and trigger payout (section 6).
 - Customer is notified on start and completion.
 

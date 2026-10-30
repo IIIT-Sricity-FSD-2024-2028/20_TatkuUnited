@@ -18,7 +18,7 @@ export default function SuperUser_Dashboard() {
   const [totalProviders, setTotalProviders] = useState(0);
 
   const [bookings, setBookings] = useState<BookingDocument[]>([]);
-  const [payments, setPayments] = useState<PaymentDocument[]>([]);
+  const [, setPayments] = useState<PaymentDocument[]>([]);
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

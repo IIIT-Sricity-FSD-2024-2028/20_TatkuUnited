@@ -1,7 +1,5 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import PublicNavbar from "../PublicNavbar";
-import Footer from "../general/landing/Footer";
 import { useAuthContext } from "@/common/AuthContext";
 import { getStoredUser, getStoredUserId } from "@/common/services/authService";
 import { getBookingsByCustomer } from "@/services/bookings.service";
@@ -143,15 +141,9 @@ function RatingsFeedbackPage() {
     : "No Service Selected";
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col justify-between">
+    <div className="mx-auto w-full max-w-6xl">
       <div>
-        <PublicNavbar
-          brandName="TatkuUnited"
-          brandInitials="TU"
-          onNavigate={(path) => navigate(path)}
-        />
-
-        <main className="max-w-4xl mx-auto px-6 pt-32 pb-16">
+<section className="space-y-6">
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-slate-900">
               Ratings & Feedback
@@ -350,10 +342,10 @@ function RatingsFeedbackPage() {
               </div>
             )}
           </div>
-        </main>
+        </section>
       </div>
 
-      <Footer />
+
     </div>
   );
 }
