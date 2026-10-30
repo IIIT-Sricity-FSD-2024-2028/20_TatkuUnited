@@ -1,10 +1,12 @@
 import { useState } from "react";
 import { BsStarFill } from "react-icons/bs";
+import { useDispatch, useSelector } from "react-redux";
+import type { AppDispatch, RootState } from "../../store";
 import {
+  ManagerActions,
   getProviderCategoryNames,
   type ProviderStatus,
-  useManager,
-} from "./ManagerContext";
+} from "../../store/manager/manager-slice";
 import { Skeleton } from "../../components/ui/skeleton";
 import { Button } from "../../components/ui/button";
 import {
@@ -44,8 +46,10 @@ const FILTERS: { value: StatusFilter; label: string }[] = [
 type ProviderAction = "approve" | "suspend";
 
 export default function ManagerManageProviders() {
-  const { providers, services, categories, pending, providerStatusChanged } =
-    useManager();
+  const dispatch = useDispatch<AppDispatch>();
+  const { providers, services, categories, pending } = useSelector(
+    (state: RootState) => state.manager,
+  );
   // the provider and action waiting for the manager's confirmation
   const [confirming, setConfirming] = useState<{
     id: string;
@@ -76,10 +80,12 @@ export default function ManagerManageProviders() {
     try {
       const updated =
         action === "approve" ? await approveProvider(id) : await suspendProvider(id);
-      providerStatusChanged({
-        id,
-        status: updated.status as unknown as ProviderStatus,
-      });
+      dispatch(
+        ManagerActions.providerStatusChanged({
+          id,
+          status: updated.status as unknown as ProviderStatus,
+        }),
+      );
       toast.add({
         type: "info",
         description: `${name} ${action === "approve" ? "approved" : "suspended"}`,

@@ -43,11 +43,14 @@ import {
   LucideBadgeIndianRupee,
   PersonStandingIcon,
 } from "lucide-react";
-import { useManager } from "./ManagerContext";
+import { useSelector } from "react-redux";
+import type { RootState } from "../../store";
 
 export default function ManagerRevenue() {
   const [period, setPeriod] = useState<Period>("all");
-  const { bookings, providers, categories, pending } = useManager();
+  const { bookings, providers, categories, pending } = useSelector(
+    (state: RootState) => state.manager,
+  );
   const loading = pending > 0;
 
   // recalculated only when the bookings or the chosen period change

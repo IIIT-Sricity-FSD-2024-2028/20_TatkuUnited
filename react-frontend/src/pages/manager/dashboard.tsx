@@ -1,3 +1,5 @@
+import { useSelector } from "react-redux";
+import type { RootState } from "../../store";
 import {
   Card,
   CardContent,
@@ -6,7 +8,6 @@ import {
 } from "../../components/ui/card";
 import { Skeleton } from "../../components/ui/skeleton";
 import useAuth from "@/hooks/useAuth";
-import { useManager } from "./ManagerContext";
 
 const formatRupees = (paise: number) =>
   `₹${(paise / 100).toLocaleString("en-IN", { maximumFractionDigits: 2 })}`;
@@ -14,7 +15,7 @@ const formatRupees = (paise: number) =>
 export default function ManagerDashboard() {
   const { user } = useAuth();
   const { regions, selectedRegionId, providers, bookings, pending, error } =
-    useManager();
+    useSelector((state: RootState) => state.manager);
 
   const region = regions.find((r) => r._id === selectedRegionId);
   const loading = pending > 0;

@@ -1,5 +1,8 @@
 import { useContext, useEffect, useState } from "react";
 import axios from "axios";
+import { useDispatch, useSelector } from "react-redux";
+import type { AppDispatch, RootState } from "../../store";
+import { ManagerActions } from "../../store/manager/manager-slice";
 import { toast } from "../../components/ui/toast";
 import AuthContext from "@/common/AuthContext";
 import { updateUser } from "@/services/users.service";
@@ -24,7 +27,6 @@ import {
 } from "../../components/ui/field";
 import { Input } from "../../components/ui/input";
 import { Button } from "../../components/ui/button";
-import { useManager } from "./ManagerContext";
 
 interface ProfileForm {
   name: string;
@@ -55,10 +57,11 @@ const getInitials = (name: string) =>
     .join("");
 
 export default function ManagerProfile() {
+  const dispatch = useDispatch<AppDispatch>();
   const auth = useContext(AuthContext);
   const [saving, setSaving] = useState(false);
-  const { userInfo, managerInfo, regions, selectedRegionId, pending, userUpdated } =
-    useManager();
+  const { userInfo, managerInfo, regions, selectedRegionId, pending } =
+    useSelector((state: RootState) => state.manager);
   const loading = pending > 0 && !userInfo;
   const region = regions.find((r) => r._id === selectedRegionId);
 
@@ -128,7 +131,7 @@ export default function ManagerProfile() {
     setSaving(true);
     try {
       const updated = await updateUser(userInfo._id, changes);
-      userUpdated({ ...userInfo, ...updated });
+      dispatch(ManagerActions.userUpdated({ ...userInfo, ...updated }));
       syncSession({
         name: updated.name,
         email: updated.email,

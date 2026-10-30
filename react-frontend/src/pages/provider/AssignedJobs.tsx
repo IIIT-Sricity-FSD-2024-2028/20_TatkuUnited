@@ -166,7 +166,7 @@ export default function AssignedJobs() {
     }
 
     void fetchJobs();
-  }, [authDetails]);
+  });
 
   if (authDetails?.user.role !== RolesEnum.PROVIDER) {
     return (

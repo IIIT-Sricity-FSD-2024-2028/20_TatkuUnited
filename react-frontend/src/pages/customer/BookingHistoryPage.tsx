@@ -281,9 +281,7 @@ export default function BookingHistoryPage() {
     // In backend schema, price is in paise (1 INR = 100 paise). SchedulePage expects price in rupees.
     const priceInRupees = priceInPaise / 100;
 
-    navigate(
-      `/schedule?service=${encodeURIComponent(serviceName)}&price=${encodeURIComponent(priceInRupees)}&location=${encodeURIComponent(location)}`,
-    );
+    navigate(`/schedule/${encodeURIComponent(booking.service._id)}}`);
   };
 
   return (
@@ -343,7 +341,8 @@ export default function BookingHistoryPage() {
                 Please Sign In
               </h2>
               <p className="mt-2 text-sm text-slate-600">
-                You must be logged in as a customer to view your booking history.
+                You must be logged in as a customer to view your booking
+                history.
               </p>
               <button
                 type="button"
@@ -359,7 +358,9 @@ export default function BookingHistoryPage() {
               className="rounded-xl border border-slate-200 bg-white p-12 text-center text-slate-500 shadow-sm"
             >
               <div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-4 border-blue-500 border-t-transparent" />
-              <p className="font-medium text-slate-700">Loading your bookings...</p>
+              <p className="font-medium text-slate-700">
+                Loading your bookings...
+              </p>
             </div>
           ) : bookings.length === 0 ? (
             <div className="rounded-xl border border-slate-200 bg-white p-12 text-center shadow-sm">
@@ -370,7 +371,8 @@ export default function BookingHistoryPage() {
                 No bookings found
               </h2>
               <p className="mt-2 text-sm text-slate-600">
-                You haven't made any service bookings yet. Once you book a service, you'll see it here.
+                You haven't made any service bookings yet. Once you book a
+                service, you'll see it here.
               </p>
               <button
                 type="button"
@@ -395,7 +397,6 @@ export default function BookingHistoryPage() {
                       undefined
                     : undefined;
 
-
                 const displayPrice = formatPriceDisplay(booking.price);
 
                 return (
@@ -415,7 +416,9 @@ export default function BookingHistoryPage() {
                         <div className="flex flex-wrap items-center gap-y-1 gap-x-4 text-sm text-slate-600">
                           <span className="flex items-center gap-1.5">
                             <span aria-hidden="true">📅</span>
-                            <span>{formatBookingDate(booking.scheduledDate)}</span>
+                            <span>
+                              {formatBookingDate(booking.scheduledDate)}
+                            </span>
                           </span>
 
                           {typeof booking.startTime === "number" && (
@@ -462,7 +465,8 @@ export default function BookingHistoryPage() {
                     {booking.status === "completion_requested" && (
                       <div className="mt-5 rounded-lg border border-blue-200 bg-blue-50 p-4">
                         <p className="font-medium text-blue-900">
-                          Your provider has requested confirmation that this service is complete.
+                          Your provider has requested confirmation that this
+                          service is complete.
                         </p>
                         <p className="mt-1 text-sm text-blue-800">
                           Please confirm whether the service was completed.

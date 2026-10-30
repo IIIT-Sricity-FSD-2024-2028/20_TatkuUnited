@@ -230,13 +230,13 @@ const ManagerSlice = createSlice({
       .addMatcher(
         (a) => a.type.startsWith("manager/") && a.type.endsWith("/fulfilled"),
         (state) => {
-          state.pending -= 1;
+          state.pending = Math.max(0, state.pending - 1);
         },
       )
       .addMatcher(
         (a) => a.type.startsWith("manager/") && a.type.endsWith("/rejected"),
         (state, action) => {
-          state.pending -= 1;
+          state.pending = Math.max(0, state.pending - 1);
           state.error =
             (action as { error?: { message?: string } }).error?.message ??
             "Something went wrong";
