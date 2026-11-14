@@ -1,8 +1,8 @@
-import AuthContext from "@/common/AuthContext";
 import type { Role } from "@/common/roles.enum";
 import type { UserInterface } from "@/models/auth.models";
 import { handleLogout } from "@/common/services/authService";
-import { useContext } from "react";
+import { useSelector } from "react-redux";
+import type { RootState } from "@/store";
 
 export default function useAuth(): {
     user: UserInterface | undefined, 
@@ -11,10 +11,11 @@ export default function useAuth(): {
     isAuthenticated: boolean,
     logout: () => void
 } {
-    const auth = useContext(AuthContext);
+    // const auth = useContext(AuthContext);
     // { user, token, role, isAuthenticated, logout }
-    const user = auth?.authDetails?.user;
-    const token = auth?.authDetails?.token;
+    const auth = useSelector((state: RootState) => state.auth);
+    const user = auth?.user ?? undefined;
+    const token = auth?.token ?? undefined;
     const role = user ? user.role : undefined;
     const isAuthenticated = Boolean(token && token.length > 0);
     return {

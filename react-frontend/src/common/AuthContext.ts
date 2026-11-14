@@ -6,6 +6,7 @@ export interface AuthContextInterface {
     setAuthDetails: React.Dispatch<React.SetStateAction<AuthInterface | null>>;
 }
 
+// Deprecate context
 const AuthContext = createContext<AuthContextInterface | null>(null);
 
 export function useAuthContext(): AuthContextInterface {

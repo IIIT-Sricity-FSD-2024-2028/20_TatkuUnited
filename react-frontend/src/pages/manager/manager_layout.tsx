@@ -6,13 +6,10 @@ import { BsCash, BsGrid, BsPeople, BsPersonAdd } from "react-icons/bs";
 import { Outlet } from "react-router-dom";
 import UserHeader from "../shared/user-header";
 import UrlMap from "../../common/urlMap";
-import useAuth from "@/hooks/useAuth";
 import { toast } from "@/components/ui/toast";
 import {
   ManagerActions,
   fetchCatalogue,
-  fetchManager,
-  fetchMe,
   fetchRegionBookings,
   fetchRegionProviders,
   fetchRegions,
@@ -20,19 +17,14 @@ import {
 
 export default function ManagerLayout() {
   const dispatch = useDispatch<AppDispatch>();
-  const { user } = useAuth();
-  const managerId = user?.id || (user as any)?._id;
-  const { regions, selectedRegionId, error } = useSelector(
+  const { managerInfo, regions, selectedRegionId, error } = useSelector(
     (state: RootState) => state.manager,
   );
+  const managerId = managerInfo?._id;
 
   useEffect(() => {
     if (!managerId) return;
-    dispatch(fetchMe());
-    dispatch(fetchManager(managerId))
-      .unwrap()
-      .then((m) => dispatch(fetchRegions(m._id)))
-      .catch(() => {});
+    dispatch(fetchRegions(managerId));
   }, [dispatch, managerId]);
 
   useEffect(() => {

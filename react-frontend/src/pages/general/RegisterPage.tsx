@@ -324,29 +324,6 @@ function LoginLink() {
   );
 }
 
-// function RegistrationSuccess() {
-//   return (
-//     <div>
-//       <h1 className="text-3xl font-bold my-3">Account Created!</h1>
-//       <p className="text-slate-500">
-//         Proceed to login:{" "}
-//         <Link className="text-blue-500 cursor-pointer" to="/auth/login">
-//           Login here
-//         </Link>
-//       </p>
-//     </div>
-//   );
-// }
-
-// function RegistrationFailed() {
-//   return (
-//     <div>
-//       <h1 className="text-3xl font-bold my-3">Account Creation Failed!</h1>
-//       <p className="text-slate-500">Try again later.</p>
-//     </div>
-//   );
-// }
-
 function RegisterPage() {
   const [curPage, setCurPage] = useState(1);
   const [role, setRole] = useState<Role>("customer");

@@ -28,8 +28,7 @@ function getGrossAmount(booking: BookingDocument) {
 }
 
 function payoutStatus(booking: BookingDocument): "pending" | "paid" {
-  return booking.payoutStatus === "paid" ||
-    booking.payoutStatus === "transferred"
+  return booking.payoutStatus === "paid"
     ? "paid"
     : "pending";
 }

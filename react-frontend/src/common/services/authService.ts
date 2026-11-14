@@ -12,9 +12,14 @@ import {
 
 import { store } from "@/store";
 import { AuthActions } from "@/store/auth/auth-slice";
+import { fetchCustomerDetails } from "@/store/customer/customer-slice";
+import { fetchManagerDetails } from "@/store/manager/manager-slice";
+import { superuserActions } from "@/store/superuser/superuser-slice";
+import { providerActions } from "@/store/provider/provider-slice";
 
 export function handleLogout() {
-  sessionStorage.clear();
+  store.dispatch(superuserActions.resetSlice());
+  store.dispatch(providerActions.resetSlice());
   store.dispatch(AuthActions.logout());
 }
 
@@ -32,14 +37,25 @@ export function getStoredUserId(): string | undefined {
   return user?.id || user?._id;
 }
 
+export function loadSessionProfile() {
+  const { user, token } = store.getState().auth;
+  if (!user || !token) return;
+
+  if (user.role === "customer") {
+    void store.dispatch(fetchCustomerDetails());
+  } else if (user.role === "manager") {
+    void store.dispatch(fetchManagerDetails(user.id));
+  }
+}
+
 export async function handleLogin(email: string, password: string): Promise<string | AuthInterface> {
   try {  
     const data: LoginResponse = await apiService(HTTP_METHODS_ENUM.post, ENDPOINT_ENUM.AUTH_LOGIN, {email, password}, (data: LoginResponse) => {
       const access_token = data.access_token;
       const user = data.user;
-      sessionStorage.setItem("token", access_token);
-      sessionStorage.setItem("user", JSON.stringify(user));
+
       store.dispatch(AuthActions.login({ user, token: access_token }));
+      loadSessionProfile();
     });
     return {token: data.access_token, user: data.user};
   } catch(error: any) {

@@ -1,0 +1,10 @@
+export type Role = 'customer' | 'provider' | 'manager' | 'admin';
+export type UserStatus = 'active' | 'blocked';
+export type Gender = 'male' | 'female' | 'other';
+export type ProviderStatus = 'pending' | 'approved' | 'suspended';
+export type ManagerStatus = 'active' | 'suspended' | 'inactive';
+export type PaymentStatus = 'created' | 'paid' | 'failed' | 'refunded' | 'partially_refunded';
+export type BookingStatus = 'pending' | 'awaiting_provider' | 'confirmed' | 'in_progress' | 'completion_requested' | 'disputed' | 'completed' | 'cancelled';
+export type CancelledBy = 'customer' | 'provider' | 'manager' | 'admin' | 'system';
+export type PayoutStatus = 'pending' | 'paid';
+export type RefundStatus = 'initiated' | 'processed' | 'failed';

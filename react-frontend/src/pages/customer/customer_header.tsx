@@ -4,11 +4,11 @@ import { useAuthContext } from "@/common/AuthContext";
 
 export default function CustomerHeader() {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const { setAuthDetails } = useAuthContext();
 
   const handleUserLogout = () => {
-    sessionStorage.clear();
+    logout();
     setAuthDetails(null);
     navigate("/auth/login");
   };

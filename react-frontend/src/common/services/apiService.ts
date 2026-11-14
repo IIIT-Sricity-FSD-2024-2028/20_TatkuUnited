@@ -1,6 +1,7 @@
 import axios, { type AxiosError } from "axios";
 import { BASE_URL, type ENDPOINT_TYPE } from "../endpoints";
 import type { HTTP_METHOD_TYPE } from "@/common/http.methods";
+import { store } from "@/store";
 
 const axiosInstance = axios.create({
     baseURL: BASE_URL,
@@ -9,8 +10,16 @@ const axiosInstance = axios.create({
 
 axiosInstance.interceptors.request.use(
     (config) => {
-        const token = sessionStorage.getItem("token");
-        if(token) {
+        let token: string | null = null;
+        try {
+            token = store.getState()?.auth?.token;
+        } catch {
+            // fallback
+        }
+        if (!token) {
+            token = sessionStorage.getItem("token");
+        }
+        if (token) {
             config.headers.Authorization = `Bearer ${token}`;
         }
         return config;

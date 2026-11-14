@@ -1,5 +1,55 @@
+export type {
+  BookingOffer,
+  BookingDocument,
+  CategoryDocument,
+  ManagerDocument,
+  NotificationDocument,
+  OrderDocument,
+  RefundEntry,
+  PaymentDocument,
+  MatchWeights,
+  PlatformSettingDocument,
+  ProviderDocument,
+  RegionDocument,
+  ReviewDocument,
+  HowItWorksStep,
+  FaqItem,
+  ServiceDocument,
+  UnavailabilityDocument,
+  CartItem,
+  Cart,
+  UserDocument,
+  UserAddress,
+  AddressSnapshot,
+  GeoPoint as GeoLocationDto,
+  AddressSnapshot as AddressSnapshotDto,
+  HowItWorksStep as HowItWorksStepDto,
+  FaqItem as FaqItemDto,
+  Cart as BackendCart,
+  BookingOffer as BookingOfferDto,
+  Role as UserRole,
+  PaymentStatus as OrderPaymentStatus,
+  UserStatus,
+  ProviderStatus,
+  BookingStatus,
+  PayoutStatus
+} from '@/schema';
+export type { RefundStatus, Gender, ManagerStatus, CancelledBy, PaymentStatus } from "@/schema";
+import type {
+  GeoPoint as GeoLocationDto,
+  AddressSnapshot as AddressSnapshotDto,
+  HowItWorksStep as HowItWorksStepDto,
+  FaqItem as FaqItemDto,
+  Role as UserRole,
+  PaymentStatus as OrderPaymentStatus,
+  UserStatus,
+  ProviderStatus,
+  BookingStatus,
+  PayoutStatus
+} from "@/schema";
+
 /**
- * Shared TypeScript models derived from the Tatku United OpenAPI 3.0 / Swagger spec.
+ * Request DTOs and compatibility exports for the backend-aligned schemas in @/schema.
  * All monetary values are in **paise** (1 INR = 100 paise).
  * Time fields (startTime, endTime, blockStartTime) are **minutes from midnight**.
  */
@@ -8,54 +58,9 @@
 // Primitives & Shared Shapes
 // ---------------------------------------------------------------------------
 
-export interface GeoLocationDto {
-  type: "Point";
-  coordinates: [number, number]; // [longitude, latitude]
-}
-
-export interface AddressSnapshotDto {
-  line: string;
-  city: string;
-  location: GeoLocationDto;
-}
-
-export interface HowItWorksStepDto {
-  title: string;
-  desc: string;
-}
-
-export interface FaqItemDto {
-  question: string;
-  answer: string;
-}
-
 // ---------------------------------------------------------------------------
 // User
 // ---------------------------------------------------------------------------
-
-export type UserRole = "customer" | "provider" | "manager" | "admin";
-export type UserStatus = "active" | "blocked";
-
-export interface UserAddress {
-  _id?: string;
-  id?: string;
-  label: string;
-  line: string;
-  city: string;
-  location: GeoLocationDto;
-}
-
-export interface CartItem {
-  service: string | ServiceDocument;
-  scheduledDate: string;
-  startTime: number;
-  endTime: number;
-}
-
-export interface BackendCart {
-  address: string | null;
-  items: CartItem[];
-}
 
 export interface AddCartItemDto {
   service: string;
@@ -65,21 +70,6 @@ export interface AddCartItemDto {
   addressId?: string;
 }
 
-export interface UserDocument {
-  _id: string;
-  name: string;
-  email: string;
-  phone: string;
-  role: UserRole;
-  status: UserStatus;
-  gender?: string;
-  dob?: string;
-  addresses?: UserAddress[];
-  cart?: CartItem[];
-  cartAddress?: AddressSnapshotDto;
-  createdAt: string;
-  updatedAt: string;
-}
 
 export interface CreateUserDto {
   name: string;
@@ -97,26 +87,6 @@ export type UpdateUserDto = Partial<Omit<CreateUserDto, "password"> & { password
 // ---------------------------------------------------------------------------
 // Provider
 // ---------------------------------------------------------------------------
-
-export type ProviderStatus = "active" | "suspended" | "pending";
-
-export interface ProviderDocument {
-  _id: string;
-  user: string | UserDocument;
-  offeredServices: string[];
-  experience: number;
-  workHourStart: number;
-  workHourEnd: number;
-  workingDays: number[];
-  location: GeoLocationDto;
-  status: ProviderStatus;
-  rating?: number;
-  ratingCount?: number;
-  razorpayAccountId?: string;
-  region?: string;
-  createdAt: string;
-  updatedAt: string;
-}
 
 export interface CreateProviderDto {
   user: string;
@@ -137,17 +107,6 @@ export type UpdateProviderDto = Partial<CreateProviderDto>;
 // Manager
 // ---------------------------------------------------------------------------
 
-export interface ManagerDocument {
-  _id: string;
-  user: string | UserDocument;
-  salary: number;
-  experience: number;
-  location: GeoLocationDto;
-  status?: string;
-  razorpayAccountId?: string;
-  createdAt: string;
-  updatedAt: string;
-}
 
 export interface CreateManagerDto {
   user: string;
@@ -168,15 +127,6 @@ export type UpdateManagerDto = Partial<{
 // Region
 // ---------------------------------------------------------------------------
 
-export interface RegionDocument {
-  _id: string;
-  name: string;
-  manager: string | ManagerDocument;
-  location: GeoLocationDto;
-  isActive: boolean;
-  createdAt: string;
-  updatedAt: string;
-}
 
 export interface CreateRegionDto {
   name: string;
@@ -191,15 +141,6 @@ export type UpdateRegionDto = Partial<CreateRegionDto>;
 // Category
 // ---------------------------------------------------------------------------
 
-export interface CategoryDocument {
-  _id: string;
-  name: string;
-  description: string;
-  imageUrl: string;
-  isActive: boolean;
-  createdAt: string;
-  updatedAt: string;
-}
 
 export interface CreateCategoryDto {
   name: string;
@@ -214,24 +155,6 @@ export type UpdateCategoryDto = Partial<CreateCategoryDto>;
 // Service Catalog
 // ---------------------------------------------------------------------------
 
-export interface ServiceDocument {
-  _id: string;
-  name: string;
-  category: string | CategoryDocument;
-  reviewCount?: number;
-  rating?: number;
-  description: string;
-  price: number; // paise
-  duration: number; // minutes
-  isActive: boolean;
-  imageUrls?: string[];
-  whatIsCovered?: string[];
-  whatIsNotCovered?: string[];
-  howItWorks?: HowItWorksStepDto[];
-  faq?: FaqItemDto[];
-  createdAt: string;
-  updatedAt: string;
-}
 
 export interface CreateServiceDto {
   name: string;
@@ -255,20 +178,6 @@ export type UpdateServiceDto = Partial<CreateServiceDto>;
 // Order
 // ---------------------------------------------------------------------------
 
-export type OrderPaymentStatus = "created" | "paid" | "failed" | "refunded" | "partially_refunded";
-
-export interface OrderDocument {
-  _id: string;
-  customer: string | UserDocument;
-  address: AddressSnapshotDto;
-  totalAmount: number; // paise
-  paymentStatus: OrderPaymentStatus;
-  payment?: string;
-  expiresAt: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
 export interface CreateOrderDto {
   customer: string;
   address: AddressSnapshotDto;
@@ -285,58 +194,9 @@ export type UpdateOrderDto = Partial<{
 // Booking
 // ---------------------------------------------------------------------------
 
-export type BookingStatus =
-  | "pending"
-  | "awaiting_provider"
-  | "confirmed"
-  | "in_progress"
-  | "completion_requested"
-  | "disputed"
-  | "completed"
-  | "cancelled";
-
-export type PayoutStatus = "pending" | "paid" | "transferred" | "failed";
-
-export interface BookingOfferDto {
-  provider: string | ProviderDocument;
-  status: "offered" | "declined" | "expired" | "accepted";
-  offeredAt: string;
-  expiresAt: string;
-  _id?: string;
-}
-
-export interface BookingDocument {
-  _id: string;
-  service: string | ServiceDocument;
-  provider: string | ProviderDocument | null;
-  customer: string | UserDocument;
-  order: string | OrderDocument;
-  region: string | RegionDocument;
-  scheduledDate: string;
-  startTime: number; // minutes from midnight
-  endTime: number;
-  blockStartTime: number;
-  price: number; // paise
-  platformFeePercent: number;
-  platformShare: number; // paise
-  providerShare: number; // paise
-  status: BookingStatus;
-  offers?: BookingOfferDto[];
-  offerRound?: number;
-  declinedBy?: string[];
-  cancelledBy?: string;
-  cancelledReason?: string;
-  offerExpiresAt?: string;
-  payoutStatus?: PayoutStatus;
-  payoutAt?: string;
-  completedAt?: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
 export interface CreateBookingDto {
   service: string;
-  provider: string;
+  provider?: string;
   customer: string;
   order: string;
   region: string;
@@ -364,21 +224,6 @@ export type UpdateBookingDto = Partial<{
 // Payment
 // ---------------------------------------------------------------------------
 
-export type PaymentStatus = "created" | "captured" | "failed" | "refunded";
-
-export interface PaymentDocument {
-  _id: string;
-  order: string | OrderDocument;
-  totalAmount: number; // paise
-  currency: string;
-  razorpayOrderId: string;
-  razorpayPaymentId?: string;
-  razorpaySignature?: string;
-  status: PaymentStatus;
-  createdAt: string;
-  updatedAt: string;
-}
-
 export interface CreatePaymentDto {
   order: string;
   totalAmount: number;
@@ -395,16 +240,6 @@ export type UpdatePaymentDto = Partial<{
 // Review
 // ---------------------------------------------------------------------------
 
-export interface ReviewDocument {
-  _id: string;
-  booking: string | BookingDocument;
-  rating: number; // 1-5
-  review?: string;
-  provider: string | ProviderDocument;
-  service: string | ServiceDocument;
-  createdAt: string;
-  updatedAt: string;
-}
 
 export interface CreateReviewDto {
   booking: string;
@@ -423,16 +258,6 @@ export type UpdateReviewDto = Partial<{
 // Unavailability
 // ---------------------------------------------------------------------------
 
-export interface UnavailabilityDocument {
-  _id: string;
-  provider: string | ProviderDocument;
-  date: string;
-  startTime: number; // minutes from midnight
-  endTime: number;
-  reason?: string;
-  createdAt: string;
-  updatedAt: string;
-}
 
 export interface CreateUnavailabilityDto {
   provider: string;
@@ -453,20 +278,6 @@ export type UpdateUnavailabilityDto = Partial<{
 // Platform Settings
 // ---------------------------------------------------------------------------
 
-export interface PlatformSettingDocument {
-  _id: string;
-  platformFeePercent: number;
-  maxAssignmentDistanceKm: number;
-  slotIntervalMinutes: number;
-  firstSlotStart: number; // minutes from midnight
-  lastSlotStart: number;
-  bookingWindowDays: number;
-  minLeadMinutes: number;
-  travelBufferMinutes: number;
-  offerTimeoutMinutes: number;
-  createdAt: string;
-  updatedAt: string;
-}
 
 export interface CreatePlatformSettingDto {
   platformFeePercent: number;
@@ -477,7 +288,11 @@ export interface CreatePlatformSettingDto {
   bookingWindowDays: number;
   minLeadMinutes: number;
   travelBufferMinutes: number;
-  offerTimeoutMinutes: number;
+  offerTimeoutMinutes?: number;
+  maxOfferRounds?: number;
+  offerBatchSize?: number;
+  payoutHoldHours?: number;
+  matchWeights?: Partial<import("@/schema").MatchWeights>;
 }
 
 export type UpdatePlatformSettingDto = Partial<CreatePlatformSettingDto>;

@@ -16,6 +16,9 @@ interface ProfileForm {
   dob: string;
 }
 
+// The session fallback contains profile fields, but no cart or saved addresses.
+type ProfileUser = Omit<UserDocument, "cart" | "addresses">;
+
 const emptyForm: ProfileForm = {
   name: "",
   email: "",
@@ -40,7 +43,7 @@ function formFromUser(user: Pick<UserDocument, "name" | "email" | "phone" | "gen
 
 export default function Profile() {
   const { authDetails, setAuthDetails } = useAuthContext();
-  const [profile, setProfile] = useState<UserDocument | null>(null);
+  const [profile, setProfile] = useState<ProfileUser | null>(null);
   const [form, setForm] = useState<ProfileForm>(emptyForm);
   const [editing, setEditing] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -64,7 +67,7 @@ export default function Profile() {
       status: user.status as UserDocument["status"],
       createdAt: "",
       updatedAt: "",
-    } satisfies UserDocument;
+    } satisfies ProfileUser;
 
     setProfile(sessionUser);
     setForm(formFromUser(sessionUser));

@@ -6,20 +6,33 @@ interface AuthState {
     token: string | null;
 }
 
-const initialState: AuthState = {
-    user: sessionStorage.getItem("user") ? JSON.parse(sessionStorage.getItem("user") || "{}") : null,
-    token: sessionStorage.getItem("token"),
+function getStoredUser(): UserInterface | null {
+    try {
+        const raw = sessionStorage.getItem("user");
+        if (!raw || raw === "undefined") return null;
+        return JSON.parse(raw);
+    } catch {
+        return null;
+    }
 }
+
+const initialState: AuthState = {
+    user: getStoredUser(),
+    token: sessionStorage.getItem("token"),
+};
 
 export const AuthSlice = createSlice({
     name: "auth",
     initialState,
     reducers: {
         login(state, action) {
+            sessionStorage.setItem("token", action.payload.token);
+            sessionStorage.setItem("user", JSON.stringify(action.payload.user));
             state.user = action.payload.user;
             state.token = action.payload.token;
         },
         logout(state) {
+            sessionStorage.clear();
             state.user = null;
             state.token = null;
         }

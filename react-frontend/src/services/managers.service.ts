@@ -26,9 +26,10 @@ export async function getAllManagers(): Promise<ManagerDocument[]> {
 }
 
 /** GET /managers/user/:userId */
-export async function getManagerByUser(userId: string): Promise<ManagerDocument> {
+export async function getManagerByUser(userId: string): Promise<ManagerDocument | null> {
   const url = buildEndpoint(ENDPOINT_ENUM.MANAGERS_BY_USER, { userId });
-  return apiService<ManagerDocument>(HTTP_METHODS_ENUM.get, url);
+  const manager = await apiService<ManagerDocument | null | "">(HTTP_METHODS_ENUM.get, url);
+  return manager || null;
 }
 
 /** GET /managers/:id */
