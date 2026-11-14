@@ -15,4 +15,6 @@
 */logs/
 
 # Uploaded files
-*/uploads/
+*/uploads/
+
+/back-end/coverage

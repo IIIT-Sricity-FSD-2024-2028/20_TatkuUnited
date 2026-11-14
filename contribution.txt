@@ -1,0 +1,34 @@
+Name: R Shri Charan
+Roll: S20240010196
+
+1. Backend: While developing the react project, I noticed that the backend
+    was messed up due to poor management last semester. So, I completely
+    redesigned the backend.
+
+2. Database: I designed the database schema which is NoSQL based. I migrated
+    from inconsistent mock data to consistent MongoDB database.
+
+3. React: I mainly contributed towards implementing the Auth system in the
+    frontend, as well as the login and register pages. I also implemented
+    service discovery and service details page. I implemented the customer
+    service booking workflow and provider job assignment logic.
+    I utilized the Shadcn (industry leading) UI library for polished
+    components like toast, caurosel, card, item, button, spinner, etc.
+
+I worked on:
+1. Login page - LoginPage.tsx
+2. Register page - RegisterPage.tsx
+3. Auth services (login, register, logout) - authService.ts
+4. Api service (axios) to make api calls simple - apiService.ts
+5. Auth custom hook - useAuth.ts
+6. Used Shadcn UI library 
+7. Worked on Customer service booking workflow - Customer and provider pages
+8. Services for easing communication with backend - services/*
+9. Auth context api - AuthContext.ts
+10. Service catalog - ServiceCatalog.tsx
+11. Service details - ServicePage.tsx
+12. Routing logic - App.tsx
+13. Backend endpoint map - endpoints.ts
+14. Http and roles enum
+15. Protected route guard - protectedRoute.tsx
+16. Error pages - notFound.tsx and forbiddenAccess.tsx
