@@ -1,15 +1,12 @@
 import { Link, useNavigate } from "react-router-dom";
 import useAuth from "@/hooks/useAuth";
-import { useAuthContext } from "@/common/AuthContext";
 
 export default function CustomerHeader() {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
-  const { setAuthDetails } = useAuthContext();
 
   const handleUserLogout = () => {
     logout();
-    setAuthDetails(null);
     navigate("/auth/login");
   };
 

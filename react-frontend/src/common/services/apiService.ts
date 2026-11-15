@@ -1,7 +1,23 @@
-import axios, { type AxiosError } from "axios";
+import axios from "axios";
 import { BASE_URL, type ENDPOINT_TYPE } from "../endpoints";
 import type { HTTP_METHOD_TYPE } from "@/common/http.methods";
-import { store } from "@/store";
+import { readSession } from "./sessionStorage";
+
+let getToken: () => string | null = () => readSession()?.token ?? null;
+
+/** Injected by the store to avoid API -> store -> services import cycles. */
+export function setApiTokenSource(source: () => string | null): void {
+    getToken = source;
+}
+
+export function getApiErrorMessage(error: unknown, fallback = "Something went wrong"): string {
+    if (axios.isAxiosError(error)) {
+        const message: unknown = error.response?.data?.message;
+        if (Array.isArray(message)) return message.filter((item) => typeof item === "string").join("; ") || fallback;
+        if (typeof message === "string") return message;
+    }
+    return error instanceof Error ? error.message : fallback;
+}
 
 const axiosInstance = axios.create({
     baseURL: BASE_URL,
@@ -10,15 +26,7 @@ const axiosInstance = axios.create({
 
 axiosInstance.interceptors.request.use(
     (config) => {
-        let token: string | null = null;
-        try {
-            token = store.getState()?.auth?.token;
-        } catch {
-            // fallback
-        }
-        if (!token) {
-            token = sessionStorage.getItem("token");
-        }
+        const token = getToken();
         if (token) {
             config.headers.Authorization = `Bearer ${token}`;
         }
@@ -40,8 +48,8 @@ export const apiService = async <TResponse = unknown, TBody = unknown> (
         onSuccess?.(response.data);
         return response.data;
     } catch(error) {
-        const axiosError = error as AxiosError<{ message?: string }>;
-        const errorMessage = axiosError.response?.data?.message || axiosError.message || "Something went wrong";
+        const errorMessage = getApiErrorMessage(error);
+        if (error instanceof Error) error.message = errorMessage;
         onError?.(errorMessage);
         return Promise.reject(error);
     }

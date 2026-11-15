@@ -15,10 +15,7 @@ export default function PublicNavbar({
   brandInitials,
   onNavigate,
 }: PublicNavbarProps) {
-  // const authContext = useAuthContext();
   const { token, user } = useAuth();
-  // const token = authContext.authDetails?.token;
-  // const user = authContext.authDetails?.user;
 
   const userRole: Role | null = user?.role ?? null;
   let redirectUrl = "";

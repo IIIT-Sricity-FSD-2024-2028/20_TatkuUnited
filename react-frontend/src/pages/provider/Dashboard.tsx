@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { RolesEnum } from "@/common/roles.enum";
-import { useAuthContext } from "@/common/AuthContext";
+import useAuth from "@/hooks/useAuth";
 import { getProviderByUser } from "@/services/providers.service";
 import type { ProviderDocument } from "@/models/api.models";
 import IncomingOffers from "./IncomingOffers";
@@ -8,7 +8,7 @@ import AssignedJobs from "./AssignedJobs";
 import { Star, ShieldCheck, UserCheck } from "lucide-react";
 
 export default function Dashboard() {
-  const { authDetails } = useAuthContext();
+  const { authDetails } = useAuth();
   const [provider, setProvider] = useState<ProviderDocument | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshTrigger, setRefreshTrigger] = useState(0);

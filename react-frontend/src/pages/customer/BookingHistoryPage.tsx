@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { useAuthContext } from "@/common/AuthContext";
+import useAuth from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -57,7 +57,7 @@ function notice(booking: BookingDocument) {
 export default function BookingHistoryPage() {
   const navigate = useNavigate();
   const { id } = useParams();
-  const { authDetails } = useAuthContext();
+  const { authDetails } = useAuth();
   const customerId = authDetails?.user.id;
   const [bookings, setBookings] = useState<BookingDocument[]>([]);
   const [loading, setLoading] = useState(true);

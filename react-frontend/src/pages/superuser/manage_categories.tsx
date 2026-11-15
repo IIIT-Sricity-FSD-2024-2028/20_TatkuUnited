@@ -1,6 +1,7 @@
+import type { Category } from "@/schema";
+import { getCategories } from "@/services/categories.service";
 import axios from 'axios';
-import { useContext } from 'react';
-import AuthContext from '../../common/AuthContext';
+import useAuth from "@/hooks/useAuth";
 import React, { useEffect, useState } from 'react';
 import { BsPlus, BsFolder2 } from 'react-icons/bs';
 import { BASE_URL } from '@/common/endpoints';
@@ -10,24 +11,15 @@ import DataTable, { type Column } from '../../components/superuser/DataTable';
 
 
 
-export interface CategoriesResponse {
-  _id: string;
-  name: string;
-  description: string;
-  imageUrl: string;
-  isActive: boolean;
-  createdAt?: string;
-  updatedAt?: string;
-  __v?: number;
-}
+export type CategoriesResponse = Category;
 
 
 
 export default function SuperUser_ManageCategories() {
 
-  const authContext = useContext(AuthContext);
-  const token = authContext?.authDetails?.token;
-  const user = authContext?.authDetails?.user;
+  const authSession = useAuth();
+  const token = authSession?.authDetails?.token;
+  const user = authSession?.authDetails?.user;
   const super_user_id = user?.id;
 
   const [search, setSearch] = useState('');
@@ -104,15 +96,7 @@ export default function SuperUser_ManageCategories() {
     try {
       setIsLoading(true);
       setError(null);
-      const response = await axios.get(`${BASE_URL}/categories`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        },
-      );
-      setCategories(response.data);
-      console.log(response.data);
+      setCategories(await getCategories());
     }
     catch (err) {
       setError("Failed to fetch users. Please check your connection.");

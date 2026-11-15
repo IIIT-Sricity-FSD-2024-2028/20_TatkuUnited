@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { RolesEnum } from "@/common/roles.enum";
-import { useAuthContext } from "@/common/AuthContext";
+import useAuth from "@/hooks/useAuth";
 import { getProviderByUser } from "@/services/providers.service";
 import {
   getBookingsByProvider,
@@ -45,7 +45,7 @@ function formatDate(value: string): string {
 }
 
 export default function AssignedJobs() {
-  const { authDetails } = useAuthContext();
+  const { authDetails } = useAuth();
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

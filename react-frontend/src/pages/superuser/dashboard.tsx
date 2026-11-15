@@ -1,15 +1,15 @@
 
-import AuthContext from "@/common/AuthContext";
+import useAuth from "@/hooks/useAuth";
 import { getServices, getCategories, getAllRegions, getAllUsers, getAllProviders, getAllBookings, getAllPayments } from "@/services";
-import { useContext, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import type { BookingDocument, PaymentDocument } from "@/models/api.models";
 import { BsCart2, BsCheckCircle, BsExclamationCircle } from "react-icons/bs";
 import SummaryCards, { type SummaryStat } from "@/components/superuser/SummaryCards";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 
 export default function SuperUser_Dashboard() {
-  const authContext = useContext(AuthContext);
-  const token = authContext?.authDetails?.token;
+  const authSession = useAuth();
+  const token = authSession?.authDetails?.token;
 
   const [totalServices, setTotalServices] = useState(0);
   const [totalCategories, setTotalCategories] = useState(0);

@@ -1,5 +1,5 @@
-import { useContext, useEffect, useState } from 'react';
-import AuthContext from '../../common/AuthContext';
+import { useEffect, useState } from 'react';
+import useAuth from "@/hooks/useAuth";
 import { getAllRegions, createRegion, updateRegion, deleteRegion, getAllManagers, updateManager } from '@/services';
 import { type RegionDocument, type ManagerDocument, type CreateRegionDto } from '@/models/api.models';
 import DataTable, { type Column } from '@/components/superuser/DataTable';
@@ -10,8 +10,8 @@ import { BsGeoAltFill, BsGeoAlt, BsGlobe, BsPlus } from 'react-icons/bs';
 
 export default function SuperUser_ManageRegions()
 {
-    const authContext = useContext(AuthContext);
-    const token = authContext?.authDetails?.token;
+    const authSession = useAuth();
+    const token = authSession?.authDetails?.token;
 
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');

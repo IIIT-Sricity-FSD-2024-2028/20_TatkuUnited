@@ -1,9 +1,9 @@
 import axios from 'axios';
-import { useContext } from 'react';
-import AuthContext from '../../common/AuthContext';
+import useAuth from "@/hooks/useAuth";
 import React, { useEffect, useState } from 'react';
 import { BASE_URL } from '@/common/endpoints';
-import { type CategoriesResponse } from './manage_categories';
+import type { Category as CategoriesResponse, Service as ServicesResponse } from "@/schema";
+import { getServices, getCategories } from "@/services";
 import {
   BsPlus,
   BsCart2,
@@ -17,50 +17,10 @@ import DataTable, { type Column } from '../../components/superuser/DataTable';
 
 
 
-export interface HowItWorksStep {
-  title: string;
-  desc: string;
-}
-
-export interface FaqItem {
-  question: string;
-  answer: string;
-}
-
-export interface ServiceCategory {
-  _id: string;
-  name: string;
-  description?: string;
-  imageUrl?: string;
-  isActive?: boolean;
-}
-
-interface ServicesResponse {
-  _id: string;
-  name: string;
-  category: ServiceCategory;
-  description: string;
-  price: number;
-  duration: number;
-  rating: number;
-  reviewCount: number;
-  isActive: boolean;
-  imageUrls: string[];
-  whatIsCovered?: string[];
-  whatIsNotCovered?: string[];
-  howItWorks?: HowItWorksStep[];
-  faq?: FaqItem[];
-  createdAt?: string;
-  updatedAt?: string;
-  __v?: number;
-}
-
-
-
 export default function SuperUser_ManageServices() {
-  const authContext = useContext(AuthContext);
-  const token = authContext?.authDetails?.token;
-  const user = authContext?.authDetails?.user;
+  const authSession = useAuth();
+  const token = authSession?.authDetails?.token;
+  const user = authSession?.authDetails?.user;
   const super_user_id = user?.id;
 
 
@@ -88,7 +48,7 @@ export default function SuperUser_ManageServices() {
 
     const matchesSearch = svc.name.toLowerCase().includes(search.toLowerCase());
 
-    const matchesCategory = category === 'all-categories' || svc.category?._id === category;
+    const matchesCategory = category === 'all-categories' || (typeof svc.category === "string" ? svc.category : svc.category?._id) === category;
 
     return matchesSearch && matchesCategory;
   });
@@ -101,7 +61,7 @@ export default function SuperUser_ManageServices() {
     },
     {
       header: "Category",
-      render: (row) => <>{row.category?.name || "Unknown Category"}</>
+      render: (row) => <>{(typeof row.category === "string" ? categories.find((item) => item._id === row.category)?.name : row.category?.name) || "Unknown Category"}</>
     },
     {
       header: "Price",
@@ -146,24 +106,9 @@ export default function SuperUser_ManageServices() {
       setIsLoading(true);
       setError(null);
 
-      const [servicesRes, categoriesRes] = await Promise.all([axios.get(`${BASE_URL}/services?includeAll=true`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        },
-      ),
-      axios.get(`${BASE_URL}/categories`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        },
-      ),
-      ])
-
-      setServices(servicesRes.data);
-      setCategories(categoriesRes.data);
+      const [services, categories] = await Promise.all([getServices(true), getCategories()]);
+      setServices(services);
+      setCategories(categories);
 
 
     }
@@ -521,7 +466,7 @@ function EditService({ onClose, token, super_user_id, refreshServices, categorie
 
   const [serviceName, setServiceName] = useState(service.name || '');
   const [description, setDescription] = useState(service.description || '');
-  const [categoryId, setCategoryId] = useState(service.category?._id || '');
+  const [categoryId, setCategoryId] = useState((typeof service.category === 'string' ? service.category : service.category?._id) || '');
   const [basePrice, setBasePrice] = useState<number | ''>(service.price != null ? service.price / 100 : '');
   const [duration, setDuration] = useState<number | ''>(service.duration || '');
   const [isAvailable, setIsAvailable] = useState(service.isActive);

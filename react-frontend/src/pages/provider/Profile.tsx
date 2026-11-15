@@ -4,7 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useAuthContext } from "@/common/AuthContext";
+import useAuth from "@/hooks/useAuth";
+import { useDispatch } from "react-redux";
+import { AuthActions } from "@/store/auth/auth-slice";
 import { getUserById, updateUser } from "@/services/users.service";
 import type { UpdateUserDto, UserDocument } from "@/models/api.models";
 
@@ -42,7 +44,8 @@ function formFromUser(user: Pick<UserDocument, "name" | "email" | "phone" | "gen
 }
 
 export default function Profile() {
-  const { authDetails, setAuthDetails } = useAuthContext();
+  const { authDetails } = useAuth();
+  const dispatch = useDispatch();
   const [profile, setProfile] = useState<ProfileUser | null>(null);
   const [form, setForm] = useState<ProfileForm>(emptyForm);
   const [editing, setEditing] = useState(false);
@@ -120,28 +123,11 @@ export default function Profile() {
       setProfile(updatedUser);
       setForm(formFromUser(updatedUser));
       setEditing(false);
-      setAuthDetails((current) =>
-        current
-          ? {
-              ...current,
-              user: {
-                ...current.user,
-                name: updatedUser.name,
-                email: updatedUser.email,
-                phone: updatedUser.phone,
-              },
-            }
-          : current,
-      );
-      sessionStorage.setItem(
-        "user",
-        JSON.stringify({
-          ...authDetails.user,
-          name: updatedUser.name,
-          email: updatedUser.email,
-          phone: updatedUser.phone,
-        }),
-      );
+      dispatch(AuthActions.userUpdated({
+        name: updatedUser.name,
+        email: updatedUser.email,
+        phone: updatedUser.phone,
+      }));
       toast.add({ type: "info", description: "Profile updated successfully." });
     } catch (saveError) {
       setError(

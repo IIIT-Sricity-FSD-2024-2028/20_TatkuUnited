@@ -1,12 +1,12 @@
-import AuthContext from "@/common/AuthContext";
+import useAuth from "@/hooks/useAuth";
 import type { PlatformSettingDocument, UpdatePlatformSettingDto } from "@/models/api.models";
 import { getAllPlatformSettings, updatePlatformSetting } from "@/services";
-import React, { useContext, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 
 export default function SuperUser_PlatformSettings()
 {
-    const authContext = useContext(AuthContext);
-    const token = authContext?.authDetails?.token;
+    const authSession = useAuth();
+    const token = authSession?.authDetails?.token;
     
     const [platformSettings, setPlatformSettings] = useState<PlatformSettingDocument>();
     

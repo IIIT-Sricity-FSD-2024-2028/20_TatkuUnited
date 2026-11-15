@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { RolesEnum } from "@/common/roles.enum";
-import { useAuthContext } from "@/common/AuthContext";
+import useAuth from "@/hooks/useAuth";
 import {
     getProviderByUser,
     updateProvider,
@@ -36,7 +36,7 @@ const days = [
 ];
 
 export default function Settings() {
-    const { authDetails } = useAuthContext();
+    const { authDetails } = useAuth();
     const [providerId, setProviderId] = useState<string | null>(null);
     const [form, setForm] = useState<SettingsForm>({
     experience: 0,

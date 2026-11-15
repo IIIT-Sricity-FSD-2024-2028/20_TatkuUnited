@@ -1,6 +1,6 @@
 import { useEffect, useRef, useCallback } from "react";
 import { RolesEnum } from "@/common/roles.enum";
-import { useAuthContext } from "@/common/AuthContext";
+import useAuth from "@/hooks/useAuth";
 import { getProviderByUser } from "@/services/providers.service";
 import {
   getMyPendingOffers,
@@ -49,7 +49,7 @@ function playChime() {
 }
 
 export function useIncomingOfferNotifier(onOfferAccepted?: (booking: BookingDocument) => void) {
-  const { authDetails } = useAuthContext();
+  const { authDetails } = useAuth();
   const user = authDetails?.user;
   const providerIdRef = useRef<string | null>(null);
 

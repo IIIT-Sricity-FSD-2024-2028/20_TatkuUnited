@@ -1,3 +1,4 @@
+import type { User } from "@/schema";
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { BASE_URL } from '@/common/endpoints';
@@ -9,14 +10,7 @@ import type { CreateManagerDto, UserRole } from '@/models/api.models';
 import useAuth from '@/hooks/useAuth';
 import { RolesEnum } from '@/common/roles.enum';
 
-export interface UsersResponse {
-  _id: string;
-  name: string;
-  email: string;
-  role: 'customer' | 'provider' | 'manager' | 'admin';
-  status: 'active' | 'blocked';
-  joined?: string;
-}
+export type UsersResponse = Pick<User, "_id" | "name" | "email" | "role" | "status"> & { joined?: string };
 
 export default function SuperUser_ManageUsers() {
   const { user, isAuthenticated, token } = useAuth();

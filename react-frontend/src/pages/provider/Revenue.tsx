@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { RolesEnum } from "@/common/roles.enum";
-import { useAuthContext } from "@/common/AuthContext";
+import useAuth from "@/hooks/useAuth";
 import { getProviderByUser } from "@/services/providers.service";
 import { getBookingsByProvider } from "@/services/bookings.service";
 import type { BookingDocument, OrderDocument } from "@/models/api.models";
@@ -34,7 +34,7 @@ function payoutStatus(booking: BookingDocument): "pending" | "paid" {
 }
 
 export default function Revenue() {
-  const { authDetails } = useAuthContext();
+  const { authDetails } = useAuth();
   const [bookings, setBookings] = useState<BookingDocument[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

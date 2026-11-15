@@ -1,43 +1,29 @@
-import { createSlice } from "@reduxjs/toolkit";
-import type { UserInterface } from "@/models/auth.models";
+import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
+import type { AuthInterface, SessionUser } from "@/models/auth.models";
+import { readSession } from "@/common/services/sessionStorage";
 
 interface AuthState {
-    user: UserInterface | null;
-    token: string | null;
+  user: SessionUser | null;
+  token: string | null;
 }
 
-function getStoredUser(): UserInterface | null {
-    try {
-        const raw = sessionStorage.getItem("user");
-        if (!raw || raw === "undefined") return null;
-        return JSON.parse(raw);
-    } catch {
-        return null;
-    }
-}
-
-const initialState: AuthState = {
-    user: getStoredUser(),
-    token: sessionStorage.getItem("token"),
-};
+const initialState: AuthState = readSession() ?? { user: null, token: null };
 
 export const AuthSlice = createSlice({
-    name: "auth",
-    initialState,
-    reducers: {
-        login(state, action) {
-            sessionStorage.setItem("token", action.payload.token);
-            sessionStorage.setItem("user", JSON.stringify(action.payload.user));
-            state.user = action.payload.user;
-            state.token = action.payload.token;
-        },
-        logout(state) {
-            sessionStorage.clear();
-            state.user = null;
-            state.token = null;
-        }
-    }
-})
+  name: "auth",
+  initialState,
+  reducers: {
+    login(_state, action: PayloadAction<AuthInterface>) {
+      return action.payload;
+    },
+    userUpdated(state, action: PayloadAction<Partial<Pick<SessionUser, "name" | "email" | "phone" | "status">>>) {
+      if (state.user) Object.assign(state.user, action.payload);
+    },
+    logout() {
+      return { user: null, token: null };
+    },
+  },
+});
 
 export const AuthActions = AuthSlice.actions;
 export const AuthReducer = AuthSlice.reducer;

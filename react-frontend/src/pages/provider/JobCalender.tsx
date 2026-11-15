@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { RolesEnum } from "@/common/roles.enum";
-import { useAuthContext } from "@/common/AuthContext";
+import useAuth from "@/hooks/useAuth";
 import { HTTP_METHODS_ENUM } from "@/common/http.methods";
 import { apiService } from "@/common/services/apiService";
 import { buildEndpoint, ENDPOINT_ENUM } from "@/common/endpoints";
@@ -120,7 +120,7 @@ function getErrorMessage(error: unknown, fallback: string): string {
 }
 
 export default function JobCalender() {
-    const { authDetails } = useAuthContext();
+    const { authDetails } = useAuth();
     const [month, setMonth] = useState(() => new Date());
     const [selectedDate, setSelectedDate] = useState(() => toDateKey(new Date()));
     const [calendarData, setCalendarData] = useState<CalendarData>({});
