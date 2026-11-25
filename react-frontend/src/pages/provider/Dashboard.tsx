@@ -7,7 +7,6 @@ import { fetchProviderByUser } from "@/store/provider/provider-slice";
 import IncomingOffers from "./IncomingOffers";
 import AssignedJobs from "./AssignedJobs";
 import { Star, ShieldCheck, UserCheck } from "lucide-react";
-import { useProviderData } from "./ProviderDataContext";
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -43,7 +42,7 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-6">
-      {providerError && (
+      {isError && (
         <p className="rounded-lg border border-destructive p-4 text-sm" role="alert">
           Unable to load provider details.
         </p>
