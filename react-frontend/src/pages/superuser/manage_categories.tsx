@@ -1,49 +1,36 @@
-import type { Category } from "@/schema";
-import { getCategories } from "@/services/categories.service";
-import axios from 'axios';
-import useAuth from "@/hooks/useAuth";
 import React, { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import type { AppDispatch, RootState } from "@/store";
+import {
+  createCategory,
+  deleteCategory,
+  fetchCategories,
+  superuserActions,
+  updateCategory,
+} from "@/store/superuser/superuser-slice";
 import { BsPlus, BsFolder2 } from 'react-icons/bs';
-import { BASE_URL } from '@/common/endpoints';
 import SummaryCards, { type SummaryStat } from '../../components/superuser/SummaryCards';
 import DataTable, { type Column } from '../../components/superuser/DataTable';
-
-
-
-
-export type CategoriesResponse = Category;
-
-
+import type { CategoryDocument, CreateCategoryDto, UpdateCategoryDto } from '@/models/api.models';
 
 export default function SuperUser_ManageCategories() {
-
-  const authSession = useAuth();
-  const token = authSession?.authDetails?.token;
-  const user = authSession?.authDetails?.user;
-  const super_user_id = user?.id;
+  const dispatch = useDispatch<AppDispatch>();
+  const { categories, pending, error } = useSelector(
+    (state: RootState) => state.superuser,
+  );
 
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState('All Statuses');
 
-
-  const [categories, setCategories] = useState<Array<CategoriesResponse>>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-
   const totalCategories = categories.length;
   const activeCategories = categories.filter(cat => cat.isActive === true).length;
 
-
-
   const [isAddCategory, setIsAddCategory] = useState(false);
 
-
   const [editingCategoryID, setEditingCategoryID] = useState<string | null>(null);
-  const [editingCategoryName, setEditingCategoryName] = useState<string | null>(null);
-  const [editingCategoryDescription, setEditingCategoryDescription] = useState<string | null>(null);
-  const [editingCategoryImage, setEditingCategoryImage] = useState<string | null | undefined>(null);
-  const [editingCategoryStatus, setEditingCategoryStatus] = useState<boolean | undefined>();
+  const editingCategory = editingCategoryID
+    ? categories.find((category) => category._id === editingCategoryID) ?? null
+    : null;
 
 
 
@@ -61,7 +48,7 @@ export default function SuperUser_ManageCategories() {
 });
 
 
-  const columns: Column<CategoriesResponse>[] = [
+  const columns: Column<CategoryDocument>[] = [
     { header: "Category Name", render: (row) => <span className="font-medium text-slate-900">{row.name}</span> },
     { header: "Description", render: (row) => <span className="text-slate-500">{row.description}</span> },
     {
@@ -82,7 +69,10 @@ export default function SuperUser_ManageCategories() {
       header: "Actions", render: (row) => (
         <button
           className="text-blue-600 hover:underline font-medium"
-          onClick={() => { setEditingCategoryID(row._id); setEditingCategoryName(row.name); setEditingCategoryDescription(row.description); setEditingCategoryImage(row.imageUrl); setEditingCategoryStatus(row.isActive) }}
+          onClick={() => {
+            dispatch(superuserActions.clearError());
+            setEditingCategoryID(row._id);
+          }}
         >
           Edit
         </button>
@@ -91,25 +81,19 @@ export default function SuperUser_ManageCategories() {
   ];
 
 
-  const fetchAllCategories = async () => {
-    if (!token || !super_user_id) return;
-    try {
-      setIsLoading(true);
-      setError(null);
-      setCategories(await getCategories());
-    }
-    catch (err) {
-      setError("Failed to fetch users. Please check your connection.");
-      console.log(error);
-    }
-    finally {
-      setIsLoading(false);
-    }
-  }
-
   useEffect(() => {
-    fetchAllCategories();
-  }, [token, super_user_id])
+    dispatch(fetchCategories());
+  }, [dispatch]);
+
+  const closeAdd = () => {
+    setIsAddCategory(false);
+    dispatch(superuserActions.clearError());
+  };
+
+  const closeEdit = () => {
+    setEditingCategoryID(null);
+    dispatch(superuserActions.clearError());
+  };
 
 
   return (
@@ -121,32 +105,18 @@ export default function SuperUser_ManageCategories() {
           <p className="text-slate-500 text-sm">Define and manage the platform-wide category catalog for services.</p>
         </div>
         <button
-          onClick={() => setIsAddCategory(true)}
+          onClick={() => {
+            dispatch(superuserActions.clearError());
+            setIsAddCategory(true);
+          }}
           className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors text-sm">
           <BsPlus size={20} />
           Add New Category
         </button>
       </div>
 
-      {isAddCategory && (<AddCategory
-        token={token}
-        super_user_id={super_user_id}
-        onClose={() => setIsAddCategory(false)}
-        refreshCategories={fetchAllCategories}
-      />)
-      }
-
-      {editingCategoryID && (<EditCategory
-        token={token}
-        super_user_id={super_user_id}
-        onClose={() => setEditingCategoryID(null)}
-        refreshCategories={fetchAllCategories}
-        category_id={editingCategoryID}
-        category_name={editingCategoryName}
-        description={editingCategoryDescription}
-        image_url={editingCategoryImage}
-        isActive={editingCategoryStatus}
-      />)}
+      {isAddCategory && <AddCategory onClose={closeAdd} />}
+      {editingCategory && <EditCategory category={editingCategory} onClose={closeEdit} />}
 
       {/* Summary Cards — uses reusable SummaryCards component */}
       <SummaryCards stats={SUMMARY_STATS} />
@@ -196,8 +166,8 @@ export default function SuperUser_ManageCategories() {
         columns={columns}
         data={filtered_categories}
         rowKey={(row) => row._id}
-        isLoading={isLoading}
-        error={error}
+        isLoading={pending > 0}
+        error={isAddCategory || editingCategory ? null : error}
         emptyMessage="No categories found matching your search."
       />
 
@@ -208,68 +178,50 @@ export default function SuperUser_ManageCategories() {
 
 interface AddCategoryProps {
   onClose: () => void;
-  token: string | null | undefined;
-  super_user_id: string | undefined;
-  refreshCategories: () => void;
 }
 
 interface EditCategoryProps {
   onClose: () => void;
-  token: string | null | undefined;
-  super_user_id: string | undefined;
-  refreshCategories: () => void;
-  category_id: string | null;
-  category_name: string | null;
-  description: string | null;
-  image_url: string | null | undefined;
-  isActive: boolean | undefined;
+  category: CategoryDocument;
 }
 
-function AddCategory({ onClose, token, super_user_id, refreshCategories }: AddCategoryProps) {
+function AddCategory({ onClose }: AddCategoryProps) {
+  const dispatch = useDispatch<AppDispatch>();
+  const { submitting, error } = useSelector(
+    (state: RootState) => state.superuser,
+  );
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [image, setImage] = useState('');
 
-  const onAddCategory = async (newCategory: any) => {
-    if (!token || !super_user_id) return;
-
-    try {
-      const response = await axios.post(`${BASE_URL}/categories`, newCategory,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      console.log(response.data);
-      onClose();
-      refreshCategories();
-    }
-    catch (err) {
-      console.error("Error Adding New Category", err);
-    }
-
-  }
-
-  const handleSubmit = (e: React.SyntheticEvent) => {
+  const handleSubmit = async (e: React.SyntheticEvent) => {
     e.preventDefault();
 
-    const newCategory = {
-      name: name,
-      description: description,
+    const dto: CreateCategoryDto = {
+      name,
+      description,
       imageUrl: image,
       isActive: true,
     };
-    onAddCategory(newCategory);
 
-    setName('');
-    setDescription('');
-    setImage('');
-  }
+    try {
+      await dispatch(createCategory(dto)).unwrap();
+      setName('');
+      setDescription('');
+      setImage('');
+      onClose();
+    } catch {
+      // the rejected thunk stores a readable message in the slice
+    }
+  };
   return (
     <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 mb-6">
       <h2 className="text-lg font-bold text-slate-900 mb-4">Create New Category</h2>
+      {error && (
+        <div role="alert" className="mb-4 rounded-lg bg-red-50 p-3 text-sm text-red-700 border border-red-200">
+          {error}
+        </div>
+      )}
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-5">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -321,9 +273,10 @@ function AddCategory({ onClose, token, super_user_id, refreshCategories }: AddCa
           </button>
           <button
             type="submit"
-            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors text-sm"
+            disabled={submitting}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors text-sm disabled:opacity-50"
           >
-            Add Category
+            {submitting ? 'Adding Category...' : 'Add Category'}
           </button>
         </div>
       </form>
@@ -332,70 +285,56 @@ function AddCategory({ onClose, token, super_user_id, refreshCategories }: AddCa
 }
 
 
-function EditCategory({ onClose, token, super_user_id, refreshCategories, category_id, category_name, description, image_url, isActive }: EditCategoryProps) {
-  const [categoryName, setCategoryName] = useState(category_name);
-  const [categoryDescription, setCategoryDescription] = useState(description);
-  const [categoryImage, setCategoryImage] = useState(image_url);
-  const [status, setStatus] = useState(isActive);
+function EditCategory({ onClose, category }: EditCategoryProps) {
+  const dispatch = useDispatch<AppDispatch>();
+  const { submitting, error } = useSelector(
+    (state: RootState) => state.superuser,
+  );
+  const [categoryName, setCategoryName] = useState(category.name);
+  const [categoryDescription, setCategoryDescription] = useState(category.description);
+  const [categoryImage, setCategoryImage] = useState(category.imageUrl);
+  const [status, setStatus] = useState(category.isActive);
 
   const handleSubmit = async (e: React.SyntheticEvent) => {
     e.preventDefault();
 
-    if (!token || !super_user_id) return;
+    const dto: UpdateCategoryDto = {
+      name: categoryName,
+      description: categoryDescription,
+      imageUrl: categoryImage,
+      isActive: status,
+    };
 
     try {
-      const updatedCategory =
-      {
-        name: categoryName,
-        description: categoryDescription,
-        imageUrl: categoryImage,
-        isActive: status,
-      };
-
-      const response = await axios.patch(`${BASE_URL}/categories/${category_id}`, updatedCategory,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      console.log(response.data);
+      await dispatch(updateCategory({ id: category._id, dto })).unwrap();
       onClose();
-      refreshCategories();
+    } catch {
+      // the rejected thunk stores a readable message in the slice
     }
-    catch (err) {
-      console.error("Couldnt save the changes", err);
-    }
-  }
+  };
 
   const handleDelete = async () => {
-    if (!token || !super_user_id) return;
-
     try {
-
-      const response = await axios.delete(`${BASE_URL}/categories/${category_id}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      console.log(response.data);
+      await dispatch(deleteCategory(category._id)).unwrap();
       onClose();
-      refreshCategories();
+    } catch {
+      // the rejected thunk stores a readable message in the slice
     }
-    catch (err) {
-      console.error("Couldnt delete the category", err);
-    }
-  }
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
       <div className="bg-white p-6 rounded-xl shadow-lg w-full max-w-md border border-slate-200">
         <h2 className="text-lg font-bold text-slate-900 mb-1">Edit Category</h2>
         <p className="text-sm text-slate-500 mb-6">
-          Modify details for category ID: <span className="font-mono text-slate-700 text-xs">{category_id}</span>
+          Modify details for category ID: <span className="font-mono text-slate-700 text-xs">{category._id}</span>
         </p>
+
+        {error && (
+          <div role="alert" className="mb-4 rounded-lg bg-red-50 p-3 text-sm text-red-700 border border-red-200">
+            {error}
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-5">
 
@@ -455,7 +394,8 @@ function EditCategory({ onClose, token, super_user_id, refreshCategories, catego
             <button
               type="button"
               onClick={handleDelete}
-              className="px-4 py-2 bg-red-50 border border-red-100 hover:bg-red-100 text-red-600 rounded-lg text-sm font-medium transition-colors"
+              disabled={submitting}
+              className="px-4 py-2 bg-red-50 border border-red-100 hover:bg-red-100 text-red-600 rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
             >
               Delete
             </button>
@@ -470,9 +410,10 @@ function EditCategory({ onClose, token, super_user_id, refreshCategories, catego
               </button>
               <button
                 type="submit"
-                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors text-sm"
+                disabled={submitting}
+                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors text-sm disabled:opacity-50"
               >
-                Save
+                {submitting ? 'Saving...' : 'Save'}
               </button>
             </div>
           </div>

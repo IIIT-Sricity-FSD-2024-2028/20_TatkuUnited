@@ -1,9 +1,23 @@
 import axios from 'axios';
 import useAuth from "@/hooks/useAuth";
 import React, { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import type { AppDispatch, RootState } from "@/store";
 import { BASE_URL } from '@/common/endpoints';
-import type { Category as CategoriesResponse, Service as ServicesResponse } from "@/schema";
-import { getServices, getCategories } from "@/services";
+import {
+  createService,
+  deleteService,
+  fetchCategories,
+  fetchServices,
+  superuserActions,
+  updateService,
+} from "@/store/superuser/superuser-slice";
+import type {
+  CategoryDocument,
+  CreateServiceDto,
+  ServiceDocument,
+  UpdateServiceDto,
+} from "@/models/api.models";
 import {
   BsPlus,
   BsCart2,
@@ -18,25 +32,19 @@ import DataTable, { type Column } from '../../components/superuser/DataTable';
 
 
 export default function SuperUser_ManageServices() {
-  const authSession = useAuth();
-  const token = authSession?.authDetails?.token;
-  const user = authSession?.authDetails?.user;
-  const super_user_id = user?.id;
-
+  const dispatch = useDispatch<AppDispatch>();
+  const { services, categories, pending, error } = useSelector(
+    (state: RootState) => state.superuser,
+  );
 
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('all-categories');
-
-  const [services, setServices] = useState<Array<ServicesResponse>>([]);
-  const [categories, setCategories] = useState<Array<CategoriesResponse>>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   const totalServices = services.length;
   const activeServices = services.filter(s => s.isActive).length;
 
   const [isAddService, setIsAddService] = useState(false);
-  const [editingService, setEditingService] = useState<ServicesResponse | null>(null);
+  const [editingService, setEditingService] = useState<ServiceDocument | null>(null);
 
   const SUMMARY_STATS: SummaryStat[] = [
     { title: "Total Services", count: totalServices, icon: <BsCart2 size={24} />, iconColor: "text-blue-600", bg: "bg-blue-50" },
@@ -54,7 +62,7 @@ export default function SuperUser_ManageServices() {
   });
 
 
-  const columns: Column<ServicesResponse>[] = [
+  const columns: Column<ServiceDocument>[] = [
     {
       header: "Service Name",
       render: (row) => <span className="font-medium text-slate-900">{row.name}</span>
@@ -92,38 +100,27 @@ export default function SuperUser_ManageServices() {
     {
       header: "Actions",
       render: (row) => (
-        <button onClick={() => setEditingService(row)} className="text-blue-600 hover:underline font-medium">Edit</button>
+        <button onClick={() => { dispatch(superuserActions.clearError()); setEditingService(row); }} className="text-blue-600 hover:underline font-medium">Edit</button>
       )
     },
   ];
 
 
 
-  const fetchAllServices = async () => {
-    if (!token || !super_user_id) return;
-
-    try {
-      setIsLoading(true);
-      setError(null);
-
-      const [services, categories] = await Promise.all([getServices(true), getCategories()]);
-      setServices(services);
-      setCategories(categories);
-
-
-    }
-    catch (err) {
-      setError("Failed to fetch services. Please check your connection.");
-      console.error(err);
-    }
-    finally {
-      setIsLoading(false);
-    }
-  }
-
   useEffect(() => {
-    fetchAllServices();
-  }, [token, super_user_id])
+    dispatch(fetchServices());
+    dispatch(fetchCategories());
+  }, [dispatch]);
+
+  const closeAdd = () => {
+    setIsAddService(false);
+    dispatch(superuserActions.clearError());
+  };
+
+  const closeEdit = () => {
+    setEditingService(null);
+    dispatch(superuserActions.clearError());
+  };
 
 
   return (
@@ -135,26 +132,16 @@ export default function SuperUser_ManageServices() {
           <h1 className="text-2xl font-bold text-slate-900 mb-1">Service Management</h1>
           <p className="text-slate-500 text-sm">Manage all services available on the platform with categories, pricing, and availability.</p>
         </div>
-        <button onClick={() => setIsAddService(true)} className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors text-sm">
+        <button onClick={() => { dispatch(superuserActions.clearError()); setIsAddService(true); }} className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors text-sm">
           <BsPlus size={20} />
           Add New Service
         </button>
       </div>
 
-      {isAddService && (<AddService
-        token={token}
-        super_user_id={super_user_id}
-        onClose={() => setIsAddService(false)}
-        refreshServices={fetchAllServices}
-        categories={categories}
-      />)
-      }
+      {isAddService && <AddService onClose={closeAdd} categories={categories} />}
       {editingService && (
         <EditService
-          token={token}
-          super_user_id={super_user_id}
-          onClose={() => setEditingService(null)}
-          refreshServices={fetchAllServices}
+          onClose={closeEdit}
           categories={categories}
           service={editingService}
         />
@@ -211,8 +198,8 @@ export default function SuperUser_ManageServices() {
         columns={columns}
         data={filteredServices}
         rowKey={(row) => row._id}
-        isLoading={isLoading}
-        error={error}
+        isLoading={pending > 0}
+        error={isAddService || editingService ? null : error}
         emptyMessage="No services found matching your search."
       />
 
@@ -225,23 +212,22 @@ export default function SuperUser_ManageServices() {
 
 interface AddServiceProps {
   onClose: () => void;
-  token: string | null | undefined;
-  super_user_id: string | undefined;
-  refreshServices: () => void;
-  categories: CategoriesResponse[];
+  categories: CategoryDocument[];
 }
 
 interface EditServiceProps {
   onClose: () => void;
-  token: string | null | undefined;
-  super_user_id: string | undefined;
-  refreshServices: () => void;
-  categories: CategoriesResponse[];
-  service: ServicesResponse; // Pass the whole service object!
+  categories: CategoryDocument[];
+  service: ServiceDocument;
 }
 
 
-function AddService({ onClose, token, super_user_id, refreshServices, categories }: AddServiceProps) {
+function AddService({ onClose, categories }: AddServiceProps) {
+  const dispatch = useDispatch<AppDispatch>();
+  const { submitting, error } = useSelector(
+    (state: RootState) => state.superuser,
+  );
+  const { token } = useAuth();
   const [serviceName, setServiceName] = useState('');
   const [description, setDescription] = useState('');
   const [categoryId, setCategoryId] = useState('');
@@ -281,13 +267,11 @@ function AddService({ onClose, token, super_user_id, refreshServices, categories
   const handleSubmit = async (e: React.SyntheticEvent) => {
     e.preventDefault();
 
-    if (!token || !super_user_id) return;
-
     if (!categoryId) {
       return;
     }
 
-    const newService = {
+    const dto: CreateServiceDto = {
       name: serviceName,
       category: categoryId,
       description: description,
@@ -298,24 +282,21 @@ function AddService({ onClose, token, super_user_id, refreshServices, categories
     };
 
     try {
-      const response = await axios.post(`${BASE_URL}/services`, newService, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        }
-      });
-      console.log("Successfully added service:", response.data);
-      refreshServices();
+      await dispatch(createService(dto)).unwrap();
       onClose();
+    } catch {
+      // the rejected thunk stores a readable message in the slice
     }
-    catch (err) {
-      console.error("Error adding service:", err);
-    }
-
   }
 
   return (
     <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 mb-6">
       <h2 className="text-lg font-bold text-slate-900 mb-4">Create New Service</h2>
+      {error && (
+        <div role="alert" className="mb-4 rounded-lg bg-red-50 p-3 text-sm text-red-700 border border-red-200">
+          {error}
+        </div>
+      )}
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-5">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -451,9 +432,10 @@ function AddService({ onClose, token, super_user_id, refreshServices, categories
           </button>
           <button
             type="submit"
-            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors text-sm"
+            disabled={submitting}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors text-sm disabled:opacity-50"
           >
-            Add Service
+            {submitting ? 'Adding Service...' : 'Add Service'}
           </button>
         </div>
       </form>
@@ -462,7 +444,12 @@ function AddService({ onClose, token, super_user_id, refreshServices, categories
 }
 
 
-function EditService({ onClose, token, super_user_id, refreshServices, categories, service }: EditServiceProps) {
+function EditService({ onClose, categories, service }: EditServiceProps) {
+  const dispatch = useDispatch<AppDispatch>();
+  const { submitting, error } = useSelector(
+    (state: RootState) => state.superuser,
+  );
+  const { token } = useAuth();
 
   const [serviceName, setServiceName] = useState(service.name || '');
   const [description, setDescription] = useState(service.description || '');
@@ -531,7 +518,7 @@ function EditService({ onClose, token, super_user_id, refreshServices, categorie
   };
 
   const handleAddFaq = () => {
-    if (!token || !newFaqQuestion.trim() || !newFaqAnswer.trim()) return;
+    if (!newFaqQuestion.trim() || !newFaqAnswer.trim()) return;
     setFaqs([...faqs, { question: newFaqQuestion.trim(), answer: newFaqAnswer.trim() }]);
     setNewFaqQuestion('');
     setNewFaqAnswer('');
@@ -542,60 +529,41 @@ function EditService({ onClose, token, super_user_id, refreshServices, categorie
   }
 
   const handleDelete = async () => {
-    if (!token || !super_user_id) return;
-
     try {
-      const response = await axios.delete(`${BASE_URL}/services/${service._id}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      console.log(response.data);
+      await dispatch(deleteService(service._id)).unwrap();
       onClose();
-      refreshServices();
-    }
-    catch (err) {
-      console.error("Failed to delete the service", err);
+    } catch {
+      // the rejected thunk stores a readable message in the slice
     }
   }
 
 
   const handleUpdateService = async (e: React.SyntheticEvent) => {
     e.preventDefault();
-    if (!token || !super_user_id) return;
+
+    const dto: UpdateServiceDto = {
+      name: serviceName,
+      category: categoryId,
+      description: description,
+      price: Math.round(Number(basePrice) * 100),
+      duration: Number(duration),
+      isActive: isAvailable,
+      imageUrls: imageUrls,
+      whatIsCovered: whatIsCovered
+        ? whatIsCovered.split(',').map((s) => s.trim()).filter(Boolean)
+        : [],
+      whatIsNotCovered: whatIsNotCovered
+        ? whatIsNotCovered.split(',').map((s) => s.trim()).filter(Boolean)
+        : [],
+      howItWorks: steps,
+      faq: faqs,
+    };
 
     try {
-      const updatedService =
-      {
-        name: serviceName,
-        category: categoryId,
-        description: description,
-        price: Math.round(Number(basePrice) * 100),
-        duration: Number(duration),
-        isActive: isAvailable,
-        imageUrls: imageUrls,
-        whatIsCovered: whatIsCovered
-          ? whatIsCovered.split(',').map((s) => s.trim()).filter(Boolean)
-          : [],
-        whatIsNotCovered: whatIsNotCovered
-          ? whatIsNotCovered.split(',').map((s) => s.trim()).filter(Boolean)
-          : [],
-        howItWorks: steps,
-        faq: faqs,
-      };
-
-      await axios.patch(`${BASE_URL}/services/${service._id}`, updatedService, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-
-      refreshServices();
+      await dispatch(updateService({ id: service._id, dto })).unwrap();
       onClose();
-    }
-    catch (err) {
-      console.error("Error updating service:", err);
+    } catch {
+      // the rejected thunk stores a readable message in the slice
     }
   }
 
@@ -609,6 +577,12 @@ function EditService({ onClose, token, super_user_id, refreshServices, categorie
         <p className="text-sm text-slate-500 mb-6">
           Modifying details for: <span className="font-semibold text-slate-700">{service.name}</span>
         </p>
+
+        {error && (
+          <div role="alert" className="mb-4 rounded-lg bg-red-50 p-3 text-sm text-red-700 border border-red-200">
+            {error}
+          </div>
+        )}
 
         <form onSubmit={handleUpdateService} className="flex flex-col gap-8">
 
@@ -825,14 +799,14 @@ function EditService({ onClose, token, super_user_id, refreshServices, categorie
           </section>
 
           <div className="flex justify-end items-center gap-3">
-            <button type="button" onClick={handleDelete} className="px-4 py-2 border border-slate-300 rounded-lg text-sm font-medium hover:bg-slate-50 text-slate-700 transition-colors">
+            <button type="button" onClick={handleDelete} disabled={submitting} className="px-4 py-2 border border-slate-300 rounded-lg text-sm font-medium hover:bg-slate-50 text-slate-700 transition-colors disabled:opacity-50">
               Delete
             </button>
             <button type="button" onClick={onClose} className="px-4 py-2 border border-slate-300 rounded-lg text-sm font-medium hover:bg-slate-50 text-slate-700 transition-colors">
               Close Form
             </button>
-            <button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors text-sm">
-              Save Service Details
+            <button type="submit" disabled={submitting} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors text-sm disabled:opacity-50">
+              {submitting ? 'Saving...' : 'Save Service Details'}
             </button>
           </div>
         </form>
