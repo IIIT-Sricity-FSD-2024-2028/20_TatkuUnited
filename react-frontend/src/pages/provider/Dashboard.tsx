@@ -1,17 +1,14 @@
 import { RolesEnum } from "@/common/roles.enum";
 import useAuth from "@/hooks/useAuth";
-import { useGetProviderByUserQuery } from "@/store/provider/provider-api";
 import IncomingOffers from "./IncomingOffers";
 import AssignedJobs from "./AssignedJobs";
 import { Star, ShieldCheck, UserCheck } from "lucide-react";
+import { useProviderData } from "./ProviderDataContext";
 
 export default function Dashboard() {
   const { user } = useAuth();
   const isProvider = user?.role === RolesEnum.PROVIDER;
-  const { data: provider, isLoading, isError } = useGetProviderByUserQuery(
-    user?.id ?? "",
-    { skip: !isProvider },
-  );
+  const { provider, providerLoading: isLoading, providerError } = useProviderData();
 
   if (isLoading) {
     return (
@@ -32,7 +29,7 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-6">
-      {isError && (
+      {providerError && (
         <p className="rounded-lg border border-destructive p-4 text-sm" role="alert">
           Unable to load provider details.
         </p>

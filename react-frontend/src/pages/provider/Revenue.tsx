@@ -1,7 +1,8 @@
-import { useMemo } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { RolesEnum } from "@/common/roles.enum";
 import useAuth from "@/hooks/useAuth";
-import { useGetProviderBookingsQuery, useGetProviderByUserQuery } from "@/store/provider/provider-api";
+import { getBookingsByProvider } from "@/services/bookings.service";
+import { useProviderData } from "./ProviderDataContext";
 import type { BookingDocument, OrderDocument } from "@/models/api.models";
 import {
   Card,
@@ -39,11 +40,19 @@ function payoutStatus(booking: BookingDocument): "pending" | "paid" | "unknown" 
 export default function Revenue() {
   const { user } = useAuth();
   const isProvider = user?.role === RolesEnum.PROVIDER;
-  const providerQuery = useGetProviderByUserQuery(user?.id ?? "", { skip: !isProvider });
-  const bookingsQuery = useGetProviderBookingsQuery(providerQuery.data?._id ?? "", {
-    skip: !providerQuery.data?._id,
-  });
-  const bookings = (bookingsQuery.data ?? []).filter((booking) => booking.status === "completed");
+  const { provider, providerLoading } = useProviderData();
+  const [allBookings, setAllBookings] = useState<BookingDocument[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const loadBookings = useCallback(async () => {
+    if (!provider?._id) return;
+    setLoading(true);
+    try { setAllBookings(await getBookingsByProvider(provider._id)); setError(null); }
+    catch { setError("Unable to load earnings."); }
+    finally { setLoading(false); }
+  }, [provider?._id]);
+  useEffect(() => { void loadBookings(); }, [loadBookings]);
+  const bookings = allBookings.filter((booking) => booking.status === "completed");
 
   const totals = useMemo(() => {
     const grossRevenue = bookings.reduce(
@@ -80,7 +89,7 @@ export default function Revenue() {
     );
   }
 
-  if (providerQuery.isLoading || bookingsQuery.isLoading) {
+  if (providerLoading || loading) {
     return (
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {Array.from({ length: 4 }, (_, index) => (
@@ -99,7 +108,7 @@ export default function Revenue() {
         </p>
       </div>
 
-      {bookingsQuery.isError && <p className="text-destructive">Unable to load earnings.</p>}
+      {error && <p className="text-destructive">{error}</p>}
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Card>

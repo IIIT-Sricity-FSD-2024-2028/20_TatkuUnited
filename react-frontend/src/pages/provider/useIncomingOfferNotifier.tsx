@@ -1,7 +1,8 @@
 import { useEffect, useRef, useCallback } from "react";
 import { RolesEnum } from "@/common/roles.enum";
 import useAuth from "@/hooks/useAuth";
-import { useAcceptBookingMutation, useGetIncomingOffersQuery, useGetProviderByUserQuery, useRejectBookingMutation } from "@/store/provider/provider-api";
+import { acceptBooking, rejectBooking } from "@/services/bookings.service";
+import { useProviderData } from "./ProviderDataContext";
 import type { BookingDocument, ServiceDocument, UserDocument } from "@/models/api.models";
 import { toast } from "@/components/ui/toast";
 import { Button } from "@/components/ui/button";
@@ -53,20 +54,13 @@ function playChime() {
 
 export function useIncomingOfferNotifier(onOfferAccepted?: (booking: BookingDocument) => void) {
   const { user } = useAuth();
+  const { provider, offers } = useProviderData();
   const providerIdRef = useRef<string | null>(null);
-  const isProvider = user?.role === RolesEnum.PROVIDER;
-  const providerQuery = useGetProviderByUserQuery(user?.id ?? "", { skip: !isProvider });
-  const offersQuery = useGetIncomingOffersQuery(undefined, {
-    skip: !isProvider,
-    pollingInterval: 6000,
-  });
-  const [acceptBooking] = useAcceptBookingMutation();
-  const [rejectBooking] = useRejectBookingMutation();
 
   // 1. Resolve Provider ID once
   useEffect(() => {
-    providerIdRef.current = providerQuery.data?._id ?? null;
-  }, [providerQuery.data]);
+    providerIdRef.current = provider?._id ?? null;
+  }, [provider]);
 
   useEffect(() => {
     resetNotificationsForUser(user?.id);
@@ -75,7 +69,7 @@ export function useIncomingOfferNotifier(onOfferAccepted?: (booking: BookingDocu
   const handleAccept = useCallback(
     async (bookingId: string, toastId: string) => {
       try {
-        const accepted = await acceptBooking({ id: bookingId, providerId: providerIdRef.current ?? undefined }).unwrap();
+        const accepted = await acceptBooking(bookingId, providerIdRef.current ?? undefined);
         toast.add({
           type: "success",
           title: "🎉 Job Accepted!",
@@ -114,7 +108,7 @@ export function useIncomingOfferNotifier(onOfferAccepted?: (booking: BookingDocu
 
   const handleDecline = useCallback(async (bookingId: string, toastId: string) => {
     try {
-      await rejectBooking({ id: bookingId, providerId: providerIdRef.current ?? undefined }).unwrap();
+      await rejectBooking(bookingId, providerIdRef.current ?? undefined);
       toast.add({
         type: "info",
         title: "Offer Declined",
@@ -140,21 +134,7 @@ export function useIncomingOfferNotifier(onOfferAccepted?: (booking: BookingDocu
     if (!user || user.role !== RolesEnum.PROVIDER) return;
 
     try {
-      const data = offersQuery.data ?? [];
-      const activeOffers = (data || []).filter((b) => {
-        const myOffer = b.offers?.find(
-          (o) =>
-            (!providerIdRef.current || String(o.provider) === String(providerIdRef.current)) &&
-            o.status === "offered",
-        );
-        if (myOffer?.expiresAt) {
-          return new Date(myOffer.expiresAt).getTime() > Date.now();
-        }
-        if (b.offerExpiresAt) {
-          return new Date(b.offerExpiresAt).getTime() > Date.now();
-        }
-        return b.status === "awaiting_provider";
-      });
+      const activeOffers = offers;
 
       let hasNew = false;
       for (const booking of activeOffers) {
@@ -216,7 +196,7 @@ export function useIncomingOfferNotifier(onOfferAccepted?: (booking: BookingDocu
     } catch {
       // Ignore background poll errors
     }
-  }, [user, handleAccept, handleDecline, offersQuery.data]);
+  }, [user, handleAccept, handleDecline, offers]);
 
   useEffect(() => {
     void checkOffers();

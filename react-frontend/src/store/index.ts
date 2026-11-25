@@ -9,7 +9,6 @@ import { providerReducer } from "./provider/provider-slice";
 import { regionReducer } from "./region/region-slice";
 import { serviceReducer } from "./service/service-slice";
 import { superuserReducer } from "./superuser/superuser-slice";
-import { providerApi } from "./provider/provider-api";
 
 export const store = configureStore({
     reducer: {
@@ -23,10 +22,7 @@ export const store = configureStore({
         region: regionReducer,
         service: serviceReducer,
         superuser: superuserReducer,
-        [providerApi.reducerPath]: providerApi.reducer,
     },
-    middleware: (getDefaultMiddleware) =>
-        getDefaultMiddleware().concat(providerApi.middleware),
 });
 
 export type RootState = ReturnType<typeof store.getState>;

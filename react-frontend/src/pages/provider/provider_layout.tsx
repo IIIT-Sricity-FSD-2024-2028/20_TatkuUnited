@@ -12,8 +12,13 @@ import SideBar, { SidebarItem } from "../shared/Sidebar";
 import UserHeader from "../shared/user-header";
 import UrlMap from "../../common/urlMap";
 import { useIncomingOfferNotifier } from "./useIncomingOfferNotifier";
+import { ProviderDataProvider } from "./ProviderDataContext";
 
 export default function ProviderLayout() {
+  return <ProviderDataProvider><ProviderLayoutContent /></ProviderDataProvider>;
+}
+
+function ProviderLayoutContent() {
   // Real-time listener for incoming offers with interactive toast alerts (Accept / Decline)
   useIncomingOfferNotifier();
 

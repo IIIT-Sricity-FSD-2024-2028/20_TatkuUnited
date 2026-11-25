@@ -5,7 +5,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import useAuth from "@/hooks/useAuth";
-import { useGetUserQuery, useUpdateUserMutation } from "@/store/provider/provider-api";
+import { getUserById, updateUser } from "@/services/users.service";
+import { useAppDispatch } from "@/store/hooks";
+import { AuthActions } from "@/store/auth/auth-slice";
 import type { UpdateUserDto, UserDocument } from "@/models/api.models";
 
 interface ProfileForm {
@@ -40,16 +42,24 @@ function formFromUser(user: Pick<UserDocument, "name" | "email" | "phone" | "gen
 
 export default function Profile() {
   const { user } = useAuth();
+  const dispatch = useAppDispatch();
   const [form, setForm] = useState<ProfileForm>(emptyForm);
   const [editing, setEditing] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const profileQuery = useGetUserQuery(user?.id ?? "", { skip: !user?.id });
-  const [updateUser, { isLoading: saving }] = useUpdateUserMutation();
-  const profile = profileQuery.data;
+  const [profile, setProfile] = useState<UserDocument | null>(null);
+  const [loading, setLoading] = useState(Boolean(user?.id));
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     if (profile) setForm(formFromUser(profile));
   }, [profile]);
+
+  useEffect(() => {
+    let active = true;
+    if (!user?.id) { setLoading(false); return; }
+    void getUserById(user.id).then((data) => { if (active) { setProfile(data); setError(null); } }).catch(() => { if (active) setError("Unable to load the latest profile details."); }).finally(() => { if (active) setLoading(false); });
+    return () => { active = false; };
+  }, [user?.id]);
 
   const updateField = (field: keyof ProfileForm, value: string) => {
     setForm((current) => ({ ...current, [field]: value }));
@@ -78,8 +88,11 @@ export default function Profile() {
     };
 
     setError(null);
+    setSaving(true);
     try {
-      const updatedUser = await updateUser({ id: profile._id, changes }).unwrap();
+      const updatedUser = await updateUser(profile._id, changes);
+      setProfile(updatedUser);
+      dispatch(AuthActions.profileUpdated({ id: updatedUser._id, name: updatedUser.name, email: updatedUser.email, phone: updatedUser.phone }));
       setForm(formFromUser(updatedUser));
       setEditing(false);
       toast.add({ type: "info", description: "Profile updated successfully." });
@@ -89,17 +102,17 @@ export default function Profile() {
           ? saveError.message
           : "Unable to save profile changes.",
       );
-    }
+    } finally { setSaving(false); }
   };
 
-  if (profileQuery.isLoading) {
+  if (loading) {
     return <p className="rounded-lg bg-white p-6 shadow">Loading profile...</p>;
   }
 
   if (!profile) {
     return (
       <p className="rounded-lg bg-white p-6 text-red-600 shadow">
-        {error ?? (profileQuery.isError ? "Unable to load the latest profile details." : "Provider profile is unavailable.")}
+        {error ?? "Provider profile is unavailable."}
       </p>
     );
   }

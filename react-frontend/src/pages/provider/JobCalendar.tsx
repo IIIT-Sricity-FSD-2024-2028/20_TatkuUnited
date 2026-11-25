@@ -1,13 +1,9 @@
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { RolesEnum } from "@/common/roles.enum";
 import useAuth from "@/hooks/useAuth";
-import {
-    useCreateUnavailabilityMutation,
-    useGetProviderByUserQuery,
-    useGetProviderScheduleQuery,
-    useGetUnavailabilityQuery,
-    useUpdateUnavailabilityMutation,
-} from "@/store/provider/provider-api";
+import { getProviderSchedule } from "@/services/bookings.service";
+import { createUnavailability, deleteUnavailability, getUnavailabilityByProvider, updateUnavailability } from "@/services/unavailability.service";
+import { useProviderData } from "./ProviderDataContext";
 import type { BookingDocument, ProviderDocument, ServiceDocument, UserDocument } from "@/models/api.models";
 import {
     Card,
@@ -124,17 +120,25 @@ export default function JobCalendar() {
         reason: "",
     });
 
-    const providerQuery = useGetProviderByUserQuery(user?.id ?? "", { skip: !isProvider });
-    const providerId = providerQuery.data?._id;
-    const scheduleQuery = useGetProviderScheduleQuery(providerId ?? "", { skip: !providerId, pollingInterval: 6000 });
-    const unavailabilityQuery = useGetUnavailabilityQuery(providerId ?? "", { skip: !providerId });
-    const [createUnavailability, createState] = useCreateUnavailabilityMutation();
-    const [updateUnavailability, updateState] = useUpdateUnavailabilityMutation();
-    const loading = providerQuery.isLoading || scheduleQuery.isLoading || unavailabilityQuery.isLoading;
-    const saving = createState.isLoading || updateState.isLoading;
+    const { provider, providerLoading } = useProviderData();
+    const providerId = provider?._id;
+    const [schedule, setSchedule] = useState<BookingDocument[]>([]);
+    const [unavailability, setUnavailability] = useState<UnavailabilityRecord[]>([]);
+    const [loading, setLoading] = useState(false);
+    const [saving, setSaving] = useState(false);
+    const scheduleInFlight = useRef(false);
+    const loadCalendar = useCallback(async () => {
+        if (!providerId || scheduleInFlight.current) return;
+        scheduleInFlight.current = true; setLoading(true);
+        try { const [jobs, slots] = await Promise.all([getProviderSchedule(providerId), getUnavailabilityByProvider(providerId)]); setSchedule(jobs); setUnavailability(slots); setError(null); }
+        catch (requestError) { setError(getErrorMessage(requestError, "Unable to load calendar.")); }
+        finally { scheduleInFlight.current = false; setLoading(false); }
+    }, [providerId]);
+    useEffect(() => { if (!providerId) return; void loadCalendar(); const interval = window.setInterval(() => void loadCalendar(), 6000); return () => window.clearInterval(interval); }, [providerId, loadCalendar]);
+    const pageLoading = providerLoading || loading;
     const calendarData = useMemo(
-        () => buildCalendarData(scheduleQuery.data ?? [], unavailabilityQuery.data ?? []),
-        [scheduleQuery.data, unavailabilityQuery.data],
+        () => buildCalendarData(schedule, unavailability),
+        [schedule, unavailability],
     );
     const days = useMemo(() => getMonthDays(month), [month]);
     const selectedDateData = useMemo(
@@ -161,6 +165,7 @@ export default function JobCalendar() {
 
         try {
             setError(null);
+            setSaving(true);
             const body = {
                 provider: providerId,
                 date: form.date,
@@ -170,14 +175,15 @@ export default function JobCalendar() {
             };
 
             if (selectedItem?.type === "unavailability") {
-                await updateUnavailability({ id: selectedItem.item._id, providerId, changes: body }).unwrap();
+                await updateUnavailability(selectedItem.item._id, body);
             } else {
-                await createUnavailability(body).unwrap();
+                await createUnavailability(body);
             }
             selectDate(form.date);
+            await loadCalendar();
         } catch (requestError) {
             setError(getErrorMessage(requestError, "Unable to save unavailability."));
-        }
+        } finally { setSaving(false); }
     }
 
     function editUnavailability(slot: UnavailabilityRecord) {
@@ -188,6 +194,17 @@ export default function JobCalendar() {
             reason: slot.reason ?? "",
         });
         setSelectedItem({ type: "unavailability", item: slot });
+    }
+
+    async function removeUnavailability(slot: UnavailabilityRecord) {
+        setSaving(true);
+        try {
+            await deleteUnavailability(slot._id);
+            setSelectedItem(null);
+            await loadCalendar();
+        } catch (requestError) {
+            setError(getErrorMessage(requestError, "Unable to delete unavailability."));
+        } finally { setSaving(false); }
     }
 
     if (!isProvider) {
@@ -229,7 +246,7 @@ export default function JobCalendar() {
                     </div>
                 </CardHeader>
                 <CardContent>
-                    {loading ? (
+                    {pageLoading ? (
                         <div className="grid grid-cols-7 gap-px bg-border">
                             {days.map((day) => (
                                 <Skeleton className="h-28 rounded-none" key={toDateKey(day)} />
@@ -345,6 +362,9 @@ export default function JobCalendar() {
                                 <Button variant="outline" onClick={() => editUnavailability(selectedItem.item)}>
                                     Edit unavailability
                                 </Button>
+                                <Button disabled={saving} variant="destructive" onClick={() => void removeUnavailability(selectedItem.item)}>
+                                    Delete unavailability
+                                </Button>
                             </CardContent>
                         </Card>
                     )}
@@ -405,7 +425,7 @@ export default function JobCalendar() {
                                 onChange={(event) => setForm({ ...form, reason: event.target.value })}
                             />
                         </div>
-                        <Button disabled={saving || loading} type="submit">
+                        <Button disabled={saving || pageLoading} type="submit">
                             {saving ? "Saving..." : selectedItem?.type === "unavailability" ? "Save changes" : "Add unavailability"}
                         </Button>
                     </form>

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { RolesEnum } from "@/common/roles.enum";
 import useAuth from "@/hooks/useAuth";
-import { useGetProviderByUserQuery, useUpdateProviderMutation } from "@/store/provider/provider-api";
+import { useProviderData } from "./ProviderDataContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -43,11 +43,10 @@ export default function Settings() {
     });
     const [message, setMessage] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
-    const providerQuery = useGetProviderByUserQuery(user?.id ?? "", { skip: !isProvider });
-    const [updateProvider, { isLoading: saving }] = useUpdateProviderMutation();
+    const { provider, providerLoading, providerError, updateProvider } = useProviderData();
+    const [saving, setSaving] = useState(false);
 
     useEffect(() => {
-        const provider = providerQuery.data;
         if (provider) {
         setForm({
             experience: provider.experience,
@@ -56,7 +55,7 @@ export default function Settings() {
             workingDays: provider.workingDays,
         });
         }
-    }, [providerQuery.data]);
+    }, [provider]);
 
     function toggleDay(day: number) {
     setForm((current) => ({
@@ -69,13 +68,13 @@ export default function Settings() {
 
     async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const providerId = providerQuery.data?._id;
-    if (!providerId) return;
+    if (!provider) return;
 
     try {
         setError(null);
         setMessage(null);
-        await updateProvider({ id: providerId, changes: form }).unwrap();
+        setSaving(true);
+        await updateProvider(form);
         setMessage("Provider settings saved.");
     } catch (requestError) {
         setError(
@@ -83,7 +82,7 @@ export default function Settings() {
             ? requestError.message
             : "Unable to save provider settings.",
         );
-    }
+    } finally { setSaving(false); }
     }
 
     if (!isProvider) {
@@ -94,7 +93,7 @@ export default function Settings() {
     );
     }
 
-    if (providerQuery.isLoading) {
+    if (providerLoading) {
     return (
         <Card>
         <CardContent className="pt-6">Loading settings...</CardContent>
@@ -187,7 +186,7 @@ export default function Settings() {
             </FieldSet>
 
         {message && <p className="text-green-600">{message}</p>}
-        {(error || providerQuery.isError) && <p className="text-destructive">{error ?? "Unable to load provider settings."}</p>}
+        {(error || providerError) && <p className="text-destructive">{error ?? providerError}</p>}
         <Button disabled={saving} type="submit">
             {saving ? "Saving..." : "Save settings"}
         </Button>
