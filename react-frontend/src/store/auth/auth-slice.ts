@@ -19,6 +19,21 @@ export const AuthSlice = createSlice({
     userUpdated(state, action: PayloadAction<Partial<Pick<SessionUser, "name" | "email" | "phone" | "status">>>) {
       if (state.user) Object.assign(state.user, action.payload);
     },
+    /** Kept for store/provider/provider-slice.ts, which updates the session by id. */
+    profileUpdated(
+      state,
+      action: PayloadAction<{
+        id: string;
+        name: string;
+        email: string;
+        phone: string;
+      }>,
+    ) {
+      if (!state.user || state.user.id !== action.payload.id) return;
+      state.user.name = action.payload.name;
+      state.user.email = action.payload.email;
+      state.user.phone = action.payload.phone;
+    },
     logout() {
       return { user: null, token: null };
     },

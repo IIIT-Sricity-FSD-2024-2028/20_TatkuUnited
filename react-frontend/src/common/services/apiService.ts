@@ -13,7 +13,9 @@ export function setApiTokenSource(source: () => string | null): void {
 export function getApiErrorMessage(error: unknown, fallback = "Something went wrong"): string {
     if (axios.isAxiosError(error)) {
         const message: unknown = error.response?.data?.message;
-        if (Array.isArray(message)) return message.filter((item) => typeof item === "string").join("; ") || fallback;
+        if (Array.isArray(message)) {
+            return message.filter((item) => typeof item === "string").join("; ") || fallback;
+        }
         if (typeof message === "string") return message;
     }
     return error instanceof Error ? error.message : fallback;

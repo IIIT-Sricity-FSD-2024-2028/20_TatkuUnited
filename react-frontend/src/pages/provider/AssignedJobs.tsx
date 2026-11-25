@@ -13,9 +13,9 @@ import {
 } from "@/store/provider/provider-slice";
 import DataTable, { type Column } from "./DataTable";
 import { formatProviderTime, getErrorMessage } from "./provider-utils";
+import { useProviderData } from "./ProviderDataContext";
 
 type JobRow = { bookingId: string; serviceName: string; customerName: string; serviceAddress: string; scheduledDate: string; startTime: string; status: BookingDocument["status"] };
-
 function toJobRow(booking: BookingDocument): JobRow {
   const order = typeof booking.order === "object" && booking.order !== null ? booking.order : undefined;
   return {

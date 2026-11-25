@@ -194,6 +194,7 @@ export default function JobCalendar() {
                 await dispatch(createUnavailabilityThunk(body)).unwrap();
             }
             selectDate(form.date);
+            await loadCalendar();
         } catch (requestError) {
             setError(getErrorMessage(requestError, "Unable to save unavailability."));
         } finally {
@@ -209,6 +210,17 @@ export default function JobCalendar() {
             reason: slot.reason ?? "",
         });
         setSelectedItem({ type: "unavailability", item: slot });
+    }
+
+    async function removeUnavailability(slot: UnavailabilityRecord) {
+        setSaving(true);
+        try {
+            await deleteUnavailability(slot._id);
+            setSelectedItem(null);
+            await loadCalendar();
+        } catch (requestError) {
+            setError(getErrorMessage(requestError, "Unable to delete unavailability."));
+        } finally { setSaving(false); }
     }
 
     if (!isProvider) {
@@ -250,7 +262,7 @@ export default function JobCalendar() {
                     </div>
                 </CardHeader>
                 <CardContent>
-                    {loading ? (
+                    {pageLoading ? (
                         <div className="grid grid-cols-7 gap-px bg-border">
                             {days.map((day) => (
                                 <Skeleton className="h-28 rounded-none" key={toDateKey(day)} />
@@ -366,6 +378,9 @@ export default function JobCalendar() {
                                 <Button variant="outline" onClick={() => editUnavailability(selectedItem.item)}>
                                     Edit unavailability
                                 </Button>
+                                <Button disabled={saving} variant="destructive" onClick={() => void removeUnavailability(selectedItem.item)}>
+                                    Delete unavailability
+                                </Button>
                             </CardContent>
                         </Card>
                     )}
@@ -426,7 +441,7 @@ export default function JobCalendar() {
                                 onChange={(event) => setForm({ ...form, reason: event.target.value })}
                             />
                         </div>
-                        <Button disabled={saving || loading} type="submit">
+                        <Button disabled={saving || pageLoading} type="submit">
                             {saving ? "Saving..." : selectedItem?.type === "unavailability" ? "Save changes" : "Add unavailability"}
                         </Button>
                     </form>

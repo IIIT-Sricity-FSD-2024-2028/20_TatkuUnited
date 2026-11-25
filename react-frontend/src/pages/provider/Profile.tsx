@@ -62,6 +62,13 @@ export default function Profile() {
     if (profile) setForm(formFromUser(profile));
   }, [profile]);
 
+  useEffect(() => {
+    let active = true;
+    if (!user?.id) { setLoading(false); return; }
+    void getUserById(user.id).then((data) => { if (active) { setProfile(data); setError(null); } }).catch(() => { if (active) setError("Unable to load the latest profile details."); }).finally(() => { if (active) setLoading(false); });
+    return () => { active = false; };
+  }, [user?.id]);
+
   const updateField = (field: keyof ProfileForm, value: string) => {
     setForm((current) => ({ ...current, [field]: value }));
   };

@@ -14,7 +14,7 @@ import type {
 } from "@/models/api.models";
 import { toast } from "@/components/ui/toast";
 import { Button } from "@/components/ui/button";
-import { notifiedOfferIds } from "./useIncomingOfferNotifier";
+import { useProviderData } from "./ProviderDataContext";
 import {
   Clock,
   MapPin,
@@ -38,31 +38,6 @@ function formatSlotTime(minutes: number): string {
   const ampm = hours >= 12 ? "PM" : "AM";
   const displayHours = hours % 12 === 0 ? 12 : hours % 12;
   return `${displayHours}:${String(mins).padStart(2, "0")} ${ampm}`;
-}
-
-function playOfferChime() {
-  try {
-    const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
-    if (!AudioCtx) return;
-    const ctx = new AudioCtx();
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-
-    osc.type = "sine";
-    osc.frequency.setValueAtTime(587.33, ctx.currentTime); // D5
-    osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.15); // A5
-
-    gain.gain.setValueAtTime(0.15, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
-
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-
-    osc.start();
-    osc.stop(ctx.currentTime + 0.4);
-  } catch {
-    // Ignore audio permission/context errors
-  }
 }
 
 export default function IncomingOffers({
