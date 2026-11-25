@@ -24,17 +24,6 @@ function managerIdOf(region: RegionDocument): string {
     return typeof region.manager === 'string' ? region.manager : region.manager._id;
 }
 
-/**
- * A manager profile can outlive its user record (for example, if the user was
- * deleted during testing). GET /managers populates `user`, so those profiles
- * come back with `user: null`; show a stable label instead of a blank option.
- */
-function managerLabel(manager: ManagerDocument): string {
-    const user = manager.user;
-    if (typeof user === 'object' && user?.name) return user.name;
-    return `Manager ${manager._id.slice(-6)} (no user)`;
-}
-
 export default function SuperUser_ManageRegions()
 {
     const dispatch = useDispatch<AppDispatch>();
@@ -51,10 +40,18 @@ export default function SuperUser_ManageRegions()
         ? regions.find(r => r._id === isEditingID) ?? null
         : null;
 
+    /**
+     * GET /managers populates `user`. Manager profiles whose user was deleted
+     * come back with `user: null`; they have no name and must not be assignable
+     * to a region, so they are not added to this map or the dropdowns.
+     */
     const userNameMap = useMemo(() => {
         const map: Record<string, string> = {};
         managers.forEach(m => {
-            map[m._id] = managerLabel(m);
+            const user = m.user;
+            if (typeof user === 'object' && user?.name) {
+                map[m._id] = user.name;
+            }
         });
         return map;
     }, [managers]);
@@ -226,7 +223,9 @@ function AddRegion({ onClose, allManagers, assignedRegions, userNameMap }: AddRe
     const error = formError || storeError;
 
     const assignedManagerIds = new Set(assignedRegions.map(managerIdOf));
-    const unassignedManagers = allManagers.filter(m => !assignedManagerIds.has(m._id));
+    const unassignedManagers = allManagers.filter(
+        m => Boolean(userNameMap[m._id]) && !assignedManagerIds.has(m._id),
+    );
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -378,9 +377,14 @@ function EditRegion({ onClose, allManagers, assignedRegions, userNameMap, region
     const [coord2, setCoord2] = useState(String(region.location.coordinates[1]));
 
     const currentManagerId = managerIdOf(region);
-    const [managerId, setManagerId] = useState(currentManagerId);
+    const currentManagerValid = Boolean(userNameMap[currentManagerId]);
+    const [managerId, setManagerId] = useState(
+        currentManagerValid ? currentManagerId : '',
+    );
     const [salary, setSalary] = useState(
-        String(allManagers.find(m => m._id === currentManagerId)?.salary ?? ''),
+        currentManagerValid
+            ? String(allManagers.find(m => m._id === currentManagerId)?.salary ?? '')
+            : '',
     );
 
     const [formError, setFormError] = useState('');
@@ -421,7 +425,9 @@ function EditRegion({ onClose, allManagers, assignedRegions, userNameMap, region
             .filter(r => managerIdOf(r) !== currentManagerId)
             .map(managerIdOf),
     );
-    const availableManagers = allManagers.filter(m => !assignedManagerIds.has(m._id));
+    const availableManagers = allManagers.filter(
+        m => Boolean(userNameMap[m._id]) && !assignedManagerIds.has(m._id),
+    );
 
     const handleDelete = async () => {
         try {
@@ -468,6 +474,11 @@ function EditRegion({ onClose, allManagers, assignedRegions, userNameMap, region
                                     </option>
                                 ))}
                             </select>
+                            {!currentManagerValid && (
+                                <p className="text-xs text-amber-600">
+                                    This region's current manager has no user record. Select an available manager.
+                                </p>
+                            )}
                         </div>
 
                         <div className="flex flex-col gap-1">

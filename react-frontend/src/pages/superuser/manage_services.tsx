@@ -44,7 +44,10 @@ export default function SuperUser_ManageServices() {
   const activeServices = services.filter(s => s.isActive).length;
 
   const [isAddService, setIsAddService] = useState(false);
-  const [editingService, setEditingService] = useState<ServiceDocument | null>(null);
+  const [editingServiceID, setEditingServiceID] = useState<string | null>(null);
+  const editingService = editingServiceID
+    ? services.find((service) => service._id === editingServiceID) ?? null
+    : null;
 
   const SUMMARY_STATS: SummaryStat[] = [
     { title: "Total Services", count: totalServices, icon: <BsCart2 size={24} />, iconColor: "text-blue-600", bg: "bg-blue-50" },
@@ -100,7 +103,7 @@ export default function SuperUser_ManageServices() {
     {
       header: "Actions",
       render: (row) => (
-        <button onClick={() => { dispatch(superuserActions.clearError()); setEditingService(row); }} className="text-blue-600 hover:underline font-medium">Edit</button>
+        <button onClick={() => { dispatch(superuserActions.clearError()); setEditingServiceID(row._id); }} className="text-blue-600 hover:underline font-medium">Edit</button>
       )
     },
   ];
@@ -118,7 +121,7 @@ export default function SuperUser_ManageServices() {
   };
 
   const closeEdit = () => {
-    setEditingService(null);
+    setEditingServiceID(null);
     dispatch(superuserActions.clearError());
   };
 

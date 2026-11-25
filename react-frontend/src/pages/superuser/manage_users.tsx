@@ -73,7 +73,6 @@ export default function SuperUser_ManageUsers() {
   });
 
   const columns: Column<UserDocument>[] = [
-    { header: "User ID", render: (row) => <span className="font-medium text-slate-900">{row._id}</span> },
     { header: "Name", render: (row) => <>{row.name}</> },
     { header: "Email/Phone", render: (row) => <span className="text-slate-500">{row.email}</span> },
     { header: "Role", render: (row) => <>{row.role}</> },
