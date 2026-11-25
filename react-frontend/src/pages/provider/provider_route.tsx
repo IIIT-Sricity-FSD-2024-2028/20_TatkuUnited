@@ -4,7 +4,7 @@ import { RolesEnum } from "@/common/roles.enum";
 import Dashboard from "./Dashboard";
 import IncomingOffers from "./IncomingOffers";
 import AssignedJobs from "./AssignedJobs";
-import JobCalender from "./JobCalender";
+import JobCalendar from "./JobCalendar";
 import Revenue from "./Revenue";
 import Settings from "./Settings";
 import Profile from "./Profile";
@@ -19,7 +19,7 @@ export default function ProviderRouter() {
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="offers" element={<IncomingOffers />} />
           <Route path="assigned-jobs" element={<AssignedJobs />} />
-          <Route path="calendar" element={<JobCalender />} />
+          <Route path="calendar" element={<JobCalendar />} />
           <Route path="earnings" element={<Revenue />} />
           <Route path="settings" element={<Settings />} />
           <Route path="profile" element={<Profile />} />

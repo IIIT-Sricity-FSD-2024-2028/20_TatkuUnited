@@ -1,8 +1,12 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { RolesEnum } from "@/common/roles.enum";
 import useAuth from "@/hooks/useAuth";
-import { getProviderByUser } from "@/services/providers.service";
-import { getBookingsByProvider } from "@/services/bookings.service";
+import type { AppDispatch, RootState } from "@/store";
+import {
+  fetchProviderBookings,
+  fetchProviderByUser,
+} from "@/store/provider/provider-slice";
 import type { BookingDocument, OrderDocument } from "@/models/api.models";
 import {
   Card,
@@ -27,48 +31,40 @@ function getGrossAmount(booking: BookingDocument) {
     : (booking.order as OrderDocument).totalAmount;
 }
 
-function payoutStatus(booking: BookingDocument): "pending" | "paid" {
-  return booking.payoutStatus === "paid"
-    ? "paid"
-    : "pending";
+function payoutStatus(booking: BookingDocument): "pending" | "paid" | "unknown" {
+  switch (booking.payoutStatus) {
+    case "pending":
+    case "paid":
+      return booking.payoutStatus;
+    default:
+      return "unknown";
+  }
 }
 
 export default function Revenue() {
-  const { authDetails } = useAuth();
-  const [bookings, setBookings] = useState<BookingDocument[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { user } = useAuth();
+  const dispatch = useDispatch<AppDispatch>();
+  const isProvider = user?.role === RolesEnum.PROVIDER;
+  const { profile, bookings: allBookings, pending, error } = useSelector((s: RootState) => s.provider);
 
   useEffect(() => {
-    const user = authDetails?.user;
-    if (!user || user.role !== RolesEnum.PROVIDER) {
-      setLoading(false);
-      return;
+    if (isProvider && user?.id && !profile) {
+      void dispatch(fetchProviderByUser(user.id));
     }
-    const userId = user.id;
+  }, [dispatch, isProvider, profile, user?.id]);
 
-    async function loadRevenue() {
-      try {
-        setLoading(true);
-        setError(null);
-        const provider = await getProviderByUser(userId);
-        const providerBookings = await getBookingsByProvider(provider._id);
-        setBookings(
-          providerBookings.filter((booking) => booking.status === "completed"),
-        );
-      } catch (requestError) {
-        setError(
-          requestError instanceof Error
-            ? requestError.message
-            : "Unable to load earnings.",
-        );
-      } finally {
-        setLoading(false);
-      }
+  useEffect(() => {
+    if (profile?._id) {
+      void dispatch(fetchProviderBookings(profile._id));
     }
+  }, [dispatch, profile?._id]);
 
-    void loadRevenue();
-  }, [authDetails]);
+  const bookings = useMemo(
+    () => allBookings.filter((booking) => booking.status === "completed"),
+    [allBookings],
+  );
+  const isLoading = pending > 0 && (!profile || allBookings.length === 0);
+  const isError = Boolean(error) && allBookings.length === 0;
 
   const totals = useMemo(() => {
     const grossRevenue = bookings.reduce(
@@ -97,7 +93,7 @@ export default function Revenue() {
     };
   }, [bookings]);
 
-  if (authDetails?.user.role !== RolesEnum.PROVIDER) {
+  if (!isProvider) {
     return (
       <Card>
         <CardContent className="pt-6">Provider access required.</CardContent>
@@ -105,7 +101,7 @@ export default function Revenue() {
     );
   }
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {Array.from({ length: 4 }, (_, index) => (
@@ -124,7 +120,7 @@ export default function Revenue() {
         </p>
       </div>
 
-      {error && <p className="text-destructive">{error}</p>}
+      {isError && <p className="text-destructive">Unable to load earnings.</p>}
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Card>

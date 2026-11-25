@@ -24,7 +24,7 @@ export const store = configureStore({
         provider: providerReducer,
         region: regionReducer,
         service: serviceReducer,
-        superuser: superuserReducer
+        superuser: superuserReducer,
     },
 });
 

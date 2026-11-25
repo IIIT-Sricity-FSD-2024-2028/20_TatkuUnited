@@ -19,12 +19,12 @@ export function getApiErrorMessage(error: unknown, fallback = "Something went wr
     return error instanceof Error ? error.message : fallback;
 }
 
-const axiosInstance = axios.create({
+export const apiClient = axios.create({
     baseURL: BASE_URL,
     timeout: 20000,
 });
 
-axiosInstance.interceptors.request.use(
+apiClient.interceptors.request.use(
     (config) => {
         const token = getToken();
         if (token) {
@@ -42,7 +42,7 @@ export const apiService = async <TResponse = unknown, TBody = unknown> (
     onError?: (errorMessage: string) => void
 ): Promise<TResponse> => {
     try {
-        const response = await axiosInstance<TResponse>({
+        const response = await apiClient<TResponse>({
             method, url: endpoint, data
         });
         onSuccess?.(response.data);

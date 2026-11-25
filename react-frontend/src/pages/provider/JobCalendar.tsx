@@ -1,13 +1,15 @@
 import { useEffect, useMemo, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { RolesEnum } from "@/common/roles.enum";
 import useAuth from "@/hooks/useAuth";
-import { HTTP_METHODS_ENUM } from "@/common/http.methods";
-import { apiService } from "@/common/services/apiService";
-import { buildEndpoint, ENDPOINT_ENUM } from "@/common/endpoints";
+import type { AppDispatch, RootState } from "@/store";
 import {
-    getProviderByUser,
-    getProviderSchedule,
-} from "@/services/providers.service";
+    createUnavailabilityThunk,
+    fetchProviderByUser,
+    fetchProviderSchedule,
+    fetchUnavailability,
+    updateUnavailabilityThunk,
+} from "@/store/provider/provider-slice";
 import type { BookingDocument, ProviderDocument, ServiceDocument, UserDocument } from "@/models/api.models";
 import {
     Card,
@@ -21,6 +23,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
+import { formatProviderTime, getErrorMessage } from "./provider-utils";
 
 interface UnavailabilityRecord {
     _id: string;
@@ -44,12 +47,6 @@ type SelectedItem =
 
 const EMPTY_DATE_DATA: CalendarDateData = { jobs: [], unavailability: [] };
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-
-function formatTime(minutes: number): string {
-    const hours = Math.floor(minutes / 60);
-    const remainingMinutes = minutes % 60;
-    return `${String(hours).padStart(2, "0")}:${String(remainingMinutes).padStart(2, "0")}`;
-}
 
 function toDateKey(date: Date): string {
     const year = date.getFullYear();
@@ -115,18 +112,13 @@ function buildCalendarData(
     return data;
 }
 
-function getErrorMessage(error: unknown, fallback: string): string {
-    return error instanceof Error ? error.message : fallback;
-}
-
-export default function JobCalender() {
-    const { authDetails } = useAuth();
+export default function JobCalendar() {
+    const { user } = useAuth();
+    const dispatch = useDispatch<AppDispatch>();
+    const isProvider = user?.role === RolesEnum.PROVIDER;
     const [month, setMonth] = useState(() => new Date());
     const [selectedDate, setSelectedDate] = useState(() => toDateKey(new Date()));
-    const [calendarData, setCalendarData] = useState<CalendarData>({});
-    const [provider, setProvider] = useState<ProviderDocument | null>(null);
     const [selectedItem, setSelectedItem] = useState<SelectedItem>(null);
-    const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [form, setForm] = useState({
@@ -136,47 +128,35 @@ export default function JobCalender() {
         reason: "",
     });
 
+    const { profile, schedule, unavailability, pending } = useSelector((s: RootState) => s.provider);
+    const providerId = profile?._id;
+
+    useEffect(() => {
+        if (isProvider && user?.id && !profile) {
+            void dispatch(fetchProviderByUser(user.id));
+        }
+    }, [dispatch, isProvider, profile, user?.id]);
+
+    useEffect(() => {
+        if (!providerId) return;
+        void dispatch(fetchProviderSchedule(providerId));
+        void dispatch(fetchUnavailability(providerId));
+        const interval = setInterval(() => {
+            void dispatch(fetchProviderSchedule(providerId));
+        }, 6000);
+        return () => clearInterval(interval);
+    }, [dispatch, providerId]);
+
+    const loading = pending > 0 && !profile;
+    const calendarData = useMemo(
+        () => buildCalendarData(schedule, unavailability),
+        [schedule, unavailability],
+    );
     const days = useMemo(() => getMonthDays(month), [month]);
     const selectedDateData = useMemo(
         () => calendarData[selectedDate] ?? EMPTY_DATE_DATA,
         [calendarData, selectedDate],
     );
-
-    async function loadCalendar(providerId: string) {
-        const [jobs, unavailability] = await Promise.all([
-            getProviderSchedule(providerId),
-            apiService<UnavailabilityRecord[]>(
-                HTTP_METHODS_ENUM.get,
-                buildEndpoint(ENDPOINT_ENUM.UNAVAILABILITY_BY_PROVIDER, { providerId }),
-            ),
-        ]);
-        setCalendarData(buildCalendarData(jobs, unavailability));
-    }
-
-    useEffect(() => {
-        const user = authDetails?.user;
-        if (!user || user.role !== RolesEnum.PROVIDER) {
-            setLoading(false);
-            return;
-        }
-        const userId = user.id;
-
-        async function fetchCalendar() {
-            try {
-                setLoading(true);
-                setError(null);
-                const providerProfile = await getProviderByUser(userId);
-                setProvider(providerProfile);
-                await loadCalendar(providerProfile._id);
-            } catch (requestError) {
-                setError(getErrorMessage(requestError, "Unable to load the calendar."));
-            } finally {
-                setLoading(false);
-            }
-        }
-
-        void fetchCalendar();
-    }, [authDetails]);
 
     function selectDate(dateKey: string) {
         setSelectedDate(dateKey);
@@ -190,16 +170,16 @@ export default function JobCalender() {
 
     async function saveUnavailability(event: React.FormEvent<HTMLFormElement>) {
         event.preventDefault();
-        if (!provider || form.startTime >= form.endTime) {
+        if (!providerId || form.startTime >= form.endTime) {
             setError("End time must be later than start time.");
             return;
         }
 
         try {
-            setSaving(true);
             setError(null);
+            setSaving(true);
             const body = {
-                provider: provider._id,
+                provider: providerId,
                 date: form.date,
                 startTime: Number(form.startTime),
                 endTime: Number(form.endTime),
@@ -207,22 +187,12 @@ export default function JobCalender() {
             };
 
             if (selectedItem?.type === "unavailability") {
-                await apiService(
-                    HTTP_METHODS_ENUM.patch,
-                    buildEndpoint(ENDPOINT_ENUM.UNAVAILABILITY_BY_ID, {
-                        id: selectedItem.item._id,
-                    }),
-                    body,
-                );
+                await dispatch(
+                    updateUnavailabilityThunk({ id: selectedItem.item._id, changes: body }),
+                ).unwrap();
             } else {
-                await apiService(
-                    HTTP_METHODS_ENUM.post,
-                    ENDPOINT_ENUM.UNAVAILABILITY,
-                    body,
-                );
+                await dispatch(createUnavailabilityThunk(body)).unwrap();
             }
-
-            await loadCalendar(provider._id);
             selectDate(form.date);
         } catch (requestError) {
             setError(getErrorMessage(requestError, "Unable to save unavailability."));
@@ -241,7 +211,7 @@ export default function JobCalender() {
         setSelectedItem({ type: "unavailability", item: slot });
     }
 
-    if (authDetails?.user.role !== RolesEnum.PROVIDER) {
+    if (!isProvider) {
         return (
             <Card>
                 <CardContent className="pt-6">Provider access required.</CardContent>
@@ -326,7 +296,7 @@ export default function JobCalender() {
                                                             role="button"
                                                             tabIndex={0}
                                                         >
-                                                            {formatTime(job.startTime)} {getServiceName(job)}
+                                                            {formatProviderTime(job.startTime)} {getServiceName(job)}
                                                         </div>
                                                     ))}
                                                     {data.unavailability.map((slot) => (
@@ -344,7 +314,7 @@ export default function JobCalender() {
                                                             role="button"
                                                             tabIndex={0}
                                                         >
-                                                            {formatTime(slot.startTime)} Unavailable
+                                                            {formatProviderTime(slot.startTime)} Unavailable
                                                         </div>
                                                     ))}
                                                 </div>
@@ -379,7 +349,7 @@ export default function JobCalender() {
                             <CardContent className="space-y-1">
                                 <p><strong>Service:</strong> {getServiceName(selectedItem.item)}</p>
                                 <p><strong>Customer:</strong> {getCustomerName(selectedItem.item)}</p>
-                                <p><strong>Time:</strong> {formatTime(selectedItem.item.startTime)} - {formatTime(selectedItem.item.endTime)}</p>
+                                <p><strong>Time:</strong> {formatProviderTime(selectedItem.item.startTime)} - {formatProviderTime(selectedItem.item.endTime)}</p>
                                 <p><strong>Status:</strong> {selectedItem.item.status.replace("_", " ")}</p>
                             </CardContent>
                         </Card>
@@ -391,7 +361,7 @@ export default function JobCalender() {
                                 <CardTitle>Unavailability details</CardTitle>
                             </CardHeader>
                             <CardContent className="space-y-2">
-                                <p><strong>Time:</strong> {formatTime(selectedItem.item.startTime)} - {formatTime(selectedItem.item.endTime)}</p>
+                                <p><strong>Time:</strong> {formatProviderTime(selectedItem.item.startTime)} - {formatProviderTime(selectedItem.item.endTime)}</p>
                                 <p><strong>Reason:</strong> {selectedItem.item.reason || "Not specified"}</p>
                                 <Button variant="outline" onClick={() => editUnavailability(selectedItem.item)}>
                                     Edit unavailability
