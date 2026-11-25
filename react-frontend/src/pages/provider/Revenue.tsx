@@ -1,8 +1,7 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 import { RolesEnum } from "@/common/roles.enum";
-import { useAuthContext } from "@/common/AuthContext";
-import { getProviderByUser } from "@/services/providers.service";
-import { getBookingsByProvider } from "@/services/bookings.service";
+import useAuth from "@/hooks/useAuth";
+import { useGetProviderBookingsQuery, useGetProviderByUserQuery } from "@/store/provider/provider-api";
 import type { BookingDocument, OrderDocument } from "@/models/api.models";
 import {
   Card,
@@ -27,48 +26,24 @@ function getGrossAmount(booking: BookingDocument) {
     : (booking.order as OrderDocument).totalAmount;
 }
 
-function payoutStatus(booking: BookingDocument): "pending" | "paid" {
-  return booking.payoutStatus === "paid"
-    ? "paid"
-    : "pending";
+function payoutStatus(booking: BookingDocument): "pending" | "paid" | "unknown" {
+  switch (booking.payoutStatus) {
+    case "pending":
+    case "paid":
+      return booking.payoutStatus;
+    default:
+      return "unknown";
+  }
 }
 
 export default function Revenue() {
-  const { authDetails } = useAuthContext();
-  const [bookings, setBookings] = useState<BookingDocument[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const user = authDetails?.user;
-    if (!user || user.role !== RolesEnum.PROVIDER) {
-      setLoading(false);
-      return;
-    }
-    const userId = user.id;
-
-    async function loadRevenue() {
-      try {
-        setLoading(true);
-        setError(null);
-        const provider = await getProviderByUser(userId);
-        const providerBookings = await getBookingsByProvider(provider._id);
-        setBookings(
-          providerBookings.filter((booking) => booking.status === "completed"),
-        );
-      } catch (requestError) {
-        setError(
-          requestError instanceof Error
-            ? requestError.message
-            : "Unable to load earnings.",
-        );
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    void loadRevenue();
-  }, [authDetails]);
+  const { user } = useAuth();
+  const isProvider = user?.role === RolesEnum.PROVIDER;
+  const providerQuery = useGetProviderByUserQuery(user?.id ?? "", { skip: !isProvider });
+  const bookingsQuery = useGetProviderBookingsQuery(providerQuery.data?._id ?? "", {
+    skip: !providerQuery.data?._id,
+  });
+  const bookings = (bookingsQuery.data ?? []).filter((booking) => booking.status === "completed");
 
   const totals = useMemo(() => {
     const grossRevenue = bookings.reduce(
@@ -97,7 +72,7 @@ export default function Revenue() {
     };
   }, [bookings]);
 
-  if (authDetails?.user.role !== RolesEnum.PROVIDER) {
+  if (!isProvider) {
     return (
       <Card>
         <CardContent className="pt-6">Provider access required.</CardContent>
@@ -105,7 +80,7 @@ export default function Revenue() {
     );
   }
 
-  if (loading) {
+  if (providerQuery.isLoading || bookingsQuery.isLoading) {
     return (
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {Array.from({ length: 4 }, (_, index) => (
@@ -124,7 +99,7 @@ export default function Revenue() {
         </p>
       </div>
 
-      {error && <p className="text-destructive">{error}</p>}
+      {bookingsQuery.isError && <p className="text-destructive">Unable to load earnings.</p>}
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Card>

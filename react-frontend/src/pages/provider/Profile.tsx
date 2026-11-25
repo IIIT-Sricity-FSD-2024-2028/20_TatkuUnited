@@ -4,8 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useAuthContext } from "@/common/AuthContext";
-import { getUserById, updateUser } from "@/services/users.service";
+import useAuth from "@/hooks/useAuth";
+import { useGetUserQuery, useUpdateUserMutation } from "@/store/provider/provider-api";
 import type { UpdateUserDto, UserDocument } from "@/models/api.models";
 
 interface ProfileForm {
@@ -15,9 +15,6 @@ interface ProfileForm {
   gender: string;
   dob: string;
 }
-
-// The session fallback contains profile fields, but no cart or saved addresses.
-type ProfileUser = Omit<UserDocument, "cart" | "addresses">;
 
 const emptyForm: ProfileForm = {
   name: "",
@@ -42,50 +39,17 @@ function formFromUser(user: Pick<UserDocument, "name" | "email" | "phone" | "gen
 }
 
 export default function Profile() {
-  const { authDetails, setAuthDetails } = useAuthContext();
-  const [profile, setProfile] = useState<ProfileUser | null>(null);
+  const { user } = useAuth();
   const [form, setForm] = useState<ProfileForm>(emptyForm);
   const [editing, setEditing] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const profileQuery = useGetUserQuery(user?.id ?? "", { skip: !user?.id });
+  const [updateUser, { isLoading: saving }] = useUpdateUserMutation();
+  const profile = profileQuery.data;
 
   useEffect(() => {
-    const user = authDetails?.user;
-    if (!user) {
-      setLoading(false);
-      return;
-    }
-    const userId = user.id;
-
-    const sessionUser = {
-      _id: user.id,
-      name: user.name,
-      email: user.email,
-      phone: user.phone,
-      role: user.role,
-      status: user.status as UserDocument["status"],
-      createdAt: "",
-      updatedAt: "",
-    } satisfies ProfileUser;
-
-    setProfile(sessionUser);
-    setForm(formFromUser(sessionUser));
-
-    async function loadProfile() {
-      try {
-        const latestUser = await getUserById(userId);
-        setProfile(latestUser);
-        setForm(formFromUser(latestUser));
-      } catch {
-        setError("Unable to load the latest profile details.");
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    void loadProfile();
-  }, [authDetails]);
+    if (profile) setForm(formFromUser(profile));
+  }, [profile]);
 
   const updateField = (field: keyof ProfileForm, value: string) => {
     setForm((current) => ({ ...current, [field]: value }));
@@ -100,7 +64,7 @@ export default function Profile() {
   };
 
   const handleSave = async () => {
-    if (!profile || !authDetails || !form.name.trim() || !form.email.trim()) {
+    if (!profile || !form.name.trim() || !form.email.trim()) {
       setError("Name and email are required.");
       return;
     }
@@ -113,35 +77,11 @@ export default function Profile() {
       dob: form.dob || undefined,
     };
 
-    setSaving(true);
     setError(null);
     try {
-      const updatedUser = await updateUser(profile._id, changes);
-      setProfile(updatedUser);
+      const updatedUser = await updateUser({ id: profile._id, changes }).unwrap();
       setForm(formFromUser(updatedUser));
       setEditing(false);
-      setAuthDetails((current) =>
-        current
-          ? {
-              ...current,
-              user: {
-                ...current.user,
-                name: updatedUser.name,
-                email: updatedUser.email,
-                phone: updatedUser.phone,
-              },
-            }
-          : current,
-      );
-      sessionStorage.setItem(
-        "user",
-        JSON.stringify({
-          ...authDetails.user,
-          name: updatedUser.name,
-          email: updatedUser.email,
-          phone: updatedUser.phone,
-        }),
-      );
       toast.add({ type: "info", description: "Profile updated successfully." });
     } catch (saveError) {
       setError(
@@ -149,19 +89,17 @@ export default function Profile() {
           ? saveError.message
           : "Unable to save profile changes.",
       );
-    } finally {
-      setSaving(false);
     }
   };
 
-  if (loading) {
+  if (profileQuery.isLoading) {
     return <p className="rounded-lg bg-white p-6 shadow">Loading profile...</p>;
   }
 
   if (!profile) {
     return (
       <p className="rounded-lg bg-white p-6 text-red-600 shadow">
-        {error ?? "Provider profile is unavailable."}
+        {error ?? (profileQuery.isError ? "Unable to load the latest profile details." : "Provider profile is unavailable.")}
       </p>
     );
   }

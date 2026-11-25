@@ -1,10 +1,7 @@
 import { useEffect, useState } from "react";
 import { RolesEnum } from "@/common/roles.enum";
-import { useAuthContext } from "@/common/AuthContext";
-import {
-    getProviderByUser,
-    updateProvider,
-} from "@/services/providers.service";
+import useAuth from "@/hooks/useAuth";
+import { useGetProviderByUserQuery, useUpdateProviderMutation } from "@/store/provider/provider-api";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -36,50 +33,30 @@ const days = [
 ];
 
 export default function Settings() {
-    const { authDetails } = useAuthContext();
-    const [providerId, setProviderId] = useState<string | null>(null);
+    const { user } = useAuth();
+    const isProvider = user?.role === RolesEnum.PROVIDER;
     const [form, setForm] = useState<SettingsForm>({
     experience: 0,
     workHourStart: 540,
     workHourEnd: 1080,
     workingDays: [],
     });
-    const [loading, setLoading] = useState(true);
-    const [saving, setSaving] = useState(false);
     const [message, setMessage] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
+    const providerQuery = useGetProviderByUserQuery(user?.id ?? "", { skip: !isProvider });
+    const [updateProvider, { isLoading: saving }] = useUpdateProviderMutation();
 
     useEffect(() => {
-    const user = authDetails?.user;
-    if (!user || user.role !== RolesEnum.PROVIDER) {
-        setLoading(false);
-        return;
-    }
-
-    async function loadSettings() {
-        if (!user) return;
-        try {
-        const provider = await getProviderByUser(user.id);
-        setProviderId(provider._id);
+        const provider = providerQuery.data;
+        if (provider) {
         setForm({
             experience: provider.experience,
             workHourStart: provider.workHourStart,
             workHourEnd: provider.workHourEnd,
             workingDays: provider.workingDays,
         });
-        } catch (requestError) {
-        setError(
-            requestError instanceof Error
-            ? requestError.message
-            : "Unable to load provider settings.",
-        );
-        } finally {
-        setLoading(false);
         }
-    }
-
-    void loadSettings();
-    }, [authDetails]);
+    }, [providerQuery.data]);
 
     function toggleDay(day: number) {
     setForm((current) => ({
@@ -92,13 +69,13 @@ export default function Settings() {
 
     async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    const providerId = providerQuery.data?._id;
     if (!providerId) return;
 
     try {
-        setSaving(true);
         setError(null);
         setMessage(null);
-        await updateProvider(providerId, form);
+        await updateProvider({ id: providerId, changes: form }).unwrap();
         setMessage("Provider settings saved.");
     } catch (requestError) {
         setError(
@@ -106,12 +83,10 @@ export default function Settings() {
             ? requestError.message
             : "Unable to save provider settings.",
         );
-    } finally {
-        setSaving(false);
     }
     }
 
-    if (authDetails?.user.role !== RolesEnum.PROVIDER) {
+    if (!isProvider) {
     return (
         <Card>
         <CardContent className="pt-6">Provider access required.</CardContent>
@@ -119,7 +94,7 @@ export default function Settings() {
     );
     }
 
-    if (loading) {
+    if (providerQuery.isLoading) {
     return (
         <Card>
         <CardContent className="pt-6">Loading settings...</CardContent>
@@ -212,7 +187,7 @@ export default function Settings() {
             </FieldSet>
 
         {message && <p className="text-green-600">{message}</p>}
-        {error && <p className="text-destructive">{error}</p>}
+        {(error || providerQuery.isError) && <p className="text-destructive">{error ?? "Unable to load provider settings."}</p>}
         <Button disabled={saving} type="submit">
             {saving ? "Saving..." : "Save settings"}
         </Button>
