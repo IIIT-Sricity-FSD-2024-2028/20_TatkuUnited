@@ -1,47 +1,19 @@
-import { useState, useEffect, useCallback } from "react";
 import { RolesEnum } from "@/common/roles.enum";
-import { useAuthContext } from "@/common/AuthContext";
-import { getProviderByUser } from "@/services/providers.service";
-import type { ProviderDocument } from "@/models/api.models";
+import useAuth from "@/hooks/useAuth";
+import { useGetProviderByUserQuery } from "@/store/provider/provider-api";
 import IncomingOffers from "./IncomingOffers";
 import AssignedJobs from "./AssignedJobs";
 import { Star, ShieldCheck, UserCheck } from "lucide-react";
 
 export default function Dashboard() {
-  const { authDetails } = useAuthContext();
-  const [provider, setProvider] = useState<ProviderDocument | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const { user } = useAuth();
+  const isProvider = user?.role === RolesEnum.PROVIDER;
+  const { data: provider, isLoading, isError } = useGetProviderByUserQuery(
+    user?.id ?? "",
+    { skip: !isProvider },
+  );
 
-  const user = authDetails?.user;
-
-  useEffect(() => {
-    if (!user || user.role !== RolesEnum.PROVIDER) {
-      setLoading(false);
-      return;
-    }
-
-    async function loadProvider() {
-      if (!user) return;
-      try {
-        const doc = await getProviderByUser(user.id);
-        setProvider(doc);
-      } catch {
-        // Handled silently or empty state
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    void loadProvider();
-  }, [user]);
-
-  const handleJobAccepted = useCallback(() => {
-    // Re-trigger assigned jobs refresh
-    setRefreshTrigger((prev) => prev + 1);
-  }, []);
-
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="space-y-6 animate-pulse">
         <div className="h-28 rounded-2xl bg-white border border-slate-200" />
@@ -50,7 +22,7 @@ export default function Dashboard() {
     );
   }
 
-  if (user && user.role !== RolesEnum.PROVIDER) {
+  if (!isProvider) {
     return (
       <div className="rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-sm">
         <p className="text-slate-600">Provider access required to view this dashboard.</p>
@@ -60,6 +32,11 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-6">
+      {isError && (
+        <p className="rounded-lg border border-destructive p-4 text-sm" role="alert">
+          Unable to load provider details.
+        </p>
+      )}
       {/* Provider Quick Profile Bar */}
       {provider && (
         <div className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6 shadow-sm">
@@ -106,14 +83,11 @@ export default function Dashboard() {
       )}
 
       {/* 1. Real-time Incoming Job Offers */}
-      <IncomingOffers
-        providerId={provider?._id}
-        onJobAccepted={handleJobAccepted}
-      />
+      <IncomingOffers providerId={provider?._id} />
 
       {/* 2. Assigned / Confirmed Jobs */}
       <div className="space-y-3">
-        <AssignedJobs key={refreshTrigger} />
+        <AssignedJobs />
       </div>
     </div>
   );
