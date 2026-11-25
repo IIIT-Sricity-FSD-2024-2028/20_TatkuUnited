@@ -1,9 +1,12 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import type { AppDispatch, RootState } from "@/store";
 import {
-  useAcceptBookingMutation,
-  useGetIncomingOffersQuery,
-  useRejectBookingMutation,
-} from "@/store/provider/provider-api";
+  acceptBookingThunk,
+  fetchProviderOffers,
+  providerActions,
+  rejectBookingThunk,
+} from "@/store/provider/provider-slice";
 import type {
   BookingDocument,
   ServiceDocument,
@@ -66,17 +69,33 @@ export default function IncomingOffers({
   providerId,
   onJobAccepted,
 }: IncomingOffersProps) {
+  const dispatch = useDispatch<AppDispatch>();
   const actionBusy = useRef(false);
   const fetchBusy = useRef(false);
-  const incomingOffersQuery = useGetIncomingOffersQuery();
-  const [acceptBooking] = useAcceptBookingMutation();
-  const [rejectBooking] = useRejectBookingMutation();
+  const { offers: rawOffers, pending } = useSelector((s: RootState) => s.provider);
   const [error, setError] = useState("");
-  const [offers, setOffers] = useState<BookingDocument[]>([]);
-  const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [actingId, setActingId] = useState<string | null>(null);
   const [now, setNow] = useState(Date.now());
+
+  const loading = pending > 0 && rawOffers.length === 0 && !refreshing;
+
+  const offers = useMemo(() => {
+    return rawOffers.filter((b) => {
+      const myOffer = b.offers?.find(
+        (o) =>
+          (!providerId || String(o.provider) === String(providerId)) &&
+          o.status === "offered",
+      );
+      if (myOffer && myOffer.expiresAt) {
+        return new Date(myOffer.expiresAt).getTime() > now;
+      }
+      if (b.offerExpiresAt) {
+        return new Date(b.offerExpiresAt).getTime() > now;
+      }
+      return b.status === "awaiting_provider";
+    });
+  }, [rawOffers, providerId, now]);
 
   // Tick current time every second for countdown timers
   useEffect(() => {
@@ -90,7 +109,9 @@ export default function IncomingOffers({
       actionBusy.current = true;
       setActingId(bookingId);
       try {
-        const accepted = await acceptBooking({ id: bookingId, providerId }).unwrap();
+        const accepted = await dispatch(
+          acceptBookingThunk({ id: bookingId, providerId }),
+        ).unwrap();
         toast.add({
           type: "success",
           title: "🎉 Job Accepted!",
@@ -98,8 +119,6 @@ export default function IncomingOffers({
           priority: "high",
         });
 
-        // Remove from local offers list
-        setOffers((prev) => prev.filter((b) => b._id !== bookingId));
         if (toastId) toast.close(toastId);
 
         onJobAccepted?.(accepted);
@@ -122,8 +141,7 @@ export default function IncomingOffers({
               "Another service provider accepted this job offer first.",
             priority: "high",
           });
-          // Remove since it's taken
-          setOffers((prev) => prev.filter((b) => b._id !== bookingId));
+          dispatch(providerActions.offerRemoved(bookingId));
         } else {
           toast.add({
             type: "error",
@@ -137,7 +155,7 @@ export default function IncomingOffers({
         setActingId(null);
       }
     },
-    [acceptBooking, providerId, onJobAccepted],
+    [dispatch, providerId, onJobAccepted],
   );
 
   const handleDecline = useCallback(
@@ -146,14 +164,15 @@ export default function IncomingOffers({
       actionBusy.current = true;
       setActingId(bookingId);
       try {
-        await rejectBooking({ id: bookingId, providerId }).unwrap();
+        await dispatch(
+          rejectBookingThunk({ id: bookingId, providerId }),
+        ).unwrap();
         toast.add({
           type: "info",
           title: "Offer Declined",
           description: "The job offer was declined and will be reassigned.",
         });
 
-        setOffers((prev) => prev.filter((b) => b._id !== bookingId));
         if (toastId) toast.close(toastId);
       } catch (err: any) {
         const msg =
@@ -172,114 +191,100 @@ export default function IncomingOffers({
         setActingId(null);
       }
     },
-    [providerId, rejectBooking],
+    [dispatch, providerId],
   );
 
   const fetchOffers = useCallback(
     async (isInitial = false) => {
       if (fetchBusy.current || actionBusy.current) return;
       fetchBusy.current = true;
-      if (isInitial) setLoading(true);
-      else setRefreshing(true);
+      if (!isInitial) setRefreshing(true);
 
       try {
-        const data = incomingOffersQuery.data ?? [];
-
-        const activeOffers = (data || []).filter((b) => {
-          // Find provider's offer entry or general expiry
-          const myOffer = b.offers?.find(
-            (o) =>
-              (!providerId || String(o.provider) === String(providerId)) &&
-              o.status === "offered",
-          );
-          if (myOffer && myOffer.expiresAt) {
-            return new Date(myOffer.expiresAt).getTime() > Date.now();
-          }
-          if (b.offerExpiresAt) {
-            return new Date(b.offerExpiresAt).getTime() > Date.now();
-          }
-          return b.status === "awaiting_provider";
-        });
-
-        if (actionBusy.current) return;
-        setError("");
-        setOffers(activeOffers);
-
-        // Check for new offers that haven't been toasted yet
-        let hasNewOffer = false;
-        for (const booking of activeOffers) {
-          if (!notifiedOfferIds.has(booking._id)) {
-            notifiedOfferIds.add(booking._id);
-            hasNewOffer = true;
-
-            const serviceName =
-              typeof booking.service === "object" && booking.service !== null
-                ? (booking.service as ServiceDocument).name
-                : "Service Job";
-
-            const customerName =
-              typeof booking.customer === "object" && booking.customer !== null
-                ? (booking.customer as UserDocument).name
-                : "Customer";
-
-            const payout = booking.providerShare
-              ? Math.round(booking.providerShare / 100)
-              : Math.round(booking.price / 100);
-
-            const timeSlot = `${formatSlotTime(booking.startTime)} - ${formatSlotTime(booking.endTime)}`;
-
-            // Fire toast with Accept and Decline buttons
-            toast.add({
-              type: "info",
-              title: `⚡ New Job Offer: ${serviceName}`,
-              description: `${customerName} • ${timeSlot} • Payout: ₹${payout}`,
-              priority: "high",
-              timeout: 60000, // 60s
-              actions: ({ id }: { id: string }) => (
-                <div className="flex items-center gap-2 mt-1">
-                  <Button
-                    size="sm"
-                    className="bg-emerald-600 hover:bg-emerald-700 text-white font-medium text-xs h-7 px-3 cursor-pointer shadow-sm"
-                    onClick={() => handleAccept(booking._id, id)}
-                  >
-                    <CheckCircle2 className="w-3.5 h-3.5 mr-1" />
-                    Accept
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="text-xs h-7 px-2.5 text-slate-600 hover:text-red-600 hover:border-red-300 hover:bg-red-50 cursor-pointer"
-                    onClick={() => handleDecline(booking._id, id)}
-                  >
-                    <X className="w-3.5 h-3.5 mr-1" />
-                    Decline
-                  </Button>
-                </div>
-              ),
-            } as any);
-          }
-        }
-
-        if (hasNewOffer) {
-          playOfferChime();
+        await dispatch(fetchProviderOffers()).unwrap();
+        if (!actionBusy.current) {
+          setError("");
         }
       } catch {
         setError(
           "Unable to refresh offers. Please refresh before accepting a job.",
         );
       } finally {
-        setLoading(false);
         fetchBusy.current = false;
         setRefreshing(false);
       }
     },
-    [providerId, handleAccept, handleDecline, incomingOffersQuery.data],
+    [dispatch],
   );
 
-  // The ProviderLayout notifier owns network polling; this component consumes its cache.
   useEffect(() => {
     void fetchOffers(true);
-  }, [fetchOffers]);
+    const interval = setInterval(() => {
+      if (!actionBusy.current && !fetchBusy.current) {
+        void dispatch(fetchProviderOffers());
+      }
+    }, 6000);
+    return () => clearInterval(interval);
+  }, [dispatch, fetchOffers]);
+
+  useEffect(() => {
+    let hasNewOffer = false;
+    for (const booking of offers) {
+      if (!notifiedOfferIds.has(booking._id)) {
+        notifiedOfferIds.add(booking._id);
+        hasNewOffer = true;
+
+        const serviceName =
+          typeof booking.service === "object" && booking.service !== null
+            ? (booking.service as ServiceDocument).name
+            : "Service Job";
+
+        const customerName =
+          typeof booking.customer === "object" && booking.customer !== null
+            ? (booking.customer as UserDocument).name
+            : "Customer";
+
+        const payout = booking.providerShare
+          ? Math.round(booking.providerShare / 100)
+          : Math.round(booking.price / 100);
+
+        const timeSlot = `${formatSlotTime(booking.startTime)} - ${formatSlotTime(booking.endTime)}`;
+
+        toast.add({
+          type: "info",
+          title: `⚡ New Job Offer: ${serviceName}`,
+          description: `${customerName} • ${timeSlot} • Payout: ₹${payout}`,
+          priority: "high",
+          timeout: 60000,
+          actions: ({ id }: { id: string }) => (
+            <div className="flex items-center gap-2 mt-1">
+              <Button
+                size="sm"
+                className="bg-emerald-600 hover:bg-emerald-700 text-white font-medium text-xs h-7 px-3 cursor-pointer shadow-sm"
+                onClick={() => handleAccept(booking._id, id)}
+              >
+                <CheckCircle2 className="w-3.5 h-3.5 mr-1" />
+                Accept
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                className="text-xs h-7 px-2.5 text-slate-600 hover:text-red-600 hover:border-red-300 hover:bg-red-50 cursor-pointer"
+                onClick={() => handleDecline(booking._id, id)}
+              >
+                <X className="w-3.5 h-3.5 mr-1" />
+                Decline
+              </Button>
+            </div>
+          ),
+        } as any);
+      }
+    }
+
+    if (hasNewOffer) {
+      playOfferChime();
+    }
+  }, [offers, handleAccept, handleDecline]);
 
   return (
     <div className="space-y-4">

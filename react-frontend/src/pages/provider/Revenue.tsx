@@ -1,7 +1,12 @@
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { RolesEnum } from "@/common/roles.enum";
 import useAuth from "@/hooks/useAuth";
-import { useGetProviderBookingsQuery, useGetProviderByUserQuery } from "@/store/provider/provider-api";
+import type { AppDispatch, RootState } from "@/store";
+import {
+  fetchProviderBookings,
+  fetchProviderByUser,
+} from "@/store/provider/provider-slice";
 import type { BookingDocument, OrderDocument } from "@/models/api.models";
 import {
   Card,
@@ -38,12 +43,28 @@ function payoutStatus(booking: BookingDocument): "pending" | "paid" | "unknown" 
 
 export default function Revenue() {
   const { user } = useAuth();
+  const dispatch = useDispatch<AppDispatch>();
   const isProvider = user?.role === RolesEnum.PROVIDER;
-  const providerQuery = useGetProviderByUserQuery(user?.id ?? "", { skip: !isProvider });
-  const bookingsQuery = useGetProviderBookingsQuery(providerQuery.data?._id ?? "", {
-    skip: !providerQuery.data?._id,
-  });
-  const bookings = (bookingsQuery.data ?? []).filter((booking) => booking.status === "completed");
+  const { profile, bookings: allBookings, pending, error } = useSelector((s: RootState) => s.provider);
+
+  useEffect(() => {
+    if (isProvider && user?.id && !profile) {
+      void dispatch(fetchProviderByUser(user.id));
+    }
+  }, [dispatch, isProvider, profile, user?.id]);
+
+  useEffect(() => {
+    if (profile?._id) {
+      void dispatch(fetchProviderBookings(profile._id));
+    }
+  }, [dispatch, profile?._id]);
+
+  const bookings = useMemo(
+    () => allBookings.filter((booking) => booking.status === "completed"),
+    [allBookings],
+  );
+  const isLoading = pending > 0 && (!profile || allBookings.length === 0);
+  const isError = Boolean(error) && allBookings.length === 0;
 
   const totals = useMemo(() => {
     const grossRevenue = bookings.reduce(
@@ -80,7 +101,7 @@ export default function Revenue() {
     );
   }
 
-  if (providerQuery.isLoading || bookingsQuery.isLoading) {
+  if (isLoading) {
     return (
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {Array.from({ length: 4 }, (_, index) => (
@@ -99,7 +120,7 @@ export default function Revenue() {
         </p>
       </div>
 
-      {bookingsQuery.isError && <p className="text-destructive">Unable to load earnings.</p>}
+      {isError && <p className="text-destructive">Unable to load earnings.</p>}
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Card>

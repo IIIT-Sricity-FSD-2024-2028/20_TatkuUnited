@@ -1,13 +1,15 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { RolesEnum } from "@/common/roles.enum";
 import useAuth from "@/hooks/useAuth";
+import type { AppDispatch, RootState } from "@/store";
 import {
-    useCreateUnavailabilityMutation,
-    useGetProviderByUserQuery,
-    useGetProviderScheduleQuery,
-    useGetUnavailabilityQuery,
-    useUpdateUnavailabilityMutation,
-} from "@/store/provider/provider-api";
+    createUnavailabilityThunk,
+    fetchProviderByUser,
+    fetchProviderSchedule,
+    fetchUnavailability,
+    updateUnavailabilityThunk,
+} from "@/store/provider/provider-slice";
 import type { BookingDocument, ProviderDocument, ServiceDocument, UserDocument } from "@/models/api.models";
 import {
     Card,
@@ -112,10 +114,12 @@ function buildCalendarData(
 
 export default function JobCalendar() {
     const { user } = useAuth();
+    const dispatch = useDispatch<AppDispatch>();
     const isProvider = user?.role === RolesEnum.PROVIDER;
     const [month, setMonth] = useState(() => new Date());
     const [selectedDate, setSelectedDate] = useState(() => toDateKey(new Date()));
     const [selectedItem, setSelectedItem] = useState<SelectedItem>(null);
+    const [saving, setSaving] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [form, setForm] = useState({
         date: toDateKey(new Date()),
@@ -124,17 +128,29 @@ export default function JobCalendar() {
         reason: "",
     });
 
-    const providerQuery = useGetProviderByUserQuery(user?.id ?? "", { skip: !isProvider });
-    const providerId = providerQuery.data?._id;
-    const scheduleQuery = useGetProviderScheduleQuery(providerId ?? "", { skip: !providerId, pollingInterval: 6000 });
-    const unavailabilityQuery = useGetUnavailabilityQuery(providerId ?? "", { skip: !providerId });
-    const [createUnavailability, createState] = useCreateUnavailabilityMutation();
-    const [updateUnavailability, updateState] = useUpdateUnavailabilityMutation();
-    const loading = providerQuery.isLoading || scheduleQuery.isLoading || unavailabilityQuery.isLoading;
-    const saving = createState.isLoading || updateState.isLoading;
+    const { profile, schedule, unavailability, pending } = useSelector((s: RootState) => s.provider);
+    const providerId = profile?._id;
+
+    useEffect(() => {
+        if (isProvider && user?.id && !profile) {
+            void dispatch(fetchProviderByUser(user.id));
+        }
+    }, [dispatch, isProvider, profile, user?.id]);
+
+    useEffect(() => {
+        if (!providerId) return;
+        void dispatch(fetchProviderSchedule(providerId));
+        void dispatch(fetchUnavailability(providerId));
+        const interval = setInterval(() => {
+            void dispatch(fetchProviderSchedule(providerId));
+        }, 6000);
+        return () => clearInterval(interval);
+    }, [dispatch, providerId]);
+
+    const loading = pending > 0 && !profile;
     const calendarData = useMemo(
-        () => buildCalendarData(scheduleQuery.data ?? [], unavailabilityQuery.data ?? []),
-        [scheduleQuery.data, unavailabilityQuery.data],
+        () => buildCalendarData(schedule, unavailability),
+        [schedule, unavailability],
     );
     const days = useMemo(() => getMonthDays(month), [month]);
     const selectedDateData = useMemo(
@@ -161,6 +177,7 @@ export default function JobCalendar() {
 
         try {
             setError(null);
+            setSaving(true);
             const body = {
                 provider: providerId,
                 date: form.date,
@@ -170,13 +187,17 @@ export default function JobCalendar() {
             };
 
             if (selectedItem?.type === "unavailability") {
-                await updateUnavailability({ id: selectedItem.item._id, providerId, changes: body }).unwrap();
+                await dispatch(
+                    updateUnavailabilityThunk({ id: selectedItem.item._id, changes: body }),
+                ).unwrap();
             } else {
-                await createUnavailability(body).unwrap();
+                await dispatch(createUnavailabilityThunk(body)).unwrap();
             }
             selectDate(form.date);
         } catch (requestError) {
             setError(getErrorMessage(requestError, "Unable to save unavailability."));
+        } finally {
+            setSaving(false);
         }
     }
 

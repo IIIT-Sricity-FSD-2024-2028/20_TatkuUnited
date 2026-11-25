@@ -1,17 +1,27 @@
+import { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { RolesEnum } from "@/common/roles.enum";
 import useAuth from "@/hooks/useAuth";
-import { useGetProviderByUserQuery } from "@/store/provider/provider-api";
+import type { AppDispatch, RootState } from "@/store";
+import { fetchProviderByUser } from "@/store/provider/provider-slice";
 import IncomingOffers from "./IncomingOffers";
 import AssignedJobs from "./AssignedJobs";
 import { Star, ShieldCheck, UserCheck } from "lucide-react";
 
 export default function Dashboard() {
   const { user } = useAuth();
+  const dispatch = useDispatch<AppDispatch>();
   const isProvider = user?.role === RolesEnum.PROVIDER;
-  const { data: provider, isLoading, isError } = useGetProviderByUserQuery(
-    user?.id ?? "",
-    { skip: !isProvider },
-  );
+  const { profile: provider, pending, error } = useSelector((s: RootState) => s.provider);
+
+  useEffect(() => {
+    if (isProvider && user?.id) {
+      void dispatch(fetchProviderByUser(user.id));
+    }
+  }, [dispatch, isProvider, user?.id]);
+
+  const isLoading = pending > 0 && !provider;
+  const isError = Boolean(error) && !provider;
 
   if (isLoading) {
     return (
