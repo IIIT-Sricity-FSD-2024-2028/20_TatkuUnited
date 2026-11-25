@@ -16,10 +16,12 @@ import { fetchCustomerDetails } from "@/store/customer/customer-slice";
 import { fetchManagerDetails } from "@/store/manager/manager-slice";
 import { superuserActions } from "@/store/superuser/superuser-slice";
 import { providerActions } from "@/store/provider/provider-slice";
+import { providerApi } from "@/store/provider/provider-api";
 
 export function handleLogout() {
   store.dispatch(superuserActions.resetSlice());
   store.dispatch(providerActions.resetSlice());
+  store.dispatch(providerApi.util.resetApiState());
   store.dispatch(AuthActions.logout());
 }
 

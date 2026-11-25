@@ -1,24 +1,15 @@
 import axios, { type AxiosError } from "axios";
 import { BASE_URL, type ENDPOINT_TYPE } from "../endpoints";
 import type { HTTP_METHOD_TYPE } from "@/common/http.methods";
-import { store } from "@/store";
 
-const axiosInstance = axios.create({
+export const apiClient = axios.create({
     baseURL: BASE_URL,
     timeout: 20000,
 });
 
-axiosInstance.interceptors.request.use(
+apiClient.interceptors.request.use(
     (config) => {
-        let token: string | null = null;
-        try {
-            token = store.getState()?.auth?.token;
-        } catch {
-            // fallback
-        }
-        if (!token) {
-            token = sessionStorage.getItem("token");
-        }
+        const token = sessionStorage.getItem("token");
         if (token) {
             config.headers.Authorization = `Bearer ${token}`;
         }
@@ -34,7 +25,7 @@ export const apiService = async <TResponse = unknown, TBody = unknown> (
     onError?: (errorMessage: string) => void
 ): Promise<TResponse> => {
     try {
-        const response = await axiosInstance<TResponse>({
+        const response = await apiClient<TResponse>({
             method, url: endpoint, data
         });
         onSuccess?.(response.data);

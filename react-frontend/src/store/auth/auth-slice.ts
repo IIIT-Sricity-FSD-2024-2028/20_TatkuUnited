@@ -1,4 +1,4 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import type { UserInterface } from "@/models/auth.models";
 
 interface AuthState {
@@ -35,6 +35,19 @@ export const AuthSlice = createSlice({
             sessionStorage.clear();
             state.user = null;
             state.token = null;
+        },
+        profileUpdated(
+            state,
+            action: PayloadAction<{
+                id: string;
+                name: string;
+                email: string;
+                phone: string;
+            }>,
+        ) {
+            if (!state.user || state.user.id !== action.payload.id) return;
+            state.user = { ...state.user, ...action.payload };
+            sessionStorage.setItem("user", JSON.stringify(state.user));
         }
     }
 })
