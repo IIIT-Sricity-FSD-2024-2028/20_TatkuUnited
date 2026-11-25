@@ -12,14 +12,19 @@ import {
   getCategories,
   updateCategory as updateCategoryApi,
 } from "@/services/categories.service";
-import { getAllRegions } from "@/services/regions.service";
+import {
+  createRegion as createRegionApi,
+  deleteRegion as deleteRegionApi,
+  getAllRegions,
+  updateRegion as updateRegionApi,
+} from "@/services/regions.service";
 import {
   createUser as createUserApi,
   deleteUser as deleteUserApi,
   getAllUsers,
   updateUser as updateUserApi,
 } from "@/services/users.service";
-import { createManager } from "@/services/managers.service";
+import { createManager, getAllManagers, updateManager } from "@/services/managers.service";
 import { getAllProviders } from "@/services/providers.service";
 import { getAllBookings } from "@/services/bookings.service";
 import { AuthActions } from "../auth/auth-slice";
@@ -27,11 +32,15 @@ import type {
   BookingDocument,
   CategoryDocument,
   CreateCategoryDto,
+  CreateRegionDto,
   CreateServiceDto,
   CreateUserDto,
   GeoLocationDto,
+  ManagerDocument,
+  RegionDocument,
   ServiceDocument,
   UpdateCategoryDto,
+  UpdateRegionDto,
   UpdateServiceDto,
   UpdateUserDto,
   UserDocument,
@@ -52,6 +61,8 @@ interface SuperuserState {
   users: UserDocument[];
   categories: CategoryDocument[];
   services: ServiceDocument[];
+  regions: RegionDocument[];
+  managers: ManagerDocument[];
   pending: number;
   pendingRequests: Record<string, true>;
   submitting: boolean;
@@ -71,6 +82,8 @@ const initialState: SuperuserState = {
   users: [],
   categories: [],
   services: [],
+  regions: [],
+  managers: [],
   pending: 0,
   pendingRequests: {},
   submitting: false,
@@ -194,11 +207,69 @@ export const deleteService = createAsyncThunkTyped(
   },
 );
 
+export const fetchRegions = createAsyncThunkTyped(
+  "superuser/fetchRegions",
+  (): Promise<RegionDocument[]> => getAllRegions(),
+);
+
+export const fetchManagers = createAsyncThunkTyped(
+  "superuser/fetchManagers",
+  (): Promise<ManagerDocument[]> => getAllManagers(),
+);
+
+export interface CreateRegionArgs {
+  dto: CreateRegionDto;
+  salary: number;
+}
+
+export const createRegion = createAsyncThunkTyped(
+  "superuser/createRegion",
+  async (
+    args: CreateRegionArgs,
+  ): Promise<{ region: RegionDocument; manager: ManagerDocument }> => {
+    const manager = await updateManager(args.dto.manager, {
+      salary: args.salary,
+    });
+    const region = await createRegionApi(args.dto);
+    return { region, manager };
+  },
+);
+
+export interface UpdateRegionArgs {
+  id: string;
+  dto: UpdateRegionDto;
+  managerId: string;
+  salary: number;
+}
+
+export const updateRegion = createAsyncThunkTyped(
+  "superuser/updateRegion",
+  async (
+    args: UpdateRegionArgs,
+  ): Promise<{ region: RegionDocument; manager: ManagerDocument }> => {
+    const region = await updateRegionApi(args.id, args.dto);
+    const manager = await updateManager(args.managerId, {
+      salary: args.salary,
+    });
+    return { region, manager };
+  },
+);
+
+export const deleteRegion = createAsyncThunkTyped(
+  "superuser/deleteRegion",
+  async (id: string): Promise<string> => {
+    await deleteRegionApi(id);
+    return id;
+  },
+);
+
 const fetchRequests = [
   fetchDashboard,
   fetchUsers,
   fetchCategories,
   fetchServices,
+  fetchRegions,
+  fetchManagers,
 ] as const;
 
 const mutationRequests = [
@@ -211,6 +282,9 @@ const mutationRequests = [
   createService,
   updateService,
   deleteService,
+  createRegion,
+  updateRegion,
+  deleteRegion,
 ] as const;
 
 const SuperuserSlice = createSlice({
@@ -280,6 +354,36 @@ const SuperuserSlice = createSlice({
       .addCase(deleteService.fulfilled, (state, action) => {
         state.services = state.services.filter(
           (service) => service._id !== action.payload,
+        );
+      })
+      .addCase(fetchRegions.fulfilled, (state, action) => {
+        if (!state.pendingRequests[action.meta.requestId]) return;
+        state.regions = action.payload;
+      })
+      .addCase(fetchManagers.fulfilled, (state, action) => {
+        if (!state.pendingRequests[action.meta.requestId]) return;
+        state.managers = action.payload;
+      })
+      .addCase(createRegion.fulfilled, (state, action) => {
+        state.regions.push(action.payload.region);
+        const manager = state.managers.find(
+          (item) => item._id === action.payload.manager._id,
+        );
+        if (manager) manager.salary = action.payload.manager.salary;
+      })
+      .addCase(updateRegion.fulfilled, (state, action) => {
+        const index = state.regions.findIndex(
+          (region) => region._id === action.payload.region._id,
+        );
+        if (index !== -1) state.regions[index] = action.payload.region;
+        const manager = state.managers.find(
+          (item) => item._id === action.payload.manager._id,
+        );
+        if (manager) manager.salary = action.payload.manager.salary;
+      })
+      .addCase(deleteRegion.fulfilled, (state, action) => {
+        state.regions = state.regions.filter(
+          (region) => region._id !== action.payload,
         );
       })
       .addMatcher(isPending(...fetchRequests), (state, action) => {
