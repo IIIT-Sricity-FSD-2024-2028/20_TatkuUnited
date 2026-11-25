@@ -11,6 +11,7 @@ import { serviceReducer } from "./service/service-slice";
 import { superuserReducer } from "./superuser/superuser-slice";
 
 export const store = configureStore({
+    devTools: true,
     reducer: {
         auth: AuthReducer,
         booking: bookingReducer,
@@ -24,6 +25,10 @@ export const store = configureStore({
         superuser: superuserReducer,
     },
 });
+
+if (typeof window !== "undefined") {
+    (window as unknown as { store: typeof store }).store = store;
+}
 
 export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;

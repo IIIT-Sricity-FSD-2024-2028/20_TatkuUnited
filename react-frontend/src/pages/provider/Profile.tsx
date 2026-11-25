@@ -1,13 +1,16 @@
 import { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { toast } from "@/components/ui/toast";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import useAuth from "@/hooks/useAuth";
-import { getUserById, updateUser } from "@/services/users.service";
-import { useAppDispatch } from "@/store/hooks";
-import { AuthActions } from "@/store/auth/auth-slice";
+import type { AppDispatch, RootState } from "@/store";
+import {
+  fetchProviderUser,
+  updateProviderUserThunk,
+} from "@/store/provider/provider-slice";
 import type { UpdateUserDto, UserDocument } from "@/models/api.models";
 
 interface ProfileForm {
@@ -42,13 +45,18 @@ function formFromUser(user: Pick<UserDocument, "name" | "email" | "phone" | "gen
 
 export default function Profile() {
   const { user } = useAuth();
-  const dispatch = useAppDispatch();
+  const dispatch = useDispatch<AppDispatch>();
   const [form, setForm] = useState<ProfileForm>(emptyForm);
   const [editing, setEditing] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [profile, setProfile] = useState<UserDocument | null>(null);
-  const [loading, setLoading] = useState(Boolean(user?.id));
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const { userProfile: profile, pending, error: sliceError } = useSelector((s: RootState) => s.provider);
+
+  useEffect(() => {
+    if (user?.id) {
+      void dispatch(fetchProviderUser(user.id));
+    }
+  }, [dispatch, user?.id]);
 
   useEffect(() => {
     if (profile) setForm(formFromUser(profile));
@@ -90,9 +98,9 @@ export default function Profile() {
     setError(null);
     setSaving(true);
     try {
-      const updatedUser = await updateUser(profile._id, changes);
-      setProfile(updatedUser);
-      dispatch(AuthActions.profileUpdated({ id: updatedUser._id, name: updatedUser.name, email: updatedUser.email, phone: updatedUser.phone }));
+      const updatedUser = await dispatch(
+        updateProviderUserThunk({ id: profile._id, changes }),
+      ).unwrap();
       setForm(formFromUser(updatedUser));
       setEditing(false);
       toast.add({ type: "info", description: "Profile updated successfully." });
@@ -102,17 +110,22 @@ export default function Profile() {
           ? saveError.message
           : "Unable to save profile changes.",
       );
-    } finally { setSaving(false); }
+    } finally {
+      setSaving(false);
+    }
   };
 
-  if (loading) {
+  const isLoading = pending > 0 && !profile;
+  const isError = Boolean(sliceError) && !profile;
+
+  if (isLoading) {
     return <p className="rounded-lg bg-white p-6 shadow">Loading profile...</p>;
   }
 
   if (!profile) {
     return (
       <p className="rounded-lg bg-white p-6 text-red-600 shadow">
-        {error ?? "Provider profile is unavailable."}
+        {error ?? (isError ? "Unable to load the latest profile details." : "Provider profile is unavailable.")}
       </p>
     );
   }

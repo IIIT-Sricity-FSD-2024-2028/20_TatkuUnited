@@ -1,7 +1,12 @@
 import { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { RolesEnum } from "@/common/roles.enum";
 import useAuth from "@/hooks/useAuth";
-import { useProviderData } from "./ProviderDataContext";
+import type { AppDispatch, RootState } from "@/store";
+import {
+    fetchProviderByUser,
+    updateProviderThunk,
+} from "@/store/provider/provider-slice";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -34,6 +39,7 @@ const days = [
 
 export default function Settings() {
     const { user } = useAuth();
+    const dispatch = useDispatch<AppDispatch>();
     const isProvider = user?.role === RolesEnum.PROVIDER;
     const [form, setForm] = useState<SettingsForm>({
     experience: 0,
@@ -41,10 +47,16 @@ export default function Settings() {
     workHourEnd: 1080,
     workingDays: [],
     });
+    const [saving, setSaving] = useState(false);
     const [message, setMessage] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
-    const { provider, providerLoading, providerError, updateProvider } = useProviderData();
-    const [saving, setSaving] = useState(false);
+    const { profile: provider, pending, error: sliceError } = useSelector((s: RootState) => s.provider);
+
+    useEffect(() => {
+        if (isProvider && user?.id) {
+            void dispatch(fetchProviderByUser(user.id));
+        }
+    }, [dispatch, isProvider, user?.id]);
 
     useEffect(() => {
         if (provider) {
@@ -68,13 +80,14 @@ export default function Settings() {
 
     async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!provider) return;
+    const providerId = provider?._id;
+    if (!providerId) return;
 
     try {
         setError(null);
         setMessage(null);
         setSaving(true);
-        await updateProvider(form);
+        await dispatch(updateProviderThunk({ id: providerId, changes: form })).unwrap();
         setMessage("Provider settings saved.");
     } catch (requestError) {
         setError(
@@ -82,7 +95,9 @@ export default function Settings() {
             ? requestError.message
             : "Unable to save provider settings.",
         );
-    } finally { setSaving(false); }
+    } finally {
+        setSaving(false);
+    }
     }
 
     if (!isProvider) {
@@ -93,7 +108,10 @@ export default function Settings() {
     );
     }
 
-    if (providerLoading) {
+    const isLoading = pending > 0 && !provider;
+    const isError = Boolean(sliceError) && !provider;
+
+    if (isLoading) {
     return (
         <Card>
         <CardContent className="pt-6">Loading settings...</CardContent>
@@ -186,7 +204,7 @@ export default function Settings() {
             </FieldSet>
 
         {message && <p className="text-green-600">{message}</p>}
-        {(error || providerError) && <p className="text-destructive">{error ?? providerError}</p>}
+        {(error || isError) && <p className="text-destructive">{error ?? "Unable to load provider settings."}</p>}
         <Button disabled={saving} type="submit">
             {saving ? "Saving..." : "Save settings"}
         </Button>

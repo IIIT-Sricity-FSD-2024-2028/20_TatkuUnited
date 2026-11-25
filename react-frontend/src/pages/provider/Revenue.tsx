@@ -1,8 +1,12 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { RolesEnum } from "@/common/roles.enum";
 import useAuth from "@/hooks/useAuth";
-import { getBookingsByProvider } from "@/services/bookings.service";
-import { useProviderData } from "./ProviderDataContext";
+import type { AppDispatch, RootState } from "@/store";
+import {
+  fetchProviderBookings,
+  fetchProviderByUser,
+} from "@/store/provider/provider-slice";
 import type { BookingDocument, OrderDocument } from "@/models/api.models";
 import {
   Card,
@@ -39,20 +43,28 @@ function payoutStatus(booking: BookingDocument): "pending" | "paid" | "unknown" 
 
 export default function Revenue() {
   const { user } = useAuth();
+  const dispatch = useDispatch<AppDispatch>();
   const isProvider = user?.role === RolesEnum.PROVIDER;
-  const { provider, providerLoading } = useProviderData();
-  const [allBookings, setAllBookings] = useState<BookingDocument[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const loadBookings = useCallback(async () => {
-    if (!provider?._id) return;
-    setLoading(true);
-    try { setAllBookings(await getBookingsByProvider(provider._id)); setError(null); }
-    catch { setError("Unable to load earnings."); }
-    finally { setLoading(false); }
-  }, [provider?._id]);
-  useEffect(() => { void loadBookings(); }, [loadBookings]);
-  const bookings = allBookings.filter((booking) => booking.status === "completed");
+  const { profile, bookings: allBookings, pending, error } = useSelector((s: RootState) => s.provider);
+
+  useEffect(() => {
+    if (isProvider && user?.id && !profile) {
+      void dispatch(fetchProviderByUser(user.id));
+    }
+  }, [dispatch, isProvider, profile, user?.id]);
+
+  useEffect(() => {
+    if (profile?._id) {
+      void dispatch(fetchProviderBookings(profile._id));
+    }
+  }, [dispatch, profile?._id]);
+
+  const bookings = useMemo(
+    () => allBookings.filter((booking) => booking.status === "completed"),
+    [allBookings],
+  );
+  const isLoading = pending > 0 && (!profile || allBookings.length === 0);
+  const isError = Boolean(error) && allBookings.length === 0;
 
   const totals = useMemo(() => {
     const grossRevenue = bookings.reduce(
@@ -89,7 +101,7 @@ export default function Revenue() {
     );
   }
 
-  if (providerLoading || loading) {
+  if (isLoading) {
     return (
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {Array.from({ length: 4 }, (_, index) => (
@@ -108,7 +120,7 @@ export default function Revenue() {
         </p>
       </div>
 
-      {error && <p className="text-destructive">{error}</p>}
+      {isError && <p className="text-destructive">Unable to load earnings.</p>}
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Card>
