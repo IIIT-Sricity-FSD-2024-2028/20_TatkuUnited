@@ -1,10 +1,9 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import {
-  getMyPendingOffers,
-  getProviderOffers,
-  acceptBooking,
-  rejectBooking,
-} from "@/services/bookings.service";
+  useAcceptBookingMutation,
+  useGetIncomingOffersQuery,
+  useRejectBookingMutation,
+} from "@/store/provider/provider-api";
 import type {
   BookingDocument,
   ServiceDocument,
@@ -69,6 +68,9 @@ export default function IncomingOffers({
 }: IncomingOffersProps) {
   const actionBusy = useRef(false);
   const fetchBusy = useRef(false);
+  const incomingOffersQuery = useGetIncomingOffersQuery();
+  const [acceptBooking] = useAcceptBookingMutation();
+  const [rejectBooking] = useRejectBookingMutation();
   const [error, setError] = useState("");
   const [offers, setOffers] = useState<BookingDocument[]>([]);
   const [loading, setLoading] = useState(true);
@@ -88,7 +90,7 @@ export default function IncomingOffers({
       actionBusy.current = true;
       setActingId(bookingId);
       try {
-        const accepted = await acceptBooking(bookingId, providerId);
+        const accepted = await acceptBooking({ id: bookingId, providerId }).unwrap();
         toast.add({
           type: "success",
           title: "🎉 Job Accepted!",
@@ -135,7 +137,7 @@ export default function IncomingOffers({
         setActingId(null);
       }
     },
-    [providerId, onJobAccepted],
+    [acceptBooking, providerId, onJobAccepted],
   );
 
   const handleDecline = useCallback(
@@ -144,7 +146,7 @@ export default function IncomingOffers({
       actionBusy.current = true;
       setActingId(bookingId);
       try {
-        await rejectBooking(bookingId, providerId);
+        await rejectBooking({ id: bookingId, providerId }).unwrap();
         toast.add({
           type: "info",
           title: "Offer Declined",
@@ -170,7 +172,7 @@ export default function IncomingOffers({
         setActingId(null);
       }
     },
-    [providerId],
+    [providerId, rejectBooking],
   );
 
   const fetchOffers = useCallback(
@@ -181,9 +183,7 @@ export default function IncomingOffers({
       else setRefreshing(true);
 
       try {
-        const data = providerId
-          ? await getProviderOffers(providerId)
-          : await getMyPendingOffers();
+        const data = incomingOffersQuery.data ?? [];
 
         const activeOffers = (data || []).filter((b) => {
           // Find provider's offer entry or general expiry
@@ -273,17 +273,12 @@ export default function IncomingOffers({
         setRefreshing(false);
       }
     },
-    [providerId, handleAccept, handleDecline],
+    [providerId, handleAccept, handleDecline, incomingOffersQuery.data],
   );
 
-  // Initial fetch and periodic background poll every 6 seconds
+  // The ProviderLayout notifier owns network polling; this component consumes its cache.
   useEffect(() => {
-    fetchOffers(true);
-    const interval = setInterval(() => {
-      fetchOffers(false);
-    }, 6000);
-
-    return () => clearInterval(interval);
+    void fetchOffers(true);
   }, [fetchOffers]);
 
   return (

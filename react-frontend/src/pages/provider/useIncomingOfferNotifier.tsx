@@ -1,12 +1,7 @@
 import { useEffect, useRef, useCallback } from "react";
 import { RolesEnum } from "@/common/roles.enum";
-import { useAuthContext } from "@/common/AuthContext";
-import { getProviderByUser } from "@/services/providers.service";
-import {
-  getMyPendingOffers,
-  acceptBooking,
-  rejectBooking,
-} from "@/services/bookings.service";
+import useAuth from "@/hooks/useAuth";
+import { useAcceptBookingMutation, useGetIncomingOffersQuery, useGetProviderByUserQuery, useRejectBookingMutation } from "@/store/provider/provider-api";
 import type { BookingDocument, ServiceDocument, UserDocument } from "@/models/api.models";
 import { toast } from "@/components/ui/toast";
 import { Button } from "@/components/ui/button";
@@ -14,6 +9,14 @@ import { CheckCircle2, X } from "lucide-react";
 
 // Global module-level set so offers aren't double-toasted across components
 export const notifiedOfferIds = new Set<string>();
+let notificationScope: string | null = null;
+
+function resetNotificationsForUser(userId?: string) {
+  if (notificationScope !== (userId ?? null)) {
+    notifiedOfferIds.clear();
+    notificationScope = userId ?? null;
+  }
+}
 
 function formatSlotTime(minutes: number): string {
   const hours = Math.floor(minutes / 60);
@@ -49,24 +52,30 @@ function playChime() {
 }
 
 export function useIncomingOfferNotifier(onOfferAccepted?: (booking: BookingDocument) => void) {
-  const { authDetails } = useAuthContext();
-  const user = authDetails?.user;
+  const { user } = useAuth();
   const providerIdRef = useRef<string | null>(null);
+  const isProvider = user?.role === RolesEnum.PROVIDER;
+  const providerQuery = useGetProviderByUserQuery(user?.id ?? "", { skip: !isProvider });
+  const offersQuery = useGetIncomingOffersQuery(undefined, {
+    skip: !isProvider,
+    pollingInterval: 6000,
+  });
+  const [acceptBooking] = useAcceptBookingMutation();
+  const [rejectBooking] = useRejectBookingMutation();
 
   // 1. Resolve Provider ID once
   useEffect(() => {
-    if (!user || user.role !== RolesEnum.PROVIDER) return;
-    getProviderByUser(user.id)
-      .then((p) => {
-        if (p?._id) providerIdRef.current = p._id;
-      })
-      .catch(() => {});
-  }, [user]);
+    providerIdRef.current = providerQuery.data?._id ?? null;
+  }, [providerQuery.data]);
+
+  useEffect(() => {
+    resetNotificationsForUser(user?.id);
+  }, [user?.id]);
 
   const handleAccept = useCallback(
     async (bookingId: string, toastId: string) => {
       try {
-        const accepted = await acceptBooking(bookingId, providerIdRef.current || undefined);
+        const accepted = await acceptBooking({ id: bookingId, providerId: providerIdRef.current ?? undefined }).unwrap();
         toast.add({
           type: "success",
           title: "🎉 Job Accepted!",
@@ -100,12 +109,12 @@ export function useIncomingOfferNotifier(onOfferAccepted?: (booking: BookingDocu
         toast.close(toastId);
       }
     },
-    [onOfferAccepted],
+    [acceptBooking, onOfferAccepted],
   );
 
   const handleDecline = useCallback(async (bookingId: string, toastId: string) => {
     try {
-      await rejectBooking(bookingId, providerIdRef.current || undefined);
+      await rejectBooking({ id: bookingId, providerId: providerIdRef.current ?? undefined }).unwrap();
       toast.add({
         type: "info",
         title: "Offer Declined",
@@ -125,13 +134,13 @@ export function useIncomingOfferNotifier(onOfferAccepted?: (booking: BookingDocu
       });
       toast.close(toastId);
     }
-  }, []);
+  }, [rejectBooking]);
 
   const checkOffers = useCallback(async () => {
     if (!user || user.role !== RolesEnum.PROVIDER) return;
 
     try {
-      const data = await getMyPendingOffers();
+      const data = offersQuery.data ?? [];
       const activeOffers = (data || []).filter((b) => {
         const myOffer = b.offers?.find(
           (o) =>
@@ -207,11 +216,9 @@ export function useIncomingOfferNotifier(onOfferAccepted?: (booking: BookingDocu
     } catch {
       // Ignore background poll errors
     }
-  }, [user, handleAccept, handleDecline]);
+  }, [user, handleAccept, handleDecline, offersQuery.data]);
 
   useEffect(() => {
-    checkOffers();
-    const interval = setInterval(checkOffers, 6000);
-    return () => clearInterval(interval);
+    void checkOffers();
   }, [checkOffers]);
 }
