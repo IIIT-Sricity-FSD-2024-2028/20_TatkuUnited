@@ -1,4 +1,6 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createSlice, isPending, isFulfilled, isRejected, type PayloadAction } from "@reduxjs/toolkit";
+import createAsyncThunkTyped from "../asyncThunk";
+import { AuthActions } from "../auth/auth-slice";
 
 interface ProviderState {
 
