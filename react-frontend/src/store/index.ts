@@ -1,3 +1,5 @@
+import { setApiTokenSource } from "@/common/services/apiService";
+import { persistSession } from "@/common/services/sessionStorage";
 import { configureStore } from "@reduxjs/toolkit";
 import { AuthReducer } from "./auth/auth-slice";
 import { managerReducer } from "./manager/manager-slice";
@@ -24,6 +26,15 @@ export const store = configureStore({
         service: serviceReducer,
         superuser: superuserReducer,
     },
+});
+
+setApiTokenSource(() => store.getState().auth.token);
+let previousAuth = store.getState().auth;
+store.subscribe(() => {
+    const auth = store.getState().auth;
+    if (auth === previousAuth) return;
+    previousAuth = auth;
+    persistSession(auth.user && auth.token ? { user: auth.user, token: auth.token } : null);
 });
 
 if (typeof window !== "undefined") {
