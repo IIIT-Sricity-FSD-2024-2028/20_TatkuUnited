@@ -25,11 +25,6 @@ export default function CustomerLayout() {
           icon={<BsCart3 />}
         />
         <SidebarItem
-          to="/customer/schedule"
-          label="Schedule"
-          icon={<BsCalendarEvent />}
-        />
-        <SidebarItem
           to="/customer/account-settings"
           label="Account Settings"
           icon={<BsGear />}
