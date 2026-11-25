@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import CartList from "../../components/CartList";
 import CartSummary from "../../components/CartSummary";
 import EmptyCart from "../../components/EmptyCart";
-import { useAuthContext } from "@/common/AuthContext";
+import useAuth from "@/hooks/useAuth";
 import { getStoredUser, getStoredUserId } from "@/common/services/authService";
 import {
   getUserCart,
@@ -48,7 +48,7 @@ function formatBookingDate(dateVal?: string | Date): string {
 
 function CartPage() {
   const navigate = useNavigate();
-  const authContext = useAuthContext();
+  const authSession = useAuth();
 
   const [cartItems, setCartItems] = useState<CartItemData[]>([]);
   const [loading, setLoading] = useState(true);
@@ -57,11 +57,9 @@ function CartPage() {
 
   const storedUser = getStoredUser();
   const customerId =
-    authContext.authDetails?.user?.id ||
-    (authContext.authDetails?.user as any)?._id ||
+    authSession.authDetails?.user?.id ||
     getStoredUserId() ||
-    storedUser?.id ||
-    storedUser?._id;
+    storedUser?.id;
 
   const transformCartItems = (cart: BackendCart): CartItemData[] => {
     if (!cart?.items || !Array.isArray(cart.items)) return [];

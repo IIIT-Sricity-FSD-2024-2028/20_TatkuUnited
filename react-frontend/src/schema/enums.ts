@@ -1,4 +1,4 @@
-export type Role = 'customer' | 'provider' | 'manager' | 'admin';
+export type { Role } from '../common/roles.enum';
 export type UserStatus = 'active' | 'blocked';
 export type Gender = 'male' | 'female' | 'other';
 export type ProviderStatus = 'pending' | 'approved' | 'suspended';

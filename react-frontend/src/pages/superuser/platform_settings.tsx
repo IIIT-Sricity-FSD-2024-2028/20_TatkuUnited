@@ -1,15 +1,22 @@
-import AuthContext from "@/common/AuthContext";
-import type { PlatformSettingDocument, UpdatePlatformSettingDto } from "@/models/api.models";
-import { getAllPlatformSettings, updatePlatformSetting } from "@/services";
-import React, { useContext, useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import type { AppDispatch, RootState } from "@/store";
+import {
+    fetchPlatformSettings,
+    platformActions,
+    updatePlatformSettings,
+} from "@/store/platform-setting/platform-slice";
+import { toast } from "@/components/ui/toast";
+import type { UpdatePlatformSettingDto } from "@/models/api.models";
+import React, { useEffect, useState } from "react";
 
 export default function SuperUser_PlatformSettings()
 {
-    const authContext = useContext(AuthContext);
-    const token = authContext?.authDetails?.token;
-    
-    const [platformSettings, setPlatformSettings] = useState<PlatformSettingDocument>();
-    
+    const dispatch = useDispatch<AppDispatch>();
+    const { settings, requestId, submitting, error } = useSelector(
+        (state: RootState) => state.platform,
+    );
+    const loading = requestId !== null;
+
     const [platformFee, setPlatformFee] = useState<number | undefined>();
 
     const [maxAssDist, setMaxAssDist] = useState<number | undefined>();
@@ -34,40 +41,42 @@ export default function SuperUser_PlatformSettings()
         (_, i) => (firstSlotStart || 0) + i * safeInterval
     );
 
-    const fetchPlatSet = async () => {
-        try
-        {
-            const response = await getAllPlatformSettings();
-            
-            setPlatformSettings(response?.[0]);
-        }
-        catch(err)
-        {
-            console.error('boo', err);
-        }
-    }
-
     useEffect(() => {
-        fetchPlatSet();
-    }, [token])
+        dispatch(fetchPlatformSettings());
+    }, [dispatch])
 
     useEffect(()=>{
-        setSlotInterval(platformSettings?.slotIntervalMinutes);
-        setMaxAssDist(platformSettings?.maxAssignmentDistanceKm);
-        setPlatformFee(platformSettings?.platformFeePercent);
-        setfirstSlotStart(platformSettings?.firstSlotStart);
-        setLastSlotStart(platformSettings?.lastSlotStart);
-        setBookWindow(platformSettings?.bookingWindowDays);
-        setMinLead(platformSettings?.minLeadMinutes);
-        setTravelBuffer(platformSettings?.travelBufferMinutes);
-        setOfferTimeout(platformSettings?.offerTimeoutMinutes);
-    }, [platformSettings])
+        if (!settings) return;
+        setSlotInterval(settings.slotIntervalMinutes);
+        setMaxAssDist(settings.maxAssignmentDistanceKm);
+        setPlatformFee(settings.platformFeePercent);
+        setfirstSlotStart(settings.firstSlotStart);
+        setLastSlotStart(settings.lastSlotStart);
+        setBookWindow(settings.bookingWindowDays);
+        setMinLead(settings.minLeadMinutes);
+        setTravelBuffer(settings.travelBufferMinutes);
+        setOfferTimeout(settings.offerTimeoutMinutes);
+    }, [settings])
+
+    const handleCancel = () => {
+        setSlotInterval(settings?.slotIntervalMinutes);
+        setMaxAssDist(settings?.maxAssignmentDistanceKm);
+        setPlatformFee(settings?.platformFeePercent);
+        setfirstSlotStart(settings?.firstSlotStart);
+        setLastSlotStart(settings?.lastSlotStart);
+        setBookWindow(settings?.bookingWindowDays);
+        setMinLead(settings?.minLeadMinutes);
+        setTravelBuffer(settings?.travelBufferMinutes);
+        setOfferTimeout(settings?.offerTimeoutMinutes);
+        dispatch(platformActions.clearError());
+    }
 
     const handleSubmit = async (e: React.SyntheticEvent) =>
     {
         e.preventDefault();
-        
-        const settings: UpdatePlatformSettingDto = {
+        if (!settings) return;
+
+        const dto: UpdatePlatformSettingDto = {
             platformFeePercent: platformFee,
             maxAssignmentDistanceKm: maxAssDist,
             slotIntervalMinutes: slotInterval,
@@ -81,13 +90,12 @@ export default function SuperUser_PlatformSettings()
 
         try
         {
-            if (!platformSettings?._id) return;
-            const response = await updatePlatformSetting(platformSettings?._id, settings);
-            console.log(response);
+            await dispatch(updatePlatformSettings({ id: settings._id, dto })).unwrap();
+            toast.add({ type: "info", description: "Platform settings saved" });
         }
-        catch(err)
+        catch
         {
-            console.error('failed to update settings', err);
+            // the rejected thunk stores a readable message in the slice
         }
     }
 
@@ -103,19 +111,31 @@ export default function SuperUser_PlatformSettings()
                 <div className="flex items-center gap-3">
                     <button 
                         type='button' 
-                        onClick={() => fetchPlatSet()}
-                        className="px-4 py-2 border border-slate-300 rounded-lg text-sm font-medium hover:bg-slate-50 text-slate-700 transition-colors"
+                        onClick={handleCancel}
+                        disabled={loading || submitting}
+                        className="px-4 py-2 border border-slate-300 rounded-lg text-sm font-medium hover:bg-slate-50 text-slate-700 transition-colors disabled:opacity-50"
                     >
                         Cancel
                     </button>
                     <button 
                         type='submit'
-                        className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors text-sm"
+                        disabled={loading || submitting || !settings}
+                        className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors text-sm disabled:opacity-50"
                     >
-                        Save Changes
+                        {submitting ? 'Saving...' : 'Save Changes'}
                     </button>
                 </div>
             </div>
+
+            {loading && (
+                <p className="text-sm text-slate-500">Loading platform settings...</p>
+            )}
+
+            {error && (
+                <div role="alert" className="rounded-lg bg-red-50 p-3 text-sm text-red-700 border border-red-200">
+                    {error}
+                </div>
+            )}
 
             {/* Top Cards Row */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

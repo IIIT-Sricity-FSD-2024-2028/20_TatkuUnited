@@ -1,3 +1,5 @@
+> Historical notes: AuthContext examples below are obsolete. Authentication now uses Redux via `useAuth()`. See [the Redux handoff](../docs/redux-handoff.md) for the current implementation.
+
 # Provider React Concepts: Code Examples
 
 This document contains examples taken from the provider application codebase.

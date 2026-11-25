@@ -10,9 +10,6 @@ import ManagerRouter from "./pages/manager/manager_route";
 
 import { Provider as ReduxProvider } from "react-redux";
 import { store } from "./store";
-import AuthContext from "./common/AuthContext";
-import { useState } from "react";
-import type { AuthInterface } from "./models/auth.models";
 import { Toaster } from "./components/ui/toast";
 import NotFound from "./pages/components/notFound";
 import CustomerRouter from "./pages/customer/customer_route";
@@ -21,23 +18,8 @@ import ServicePage from "./pages/general/servicePage";
 // import ForbiddenAccess from "./pages/components/forbiddenAccess";
 
 function App() {
-  const [authDetails, setAuthDetails] = useState<AuthInterface | null>(() => {
-    try {
-      const token = sessionStorage.getItem("token");
-      const userStr = sessionStorage.getItem("user");
-      const user = userStr ? JSON.parse(userStr) : null;
-      if (token) {
-        return { token, user };
-      }
-    } catch {
-      // ignore parse errors
-    }
-    return null;
-  });
-
   return (
-    <AuthContext.Provider value={{ authDetails, setAuthDetails }}>
-      <ReduxProvider store={store}>
+    <ReduxProvider store={store}>
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Landing />} />
@@ -65,8 +47,7 @@ function App() {
           </Routes>
         </BrowserRouter>
         <Toaster />
-      </ReduxProvider>
-    </AuthContext.Provider>
+    </ReduxProvider>
   );
 }
 

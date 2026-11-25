@@ -3,8 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { HTTP_METHODS_ENUM } from "@/common/http.methods";
 import { apiService } from "@/common/services/apiService";
 import { ENDPOINT_ENUM } from "@/common/endpoints";
-import { handleLogout, getStoredUser, getStoredUserId } from "@/common/services/authService";
-import { useAuthContext } from "@/common/AuthContext";
+import { handleLogout } from "@/common/services/authService";
 import {
   getUserById,
   updateUser,
@@ -12,17 +11,23 @@ import {
   deleteUserAddress,
 } from "@/services/users.service";
 import { getBookingsByCustomer } from "@/services/bookings.service";
+import useAuth from "@/hooks/useAuth";
+import { useDispatch } from "react-redux";
+import { AuthActions } from "@/store/auth/auth-slice";
 
 function AccountSettingsPage() {
   const navigate = useNavigate();
-  const authContext = useAuthContext();
+  const dispatch = useDispatch();
+  const { user } = useAuth();
+  const customerId = user?.id;
+  const storedUser = user;
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
+  const [name, setName] = useState(user?.name ?? "");
+  const [email, setEmail] = useState(user?.email ?? "");
+  const [phone, setPhone] = useState(user?.phone ?? "");
   const [dob, setDob] = useState("");
 
   const [addresses, setAddresses] = useState<any[]>([]);
@@ -39,13 +44,6 @@ function AccountSettingsPage() {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
-  const storedUser = getStoredUser();
-  const customerId =
-    authContext.authDetails?.user?.id ||
-    (authContext.authDetails?.user as any)?._id ||
-    getStoredUserId() ||
-    storedUser?.id ||
-    storedUser?._id;
 
   const showMessage = (text: string) => {
     setMessage(text);
@@ -191,22 +189,18 @@ function AccountSettingsPage() {
         dob: dob || undefined,
       });
 
-      // Update session storage so UI across the application stays in sync
-      const updatedSession = {
-        ...(storedUser || {}),
-        id: updatedUserDoc._id || customerId,
-        _id: updatedUserDoc._id || customerId,
-        name: updatedUserDoc.name || name.trim(),
-        email: updatedUserDoc.email || email.trim(),
-        phone: updatedUserDoc.phone || `+91${phone}`,
-      };
-
-      sessionStorage.setItem("user", JSON.stringify(updatedSession));
+      dispatch(AuthActions.userUpdated({
+        name: updatedUserDoc.name,
+        email: updatedUserDoc.email,
+        phone: updatedUserDoc.phone,
+      }));
 
       showMessage("Personal information saved successfully!");
     } catch (err: any) {
       showError(
-        err?.response?.data?.message || err.message || "Failed to save changes.",
+        err?.response?.data?.message ||
+          err.message ||
+          "Failed to save changes.",
       );
     } finally {
       setSaving(false);
@@ -248,7 +242,9 @@ function AccountSettingsPage() {
       showMessage("Address added successfully!");
     } catch (err: any) {
       showError(
-        err?.response?.data?.message || err.message || "Failed to save address.",
+        err?.response?.data?.message ||
+          err.message ||
+          "Failed to save address.",
       );
     }
   };
@@ -711,15 +707,21 @@ function AccountSettingsPage() {
                     Account Deletion
                   </h3>
                   <div className="mt-2 rounded-lg bg-amber-50 p-3 border border-amber-200 text-xs text-amber-800 leading-relaxed">
-                    <p className="font-semibold">Self-service deletion is restricted</p>
+                    <p className="font-semibold">
+                      Self-service deletion is restricted
+                    </p>
                     <p className="mt-0.5">
-                      To safeguard your active bookings and audit history, accounts cannot be deleted directly from this page. To request permanent account closure and personal data removal, please contact an administrator at{" "}
+                      To safeguard your active bookings and audit history,
+                      accounts cannot be deleted directly from this page. To
+                      request permanent account closure and personal data
+                      removal, please contact an administrator at{" "}
                       <a
                         href="mailto:support@tatkuunited.com"
                         className="font-medium underline hover:text-amber-900"
                       >
                         support@tatkuunited.com
-                      </a>.
+                      </a>
+                      .
                     </p>
                   </div>
 

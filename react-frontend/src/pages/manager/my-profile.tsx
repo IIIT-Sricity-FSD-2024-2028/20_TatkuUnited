@@ -1,10 +1,10 @@
-import { useContext, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch, RootState } from "../../store";
 import { ManagerActions } from "../../store/manager/manager-slice";
 import { toast } from "../../components/ui/toast";
-import AuthContext from "@/common/AuthContext";
+import { AuthActions } from "@/store/auth/auth-slice";
 import { updateUser } from "@/services/users.service";
 import type { UpdateUserDto } from "@/models/api.models";
 import type { UserInterface } from "@/models/auth.models";
@@ -58,7 +58,6 @@ const getInitials = (name: string) =>
 
 export default function ManagerProfile() {
   const dispatch = useDispatch<AppDispatch>();
-  const auth = useContext(AuthContext);
   const [saving, setSaving] = useState(false);
   const { userInfo, managerInfo, regions, selectedRegionId, pending } =
     useSelector((state: RootState) => state.manager);
@@ -104,17 +103,7 @@ export default function ManagerProfile() {
   // The header and Dashboard greeting read the logged-in user from the
   // session, so copy the saved details there too, in memory and in storage.
   const syncSession = (details: Pick<UserInterface, "name" | "email" | "phone">) => {
-    auth?.setAuthDetails((prev) =>
-      prev ? { ...prev, user: { ...prev.user, ...details } } : prev,
-    );
-    try {
-      const stored = JSON.parse(sessionStorage.getItem("user") ?? "null");
-      if (stored) {
-        sessionStorage.setItem("user", JSON.stringify({ ...stored, ...details }));
-      }
-    } catch {
-      // storage unavailable: the in-memory update above is enough
-    }
+    dispatch(AuthActions.userUpdated(details));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {

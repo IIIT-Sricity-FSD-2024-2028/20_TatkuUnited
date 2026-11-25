@@ -1,29 +1,28 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
-import { BASE_URL } from '@/common/endpoints';
+import { useDispatch, useSelector } from 'react-redux';
+import type { AppDispatch, RootState } from "@/store";
+import {
+  createUser,
+  deleteUser,
+  fetchUsers,
+  superuserActions,
+  updateUser,
+} from "@/store/superuser/superuser-slice";
 import { BsPeople, BsPersonCheck, BsPersonX, BsPlus } from 'react-icons/bs';
 import SummaryCards from '@/components/superuser/SummaryCards';
 import DataTable, { type Column } from '@/components/superuser/DataTable';
-import { createManager, getAllUsers } from '@/services';
-import type { CreateManagerDto, UserRole } from '@/models/api.models';
-import useAuth from '@/hooks/useAuth';
-import { RolesEnum } from '@/common/roles.enum';
-
-export interface UsersResponse {
-  _id: string;
-  name: string;
-  email: string;
-  role: 'customer' | 'provider' | 'manager' | 'admin';
-  status: 'active' | 'blocked';
-  joined?: string;
-}
+import type {
+  CreateUserDto,
+  GeoLocationDto,
+  UserDocument,
+  UserRole,
+} from '@/models/api.models';
 
 export default function SuperUser_ManageUsers() {
-  const { user, isAuthenticated, token } = useAuth();
-
-  const [users, setUsers] = useState<Array<UsersResponse>>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const dispatch = useDispatch<AppDispatch>();
+  const { users, pending, error } = useSelector(
+    (state: RootState) => state.superuser,
+  );
 
   const totalUsers = users.length;
   const activeUsers = users.filter((u) => u.status === "active").length;
@@ -55,7 +54,9 @@ export default function SuperUser_ManageUsers() {
 
   const [isAddUser, setIsAddUser] = useState(false);
   const [isEditingUserID, setIsEditingUserID] = useState<string | null>(null);
-  const [isEditingUserStatus, setIsEditingUserStatus] = useState<'active' | 'blocked' | null>(null);
+  const editingUser = isEditingUserID
+    ? users.find((user) => user._id === isEditingUserID) ?? null
+    : null;
 
   const [status, setStatus] = useState('all_statuses');
   const [role, setRole] = useState('all-roles');
@@ -71,8 +72,7 @@ export default function SuperUser_ManageUsers() {
     return true;
   });
 
-  const columns: Column<UsersResponse>[] = [
-    { header: "User ID", render: (row) => <span className="font-medium text-slate-900">{row._id}</span> },
+  const columns: Column<UserDocument>[] = [
     { header: "Name", render: (row) => <>{row.name}</> },
     { header: "Email/Phone", render: (row) => <span className="text-slate-500">{row.email}</span> },
     { header: "Role", render: (row) => <>{row.role}</> },
@@ -87,8 +87,8 @@ export default function SuperUser_ManageUsers() {
       header: "Actions", render: (row) => (
         <button
           onClick={() => {
+            dispatch(superuserActions.clearError());
             setIsEditingUserID(row._id);
-            setIsEditingUserStatus(row.status);
           }}
           className="text-blue-600 hover:underline cursor-pointer"
         >
@@ -98,37 +98,19 @@ export default function SuperUser_ManageUsers() {
     },
   ];
 
-  const fetchAllUsers = async () => {
-    if (!isAuthenticated || !user || user.role !== RolesEnum.ADMIN) return;
-    try {
-      setIsLoading(true);
-      setError(null);
+  useEffect(() => {
+    dispatch(fetchUsers());
+  }, [dispatch]);
 
-      const users_data = await getAllUsers();
-      setUsers(
-        (users_data || []).map((u) => ({
-          _id: u._id,
-          name: u.name,
-          email: u.email,
-          role: u.role,
-          status: (u.status as 'active' | 'blocked') || "active",
-          joined: u.createdAt ? new Date(u.createdAt).toLocaleDateString("en-IN") : "-",
-        })),
-      );
-    } catch (err: any) {
-      setError(
-        err?.response?.data?.message ||
-        err?.message ||
-        "Failed to fetch users from server.",
-      );
-    } finally {
-      setIsLoading(false);
-    }
+  const closeAdd = () => {
+    setIsAddUser(false);
+    dispatch(superuserActions.clearError());
   };
 
-  useEffect(() => {
-    fetchAllUsers();
-  }, [token, isAuthenticated, user]);
+  const closeEdit = () => {
+    setIsEditingUserID(null);
+    dispatch(superuserActions.clearError());
+  };
 
   return (
     <div className="flex flex-col gap-6">
@@ -138,7 +120,10 @@ export default function SuperUser_ManageUsers() {
           <p className="text-slate-500 text-sm">Manage and moderate platform users, roles, and security status.</p>
         </div>
         <button
-          onClick={() => setIsAddUser(true)}
+          onClick={() => {
+            dispatch(superuserActions.clearError());
+            setIsAddUser(true);
+          }}
           className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors text-sm cursor-pointer"
         >
           <BsPlus size={20} />
@@ -146,25 +131,8 @@ export default function SuperUser_ManageUsers() {
         </button>
       </div>
 
-      {isAddUser && (
-        <AddUser
-          token={token}
-          onClose={() => setIsAddUser(false)}
-          refreshUsers={fetchAllUsers}
-        />
-      )}
-      {Boolean(isEditingUserID) && (
-        <EditUser
-          token={token}
-          userId={isEditingUserID!}
-          is_active={isEditingUserStatus}
-          onClose={() => {
-            setIsEditingUserID(null);
-            setIsEditingUserStatus(null);
-          }}
-          refreshUsers={fetchAllUsers}
-        />
-      )}
+      {isAddUser && <AddUser onClose={closeAdd} />}
+      {editingUser && <EditUser user={editingUser} onClose={closeEdit} />}
 
       <SummaryCards stats={SUMMARY_STATS} />
 
@@ -240,8 +208,8 @@ export default function SuperUser_ManageUsers() {
         columns={columns}
         data={filtered_users}
         rowKey={(row) => row._id}
-        isLoading={isLoading}
-        error={error}
+        isLoading={pending > 0}
+        error={isAddUser || editingUser ? null : error}
         emptyMessage="No users found matching your filters."
       />
     </div>
@@ -250,19 +218,19 @@ export default function SuperUser_ManageUsers() {
 
 interface AddUserProps {
   onClose: () => void;
-  token: string | null | undefined;
-  refreshUsers: () => void;
 }
 
 interface EditUserProps {
   onClose: () => void;
-  token: string | null | undefined;
-  userId: string;
-  is_active: 'active' | 'blocked' | string | null;
-  refreshUsers: () => void;
+  user: UserDocument;
 }
 
-function AddUser({ onClose, token, refreshUsers }: AddUserProps) {
+function AddUser({ onClose }: AddUserProps) {
+  const dispatch = useDispatch<AppDispatch>();
+  const { submitting, error: storeError } = useSelector(
+    (state: RootState) => state.superuser,
+  );
+
   const [role, setRole] = useState<UserRole | ''>('');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -271,69 +239,45 @@ function AddUser({ onClose, token, refreshUsers }: AddUserProps) {
   const [gender, setGender] = useState('');
   const [managerLng, setManagerLng] = useState('');
   const [managerLat, setManagerLat] = useState('');
-  const [error, setError] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
+  const error = formError ?? storeError;
 
-  const onAddUser = async (newUser: any) => {
-    const activeToken = token || sessionStorage.getItem('token');
-    if (!activeToken) {
-      setError("Authentication token missing. Please sign in again.");
-      return;
-    }
-
-    try {
-      setIsLoading(true);
-      setError(null);
-
-      const response = await axios.post(`${BASE_URL}/users`, newUser, {
-        headers: { Authorization: `Bearer ${activeToken}` },
-      });
-      const createdUser = response.data;
-      console.log('New User', createdUser);
-
-      if (newUser.role === 'manager') {
-        const managerDto: CreateManagerDto = {
-          user: createdUser._id || createdUser.id,
-          salary: 0,
-          experience: 0,
-          location: {
-            type: 'Point',
-            coordinates: [parseFloat(managerLng), parseFloat(managerLat)],
-          },
-        };
-        await createManager(managerDto);
-        console.log('Manager object created');
-      }
-
-      onClose();
-      refreshUsers();
-    } catch (err: any) {
-      console.error('Error adding new user: ', err);
-      setError(err?.response?.data?.message || err?.message || 'Error adding new user');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleSubmit = (e: React.SyntheticEvent) => {
+  const handleSubmit = async (e: React.SyntheticEvent) => {
     e.preventDefault();
+    setFormError(null);
 
+    if (!role) {
+      setFormError('Please select a role.');
+      return;
+    }
     if (role === 'manager' && (!managerLng || !managerLat)) {
-      setError('Please enter manager location coordinates.');
+      setFormError('Please enter manager location coordinates.');
       return;
     }
 
-    const newUser = {
+    const user: CreateUserDto = {
       name,
       email,
       password: 'Password@123',
-      gender,
+      gender: gender || undefined,
       phone,
-      dob,
+      dob: dob || undefined,
       role,
     };
+    const managerLocation: GeoLocationDto | undefined =
+      role === 'manager'
+        ? {
+            type: 'Point',
+            coordinates: [parseFloat(managerLng), parseFloat(managerLat)],
+          }
+        : undefined;
 
-    onAddUser(newUser);
+    try {
+      await dispatch(createUser({ user, managerLocation })).unwrap();
+      onClose();
+    } catch {
+      // the rejected thunk stores a readable message in the slice
+    }
   };
 
   return (
@@ -444,10 +388,10 @@ function AddUser({ onClose, token, refreshUsers }: AddUserProps) {
           </button>
           <button
             type="submit"
-            disabled={isLoading}
+            disabled={submitting}
             className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors text-sm disabled:opacity-50 cursor-pointer"
           >
-            {isLoading ? 'Adding User...' : 'Add User'}
+            {submitting ? 'Adding User...' : 'Add User'}
           </button>
         </div>
       </form>
@@ -455,65 +399,37 @@ function AddUser({ onClose, token, refreshUsers }: AddUserProps) {
   );
 }
 
-function EditUser({ onClose, token, userId, is_active, refreshUsers }: EditUserProps) {
-  const [status, setStatus] = useState<'active' | 'blocked'>(
-    is_active === 'blocked' ? 'blocked' : 'active'
+function EditUser({ onClose, user }: EditUserProps) {
+  const dispatch = useDispatch<AppDispatch>();
+  const { submitting, error } = useSelector(
+    (state: RootState) => state.superuser,
   );
-  const [error, setError] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [status, setStatus] = useState<'active' | 'blocked'>(
+    user.status === 'blocked' ? 'blocked' : 'active'
+  );
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const activeToken = token || sessionStorage.getItem('token');
-    if (!activeToken) {
-      setError("Authentication token missing. Please sign in again.");
-      return;
-    }
-
     try {
-      setIsLoading(true);
-      setError(null);
-      await axios.patch(
-        `${BASE_URL}/users/${userId}`,
-        { status },
-        { headers: { Authorization: `Bearer ${activeToken}` } }
-      );
+      await dispatch(updateUser({ id: user._id, dto: { status } })).unwrap();
       onClose();
-      refreshUsers();
-    } catch (err: any) {
-      console.error("Error updating the user", err);
-      setError(err?.response?.data?.message || err?.message || "Error updating user");
-    } finally {
-      setIsLoading(false);
+    } catch {
+      // the rejected thunk stores a readable message in the slice
     }
   };
 
   const handleDeleteUser = async (e: React.SyntheticEvent) => {
     e.preventDefault();
-    const activeToken = token || sessionStorage.getItem('token');
-    if (!activeToken) {
-      setError("Authentication token missing. Please sign in again.");
-      return;
-    }
 
     if (!window.confirm("Are you sure you want to permanently delete this user?")) {
       return;
     }
 
     try {
-      setIsLoading(true);
-      setError(null);
-      await axios.delete(
-        `${BASE_URL}/users/${userId}`,
-        { headers: { Authorization: `Bearer ${activeToken}` } }
-      );
+      await dispatch(deleteUser(user._id)).unwrap();
       onClose();
-      refreshUsers();
-    } catch (err: any) {
-      console.error("Error deleting the user", err);
-      setError(err?.response?.data?.message || err?.message || "Error deleting user");
-    } finally {
-      setIsLoading(false);
+    } catch {
+      // the rejected thunk stores a readable message in the slice
     }
   };
 
@@ -522,7 +438,7 @@ function EditUser({ onClose, token, userId, is_active, refreshUsers }: EditUserP
       <div className="bg-white p-6 rounded-xl shadow-lg w-full max-w-md border border-slate-200">
         <h2 className="text-lg font-bold text-slate-900 mb-1">Edit User Status</h2>
         <p className="text-sm text-slate-500 mb-6">
-          Modify account access for user ID: <span className="font-mono text-slate-700 text-xs">{userId}</span>
+          Modify account access for user ID: <span className="font-mono text-slate-700 text-xs">{user._id}</span>
         </p>
 
         {error && (
@@ -554,7 +470,7 @@ function EditUser({ onClose, token, userId, is_active, refreshUsers }: EditUserP
             <button
               type="button"
               onClick={handleDeleteUser}
-              disabled={isLoading}
+              disabled={submitting}
               className="px-4 py-2 bg-red-50 border border-red-100 hover:bg-red-100 text-red-600 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 cursor-pointer"
             >
               Delete User
@@ -569,10 +485,10 @@ function EditUser({ onClose, token, userId, is_active, refreshUsers }: EditUserP
               </button>
               <button
                 type="submit"
-                disabled={isLoading}
+                disabled={submitting}
                 className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors text-sm disabled:opacity-50 cursor-pointer"
               >
-                {isLoading ? 'Saving...' : 'Save Changes'}
+                {submitting ? 'Saving...' : 'Save Changes'}
               </button>
             </div>
           </div>

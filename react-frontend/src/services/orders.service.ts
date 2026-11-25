@@ -1,3 +1,4 @@
+import type { BookingDocument } from "@/schema";
 /**
  * orders.service.ts
  * Full CRUD API calls for the /orders collection.
@@ -44,10 +45,12 @@ export async function getOrderById(id: string): Promise<OrderDocument> {
   return apiService<OrderDocument>(HTTP_METHODS_ENUM.get, url);
 }
 
+export type OrderDetails = OrderDocument & { bookings: BookingDocument[] };
+
 /** GET /orders/:id/details — Enriched order details with bookings. */
-export async function getOrderDetails(id: string): Promise<OrderDocument> {
+export async function getOrderDetails(id: string): Promise<OrderDetails> {
   const url = buildEndpoint(ENDPOINT_ENUM.ORDERS_DETAILS, { id });
-  return apiService<OrderDocument>(HTTP_METHODS_ENUM.get, url);
+  return apiService<OrderDetails>(HTTP_METHODS_ENUM.get, url);
 }
 
 /** PATCH /orders/:id — Update payment status / attach payment. */

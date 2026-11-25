@@ -3,7 +3,7 @@ import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { getServiceById, getServices, getAvailableSlots, type AvailableSlotItem } from "@/services/services.service";
 import { getUserAddresses, addUserAddress, addCartItem, setCartAddress } from "@/services/users.service";
 import { getStoredUser, getStoredUserId } from "@/common/services/authService";
-import { useAuthContext } from "@/common/AuthContext";
+import useAuth from "@/hooks/useAuth";
 import type { ServiceDocument, UserAddress } from "@/models/api.models";
 import { MapPin, Calendar, Clock, Plus, CheckCircle2, AlertCircle } from "lucide-react";
 
@@ -18,7 +18,7 @@ function SchedulePage() {
   const navigate = useNavigate();
   const params = useParams<{ service_id?: string; serviceId?: string }>();
   const [searchParams] = useSearchParams();
-  const authContext = useAuthContext();
+  const authSession = useAuth();
 
   const serviceIdParam = params.service_id || params.serviceId || searchParams.get("serviceId") || searchParams.get("id");
 
@@ -55,11 +55,9 @@ function SchedulePage() {
 
   const storedUser = getStoredUser();
   const customerId =
-    authContext.authDetails?.user?.id ||
-    (authContext.authDetails?.user as any)?._id ||
+    authSession.authDetails?.user?.id ||
     getStoredUserId() ||
-    storedUser?.id ||
-    storedUser?._id;
+    storedUser?.id;
 
   // Protect route & check auth
   useEffect(() => {

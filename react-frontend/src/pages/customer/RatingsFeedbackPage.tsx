@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { useAuthContext } from "@/common/AuthContext";
+import useAuth from "@/hooks/useAuth";
 import { getStoredUser, getStoredUserId } from "@/common/services/authService";
 import { getBookingsByCustomer } from "@/services/bookings.service";
 import { createReview, getAllReviews } from "@/services/reviews.service";
@@ -9,7 +9,7 @@ import type { BookingDocument, ReviewDocument, ServiceDocument } from "@/models/
 function RatingsFeedbackPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const authContext = useAuthContext();
+  const authSession = useAuth();
 
   const [completedBookings, setCompletedBookings] = useState<BookingDocument[]>([]);
   const [selectedBooking, setSelectedBooking] = useState<BookingDocument | null>(null);
@@ -24,11 +24,9 @@ function RatingsFeedbackPage() {
 
   const storedUser = getStoredUser();
   const customerId =
-    authContext.authDetails?.user?.id ||
-    (authContext.authDetails?.user as any)?._id ||
+    authSession.authDetails?.user?.id ||
     getStoredUserId() ||
-    storedUser?.id ||
-    storedUser?._id;
+    storedUser?.id;
 
   const targetBookingId = searchParams.get("bookingId");
 

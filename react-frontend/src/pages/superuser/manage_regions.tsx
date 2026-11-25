@@ -1,27 +1,60 @@
-import { useContext, useEffect, useState } from 'react';
-import AuthContext from '../../common/AuthContext';
-import { getAllRegions, createRegion, updateRegion, deleteRegion, getAllManagers, updateManager } from '@/services';
-import { type RegionDocument, type ManagerDocument, type CreateRegionDto } from '@/models/api.models';
+import { useEffect, useMemo, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import type { AppDispatch, RootState } from "@/store";
+import {
+    createRegion,
+    deleteRegion,
+    fetchManagers,
+    fetchRegions,
+    superuserActions,
+    updateRegion,
+} from "@/store/superuser/superuser-slice";
+import type {
+    CreateRegionDto,
+    ManagerDocument,
+    RegionDocument,
+    UpdateRegionDto,
+} from '@/models/api.models';
 import DataTable, { type Column } from '@/components/superuser/DataTable';
-import { type UserDocument } from '@/models/api.models';
-import { type UpdateRegionDto } from '@/models/api.models';
 import SummaryCards, { type SummaryStat } from '@/components/superuser/SummaryCards';
 import { BsGeoAltFill, BsGeoAlt, BsGlobe, BsPlus } from 'react-icons/bs';
 
+/** Region.manager can be an id or a populated manager; the page needs the id. */
+function managerIdOf(region: RegionDocument): string {
+    return typeof region.manager === 'string' ? region.manager : region.manager._id;
+}
+
 export default function SuperUser_ManageRegions()
 {
-    const authContext = useContext(AuthContext);
-    const token = authContext?.authDetails?.token;
-
-    const [isLoading, setIsLoading] = useState(false);
-    const [error, setError] = useState('');
+    const dispatch = useDispatch<AppDispatch>();
+    const { regions, managers, pending, error } = useSelector(
+        (state: RootState) => state.superuser,
+    );
 
     const [search, setSearch] = useState('');
     const [status, setStatus] = useState('all');
 
-    const [regions, setRegions] = useState<RegionDocument[]>([]);
-    const [userNameMap, setUserNameMap] = useState<Record<string, string>>({});
-    const [allManagers, setAllManagers] = useState<ManagerDocument[]>([]);
+    const [isAdd, setIsAdd] = useState(false);
+    const [isEditingID, setIsEditingID] = useState('');
+    const editingRegion = isEditingID
+        ? regions.find(r => r._id === isEditingID) ?? null
+        : null;
+
+    /**
+     * GET /managers populates `user`. Manager profiles whose user was deleted
+     * come back with `user: null`; they have no name and must not be assignable
+     * to a region, so they are not added to this map or the dropdowns.
+     */
+    const userNameMap = useMemo(() => {
+        const map: Record<string, string> = {};
+        managers.forEach(m => {
+            const user = m.user;
+            if (typeof user === 'object' && user?.name) {
+                map[m._id] = user.name;
+            }
+        });
+        return map;
+    }, [managers]);
 
     const activeRegions = regions.filter(reg => reg.isActive).length;
 
@@ -30,9 +63,6 @@ export default function SuperUser_ManageRegions()
         { title: "Active Regions", count: activeRegions, icon: <BsGeoAltFill size={20} />, iconColor: "text-green-600", bg: "bg-green-50" },
         { title: "Inactive Regions", count: regions.length - activeRegions, icon: <BsGeoAlt size={20} />, iconColor: "text-red-600", bg: "bg-red-50" },
     ];
-
-    const [isAdd, setIsAdd] = useState(false);
-    const [isEditingID, setIsEditingID] = useState('');
 
     const filteredRegions = regions.filter(reg => {
         if(!reg.name.toLowerCase().includes(search.toLowerCase())) return false;
@@ -44,8 +74,8 @@ export default function SuperUser_ManageRegions()
     const columns: Column<RegionDocument>[] = [
         {header: 'Name', render: (row) => <span className="font-medium text-slate-900">{row.name}</span>},
         {header: 'Manager', render: (row) => {
-            const mgrId = typeof row.manager === 'string' ? row.manager : row.manager?._id;
-            return <span className="text-slate-500">{mgrId ? userNameMap[mgrId] : '—'}</span>;
+            const mgrId = managerIdOf(row);
+            return <span className="text-slate-500">{mgrId ? userNameMap[mgrId] ?? '—' : '—'}</span>;
         }},
         {header: 'Status', render: (row) => <span className={`px-2 py-1 rounded-full text-xs font-semibold ${row.isActive ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
           {row.isActive ? 'Active' : 'Inactive'}
@@ -54,7 +84,10 @@ export default function SuperUser_ManageRegions()
             <button 
                 type="button" 
                 className="text-blue-600 hover:underline font-medium"
-                onClick={() => setIsEditingID(row._id)}
+                onClick={() => {
+                    dispatch(superuserActions.clearError());
+                    setIsEditingID(row._id);
+                }}
             >
                 Edit
             </button>
@@ -62,43 +95,20 @@ export default function SuperUser_ManageRegions()
         },
     ]
 
-    const fetchRegions = async () => {
-        if (!token) return;
-        setIsLoading(true);
-        try {
-            const [regionsResponse, managersResponse] = await Promise.all([
-                getAllRegions(),
-                getAllManagers(),
-            ]);
-            setRegions(regionsResponse);
-            setAllManagers(managersResponse);
+    useEffect(() => {
+        dispatch(fetchRegions());
+        dispatch(fetchManagers());
+    }, [dispatch]);
 
-            const map: Record<string, string> = {};
-            managersResponse.forEach(m => {
-               const user = m.user as UserDocument | null;
-                if (user) {
-                    map[m._id] = user.name;
-                }
-                
-            });
-            setUserNameMap(map);
-            console.log(managersResponse);
-        } 
-        catch (err) 
-        {
-            console.error(err);
-            setError('Failed to fetch regions.');
-        } 
-        finally 
-        {
-            setIsLoading(false);
-        }
+    const closeAdd = () => {
+        setIsAdd(false);
+        dispatch(superuserActions.clearError());
     };
 
-
-    useEffect(() => {
-        fetchRegions(); 
-    },[])
+    const closeEdit = () => {
+        setIsEditingID('');
+        dispatch(superuserActions.clearError());
+    };
 
     return(
         <div className="flex flex-col gap-6">
@@ -110,7 +120,10 @@ export default function SuperUser_ManageRegions()
                 </div>
                 <button
                   type="button"
-                  onClick={() => { fetchRegions(); setIsAdd(true); }}
+                  onClick={() => {
+                    dispatch(superuserActions.clearError());
+                    setIsAdd(true);
+                  }}
                   className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors text-sm"
                 >
                   <BsPlus size={20} />
@@ -120,23 +133,19 @@ export default function SuperUser_ManageRegions()
 
             {isAdd && (
                 <AddRegion 
-                    token={token}
-                    onClose={() => setIsAdd(false)} 
-                    refreshRegions={fetchRegions} 
-                    allManagers={allManagers}
+                    onClose={closeAdd} 
+                    allManagers={managers}
                     assignedRegions={regions}
                     userNameMap={userNameMap}
                 />
             )}
 
-            {isEditingID && (
+            {editingRegion && (
             <EditRegion
-                token={token}
-                onClose={() => setIsEditingID('')}
-                refreshRegions={fetchRegions}
-                allManagers={allManagers}
+                onClose={closeEdit}
+                allManagers={managers}
                 userNameMap={userNameMap}
-                region={regions.find(r => r._id === isEditingID)!}
+                region={editingRegion}
                 assignedRegions={regions}
             />
         )}
@@ -173,8 +182,8 @@ export default function SuperUser_ManageRegions()
             columns={columns}
             data={filteredRegions}
             rowKey={(row) => row._id}
-            isLoading={isLoading}
-            error={error}
+            isLoading={pending > 0}
+            error={isAdd || editingRegion ? null : error}
             emptyMessage='No Regions found matching your search.'
         />
 
@@ -185,8 +194,6 @@ export default function SuperUser_ManageRegions()
 interface AddRegionProps
 {
     onClose: () => void;
-    token: string | null | undefined;
-    refreshRegions: () => void;
     allManagers: ManagerDocument[];
     assignedRegions: RegionDocument[];
     userNameMap: Record<string, string>;
@@ -194,40 +201,39 @@ interface AddRegionProps
 
 interface EditRegionProps {
     onClose: () => void;
-    token: string | null | undefined;
-    refreshRegions: () => void;
     allManagers: ManagerDocument[];
     userNameMap: Record<string, string>;
     region: RegionDocument;
     assignedRegions: RegionDocument[];
 }
 
-function AddRegion({ token, onClose, refreshRegions, allManagers, assignedRegions, userNameMap }: AddRegionProps) {
+function AddRegion({ onClose, allManagers, assignedRegions, userNameMap }: AddRegionProps) {
+    const dispatch = useDispatch<AppDispatch>();
+    const { submitting, error: storeError } = useSelector(
+        (state: RootState) => state.superuser,
+    );
+
     const [name, setName] = useState('');
     const [manager, setManager] = useState('');
     const [isActive, setIsActive] = useState(true);
     const [coord1, setCoord1] = useState('');
     const [coord2, setCoord2] = useState('');
     const [salary, setSalary] = useState('');
+    const [formError, setFormError] = useState('');
+    const error = formError || storeError;
 
-    const [isSubmitting, setIsSubmitting] = useState(false);
-    const [error, setError] = useState('');
-
-    const assignedManagerIds = new Set(
-        assignedRegions.map(r =>
-
-            (r.manager as ManagerDocument)._id
-        )
+    const assignedManagerIds = new Set(assignedRegions.map(managerIdOf));
+    const unassignedManagers = allManagers.filter(
+        m => Boolean(userNameMap[m._id]) && !assignedManagerIds.has(m._id),
     );
-    const unassignedManagers = allManagers.filter(m => !assignedManagerIds.has(m._id));
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if(!token) return;
-        if (!manager) { setError('Please select a manager.'); return; }
-        if (!coord1 || !coord2) { setError('Please enter both coordinates.'); return; }
+        setFormError('');
+        if (!manager) { setFormError('Please select a manager.'); return; }
+        if (!coord1 || !coord2) { setFormError('Please enter both coordinates.'); return; }
 
-        const newRegion: CreateRegionDto = {
+        const dto: CreateRegionDto = {
             name,
             manager,
             location: {
@@ -237,19 +243,11 @@ function AddRegion({ token, onClose, refreshRegions, allManagers, assignedRegion
             isActive,
         };
 
-        await updateManager(manager, { salary: parseInt(salary) });
-
-        setIsSubmitting(true);
-        setError('');
         try {
-            await createRegion(newRegion);
-            refreshRegions();
+            await dispatch(createRegion({ dto, salary: parseInt(salary) })).unwrap();
             onClose();
-        } catch (err) {
-            console.error(err);
-            setError('Failed to create region. Please try again.');
-        } finally {
-            setIsSubmitting(false);
+        } catch {
+            // the rejected thunk stores a readable message in the slice
         }
     };
 
@@ -356,10 +354,10 @@ function AddRegion({ token, onClose, refreshRegions, allManagers, assignedRegion
                     </button>
                     <button 
                         type="submit" 
-                        disabled={isSubmitting}
-                        className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors text-sm"
+                        disabled={submitting}
+                        className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors text-sm disabled:opacity-50"
                     >
-                        {isSubmitting ? 'Creating...' : 'Create Region'}
+                        {submitting ? 'Creating...' : 'Create Region'}
                     </button>
                 </div>
             </form>
@@ -367,28 +365,39 @@ function AddRegion({ token, onClose, refreshRegions, allManagers, assignedRegion
     );
 }
 
-function EditRegion({ token, onClose, refreshRegions, allManagers, assignedRegions, userNameMap, region }: EditRegionProps) {
+function EditRegion({ onClose, allManagers, assignedRegions, userNameMap, region }: EditRegionProps) {
+    const dispatch = useDispatch<AppDispatch>();
+    const { submitting, error: storeError } = useSelector(
+        (state: RootState) => state.superuser,
+    );
+
     const [name, setName] = useState(region.name);
     const [isActive, setIsActive] = useState(region.isActive);
     const [coord1, setCoord1] = useState(String(region.location.coordinates[0]));
     const [coord2, setCoord2] = useState(String(region.location.coordinates[1]));
 
-    const currentManager = region.manager as ManagerDocument;
-    const [managerId, setManagerId] = useState(currentManager._id);
+    const currentManagerId = managerIdOf(region);
+    const currentManagerValid = Boolean(userNameMap[currentManagerId]);
+    const [managerId, setManagerId] = useState(
+        currentManagerValid ? currentManagerId : '',
+    );
+    const [salary, setSalary] = useState(
+        currentManagerValid
+            ? String(allManagers.find(m => m._id === currentManagerId)?.salary ?? '')
+            : '',
+    );
 
-    const [salary, setSalary] = useState(String(currentManager.salary));
-
-    const [isSubmitting, setIsSubmitting] = useState(false);
-    const [error, setError] = useState('');
+    const [formError, setFormError] = useState('');
+    const error = formError || storeError;
 
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!token) return;
-        if (!managerId) { setError('Please select a manager.'); return; }
-        if (!coord1 || !coord2) { setError('Please enter both coordinates.'); return; }
+        setFormError('');
+        if (!managerId) { setFormError('Please select a manager.'); return; }
+        if (!coord1 || !coord2) { setFormError('Please enter both coordinates.'); return; }
 
-        const updatedRegion: UpdateRegionDto = {
+        const dto: UpdateRegionDto = {
             name,
             manager: managerId,
             location: {
@@ -398,43 +407,34 @@ function EditRegion({ token, onClose, refreshRegions, allManagers, assignedRegio
             isActive,
         };
 
-        setIsSubmitting(true);
-        setError('');
         try {
-            await updateRegion(region._id, updatedRegion);
-
-            await updateManager(managerId, { salary: parseInt(salary) });
-
-            refreshRegions();
+            await dispatch(updateRegion({
+                id: region._id,
+                dto,
+                managerId,
+                salary: parseInt(salary),
+            })).unwrap();
             onClose();
-        } catch (err) {
-            console.error(err);
-            setError('Failed to update region. Please try again.');
-        } finally {
-            setIsSubmitting(false);
+        } catch {
+            // the rejected thunk stores a readable message in the slice
         }
     };
 
     const assignedManagerIds = new Set(
         assignedRegions
-            .filter(r => (r.manager as ManagerDocument)._id !== currentManager._id)
-            .map(r => (r.manager as ManagerDocument)._id)
+            .filter(r => managerIdOf(r) !== currentManagerId)
+            .map(managerIdOf),
     );
-    const availableManagers = allManagers.filter(m => !assignedManagerIds.has(m._id));
+    const availableManagers = allManagers.filter(
+        m => Boolean(userNameMap[m._id]) && !assignedManagerIds.has(m._id),
+    );
 
     const handleDelete = async () => {
-        if (!token) return;
-        setIsSubmitting(true);
-        setError('');
         try {
-            await deleteRegion(region._id);
-            refreshRegions();
+            await dispatch(deleteRegion(region._id)).unwrap();
             onClose();
-        } catch (err) {
-            console.error(err);
-            setError('Failed to delete region. Please try again.');
-        } finally {
-            setIsSubmitting(false);
+        } catch {
+            // the rejected thunk stores a readable message in the slice
         }
     };
 
@@ -474,6 +474,11 @@ function EditRegion({ token, onClose, refreshRegions, allManagers, assignedRegio
                                     </option>
                                 ))}
                             </select>
+                            {!currentManagerValid && (
+                                <p className="text-xs text-amber-600">
+                                    This region's current manager has no user record. Select an available manager.
+                                </p>
+                            )}
                         </div>
 
                         <div className="flex flex-col gap-1">
@@ -536,8 +541,8 @@ function EditRegion({ token, onClose, refreshRegions, allManagers, assignedRegio
                         <button 
                             type="button" 
                             onClick={handleDelete} 
-                            disabled={isSubmitting}
-                            className="px-4 py-2 bg-red-50 border border-red-100 hover:bg-red-100 text-red-600 rounded-lg text-sm font-medium transition-colors"
+                            disabled={submitting}
+                            className="px-4 py-2 bg-red-50 border border-red-100 hover:bg-red-100 text-red-600 rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
                         >
                             Delete
                         </button>
@@ -552,10 +557,10 @@ function EditRegion({ token, onClose, refreshRegions, allManagers, assignedRegio
                             </button>
                             <button 
                                 type="submit" 
-                                disabled={isSubmitting}
-                                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors text-sm"
+                                disabled={submitting}
+                                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors text-sm disabled:opacity-50"
                             >
-                                {isSubmitting ? 'Saving...' : 'Save Changes'}
+                                {submitting ? 'Saving...' : 'Save Changes'}
                             </button>
                         </div>
                     </div>

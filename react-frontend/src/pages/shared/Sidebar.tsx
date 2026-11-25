@@ -6,7 +6,6 @@ import { NavLink, useNavigate } from "react-router-dom";
 import { type ReactNode, createContext, useContext, useState } from "react";
 import { BsChevronLeft, BsChevronRight } from "react-icons/bs";
 import useAuth from "@/hooks/useAuth";
-import AuthContext from "@/common/AuthContext";
 import { LogOut } from "lucide-react";
 
 const SidebarContext = createContext({ isExpanded: true });
@@ -20,12 +19,10 @@ interface SideBarItemProps {
 export default function SideBar({ children }: { children: ReactNode }) {
   const [isExpanded, setIsExpanded] = useState(true);
   const { logout } = useAuth();
-  const authContext = useContext(AuthContext);
   const navigate = useNavigate();
 
   function handleUserLogout() {
     logout();
-    authContext?.setAuthDetails(null);
     navigate("/auth/login");
   }
 

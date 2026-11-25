@@ -21,8 +21,8 @@ export async function createService(dto: CreateServiceDto): Promise<ServiceDocum
 }
 
 /** GET /services — All services catalog. Public. */
-export async function getServices(): Promise<ServiceDocument[]> {
-  return apiService<ServiceDocument[]>(HTTP_METHODS_ENUM.get, ENDPOINT_ENUM.SERVICES);
+export async function getServices(includeAll = false): Promise<ServiceDocument[]> {
+  return apiService<ServiceDocument[]>(HTTP_METHODS_ENUM.get, includeAll ? `${ENDPOINT_ENUM.SERVICES}?includeAll=true` : ENDPOINT_ENUM.SERVICES);
 }
 
 /** GET /services/category/:categoryId — Filter by category. Public. */
