@@ -1,32 +1,15 @@
-import axios from "axios";
+import axios, { type AxiosError } from "axios";
 import { BASE_URL, type ENDPOINT_TYPE } from "../endpoints";
 import type { HTTP_METHOD_TYPE } from "@/common/http.methods";
-import { readSession } from "./sessionStorage";
 
-let getToken: () => string | null = () => readSession()?.token ?? null;
-
-/** Injected by the store to avoid API -> store -> services import cycles. */
-export function setApiTokenSource(source: () => string | null): void {
-    getToken = source;
-}
-
-export function getApiErrorMessage(error: unknown, fallback = "Something went wrong"): string {
-    if (axios.isAxiosError(error)) {
-        const message: unknown = error.response?.data?.message;
-        if (Array.isArray(message)) return message.filter((item) => typeof item === "string").join("; ") || fallback;
-        if (typeof message === "string") return message;
-    }
-    return error instanceof Error ? error.message : fallback;
-}
-
-const axiosInstance = axios.create({
+export const apiClient = axios.create({
     baseURL: BASE_URL,
     timeout: 20000,
 });
 
-axiosInstance.interceptors.request.use(
+apiClient.interceptors.request.use(
     (config) => {
-        const token = getToken();
+        const token = sessionStorage.getItem("token");
         if (token) {
             config.headers.Authorization = `Bearer ${token}`;
         }
@@ -42,14 +25,14 @@ export const apiService = async <TResponse = unknown, TBody = unknown> (
     onError?: (errorMessage: string) => void
 ): Promise<TResponse> => {
     try {
-        const response = await axiosInstance<TResponse>({
+        const response = await apiClient<TResponse>({
             method, url: endpoint, data
         });
         onSuccess?.(response.data);
         return response.data;
     } catch(error) {
-        const errorMessage = getApiErrorMessage(error);
-        if (error instanceof Error) error.message = errorMessage;
+        const axiosError = error as AxiosError<{ message?: string }>;
+        const errorMessage = axiosError.response?.data?.message || axiosError.message || "Something went wrong";
         onError?.(errorMessage);
         return Promise.reject(error);
     }

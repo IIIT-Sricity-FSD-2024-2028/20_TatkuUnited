@@ -1,12 +1,13 @@
 import { useEffect, useRef, useCallback } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { RolesEnum } from "@/common/roles.enum";
 import useAuth from "@/hooks/useAuth";
-import { getProviderByUser } from "@/services/providers.service";
+import type { AppDispatch, RootState } from "@/store";
 import {
-  getMyPendingOffers,
-  acceptBooking,
-  rejectBooking,
-} from "@/services/bookings.service";
+  acceptBookingThunk,
+  providerActions,
+  rejectBookingThunk,
+} from "@/store/provider/provider-slice";
 import type { BookingDocument, ServiceDocument, UserDocument } from "@/models/api.models";
 import { toast } from "@/components/ui/toast";
 import { Button } from "@/components/ui/button";
@@ -14,6 +15,14 @@ import { CheckCircle2, X } from "lucide-react";
 
 // Global module-level set so offers aren't double-toasted across components
 export const notifiedOfferIds = new Set<string>();
+let notificationScope: string | null = null;
+
+function resetNotificationsForUser(userId?: string) {
+  if (notificationScope !== (userId ?? null)) {
+    notifiedOfferIds.clear();
+    notificationScope = userId ?? null;
+  }
+}
 
 function formatSlotTime(minutes: number): string {
   const hours = Math.floor(minutes / 60);
@@ -49,24 +58,26 @@ function playChime() {
 }
 
 export function useIncomingOfferNotifier(onOfferAccepted?: (booking: BookingDocument) => void) {
-  const { authDetails } = useAuth();
-  const user = authDetails?.user;
+  const { user } = useAuth();
+  const dispatch = useDispatch<AppDispatch>();
   const providerIdRef = useRef<string | null>(null);
+  const { profile, offers } = useSelector((s: RootState) => s.provider);
 
   // 1. Resolve Provider ID once
   useEffect(() => {
-    if (!user || user.role !== RolesEnum.PROVIDER) return;
-    getProviderByUser(user.id)
-      .then((p) => {
-        if (p?._id) providerIdRef.current = p._id;
-      })
-      .catch(() => {});
-  }, [user]);
+    providerIdRef.current = profile?._id ?? null;
+  }, [profile]);
+
+  useEffect(() => {
+    resetNotificationsForUser(user?.id);
+  }, [user?.id]);
 
   const handleAccept = useCallback(
     async (bookingId: string, toastId: string) => {
       try {
-        const accepted = await acceptBooking(bookingId, providerIdRef.current || undefined);
+        const accepted = await dispatch(
+          acceptBookingThunk({ id: bookingId, providerId: providerIdRef.current ?? undefined }),
+        ).unwrap();
         toast.add({
           type: "success",
           title: "🎉 Job Accepted!",
@@ -90,6 +101,7 @@ export function useIncomingOfferNotifier(onOfferAccepted?: (booking: BookingDocu
             description: "Another service provider accepted this job offer first.",
             priority: "high",
           });
+          dispatch(providerActions.offerRemoved(bookingId));
         } else {
           toast.add({
             type: "error",
@@ -100,12 +112,14 @@ export function useIncomingOfferNotifier(onOfferAccepted?: (booking: BookingDocu
         toast.close(toastId);
       }
     },
-    [onOfferAccepted],
+    [dispatch, onOfferAccepted],
   );
 
   const handleDecline = useCallback(async (bookingId: string, toastId: string) => {
     try {
-      await rejectBooking(bookingId, providerIdRef.current || undefined);
+      await dispatch(
+        rejectBookingThunk({ id: bookingId, providerId: providerIdRef.current ?? undefined }),
+      ).unwrap();
       toast.add({
         type: "info",
         title: "Offer Declined",
@@ -125,93 +139,86 @@ export function useIncomingOfferNotifier(onOfferAccepted?: (booking: BookingDocu
       });
       toast.close(toastId);
     }
-  }, []);
+  }, [dispatch]);
 
-  const checkOffers = useCallback(async () => {
+  const checkOffers = useCallback(() => {
     if (!user || user.role !== RolesEnum.PROVIDER) return;
 
-    try {
-      const data = await getMyPendingOffers();
-      const activeOffers = (data || []).filter((b) => {
-        const myOffer = b.offers?.find(
-          (o) =>
-            (!providerIdRef.current || String(o.provider) === String(providerIdRef.current)) &&
-            o.status === "offered",
-        );
-        if (myOffer?.expiresAt) {
-          return new Date(myOffer.expiresAt).getTime() > Date.now();
-        }
-        if (b.offerExpiresAt) {
-          return new Date(b.offerExpiresAt).getTime() > Date.now();
-        }
-        return b.status === "awaiting_provider";
-      });
-
-      let hasNew = false;
-      for (const booking of activeOffers) {
-        if (!notifiedOfferIds.has(booking._id)) {
-          notifiedOfferIds.add(booking._id);
-          hasNew = true;
-
-          const serviceName =
-            typeof booking.service === "object" && booking.service !== null
-              ? (booking.service as ServiceDocument).name
-              : "Service Job";
-
-          const customerName =
-            typeof booking.customer === "object" && booking.customer !== null
-              ? (booking.customer as UserDocument).name
-              : "Customer";
-
-          const payout = booking.providerShare
-            ? Math.round(booking.providerShare / 100)
-            : Math.round(booking.price / 100);
-
-          const timeSlot = `${formatSlotTime(booking.startTime)} - ${formatSlotTime(booking.endTime)}`;
-
-          // Dispatch toast with inline Accept & Decline buttons
-          toast.add({
-            type: "info",
-            title: `⚡ New Job Offer: ${serviceName}`,
-            description: `${customerName} • ${timeSlot} • Payout: ₹${payout}`,
-            priority: "high",
-            timeout: 60000,
-            actions: ({ id }: { id: string }) => (
-              <div className="flex items-center gap-2 mt-1">
-                <Button
-                  size="sm"
-                  className="bg-emerald-600 hover:bg-emerald-700 text-white font-medium text-xs h-7 px-3 cursor-pointer shadow-xs"
-                  onClick={() => handleAccept(booking._id, id)}
-                >
-                  <CheckCircle2 className="w-3.5 h-3.5 mr-1" />
-                  Accept
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="text-xs h-7 px-2.5 text-slate-600 hover:text-red-600 hover:border-red-300 hover:bg-red-50 cursor-pointer"
-                  onClick={() => handleDecline(booking._id, id)}
-                >
-                  <X className="w-3.5 h-3.5 mr-1" />
-                  Decline
-                </Button>
-              </div>
-            ),
-          } as any);
-        }
+    const activeOffers = offers.filter((b) => {
+      const myOffer = b.offers?.find(
+        (o) =>
+          (!providerIdRef.current || String(o.provider) === String(providerIdRef.current)) &&
+          o.status === "offered",
+      );
+      if (myOffer?.expiresAt) {
+        return new Date(myOffer.expiresAt).getTime() > Date.now();
       }
-
-      if (hasNew) {
-        playChime();
+      if (b.offerExpiresAt) {
+        return new Date(b.offerExpiresAt).getTime() > Date.now();
       }
-    } catch {
-      // Ignore background poll errors
+      return b.status === "awaiting_provider";
+    });
+
+    let hasNew = false;
+    for (const booking of activeOffers) {
+      if (!notifiedOfferIds.has(booking._id)) {
+        notifiedOfferIds.add(booking._id);
+        hasNew = true;
+
+        const serviceName =
+          typeof booking.service === "object" && booking.service !== null
+            ? (booking.service as ServiceDocument).name
+            : "Service Job";
+
+        const customerName =
+          typeof booking.customer === "object" && booking.customer !== null
+            ? (booking.customer as UserDocument).name
+            : "Customer";
+
+        const payout = booking.providerShare
+          ? Math.round(booking.providerShare / 100)
+          : Math.round(booking.price / 100);
+
+        const timeSlot = `${formatSlotTime(booking.startTime)} - ${formatSlotTime(booking.endTime)}`;
+
+        // Dispatch toast with inline Accept & Decline buttons
+        toast.add({
+          type: "info",
+          title: `⚡ New Job Offer: ${serviceName}`,
+          description: `${customerName} • ${timeSlot} • Payout: ₹${payout}`,
+          priority: "high",
+          timeout: 60000,
+          actions: ({ id }: { id: string }) => (
+            <div className="flex items-center gap-2 mt-1">
+              <Button
+                size="sm"
+                className="bg-emerald-600 hover:bg-emerald-700 text-white font-medium text-xs h-7 px-3 cursor-pointer shadow-xs"
+                onClick={() => handleAccept(booking._id, id)}
+              >
+                <CheckCircle2 className="w-3.5 h-3.5 mr-1" />
+                Accept
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                className="text-xs h-7 px-2.5 text-slate-600 hover:text-red-600 hover:border-red-300 hover:bg-red-50 cursor-pointer"
+                onClick={() => handleDecline(booking._id, id)}
+              >
+                <X className="w-3.5 h-3.5 mr-1" />
+                Decline
+              </Button>
+            </div>
+          ),
+        } as any);
+      }
     }
-  }, [user, handleAccept, handleDecline]);
+
+    if (hasNew) {
+      playChime();
+    }
+  }, [user, handleAccept, handleDecline, offers]);
 
   useEffect(() => {
     checkOffers();
-    const interval = setInterval(checkOffers, 6000);
-    return () => clearInterval(interval);
   }, [checkOffers]);
 }

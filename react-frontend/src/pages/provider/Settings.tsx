@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { RolesEnum } from "@/common/roles.enum";
 import useAuth from "@/hooks/useAuth";
+import type { AppDispatch, RootState } from "@/store";
 import {
-    getProviderByUser,
-    updateProvider,
-} from "@/services/providers.service";
+    fetchProviderByUser,
+    updateProviderThunk,
+} from "@/store/provider/provider-slice";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -36,50 +38,36 @@ const days = [
 ];
 
 export default function Settings() {
-    const { authDetails } = useAuth();
-    const [providerId, setProviderId] = useState<string | null>(null);
+    const { user } = useAuth();
+    const dispatch = useDispatch<AppDispatch>();
+    const isProvider = user?.role === RolesEnum.PROVIDER;
     const [form, setForm] = useState<SettingsForm>({
     experience: 0,
     workHourStart: 540,
     workHourEnd: 1080,
     workingDays: [],
     });
-    const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [message, setMessage] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
+    const { profile: provider, pending, error: sliceError } = useSelector((s: RootState) => s.provider);
 
     useEffect(() => {
-    const user = authDetails?.user;
-    if (!user || user.role !== RolesEnum.PROVIDER) {
-        setLoading(false);
-        return;
-    }
+        if (isProvider && user?.id) {
+            void dispatch(fetchProviderByUser(user.id));
+        }
+    }, [dispatch, isProvider, user?.id]);
 
-    async function loadSettings() {
-        if (!user) return;
-        try {
-        const provider = await getProviderByUser(user.id);
-        setProviderId(provider._id);
+    useEffect(() => {
+        if (provider) {
         setForm({
             experience: provider.experience,
             workHourStart: provider.workHourStart,
             workHourEnd: provider.workHourEnd,
             workingDays: provider.workingDays,
         });
-        } catch (requestError) {
-        setError(
-            requestError instanceof Error
-            ? requestError.message
-            : "Unable to load provider settings.",
-        );
-        } finally {
-        setLoading(false);
         }
-    }
-
-    void loadSettings();
-    }, [authDetails]);
+    }, [provider]);
 
     function toggleDay(day: number) {
     setForm((current) => ({
@@ -92,13 +80,14 @@ export default function Settings() {
 
     async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    const providerId = provider?._id;
     if (!providerId) return;
 
     try {
-        setSaving(true);
         setError(null);
         setMessage(null);
-        await updateProvider(providerId, form);
+        setSaving(true);
+        await dispatch(updateProviderThunk({ id: providerId, changes: form })).unwrap();
         setMessage("Provider settings saved.");
     } catch (requestError) {
         setError(
@@ -111,7 +100,7 @@ export default function Settings() {
     }
     }
 
-    if (authDetails?.user.role !== RolesEnum.PROVIDER) {
+    if (!isProvider) {
     return (
         <Card>
         <CardContent className="pt-6">Provider access required.</CardContent>
@@ -119,7 +108,10 @@ export default function Settings() {
     );
     }
 
-    if (loading) {
+    const isLoading = pending > 0 && !provider;
+    const isError = Boolean(sliceError) && !provider;
+
+    if (isLoading) {
     return (
         <Card>
         <CardContent className="pt-6">Loading settings...</CardContent>
@@ -212,7 +204,7 @@ export default function Settings() {
             </FieldSet>
 
         {message && <p className="text-green-600">{message}</p>}
-        {error && <p className="text-destructive">{error}</p>}
+        {(error || isError) && <p className="text-destructive">{error ?? "Unable to load provider settings."}</p>}
         <Button disabled={saving} type="submit">
             {saving ? "Saving..." : "Save settings"}
         </Button>
