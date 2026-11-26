@@ -1,14 +1,15 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import useAuth from "@/hooks/useAuth";
+import { useDispatch, useSelector } from "react-redux";
+import type { AppDispatch, RootState } from "@/store";
+import {
+  BookingActions,
+  decideCompletion,
+  fetchCustomerBookings,
+} from "@/store/booking/booking-slice";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import {
-  confirmBookingCompletion,
-  getBookingsByCustomer,
-  rejectBookingCompletion,
-} from "@/services/bookings.service";
 import type { BookingDocument } from "@/models/api.models";
 
 const labels: Record<string, string> = {
@@ -57,74 +58,31 @@ function notice(booking: BookingDocument) {
 export default function BookingHistoryPage() {
   const navigate = useNavigate();
   const { id } = useParams();
-  const { authDetails } = useAuth();
-  const customerId = authDetails?.user.id;
-  const [bookings, setBookings] = useState<BookingDocument[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-  const [acting, setActing] = useState<string | null>(null);
-  const busy = useRef(false);
-  const [reload, setReload] = useState(0);
-
-  useEffect(() => {
-    let active = true;
-    let timer: ReturnType<typeof setTimeout>;
-    async function refresh() {
-      if (!customerId) {
-        setLoading(false);
-        return;
-      }
-      try {
-        const data = await getBookingsByCustomer(customerId);
-        if (active && !busy.current) {
-          setBookings(data);
-          setError("");
-        }
-      } catch {
-        if (active)
-          setError(
-            "Unable to refresh bookings. Displayed details may be out of date.",
-          );
-      } finally {
-        if (active) {
-          setLoading(false);
-          timer = setTimeout(refresh, 6000);
-        }
-      }
-    }
-    void refresh();
-    return () => {
-      active = false;
-      clearTimeout(timer);
-    };
-  }, [customerId, reload]);
-
-  const decide = useCallback(
-    async (booking: BookingDocument, complete: boolean) => {
-      if (busy.current) return;
-      busy.current = true;
-      setActing(booking._id);
-      setError("");
-      try {
-        const updated = await (complete
-          ? confirmBookingCompletion(booking._id)
-          : rejectBookingCompletion(booking._id));
-        setBookings((items) =>
-          items.map((item) => (item._id === booking._id ? updated : item)),
-        );
-        if (complete)
-          navigate("/customer/ratings-feedback?bookingId=" + booking._id);
-      } catch {
-        setError(
-          "This booking may have changed. Refresh to check its current status before trying again.",
-        );
-      } finally {
-        busy.current = false;
-        setActing(null);
-      }
-    },
-    [navigate],
+  const dispatch = useDispatch<AppDispatch>();
+  const customerId = useSelector((state: RootState) => state.auth.user?.id);
+  const { bookings, loaded, acting, error } = useSelector(
+    (state: RootState) => state.booking,
   );
+  const loading = !loaded;
+
+  // load, then keep the list fresh while the page is open
+  useEffect(() => {
+    if (!customerId) return;
+    dispatch(fetchCustomerBookings());
+    const timer = setInterval(() => dispatch(fetchCustomerBookings()), 6000);
+    return () => clearInterval(timer);
+  }, [dispatch, customerId]);
+
+  const decide = async (booking: BookingDocument, complete: boolean) => {
+    if (acting !== null) return;
+    try {
+      await dispatch(decideCompletion({ id: booking._id, complete })).unwrap();
+      if (complete)
+        navigate("/customer/ratings-feedback?bookingId=" + booking._id);
+    } catch {
+      // the message is in state.booking.error
+    }
+  };
 
   const visible = id
     ? bookings.filter((booking) => booking._id === id)
@@ -151,7 +109,10 @@ export default function BookingHistoryPage() {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => setReload((v) => v + 1)}
+            onClick={() => {
+              dispatch(BookingActions.clearError());
+              dispatch(fetchCustomerBookings());
+            }}
           >
             Refresh
           </Button>

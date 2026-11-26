@@ -9,6 +9,7 @@ import { categoryReducer } from "./category/category-slice";
 import { platformReducer } from "./platform-setting/platform-slice";
 import { providerReducer } from "./provider/provider-slice";
 import { regionReducer } from "./region/region-slice";
+import { reviewReducer } from "./review/review-slice";
 import { serviceReducer } from "./service/service-slice";
 import { superuserReducer } from "./superuser/superuser-slice";
 
@@ -23,6 +24,7 @@ export const store = configureStore({
         platform: platformReducer,
         provider: providerReducer,
         region: regionReducer,
+        review: reviewReducer,
         service: serviceReducer,
         superuser: superuserReducer,
     },

@@ -1,91 +1,73 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import useAuth from "@/hooks/useAuth";
-import { getStoredUser, getStoredUserId } from "@/common/services/authService";
-import { getBookingsByCustomer } from "@/services/bookings.service";
-import { createReview, getAllReviews } from "@/services/reviews.service";
-import type { BookingDocument, ReviewDocument, ServiceDocument } from "@/models/api.models";
+import { useDispatch, useSelector } from "react-redux";
+import type { AppDispatch, RootState } from "@/store";
+import {
+  fetchCustomerBookings,
+} from "@/store/booking/booking-slice";
+import {
+  ReviewActions,
+  fetchReviews,
+  submitReview,
+} from "@/store/review/review-slice";
+import type { ServiceDocument } from "@/models/api.models";
 
 function RatingsFeedbackPage() {
   const navigate = useNavigate();
+  const dispatch = useDispatch<AppDispatch>();
   const [searchParams] = useSearchParams();
-  const authSession = useAuth();
 
-  const [completedBookings, setCompletedBookings] = useState<BookingDocument[]>([]);
-  const [selectedBooking, setSelectedBooking] = useState<BookingDocument | null>(null);
-  const [reviewsList, setReviewsList] = useState<ReviewDocument[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [submitting, setSubmitting] = useState(false);
+  // all data comes from the store
+  const customerId = useSelector((state: RootState) => state.auth.user?.id);
+  const { bookings, loaded: bookingsLoaded } = useSelector(
+    (state: RootState) => state.booking,
+  );
+  const {
+    reviews: reviewsList,
+    submitting,
+    error: reviewError,
+  } = useSelector((state: RootState) => state.review);
+  const completedBookings = bookings.filter((b) => b.status === "completed");
+  const loading = !!customerId && !bookingsLoaded;
 
+  // form state only
+  const [selectedBookingId, setSelectedBookingId] = useState<string | null>(null);
   const [rating, setRating] = useState(0);
   const [feedback, setFeedback] = useState("");
-  const [error, setError] = useState("");
+  const [formError, setFormError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
-
-  const storedUser = getStoredUser();
-  const customerId =
-    authSession.authDetails?.user?.id ||
-    getStoredUserId() ||
-    storedUser?.id;
+  const error = formError || reviewError || "";
+  const clearErrors = () => {
+    setFormError("");
+    dispatch(ReviewActions.clearError());
+  };
 
   const targetBookingId = searchParams.get("bookingId");
 
   useEffect(() => {
-    let isMounted = true;
-    async function loadData() {
-      if (!customerId) {
-        setLoading(false);
-        return;
-      }
-      setLoading(true);
-      setError("");
-      try {
-        const [bookings, reviews] = await Promise.all([
-          getBookingsByCustomer(customerId).catch(() => []),
-          getAllReviews().catch(() => []),
-        ]);
+    if (!customerId) return;
+    dispatch(fetchCustomerBookings());
+    dispatch(fetchReviews());
+  }, [dispatch, customerId]);
 
-        if (!isMounted) return;
-
-        const completed = (bookings || []).filter(
-          (b) => b.status === "completed",
-        );
-        setCompletedBookings(completed);
-        setReviewsList(reviews || []);
-
-        if (targetBookingId) {
-          const match = completed.find((b) => b._id === targetBookingId);
-          if (match) setSelectedBooking(match);
-          else if (completed.length > 0) setSelectedBooking(completed[0]);
-        } else if (completed.length > 0) {
-          setSelectedBooking(completed[0]);
-        }
-      } catch (err: any) {
-        if (isMounted) {
-          setError("Failed to load your booking history for reviews.");
-        }
-      } finally {
-        if (isMounted) setLoading(false);
-      }
-    }
-
-    loadData();
-    return () => {
-      isMounted = false;
-    };
-  }, [customerId, targetBookingId]);
+  // pick the booking from the link, else the first completed one
+  const selectedBooking =
+    completedBookings.find((b) => b._id === selectedBookingId) ??
+    completedBookings.find((b) => b._id === targetBookingId) ??
+    completedBookings[0] ??
+    null;
 
   const handleSubmit = async () => {
-    setError("");
+    clearErrors();
     setSuccessMessage("");
 
     if (!selectedBooking) {
-      setError("Please select a completed booking to review.");
+      setFormError("Please select a completed booking to review.");
       return;
     }
 
     if (rating === 0) {
-      setError("Please select a rating from 1 to 5 stars before submitting.");
+      setFormError("Please select a rating from 1 to 5 stars before submitting.");
       return;
     }
 
@@ -100,35 +82,25 @@ function RatingsFeedbackPage() {
         : selectedBooking.service;
 
     if (!providerId || !serviceId) {
-      setError("This booking does not have valid provider or service references.");
+      setFormError("This booking does not have valid provider or service references.");
       return;
     }
 
-    setSubmitting(true);
     try {
-      await createReview({
-        booking: selectedBooking._id,
-        provider: providerId,
-        service: serviceId,
-        rating,
-        review: feedback.trim() || undefined,
-      });
-
+      await dispatch(
+        submitReview({
+          booking: selectedBooking._id,
+          provider: providerId,
+          service: serviceId,
+          rating,
+          review: feedback.trim() || undefined,
+        }),
+      ).unwrap();
       setSuccessMessage("Thank you! Your review has been submitted successfully.");
       setRating(0);
       setFeedback("");
-
-      // Refresh public reviews list
-      const updatedReviews = await getAllReviews().catch(() => []);
-      setReviewsList(updatedReviews);
-    } catch (err: any) {
-      const msg =
-        err?.response?.data?.message ||
-        err?.message ||
-        "Failed to submit review. Each booking can only be reviewed once.";
-      setError(Array.isArray(msg) ? msg.join(", ") : msg);
-    } finally {
-      setSubmitting(false);
+    } catch {
+      // the message is in state.review.error
     }
   };
 
@@ -184,8 +156,8 @@ function RatingsFeedbackPage() {
                   onChange={(e) => {
                     const match = completedBookings.find((b) => b._id === e.target.value);
                     if (match) {
-                      setSelectedBooking(match);
-                      setError("");
+                      setSelectedBookingId(match._id);
+                      clearErrors();
                       setSuccessMessage("");
                     }
                   }}
@@ -235,7 +207,7 @@ function RatingsFeedbackPage() {
                       type="button"
                       onClick={() => {
                         setRating(star);
-                        setError("");
+                        clearErrors();
                         setSuccessMessage("");
                       }}
                       className="text-4xl cursor-pointer hover:scale-110 transition text-amber-400"
@@ -260,7 +232,7 @@ function RatingsFeedbackPage() {
                     value={feedback}
                     onChange={(e) => {
                       setFeedback(e.target.value);
-                      setError("");
+                      clearErrors();
                       setSuccessMessage("");
                     }}
                     placeholder="Tell us about the punctuality, cleanliness, and overall quality of work..."
