@@ -3,7 +3,7 @@ import { BsStarFill } from "react-icons/bs";
 import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch, RootState } from "../../store";
 import {
-  ManagerActions,
+  changeProviderStatus,
   getProviderCategoryNames,
   type ProviderStatus,
 } from "../../store/manager/manager-slice";
@@ -18,7 +18,6 @@ import {
   DialogTitle,
 } from "../../components/ui/dialog";
 import { toast } from "../../components/ui/toast";
-import { approveProvider, suspendProvider } from "@/services/providers.service";
 import {
   Card,
   CardAction,
@@ -78,14 +77,7 @@ export default function ManagerManageProviders() {
     const { id, name, action } = confirming;
     setSaving(true);
     try {
-      const updated =
-        action === "approve" ? await approveProvider(id) : await suspendProvider(id);
-      dispatch(
-        ManagerActions.providerStatusChanged({
-          id,
-          status: updated.status as unknown as ProviderStatus,
-        }),
-      );
+      await dispatch(changeProviderStatus({ id, action })).unwrap();
       toast.add({
         type: "info",
         description: `${name} ${action === "approve" ? "approved" : "suspended"}`,

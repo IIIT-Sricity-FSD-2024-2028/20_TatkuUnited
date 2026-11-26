@@ -1,13 +1,9 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
 import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch, RootState } from "../../store";
-import { ManagerActions } from "../../store/manager/manager-slice";
+import { updateManagerProfile } from "../../store/manager/manager-slice";
 import { toast } from "../../components/ui/toast";
-import { AuthActions } from "@/store/auth/auth-slice";
-import { updateUser } from "@/services/users.service";
 import type { UpdateUserDto } from "@/models/api.models";
-import type { UserInterface } from "@/models/auth.models";
 import { Skeleton } from "../../components/ui/skeleton";
 import { Avatar, AvatarFallback } from "../../components/ui/avatar";
 import {
@@ -100,12 +96,6 @@ export default function ManagerProfile() {
     "aria-invalid": touched[field] && !!errors[field],
   });
 
-  // The header and Dashboard greeting read the logged-in user from the
-  // session, so copy the saved details there too, in memory and in storage.
-  const syncSession = (details: Pick<UserInterface, "name" | "email" | "phone">) => {
-    dispatch(AuthActions.userUpdated(details));
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!userInfo || !isDirty || !isValid) return;
@@ -119,17 +109,12 @@ export default function ManagerProfile() {
 
     setSaving(true);
     try {
-      const updated = await updateUser(userInfo._id, changes);
-      dispatch(ManagerActions.userUpdated({ ...userInfo, ...updated }));
-      syncSession({
-        name: updated.name,
-        email: updated.email,
-        phone: updated.phone,
-      });
+      await dispatch(
+        updateManagerProfile({ userId: userInfo._id, changes }),
+      ).unwrap();
       toast.add({ type: "info", description: "Profile updated" });
     } catch (error) {
-      const duplicate =
-        axios.isAxiosError(error) && error.response?.status === 409;
+      const duplicate = (error as Error).message === "EMAIL_TAKEN";
       toast.add({
         type: "error",
         description: duplicate

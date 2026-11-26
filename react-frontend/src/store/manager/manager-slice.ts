@@ -2,7 +2,13 @@ import { createSlice, isPending, isFulfilled, isRejected, type PayloadAction } f
 import createAsyncThunkTyped from "../asyncThunk";
 import { getManagerByUser } from "@/services/managers.service";
 import { getRegionsByManager } from "@/services/regions.service";
-import { getProvidersByRegion } from "@/services/providers.service";
+import {
+  approveProvider,
+  getProvidersByRegion,
+  suspendProvider,
+} from "@/services/providers.service";
+import { updateUser } from "@/services/users.service";
+import axios from "axios";
 import { getBookingsByRegion } from "@/services/bookings.service";
 import { getServices } from "@/services/services.service";
 import { getCategories } from "@/services/categories.service";
@@ -15,6 +21,7 @@ import type {
   ProviderStatus,
   RegionDocument,
   ServiceDocument,
+  UpdateUserDto,
   UserDocument,
 } from "@/models/api.models";
 
@@ -111,6 +118,52 @@ export const fetchCatalogue = createAsyncThunkTyped(
   },
 );
 
+/** Approve or suspend a provider. Not part of managerRequests: it shouldn't trigger page skeletons. */
+export const changeProviderStatus = createAsyncThunkTyped(
+  "manager/changeProviderStatus",
+  async ({
+    id,
+    action,
+  }: {
+    id: string;
+    action: "approve" | "suspend";
+  }): Promise<{ id: string; status: ProviderStatus }> => {
+    try {
+      const updated =
+        action === "approve" ? await approveProvider(id) : await suspendProvider(id);
+      return { id, status: updated.status as unknown as ProviderStatus };
+    } catch {
+      throw new Error(`Could not ${action} provider`);
+    }
+  },
+);
+
+/** Save the manager's own name/email/phone, then mirror it into the auth session. */
+export const updateManagerProfile = createAsyncThunkTyped(
+  "manager/updateManagerProfile",
+  async (
+    { userId, changes }: { userId: string; changes: UpdateUserDto },
+    { dispatch },
+  ): Promise<UserDocument> => {
+    try {
+      const updated = await updateUser(userId, changes);
+      dispatch(
+        AuthActions.userUpdated({
+          name: updated.name,
+          email: updated.email,
+          phone: updated.phone,
+        }),
+      );
+      return updated;
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response?.status === 409) {
+        throw new Error("EMAIL_TAKEN");
+      }
+      throw new Error("Could not save your profile");
+    }
+  },
+);
+
 /** Names of the categories a provider works in, via their offered services. */
 export function getProviderCategoryNames(
   provider: RegionProvider,
@@ -185,6 +238,13 @@ const ManagerSlice = createSlice({
         if (!state.pendingRequests[action.meta.requestId]) return;
         if (action.meta.arg !== state.selectedRegionId) return;
         state.providers = action.payload;
+      })
+      .addCase(changeProviderStatus.fulfilled, (state, action) => {
+        const provider = state.providers.find((p) => p._id === action.payload.id);
+        if (provider) provider.status = action.payload.status;
+      })
+      .addCase(updateManagerProfile.fulfilled, (state, action) => {
+        if (state.userInfo) state.userInfo = { ...state.userInfo, ...action.payload };
       })
       .addCase(fetchCatalogue.fulfilled, (state, action) => {
         if (!state.pendingRequests[action.meta.requestId]) return;
