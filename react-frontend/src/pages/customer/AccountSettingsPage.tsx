@@ -575,12 +575,14 @@ function AccountSettingsPage() {
                         className="border-b border-slate-100 pb-4"
                       >
                         <p className="font-medium">
-                          {activity.service_name || "Home Service"}
+                          {typeof activity.service === "object" && activity.service?.name
+                            ? activity.service.name
+                            : activity.service_name || "Home Service"}
                         </p>
 
                         <p className="text-sm text-slate-500 mt-1">
-                          {activity.created_at
-                            ? new Date(activity.created_at).toLocaleDateString()
+                          {activity.createdAt || activity.created_at
+                            ? new Date(activity.createdAt || activity.created_at).toLocaleDateString()
                             : ""}
                         </p>
 

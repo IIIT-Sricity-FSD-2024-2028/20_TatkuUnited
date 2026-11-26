@@ -131,7 +131,7 @@ function CartPage() {
                 {error.includes("address") && (
                   <button
                     type="button"
-                    onClick={() => navigate("/account-settings")}
+                    onClick={() => navigate("/customer/account-settings")}
                     className="self-start rounded-md bg-red-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-red-700 cursor-pointer"
                   >
                     Go to Account Settings

@@ -12,6 +12,7 @@ import { regionReducer } from "./region/region-slice";
 import { reviewReducer } from "./review/review-slice";
 import { serviceReducer } from "./service/service-slice";
 import { superuserReducer } from "./superuser/superuser-slice";
+import { uiReducer } from "./ui/ui-slice";
 
 export const store = configureStore({
     devTools: true,
@@ -27,6 +28,7 @@ export const store = configureStore({
         review: reviewReducer,
         service: serviceReducer,
         superuser: superuserReducer,
+        ui: uiReducer,
     },
 });
 

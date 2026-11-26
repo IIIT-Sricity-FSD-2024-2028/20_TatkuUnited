@@ -67,6 +67,7 @@
 |---|---|---|---|---|
 | `AccountSettingsPage.tsx` | ✅ | ✅ | ❌ | ✅ Consumes `state.customer` & `state.booking.items`; dispatches profile, address, password, and booking thunks |
 | `BookingHistoryPage.tsx` | ✅ | ✅ | ❌ | ✅ Consumes `state.booking.items`; dispatches `fetchCustomerBookings`, `confirmCompletion`, `rejectCompletion` |
+| `CartPage.tsx` | ✅ | ✅ | ❌ | ✅ Consumes `state.customer.cart`; dispatches `fetchCart`, `removeFromCart`, `checkout` |
 | `MockPaymentPage.tsx` | ✅ | ✅ | ❌ | ✅ Consumes `state.customer.currentOrder`; dispatches `fetchOrder`, `payOrder` |
 | `RatingsFeedbackPage.tsx` | ✅ | ✅ | ❌ | ✅ Consumes `state.booking.items` and `state.review.items`; dispatches `fetchCustomerBookings`, `fetchAllReviews`, `submitReview` |
 | `SchedulePage.tsx` | ✅ | ✅ | ❌ (type-only) | ✅ Consumes `state.service` & `state.customer`; dispatches `fetchServiceById`, `fetchServices`, `fetchAvailableSlots`, `fetchAddresses`, `addAddress`, `addToCart` |

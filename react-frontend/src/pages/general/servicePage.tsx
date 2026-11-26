@@ -1,7 +1,9 @@
-import type { ReviewDocument, ServiceDocument } from "@/models/api.models";
-import { getReviewsByService, getServiceById } from "@/services";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
+import type { AppDispatch, RootState } from "@/store";
+import { fetchServiceById, serviceActions } from "@/store/service/service-slice";
+import { fetchReviewsByService } from "@/store/review/review-slice";
 import { Star } from "lucide-react";
 import PublicNavbar from "../PublicNavbar";
 import NotFound from "../components/notFound";
@@ -83,44 +85,26 @@ function StarRating({ value, size = 16 }: { value: number; size?: number }) {
 
 export default function ServicePage() {
   const { serviceId } = useParams();
-  const [service, setService] = useState<ServiceDocument>();
-  const [isLoading, setIsLoading] = useState<boolean>(true);
   const navigate = useNavigate();
+  const dispatch = useDispatch<AppDispatch>();
 
-  const [reviews, setReviews] = useState<ReviewDocument[]>([]);
-  const [isReviewsLoading, setIsReviewsLoading] = useState<boolean>(false);
+  const { selectedService, loading: isLoading } = useSelector(
+    (state: RootState) => state.service,
+  );
+  const { items: reviews, loading: isReviewsLoading } = useSelector(
+    (state: RootState) => state.review,
+  );
+
+  const service = selectedService?._id === serviceId ? selectedService : undefined;
 
   useEffect(() => {
-    async function fetchService() {
-      if (!serviceId) {
-        setIsLoading(false);
-        return;
-      }
-      try {
-        setIsLoading(true);
-        const serviceData = await getServiceById(serviceId);
-        setService(serviceData);
-      } finally {
-        setIsLoading(false);
-      }
+    if (!serviceId) {
+      dispatch(serviceActions.selectService(null));
+      return;
     }
-    fetchService();
-  }, [serviceId]);
-
-  // TODO: fetch reviews for this service
-  useEffect(() => {
-    async function fetchReviews() {
-      if (!serviceId) return;
-      try {
-        setIsReviewsLoading(true);
-        const reviewData = await getReviewsByService(serviceId);
-        setReviews(reviewData);
-      } finally {
-        setIsReviewsLoading(false);
-      }
-    }
-    fetchReviews();
-  }, [serviceId]);
+    void dispatch(fetchServiceById(serviceId));
+    void dispatch(fetchReviewsByService(serviceId));
+  }, [dispatch, serviceId]);
 
   if (isLoading)
     return (

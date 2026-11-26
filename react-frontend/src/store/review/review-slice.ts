@@ -133,8 +133,24 @@ const ReviewSlice = createSlice({
           state.error = action.error.message ?? "Failed to fetch reviews";
         }
       })
+      .addCase(fetchReviewsByService.pending, (state, action) => {
+        state.requestId = action.meta.requestId;
+        state.loading = true;
+        state.error = null;
+      })
       .addCase(fetchReviewsByService.fulfilled, (state, action) => {
+        if (state.requestId !== action.meta.requestId) return;
         state.items = action.payload;
+        state.loading = false;
+        state.requestId = null;
+      })
+      .addCase(fetchReviewsByService.rejected, (state, action) => {
+        if (state.requestId !== action.meta.requestId) return;
+        state.loading = false;
+        state.requestId = null;
+        if (!action.meta.aborted) {
+          state.error = action.error.message ?? "Failed to fetch service reviews";
+        }
       })
       .addCase(fetchReviewsByProvider.fulfilled, (state, action) => {
         state.items = action.payload;
