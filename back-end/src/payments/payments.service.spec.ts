@@ -198,7 +198,7 @@ describe('PaymentsService', () => {
         { status: PaymentStatus.REFUNDED },
         { new: true },
       );
-      expect(result.status).toBe(PaymentStatus.REFUNDED);
+      expect((result as any).status).toBe(PaymentStatus.REFUNDED);
     });
 
     it('should throw NotFoundException if payment to update is missing', async () => {

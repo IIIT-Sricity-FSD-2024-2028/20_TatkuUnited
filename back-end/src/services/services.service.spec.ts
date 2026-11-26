@@ -127,7 +127,7 @@ describe('ServicesService', () => {
         { basePrice: 1299 },
         { new: true },
       );
-      expect(result.basePrice).toBe(1299);
+      expect((result as any).basePrice).toBe(1299);
     });
 
     it('should throw NotFoundException if service to update does not exist', async () => {

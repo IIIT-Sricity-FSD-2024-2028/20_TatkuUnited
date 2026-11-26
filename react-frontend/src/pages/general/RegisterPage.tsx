@@ -4,12 +4,17 @@ import { handleRegister } from "@/common/services/authService";
 import type { Role } from "@/common/roles.enum";
 import { toast } from "@/components/ui/toast";
 import { ENDPOINT_ENUM } from "@/common/endpoints";
+import { CitySelect } from "@/components/shared/CitySelect";
+import { LocationPicker } from "@/components/shared/LocationPicker";
+import { SUPPORTED_CITIES } from "@/common/cities";
 
 interface FormData {
   name: string;
   email: string;
   phone: string;
-  address: string;
+  addressLine: string;
+  city: string;
+  coordinates: [number, number];
   password: string;
   confirmPassword: string;
 }
@@ -18,7 +23,8 @@ interface FormErrors {
   name?: boolean;
   email?: boolean;
   phone?: boolean;
-  address?: boolean;
+  addressLine?: boolean;
+  city?: boolean;
   password?: boolean;
   confirmPassword?: boolean;
 }
@@ -106,7 +112,6 @@ function FillUserData({
       name: formData.name.length < 3 || formData.name.length > 200,
       phone: formData.phone.length !== 10,
       email: !formData.email.includes("@") || !formData.email.includes("."),
-      address: formData.address.length < 10,
     };
     setErrors((prev) => ({ ...prev, ...newErrors }));
     return !Object.values(newErrors).some(Boolean);
@@ -145,15 +150,6 @@ function FillUserData({
           value={formData.email}
           onChange={(e) => updateField("email", e)}
         />
-        <input
-          className={borderClass(errors.address)}
-          type="text"
-          name="address"
-          id="address"
-          placeholder="Enter your address"
-          value={formData.address}
-          onChange={(e) => updateField("address", e)}
-        />
       </form>
       <p
         className={`text-sm text-left my-2 mx-5 text-red-500 ${invalidData ? "" : "hidden"}`}
@@ -178,6 +174,136 @@ function FillUserData({
 
             setInvalidData(false);
             setCurPage(3);
+          }}
+        >
+          Continue
+        </button>
+      </div>
+    </div>
+  );
+}
+
+interface FillLocationDataProps {
+  role: Role;
+  formData: FormData;
+  setFormData: React.Dispatch<React.SetStateAction<FormData>>;
+  errors: FormErrors;
+  setErrors: React.Dispatch<React.SetStateAction<FormErrors>>;
+  setCurPage: React.Dispatch<React.SetStateAction<number>>;
+}
+
+function FillLocationData({
+  role,
+  formData,
+  setFormData,
+  errors,
+  setErrors,
+  setCurPage,
+}: FillLocationDataProps) {
+  const [cityCenterHint, setCityCenterHint] = useState<[number, number]>(
+    formData.coordinates,
+  );
+  const [invalidData, setInvalidData] = useState(false);
+
+  const validateLocation = () => {
+    const newErrors: FormErrors = {
+      city: !formData.city.trim(),
+      addressLine: formData.addressLine.trim().length < 5,
+    };
+    setErrors((prev) => ({ ...prev, ...newErrors }));
+    return !Object.values(newErrors).some(Boolean);
+  };
+
+  return (
+    <div className="w-full max-w-lg px-5">
+      <h2 className="mt-4 mb-1 text-xl font-semibold text-left">
+        {role === "customer" ? "Your Home Address" : "Your Default Location"}
+      </h2>
+      <p className="text-sm text-slate-500 mb-4 text-left">
+        {role === "customer"
+          ? "Saved as your Home address. You can add more addresses later."
+          : "Used as your default service location."}
+      </p>
+
+      <div className="flex flex-col gap-3">
+        <div>
+          <label className="block text-xs font-medium text-slate-600 mb-1">
+            City
+          </label>
+          <CitySelect
+            value={formData.city}
+            onChange={(cityOption) => {
+              setFormData((prev) => ({
+                ...prev,
+                city: cityOption.name,
+                coordinates: cityOption.coordinates,
+              }));
+              setCityCenterHint(cityOption.coordinates);
+            }}
+            className={`w-full border-2 p-2 rounded-lg bg-white text-sm ${
+              errors.city ? "border-red-500" : "border-slate-400"
+            }`}
+            required
+          />
+        </div>
+
+        <LocationPicker
+          value={formData.coordinates}
+          centerHint={cityCenterHint}
+          heightClass="h-52"
+          label="Pin Location on Map or Use Live Location"
+          onChange={(coords, resolved) => {
+            setFormData((prev) => ({
+              ...prev,
+              coordinates: coords,
+              city: resolved?.city ?? prev.city,
+              addressLine: resolved?.addressLine || prev.addressLine,
+            }));
+          }}
+        />
+
+        <div>
+          <label className="block text-xs font-medium text-slate-600 mb-1">
+            Street Address Line
+          </label>
+          <input
+            className={borderClass(errors.addressLine)}
+            type="text"
+            name="addressLine"
+            id="addressLine"
+            placeholder="Flat / House No., Street, Area"
+            value={formData.addressLine}
+            onChange={(e) =>
+              setFormData((prev) => ({ ...prev, addressLine: e.target.value }))
+            }
+          />
+        </div>
+      </div>
+
+      {invalidData && (
+        <p className="text-sm text-left my-2 text-red-500">
+          Please select a city and enter your street address (at least 5 characters).
+        </p>
+      )}
+
+      <div className="flex justify-center gap-2.5">
+        <button
+          type="button"
+          className="bg-blue-500 mt-6 cursor-pointer hover:bg-blue-600 text-white font-medium w-full py-3 px-4 rounded-lg"
+          onClick={() => setCurPage(2)}
+        >
+          Back
+        </button>
+        <button
+          type="button"
+          className="bg-blue-500 mt-6 cursor-pointer hover:bg-blue-600 text-white font-medium w-full py-3 px-4 rounded-lg"
+          onClick={() => {
+            if (!validateLocation()) {
+              setInvalidData(true);
+              return;
+            }
+            setInvalidData(false);
+            setCurPage(4);
           }}
         >
           Continue
@@ -242,6 +368,14 @@ function FillPassword({
       phone: formData.phone.trim(),
       password: formData.password.trim(),
       role,
+      address: {
+        line: formData.addressLine.trim(),
+        city: formData.city,
+        location: {
+          type: "Point",
+          coordinates: formData.coordinates,
+        },
+      },
     });
     setSubmitting(false);
 
@@ -288,7 +422,7 @@ function FillPassword({
         <button
           className="bg-blue-500 mt-6 cursor-pointer hover:bg-blue-600 text-white font-medium w-full py-3 px-4 rounded-lg"
           onClick={() => {
-            setCurPage(2);
+            setCurPage(3);
             setFormData((prev) => ({
               ...prev,
               password: "",
@@ -333,14 +467,16 @@ function RegisterPage() {
     name: "",
     email: "",
     phone: "",
-    address: "",
+    addressLine: "",
+    city: SUPPORTED_CITIES[0].name,
+    coordinates: SUPPORTED_CITIES[0].coordinates,
     password: "",
     confirmPassword: "",
   });
 
   return (
-    <div className="flex flex-col justify-center items-center h-screen w-screen">
-      {curPage != 4 && curPage != 5 && <CreateAccount />}
+    <div className="flex flex-col justify-center items-center min-h-screen w-full py-8">
+      <CreateAccount />
       {curPage == 1 && (
         <SelectRolePage
           key={curPage}
@@ -360,6 +496,17 @@ function RegisterPage() {
         />
       )}
       {curPage == 3 && (
+        <FillLocationData
+          key={curPage}
+          role={role}
+          formData={formData}
+          setFormData={setFormData}
+          errors={errors}
+          setErrors={setErrors}
+          setCurPage={setCurPage}
+        />
+      )}
+      {curPage == 4 && (
         <FillPassword
           key={curPage}
           formData={formData}
@@ -370,8 +517,6 @@ function RegisterPage() {
           role={role}
         />
       )}
-      {/* {curPage == 4 && <RegistrationSuccess />}
-      {curPage == 5 && <RegistrationFailed />} */}
       <LoginLink />
     </div>
   );

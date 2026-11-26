@@ -15,14 +15,18 @@ import {
   fetchServices,
 } from "@/store/service/service-slice";
 import type { AvailableSlotItem } from "@/services/services.service";
-import { MapPin, Calendar, Clock, Plus, CheckCircle2, AlertCircle } from "lucide-react";
-
-function getLocalDateString(date: Date): string {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
-}
+import {
+  MapPin,
+  Calendar,
+  Clock,
+  Plus,
+  CheckCircle2,
+  AlertCircle,
+} from "lucide-react";
+import { getLocalDateString, isDateInRange } from "@/lib/dateValidation";
+import { CitySelect } from "@/components/shared/CitySelect";
+import { LocationPicker } from "@/components/shared/LocationPicker";
+import { SUPPORTED_CITIES } from "@/common/cities";
 
 function SchedulePage() {
   const navigate = useNavigate();
@@ -30,7 +34,11 @@ function SchedulePage() {
   const params = useParams<{ service_id?: string; serviceId?: string }>();
   const [searchParams] = useSearchParams();
 
-  const serviceIdParam = params.service_id || params.serviceId || searchParams.get("serviceId") || searchParams.get("id");
+  const serviceIdParam =
+    params.service_id ||
+    params.serviceId ||
+    searchParams.get("serviceId") ||
+    searchParams.get("id");
 
   // all data comes from the store
   const customerId = useSelector((state: RootState) => state.auth.user?.id);
@@ -60,13 +68,18 @@ function SchedulePage() {
     city: "Bengaluru",
     coordinates: [77.5946, 12.9716] as [number, number],
   });
+  const [cityCenterHint, setCityCenterHint] = useState<[number, number]>(
+    SUPPORTED_CITIES[0].coordinates,
+  );
   const today = getLocalDateString(new Date());
   const latestDateObj = new Date();
   latestDateObj.setDate(latestDateObj.getDate() + 2); // 3 day booking window
   const maxDate = getLocalDateString(latestDateObj);
 
   const [date, setDate] = useState<string>("");
-  const [selectedSlot, setSelectedSlot] = useState<AvailableSlotItem | null>(null);
+  const [selectedSlot, setSelectedSlot] = useState<AvailableSlotItem | null>(
+    null,
+  );
   const [formError, setFormError] = useState("");
   const error = formError || customerError || serviceError || "";
 
@@ -98,14 +111,21 @@ function SchedulePage() {
   // Pre-select the first saved address
   useEffect(() => {
     if (addresses.length > 0 && !selectedAddressId) {
-      setSelectedAddressId((addresses[0] as any).id || (addresses[0] as any)._id);
+      setSelectedAddressId(
+        (addresses[0] as any).id || (addresses[0] as any)._id,
+      );
     }
   }, [addresses, selectedAddressId]);
 
   // Fetch slots whenever address or date changes
   useEffect(() => {
     setSelectedSlot(null);
-    if (!selectedService?._id || !selectedAddressId || !date) {
+    if (
+      !selectedService?._id ||
+      !selectedAddressId ||
+      !date ||
+      !isDateInRange(date, today, maxDate)
+    ) {
       dispatch(ServiceActions.clearSlots());
       return;
     }
@@ -125,12 +145,24 @@ function SchedulePage() {
         },
       }),
     );
-  }, [dispatch, selectedService?._id, selectedAddressId, date, customerId, addresses]);
+  }, [
+    dispatch,
+    selectedService?._id,
+    selectedAddressId,
+    date,
+    customerId,
+    addresses,
+  ]);
 
   // Handle adding new address inline
   const handleAddNewAddress = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!customerId || !newAddress.line.trim() || !newAddress.city.trim()) {
+    if (
+      !customerId ||
+      !newAddress.label.trim() ||
+      !newAddress.line.trim() ||
+      !newAddress.city.trim()
+    ) {
       setFormError("Please fill out all address fields.");
       return;
     }
@@ -178,6 +210,12 @@ function SchedulePage() {
       setFormError("Please select a date.");
       return;
     }
+    if (!isDateInRange(date, today, maxDate)) {
+      setFormError(
+        `Please select a valid date between ${today} and ${maxDate}.`,
+      );
+      return;
+    }
     if (!selectedSlot) {
       setFormError("Please select an available start-time slot.");
       return;
@@ -200,7 +238,12 @@ function SchedulePage() {
     try {
       await dispatch(
         addToCart({
-          item: { service: selectedService._id, scheduledDate, startTime, endTime },
+          item: {
+            service: selectedService._id,
+            scheduledDate,
+            startTime,
+            endTime,
+          },
           addressId: selectedAddressId,
         }),
       ).unwrap();
@@ -290,18 +333,34 @@ function SchedulePage() {
                     <label className="block text-xs font-medium text-slate-600 mb-1">
                       City
                     </label>
-                    <input
-                      type="text"
+                    <CitySelect
                       value={newAddress.city}
-                      onChange={(e) =>
-                        setNewAddress({ ...newAddress, city: e.target.value })
-                      }
-                      placeholder="City"
-                      className="w-full text-sm rounded-lg border border-slate-300 p-2 focus:outline-none focus:border-blue-500 bg-white"
+                      onChange={(cityOption) => {
+                        setNewAddress((prev) => ({
+                          ...prev,
+                          city: cityOption.name,
+                          coordinates: cityOption.coordinates,
+                        }));
+                        setCityCenterHint(cityOption.coordinates);
+                      }}
                       required
                     />
                   </div>
                 </div>
+                <LocationPicker
+                  value={newAddress.coordinates}
+                  centerHint={cityCenterHint}
+                  heightClass="h-52"
+                  label="Pin Delivery Location or Use Live Location"
+                  onChange={(coords, resolved) => {
+                    setNewAddress((prev) => ({
+                      ...prev,
+                      coordinates: coords,
+                      city: resolved?.city ?? prev.city,
+                      line: resolved?.addressLine || prev.line,
+                    }));
+                  }}
+                />
                 <div>
                   <label className="block text-xs font-medium text-slate-600 mb-1">
                     Street Address Line
@@ -342,7 +401,8 @@ function SchedulePage() {
               </div>
             ) : addresses.length === 0 ? (
               <div className="p-4 rounded-xl border border-amber-200 bg-amber-50 text-amber-800 text-sm">
-                No saved delivery addresses found. Please click <strong>"Add Address"</strong> above to continue.
+                No saved delivery addresses found. Please click{" "}
+                <strong>"Add Address"</strong> above to continue.
               </div>
             ) : (
               <div className="space-y-3">
@@ -402,7 +462,8 @@ function SchedulePage() {
                 </h2>
                 {!selectedAddressId && (
                   <p className="text-xs text-amber-700">
-                    Please select an address first to load verified provider slots.
+                    Please select an address first to load verified provider
+                    slots.
                   </p>
                 )}
               </div>
@@ -423,14 +484,23 @@ function SchedulePage() {
                 min={today}
                 max={maxDate}
                 onChange={(e) => {
-                  setDate(e.target.value);
+                  const nextDate = e.target.value;
+                  setDate(nextDate);
                   setSelectedSlot(null);
+                  if (nextDate && !isDateInRange(nextDate, today, maxDate)) {
+                    setFormError(
+                      `Please select a valid date between ${today} and ${maxDate}.`,
+                    );
+                  } else {
+                    setFormError("");
+                  }
                 }}
                 disabled={!selectedAddressId}
                 className="w-full sm:w-64 rounded-xl border-2 border-slate-200 p-3 text-sm focus:border-blue-500 focus:outline-none"
               />
               <p className="text-xs text-slate-500 mt-1.5">
-                Bookings available today and the next 2 days ({today} to {maxDate}).
+                Bookings available today and the next 2 days ({today} to{" "}
+                {maxDate}).
               </p>
             </div>
 
@@ -458,7 +528,8 @@ function SchedulePage() {
                 ) : (
                   <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2.5">
                     {slots.map((slot) => {
-                      const isSelected = selectedSlot?.startTime === slot.startTime;
+                      const isSelected =
+                        selectedSlot?.startTime === slot.startTime;
                       return (
                         <button
                           key={slot.startTime}
@@ -546,7 +617,9 @@ function SchedulePage() {
                 </div>
 
                 <div className="pt-3 border-t border-slate-100 flex justify-between items-baseline">
-                  <span className="font-semibold text-slate-700">List Price</span>
+                  <span className="font-semibold text-slate-700">
+                    List Price
+                  </span>
                   <span className="text-2xl font-black text-blue-600">
                     ₹{Math.round(selectedService.price / 100)}
                   </span>
@@ -555,7 +628,9 @@ function SchedulePage() {
                 <button
                   type="button"
                   onClick={handleAddToCart}
-                  disabled={submitting || !selectedAddressId || !date || !selectedSlot}
+                  disabled={
+                    submitting || !selectedAddressId || !date || !selectedSlot
+                  }
                   className="w-full mt-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 shadow-sm transition disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
                 >
                   {submitting ? (

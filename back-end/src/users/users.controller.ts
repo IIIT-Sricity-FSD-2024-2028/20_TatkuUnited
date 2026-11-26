@@ -20,6 +20,8 @@ import {
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { AddToCartDto } from './dto/add-to-cart.dto';
+import { AddAddressDto } from './dto/add-address.dto';
 import { Public } from '../common/decorators/public.decorator';
 import { Roles } from '../common/decorators/roles.decorator';
 import { Role } from '../common/enums/roles.enum';
@@ -263,7 +265,7 @@ export class UsersController {
     },
   })
   @ApiResponse({ status: 201, description: 'Address added.' })
-  addAddress(@Param('id') id: string, @Body() address: any, @Req() req: any) {
+  addAddress(@Param('id') id: string, @Body() address: AddAddressDto, @Req() req: any) {
     this.checkAccess(req, id);
     return this.usersService.addAddress(id, address);
   }
@@ -335,7 +337,7 @@ export class UsersController {
     },
   })
   @ApiResponse({ status: 201, description: 'Item added to cart.' })
-  addToCart(@Param('id') id: string, @Body() item: any, @Req() req: any) {
+  addToCart(@Param('id') id: string, @Body() item: AddToCartDto, @Req() req: any) {
     this.checkAccess(req, id);
     return this.usersService.addToCart(id, item);
   }

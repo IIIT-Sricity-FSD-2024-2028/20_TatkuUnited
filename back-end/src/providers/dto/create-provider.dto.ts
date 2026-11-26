@@ -5,6 +5,8 @@ import {
   IsMongoId,
   IsNumber,
   IsOptional,
+  Max,
+  Min,
   ValidateNested,
 } from 'class-validator';
 import { GeoLocationDto } from '../../common/dto/geo-location.dto';
@@ -19,19 +21,27 @@ export class CreateProviderDto {
   offeredServices: string[];
 
   @IsNumber()
+  @Min(0)
+  @Max(80)
   experience: number;
 
   /** Minutes from midnight (e.g. 480 = 08:00). */
   @IsNumber()
+  @Min(0)
+  @Max(1439)
   workHourStart: number;
 
   /** Minutes from midnight (e.g. 1200 = 20:00). */
   @IsNumber()
+  @Min(1)
+  @Max(1440)
   workHourEnd: number;
 
   /** 0 = Sunday … 6 = Saturday. */
   @IsArray()
   @IsNumber({}, { each: true })
+  @Min(0, { each: true })
+  @Max(6, { each: true })
   workingDays: number[];
 
   @ValidateNested()
@@ -42,4 +52,3 @@ export class CreateProviderDto {
   @IsEnum(ProviderStatus)
   status?: ProviderStatus;
 }
-

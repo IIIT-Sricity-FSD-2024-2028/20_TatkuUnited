@@ -12,6 +12,9 @@ import {
   updateCustomerProfile,
 } from "@/store/customer/customer-slice";
 import { fetchCustomerBookings } from "@/store/booking/booking-slice";
+import { CitySelect } from "@/components/shared/CitySelect";
+import { LocationPicker } from "@/components/shared/LocationPicker";
+import { SUPPORTED_CITIES } from "@/common/cities";
 
 function AccountSettingsPage() {
   const navigate = useNavigate();
@@ -49,7 +52,15 @@ function AccountSettingsPage() {
   const [email, setEmail] = useState(user?.email ?? "");
   const [phone, setPhone] = useState(user?.phone ?? "");
   const [dob, setDob] = useState("");
-  const [newAddress, setNewAddress] = useState("");
+  const [newAddressLabel, setNewAddressLabel] = useState("Home");
+  const [newAddressLine, setNewAddressLine] = useState("");
+  const [newAddressCity, setNewAddressCity] = useState(SUPPORTED_CITIES[0].name);
+  const [newAddressCoords, setNewAddressCoords] = useState<[number, number]>(
+    SUPPORTED_CITIES[0].coordinates,
+  );
+  const [cityCenterHint, setCityCenterHint] = useState<[number, number]>(
+    SUPPORTED_CITIES[0].coordinates,
+  );
   const [showAddressForm, setShowAddressForm] = useState(false);
 
   const [showPasswordModal, setShowPasswordModal] = useState(false);
@@ -140,9 +151,12 @@ function AccountSettingsPage() {
       return;
     }
 
-    if (dob && new Date(dob) >= new Date()) {
-      showError("Date of birth must be in the past.");
-      return;
+    if (dob) {
+      const todayStr = new Date().toISOString().slice(0, 10);
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(dob) || dob < "1900-01-01" || dob >= todayStr) {
+        showError("Date of birth must be a valid date in the past.");
+        return;
+      }
     }
 
     if (!customerId) {
@@ -172,8 +186,13 @@ function AccountSettingsPage() {
 
   // Add address
   const handleAddAddress = async () => {
-    if (!newAddress.trim()) {
-      showError("Please enter an address.");
+    if (!newAddressLine.trim()) {
+      showError("Please enter a street address or pin your location on the map.");
+      return;
+    }
+
+    if (!newAddressCity) {
+      showError("Please select a city.");
       return;
     }
 
@@ -182,17 +201,22 @@ function AccountSettingsPage() {
     try {
       await dispatch(
         addAddress({
-          label: "Home",
-          line: newAddress.trim(),
-          city: "Sri City",
+          id: `addr-${Date.now()}`,
+          label: newAddressLabel.trim() || "Home",
+          line: newAddressLine.trim(),
+          city: newAddressCity,
           location: {
             type: "Point",
-            coordinates: [80.027, 13.556],
+            coordinates: newAddressCoords,
           },
         } as any),
       ).unwrap();
 
-      setNewAddress("");
+      setNewAddressLabel("Home");
+      setNewAddressLine("");
+      setNewAddressCity(SUPPORTED_CITIES[0].name);
+      setNewAddressCoords(SUPPORTED_CITIES[0].coordinates);
+      setCityCenterHint(SUPPORTED_CITIES[0].coordinates);
       setShowAddressForm(false);
       showMessage("Address added successfully!");
     } catch (err: any) {
@@ -390,6 +414,8 @@ function AccountSettingsPage() {
                   <input
                     type="date"
                     value={dob}
+                    min="1900-01-01"
+                    max={new Date().toISOString().slice(0, 10)}
                     onChange={(e) => setDob(e.target.value)}
                     className="w-full border-2 border-slate-200 p-3 rounded-lg"
                   />
@@ -447,25 +473,73 @@ function AccountSettingsPage() {
                 )}
 
                 {showAddressForm && (
-                  <div className="mt-5 bg-slate-50 p-4 rounded-lg">
-                    <input
-                      value={newAddress}
-                      onChange={(e) => setNewAddress(e.target.value)}
-                      placeholder="Enter full address..."
-                      className="w-full border-2 border-slate-200 p-3 rounded-lg"
+                  <div className="mt-5 bg-slate-50 border border-slate-200 p-4 rounded-xl space-y-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-xs font-medium text-slate-600 mb-1">
+                          Label
+                        </label>
+                        <input
+                          value={newAddressLabel}
+                          onChange={(e) => setNewAddressLabel(e.target.value)}
+                          placeholder="Home, Office, Apartment"
+                          className="w-full border border-slate-300 p-2 rounded-lg text-sm bg-white focus:outline-none focus:border-blue-500"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-medium text-slate-600 mb-1">
+                          City
+                        </label>
+                        <CitySelect
+                          value={newAddressCity}
+                          onChange={(cityOption) => {
+                            setNewAddressCity(cityOption.name);
+                            setNewAddressCoords(cityOption.coordinates);
+                            setCityCenterHint(cityOption.coordinates);
+                          }}
+                          required
+                        />
+                      </div>
+                    </div>
+
+                    <LocationPicker
+                      value={newAddressCoords}
+                      centerHint={cityCenterHint}
+                      heightClass="h-52"
+                      label="Pin Location on Map or Use Live Location"
+                      onChange={(coords, resolved) => {
+                        setNewAddressCoords(coords);
+                        if (resolved?.city) setNewAddressCity(resolved.city);
+                        if (resolved?.addressLine) setNewAddressLine(resolved.addressLine);
+                      }}
                     />
 
-                    <div className="flex gap-3 mt-4">
+                    <div>
+                      <label className="block text-xs font-medium text-slate-600 mb-1">
+                        Street Address Line
+                      </label>
+                      <input
+                        value={newAddressLine}
+                        onChange={(e) => setNewAddressLine(e.target.value)}
+                        placeholder="Flat / House No., Landmark, Area"
+                        className="w-full border border-slate-300 p-2.5 rounded-lg text-sm bg-white focus:outline-none focus:border-blue-500"
+                      />
+                    </div>
+
+                    <div className="flex gap-3">
                       <button
+                        type="button"
                         onClick={handleAddAddress}
-                        className="bg-blue-500 text-white px-5 py-2 rounded-lg cursor-pointer"
+                        className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg text-sm font-medium cursor-pointer"
                       >
                         Save Address
                       </button>
 
                       <button
+                        type="button"
                         onClick={() => setShowAddressForm(false)}
-                        className="bg-slate-200 px-5 py-2 rounded-lg cursor-pointer"
+                        className="bg-slate-200 hover:bg-slate-300 px-5 py-2 rounded-lg text-sm font-medium cursor-pointer"
                       >
                         Cancel
                       </button>

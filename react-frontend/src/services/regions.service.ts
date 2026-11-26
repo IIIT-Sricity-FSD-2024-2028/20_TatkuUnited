@@ -20,9 +20,14 @@ export async function createRegion(dto: CreateRegionDto): Promise<RegionDocument
   );
 }
 
-/** GET /regions — All regions. Public. */
+/** GET /regions — All regions. */
 export async function getAllRegions(): Promise<RegionDocument[]> {
   return apiService<RegionDocument[]>(HTTP_METHODS_ENUM.get, ENDPOINT_ENUM.REGIONS);
+}
+
+/** GET /regions/active — Active operational regions. Public. */
+export async function getActiveRegions(): Promise<RegionDocument[]> {
+  return apiService<RegionDocument[]>(HTTP_METHODS_ENUM.get, ENDPOINT_ENUM.REGIONS_ACTIVE);
 }
 
 /** GET /regions/manager/:managerId */

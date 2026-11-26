@@ -37,7 +37,10 @@ export class AuthController {
     private readonly providersService: ProvidersService,
   ) {}
 
-  private async ensureProviderProfile(userId: string) {
+  private async ensureProviderProfile(
+    userId: string,
+    location?: { type: string; coordinates: [number, number] },
+  ) {
     const existing = await this.providersService.findByUser(userId);
     if (!existing) {
       await this.providersService.create({
@@ -47,7 +50,10 @@ export class AuthController {
         workHourStart: 540,
         workHourEnd: 1080,
         workingDays: [1, 2, 3, 4, 5],
-        location: { type: 'Point', coordinates: [0, 0] },
+        location: {
+          type: 'Point',
+          coordinates: location?.coordinates ?? [0, 0],
+        },
         status: ProviderStatus.PENDING,
       });
     }
@@ -171,7 +177,17 @@ export class AuthController {
     });
 
     if (createdUser.role === Role.PROVIDER) {
-      await this.ensureProviderProfile(createdUser._id.toString());
+      await this.ensureProviderProfile(
+        createdUser._id.toString(),
+        registerDto.address?.location,
+      );
+    } else if (registerDto.address) {
+      await this.usersService.addAddress(createdUser._id.toString(), {
+        label: 'Home',
+        line: registerDto.address.line,
+        city: registerDto.address.city,
+        location: registerDto.address.location,
+      });
     }
 
     const accessToken = await this.authService.generateToken({

@@ -58,6 +58,18 @@ export class RegionsController {
     return this.regionsService.findAll();
   }
 
+  @Public()
+  @Get('active')
+  @ApiOperation({
+    summary: 'Get active serviceable regions',
+    description:
+      'Retrieves all active operational regions/cities for location selection.',
+  })
+  @ApiResponse({ status: 200, description: 'List of active regions.' })
+  findActive() {
+    return this.regionsService.findActive();
+  }
+
   @Roles(Role.MANAGER, Role.ADMIN)
   @Get('manager/:managerId')
   @ApiOperation({

@@ -25,6 +25,7 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatProviderTime, getErrorMessage } from "./provider-utils";
+import { getLocalDateString, isDateInRange } from "@/lib/dateValidation";
 
 interface UnavailabilityRecord {
     _id: string;
@@ -171,8 +172,18 @@ export default function JobCalendar() {
 
     async function saveUnavailability(event: React.FormEvent<HTMLFormElement>) {
         event.preventDefault();
-        if (!providerId || form.startTime >= form.endTime) {
-            setError("End time must be later than start time.");
+        const todayStr = getLocalDateString();
+        if (!isDateInRange(form.date, todayStr, "2100-12-31")) {
+            setError("Please select a valid date from today onwards.");
+            return;
+        }
+        if (
+            !providerId ||
+            form.startTime < 0 ||
+            form.endTime > 1440 ||
+            form.startTime >= form.endTime
+        ) {
+            setError("Start and end times must be within 0–1440 and end time must be later than start time.");
             return;
         }
 
@@ -404,6 +415,8 @@ export default function JobCalendar() {
                                 <Input
                                     id="unavailability-date"
                                     type="date"
+                                    min={getLocalDateString()}
+                                    max="2100-12-31"
                                     value={form.date}
                                     onChange={(event) => setForm({ ...form, date: event.target.value })}
                                 />

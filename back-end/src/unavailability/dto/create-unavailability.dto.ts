@@ -4,6 +4,8 @@ import {
   IsNumber,
   IsOptional,
   IsString,
+  Max,
+  Min,
 } from 'class-validator';
 
 export class CreateUnavailabilityDto {
@@ -16,10 +18,14 @@ export class CreateUnavailabilityDto {
 
   /** Minutes from midnight, on the slot grid (e.g. 480 = 08:00). startTime < endTime. */
   @IsNumber()
+  @Min(0)
+  @Max(1439)
   startTime: number;
 
   /** Minutes from midnight, on the slot grid (e.g. 600 = 10:00). */
   @IsNumber()
+  @Min(1)
+  @Max(1440)
   endTime: number;
 
   @IsOptional()

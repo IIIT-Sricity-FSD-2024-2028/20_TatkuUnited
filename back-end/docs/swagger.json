@@ -1343,6 +1343,27 @@
         ]
       }
     },
+    "/regions/active": {
+      "get": {
+        "description": "Retrieves all active operational regions/cities for location selection.",
+        "operationId": "RegionsController_findActive",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "List of active regions."
+          }
+        },
+        "security": [
+          {
+            "bearer-token": []
+          }
+        ],
+        "summary": "Get active serviceable regions",
+        "tags": [
+          "Regions"
+        ]
+      }
+    },
     "/regions/manager/{managerId}": {
       "get": {
         "description": "Retrieves all operational regions assigned to a specific manager (supports manager ObjectId or user ObjectId). Restricted to regional managers and admins.",
@@ -4066,6 +4087,55 @@
           "password"
         ]
       },
+      "GeoLocationDto": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "default": "Point"
+          },
+          "coordinates": {
+            "minItems": 2,
+            "maxItems": 2,
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "type",
+          "coordinates"
+        ]
+      },
+      "RegisterAddressDto": {
+        "type": "object",
+        "properties": {
+          "line": {
+            "type": "string",
+            "example": "12 Main Road",
+            "description": "Street address line"
+          },
+          "city": {
+            "type": "string",
+            "example": "Bengaluru",
+            "description": "City name"
+          },
+          "location": {
+            "description": "GeoJSON Point [longitude, latitude]",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/GeoLocationDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "line",
+          "city",
+          "location"
+        ]
+      },
       "RegisterDto": {
         "type": "object",
         "properties": {
@@ -4121,6 +4191,14 @@
             "type": "string",
             "example": "1995-05-20",
             "description": "Date of birth in ISO format"
+          },
+          "address": {
+            "description": "Initial address (saved as Home for customers, or default location for providers)",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RegisterAddressDto"
+              }
+            ]
           }
         },
         "required": [
@@ -4183,27 +4261,6 @@
           }
         }
       },
-      "GeoLocationDto": {
-        "type": "object",
-        "properties": {
-          "type": {
-            "type": "string",
-            "default": "Point"
-          },
-          "coordinates": {
-            "minItems": 2,
-            "maxItems": 2,
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          }
-        },
-        "required": [
-          "type",
-          "coordinates"
-        ]
-      },
       "CreateProviderDto": {
         "type": "object",
         "properties": {
@@ -4217,18 +4274,26 @@
             }
           },
           "experience": {
-            "type": "number"
+            "type": "number",
+            "minimum": 0,
+            "maximum": 80
           },
           "workHourStart": {
-            "type": "number"
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1439
           },
           "workHourEnd": {
-            "type": "number"
+            "type": "number",
+            "minimum": 1,
+            "maximum": 1440
           },
           "workingDays": {
             "type": "array",
             "items": {
-              "type": "number"
+              "type": "number",
+              "maximum": 6,
+              "minimum": 0
             }
           },
           "location": {
@@ -4555,25 +4620,36 @@
             "type": "string"
           },
           "startTime": {
-            "type": "number"
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1439
           },
           "endTime": {
-            "type": "number"
+            "type": "number",
+            "minimum": 1,
+            "maximum": 1440
           },
           "blockStartTime": {
-            "type": "number"
+            "type": "number",
+            "minimum": -120,
+            "maximum": 1439
           },
           "price": {
-            "type": "number"
+            "type": "number",
+            "minimum": 0
           },
           "platformFeePercent": {
-            "type": "number"
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100
           },
           "platformShare": {
-            "type": "number"
+            "type": "number",
+            "minimum": 0
           },
           "providerShare": {
-            "type": "number"
+            "type": "number",
+            "minimum": 0
           }
         },
         "required": [
@@ -4729,10 +4805,14 @@
             "type": "string"
           },
           "startTime": {
-            "type": "number"
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1439
           },
           "endTime": {
-            "type": "number"
+            "type": "number",
+            "minimum": 1,
+            "maximum": 1440
           },
           "reason": {
             "type": "string"
