@@ -1,22 +1,27 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
 import useAuth from "@/hooks/useAuth";
+import type { AppDispatch, RootState } from "@/store";
 import { getStoredUser, getStoredUserId } from "@/common/services/authService";
-import { getBookingsByCustomer } from "@/services/bookings.service";
-import { createReview, getAllReviews } from "@/services/reviews.service";
-import type { BookingDocument, ReviewDocument, ServiceDocument } from "@/models/api.models";
+import { fetchCustomerBookings } from "@/store/booking/booking-slice";
+import { fetchAllReviews, submitReview } from "@/store/review/review-slice";
+import type { BookingDocument, ServiceDocument } from "@/models/api.models";
 
 function RatingsFeedbackPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const authSession = useAuth();
+  const dispatch = useDispatch<AppDispatch>();
 
-  const [completedBookings, setCompletedBookings] = useState<BookingDocument[]>([]);
+  const { items: allBookings, loading: bookingsLoading } = useSelector(
+    (s: RootState) => s.booking,
+  );
+  const { items: reviewsList, loading: reviewsLoading, submitting } = useSelector(
+    (s: RootState) => s.review,
+  );
+
   const [selectedBooking, setSelectedBooking] = useState<BookingDocument | null>(null);
-  const [reviewsList, setReviewsList] = useState<ReviewDocument[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [submitting, setSubmitting] = useState(false);
-
   const [rating, setRating] = useState(0);
   const [feedback, setFeedback] = useState("");
   const [error, setError] = useState("");
@@ -31,49 +36,27 @@ function RatingsFeedbackPage() {
   const targetBookingId = searchParams.get("bookingId");
 
   useEffect(() => {
-    let isMounted = true;
-    async function loadData() {
-      if (!customerId) {
-        setLoading(false);
-        return;
-      }
-      setLoading(true);
-      setError("");
-      try {
-        const [bookings, reviews] = await Promise.all([
-          getBookingsByCustomer(customerId).catch(() => []),
-          getAllReviews().catch(() => []),
-        ]);
-
-        if (!isMounted) return;
-
-        const completed = (bookings || []).filter(
-          (b) => b.status === "completed",
-        );
-        setCompletedBookings(completed);
-        setReviewsList(reviews || []);
-
-        if (targetBookingId) {
-          const match = completed.find((b) => b._id === targetBookingId);
-          if (match) setSelectedBooking(match);
-          else if (completed.length > 0) setSelectedBooking(completed[0]);
-        } else if (completed.length > 0) {
-          setSelectedBooking(completed[0]);
-        }
-      } catch (err: any) {
-        if (isMounted) {
-          setError("Failed to load your booking history for reviews.");
-        }
-      } finally {
-        if (isMounted) setLoading(false);
-      }
+    if (customerId) {
+      void dispatch(fetchCustomerBookings(customerId));
     }
+    void dispatch(fetchAllReviews());
+  }, [dispatch, customerId]);
 
-    loadData();
-    return () => {
-      isMounted = false;
-    };
-  }, [customerId, targetBookingId]);
+  const completedBookings = (allBookings || []).filter(
+    (b) => b.status === "completed",
+  );
+
+  useEffect(() => {
+    if (targetBookingId) {
+      const match = completedBookings.find((b) => b._id === targetBookingId);
+      if (match) setSelectedBooking(match);
+      else if (completedBookings.length > 0 && !selectedBooking) setSelectedBooking(completedBookings[0]);
+    } else if (completedBookings.length > 0 && !selectedBooking) {
+      setSelectedBooking(completedBookings[0]);
+    }
+  }, [completedBookings, targetBookingId, selectedBooking]);
+
+  const loading = (bookingsLoading || reviewsLoading) && completedBookings.length === 0 && reviewsList.length === 0;
 
   const handleSubmit = async () => {
     setError("");
@@ -104,31 +87,26 @@ function RatingsFeedbackPage() {
       return;
     }
 
-    setSubmitting(true);
     try {
-      await createReview({
-        booking: selectedBooking._id,
-        provider: providerId,
-        service: serviceId,
-        rating,
-        review: feedback.trim() || undefined,
-      });
+      await dispatch(
+        submitReview({
+          booking: selectedBooking._id,
+          provider: providerId,
+          service: serviceId,
+          rating,
+          review: feedback.trim() || undefined,
+        }),
+      ).unwrap();
 
       setSuccessMessage("Thank you! Your review has been submitted successfully.");
       setRating(0);
       setFeedback("");
-
-      // Refresh public reviews list
-      const updatedReviews = await getAllReviews().catch(() => []);
-      setReviewsList(updatedReviews);
     } catch (err: any) {
       const msg =
         err?.response?.data?.message ||
         err?.message ||
         "Failed to submit review. Each booking can only be reviewed once.";
       setError(Array.isArray(msg) ? msg.join(", ") : msg);
-    } finally {
-      setSubmitting(false);
     }
   };
 

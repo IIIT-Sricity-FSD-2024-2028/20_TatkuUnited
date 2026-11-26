@@ -297,19 +297,32 @@ export class PaymentsService implements OnModuleInit, OnModuleDestroy {
         };
       }
 
-      const payment = await this.paymentModel
+      let payment = await this.paymentModel
         .findOne({ order: orderDoc._id })
         .session(session)
         .exec();
       if (!payment) {
-        throw new NotFoundException(
-          `Payment record for order ${orderId} not found`,
+        const created = await this.paymentModel.create(
+          [
+            {
+              order: orderDoc._id,
+              totalAmount: orderDoc.totalAmount,
+              currency: 'INR',
+              razorpayOrderId: `mock_order_${orderDoc._id.toString()}`,
+              razorpayPaymentId: `mock_pay_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+              razorpaySignature: `mock_sig_${Math.random().toString(36).substring(2, 9)}`,
+            },
+          ],
+          { session },
         );
+        payment = created[0];
+        orderDoc.payment = payment._id;
+        await orderDoc.save({ session });
+      } else {
+        payment.razorpayPaymentId = `mock_pay_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+        payment.razorpaySignature = `mock_sig_${Math.random().toString(36).substring(2, 9)}`;
+        await payment.save({ session });
       }
-
-      payment.razorpayPaymentId = `mock_pay_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
-      payment.razorpaySignature = `mock_sig_${Math.random().toString(36).substring(2, 9)}`;
-      await payment.save({ session });
       paymentDoc = payment;
 
       // Clear customer cart

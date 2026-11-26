@@ -5,6 +5,7 @@ import useAuth from "@/hooks/useAuth";
 import type { AppDispatch, RootState } from "@/store";
 import {
     createUnavailabilityThunk,
+    deleteUnavailabilityThunk,
     fetchProviderByUser,
     fetchProviderSchedule,
     fetchUnavailability,
@@ -194,7 +195,6 @@ export default function JobCalendar() {
                 await dispatch(createUnavailabilityThunk(body)).unwrap();
             }
             selectDate(form.date);
-            await loadCalendar();
         } catch (requestError) {
             setError(getErrorMessage(requestError, "Unable to save unavailability."));
         } finally {
@@ -215,9 +215,8 @@ export default function JobCalendar() {
     async function removeUnavailability(slot: UnavailabilityRecord) {
         setSaving(true);
         try {
-            await deleteUnavailability(slot._id);
+            await dispatch(deleteUnavailabilityThunk(slot._id)).unwrap();
             setSelectedItem(null);
-            await loadCalendar();
         } catch (requestError) {
             setError(getErrorMessage(requestError, "Unable to delete unavailability."));
         } finally { setSaving(false); }
@@ -262,7 +261,7 @@ export default function JobCalendar() {
                     </div>
                 </CardHeader>
                 <CardContent>
-                    {pageLoading ? (
+                    {loading ? (
                         <div className="grid grid-cols-7 gap-px bg-border">
                             {days.map((day) => (
                                 <Skeleton className="h-28 rounded-none" key={toDateKey(day)} />
@@ -441,7 +440,7 @@ export default function JobCalendar() {
                                 onChange={(event) => setForm({ ...form, reason: event.target.value })}
                             />
                         </div>
-                        <Button disabled={saving || pageLoading} type="submit">
+                        <Button disabled={saving || loading} type="submit">
                             {saving ? "Saving..." : selectedItem?.type === "unavailability" ? "Save changes" : "Add unavailability"}
                         </Button>
                     </form>

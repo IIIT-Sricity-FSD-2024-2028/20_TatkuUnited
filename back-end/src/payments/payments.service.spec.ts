@@ -3,10 +3,16 @@ import { getModelToken } from '@nestjs/mongoose';
 import { NotFoundException } from '@nestjs/common';
 import { PaymentsService } from './payments.service';
 import { Payment } from '../schema/payment.schema';
+import { Order } from '../schema/order.schema';
+import { Booking } from '../schema/booking.schema';
+import { User } from '../schema/user.schema';
+import { Notification } from '../schema/notification.schema';
+import { MatchingService } from '../matching/matching.service';
 import { PaymentStatus, RefundStatus } from '../common/enums';
 
 describe('PaymentsService', () => {
   let service: PaymentsService;
+  let orderModelMock: any;
 
   const mockPaymentDoc = {
     _id: 'payment-001',
@@ -27,6 +33,14 @@ describe('PaymentsService', () => {
   mockPaymentModel.findOne = jest.fn();
   mockPaymentModel.findByIdAndUpdate = jest.fn();
   mockPaymentModel.findByIdAndDelete = jest.fn();
+  mockPaymentModel.db = {
+    startSession: jest.fn().mockResolvedValue({
+      startTransaction: jest.fn(),
+      commitTransaction: jest.fn(),
+      abortTransaction: jest.fn(),
+      endSession: jest.fn(),
+    }),
+  };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -36,10 +50,43 @@ describe('PaymentsService', () => {
           provide: getModelToken(Payment.name),
           useValue: mockPaymentModel,
         },
+        {
+          provide: getModelToken(Order.name),
+          useValue: {
+            findById: jest.fn(),
+            findOneAndUpdate: jest.fn(),
+          },
+        },
+        {
+          provide: getModelToken(Booking.name),
+          useValue: {
+            updateMany: jest.fn().mockReturnValue({ exec: jest.fn().mockResolvedValue({}) }),
+            find: jest.fn().mockReturnValue({ exec: jest.fn().mockResolvedValue([]) }),
+          },
+        },
+        {
+          provide: getModelToken(User.name),
+          useValue: {
+            findByIdAndUpdate: jest.fn().mockResolvedValue({}),
+          },
+        },
+        {
+          provide: getModelToken(Notification.name),
+          useValue: jest.fn().mockImplementation(() => ({
+            save: jest.fn().mockResolvedValue({}),
+          })),
+        },
+        {
+          provide: MatchingService,
+          useValue: {
+            offerBooking: jest.fn().mockResolvedValue({}),
+          },
+        },
       ],
     }).compile();
 
     service = module.get<PaymentsService>(PaymentsService);
+    orderModelMock = module.get(getModelToken(Order.name));
     jest.clearAllMocks();
   });
 
@@ -189,6 +236,88 @@ describe('PaymentsService', () => {
       await expect(service.remove('missing-payment')).rejects.toThrow(
         NotFoundException,
       );
+    });
+  });
+
+  describe('simulate', () => {
+    it('should simulate payment success and update order/payment to PAID', async () => {
+      const orderDoc: any = {
+        _id: 'order-001',
+        customer: 'cust-001',
+        paymentStatus: PaymentStatus.CREATED,
+        expiresAt: new Date(Date.now() + 600000),
+        totalAmount: 1550,
+        save: jest.fn().mockResolvedValue({}),
+      };
+      orderModelMock.findById.mockReturnValue({
+        exec: jest.fn().mockResolvedValue(orderDoc),
+      });
+      orderModelMock.findOneAndUpdate.mockResolvedValue({
+        ...orderDoc,
+        paymentStatus: PaymentStatus.PAID,
+      });
+
+      const paymentDoc = {
+        _id: 'payment-001',
+        order: 'order-001',
+        status: PaymentStatus.CREATED,
+        save: jest.fn().mockResolvedValue({}),
+      };
+      mockPaymentModel.findOne.mockReturnValue({
+        session: jest.fn().mockReturnValue({
+          exec: jest.fn().mockResolvedValue(paymentDoc),
+        }),
+      });
+
+      const result = await service.simulate('order-001', true, {
+        userId: 'cust-001',
+        role: 'customer' as any,
+        email: 'c@test.com',
+        status: 'active' as any,
+      });
+
+      expect(result.success).toBe(true);
+      expect(result.paymentStatus).toBe(PaymentStatus.PAID);
+      expect(paymentDoc.save).toHaveBeenCalled();
+    });
+
+    it('should simulate payment failure and update order/payment to FAILED', async () => {
+      const orderDoc: any = {
+        _id: 'order-001',
+        customer: 'cust-001',
+        paymentStatus: PaymentStatus.CREATED,
+        expiresAt: new Date(Date.now() + 600000),
+        totalAmount: 1550,
+        save: jest.fn().mockResolvedValue({}),
+      };
+      orderModelMock.findById.mockReturnValue({
+        exec: jest.fn().mockResolvedValue(orderDoc),
+      });
+      orderModelMock.findOneAndUpdate.mockResolvedValue({
+        ...orderDoc,
+        paymentStatus: PaymentStatus.FAILED,
+      });
+
+      const paymentDoc = {
+        _id: 'payment-001',
+        order: 'order-001',
+        save: jest.fn().mockResolvedValue({}),
+      };
+      mockPaymentModel.findOne.mockReturnValue({
+        session: jest.fn().mockReturnValue({
+          exec: jest.fn().mockResolvedValue(paymentDoc),
+        }),
+      });
+
+      const result = await service.simulate('order-001', false, {
+        userId: 'cust-001',
+        role: 'customer' as any,
+        email: 'c@test.com',
+        status: 'active' as any,
+      });
+
+      expect(result.success).toBe(false);
+      expect(result.paymentStatus).toBe(PaymentStatus.FAILED);
     });
   });
 });

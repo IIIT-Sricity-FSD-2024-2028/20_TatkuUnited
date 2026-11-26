@@ -1,14 +1,16 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
 import useAuth from "@/hooks/useAuth";
+import type { AppDispatch, RootState } from "@/store";
+import {
+  confirmCompletion,
+  fetchCustomerBookings,
+  rejectCompletion,
+} from "@/store/booking/booking-slice";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import {
-  confirmBookingCompletion,
-  getBookingsByCustomer,
-  rejectBookingCompletion,
-} from "@/services/bookings.service";
 import type { BookingDocument } from "@/models/api.models";
 
 const labels: Record<string, string> = {
@@ -59,10 +61,11 @@ export default function BookingHistoryPage() {
   const { id } = useParams();
   const { authDetails } = useAuth();
   const customerId = authDetails?.user.id;
-  const [bookings, setBookings] = useState<BookingDocument[]>([]);
-  const [loading, setLoading] = useState(true);
+  const dispatch = useDispatch<AppDispatch>();
+  const { items: bookings, loading: sliceLoading, actingId } = useSelector(
+    (state: RootState) => state.booking,
+  );
   const [error, setError] = useState("");
-  const [acting, setActing] = useState<string | null>(null);
   const busy = useRef(false);
   const [reload, setReload] = useState(0);
 
@@ -70,16 +73,10 @@ export default function BookingHistoryPage() {
     let active = true;
     let timer: ReturnType<typeof setTimeout>;
     async function refresh() {
-      if (!customerId) {
-        setLoading(false);
-        return;
-      }
+      if (!customerId) return;
       try {
-        const data = await getBookingsByCustomer(customerId);
-        if (active && !busy.current) {
-          setBookings(data);
-          setError("");
-        }
+        await dispatch(fetchCustomerBookings(customerId)).unwrap();
+        if (active) setError("");
       } catch {
         if (active)
           setError(
@@ -87,7 +84,6 @@ export default function BookingHistoryPage() {
           );
       } finally {
         if (active) {
-          setLoading(false);
           timer = setTimeout(refresh, 6000);
         }
       }
@@ -97,34 +93,33 @@ export default function BookingHistoryPage() {
       active = false;
       clearTimeout(timer);
     };
-  }, [customerId, reload]);
+  }, [dispatch, customerId, reload]);
 
   const decide = useCallback(
     async (booking: BookingDocument, complete: boolean) => {
       if (busy.current) return;
       busy.current = true;
-      setActing(booking._id);
       setError("");
       try {
-        const updated = await (complete
-          ? confirmBookingCompletion(booking._id)
-          : rejectBookingCompletion(booking._id));
-        setBookings((items) =>
-          items.map((item) => (item._id === booking._id ? updated : item)),
-        );
-        if (complete)
+        if (complete) {
+          await dispatch(confirmCompletion(booking._id)).unwrap();
           navigate("/customer/ratings-feedback?bookingId=" + booking._id);
+        } else {
+          await dispatch(rejectCompletion(booking._id)).unwrap();
+        }
       } catch {
         setError(
           "This booking may have changed. Refresh to check its current status before trying again.",
         );
       } finally {
         busy.current = false;
-        setActing(null);
       }
     },
-    [navigate],
+    [dispatch, navigate],
   );
+
+  const loading = sliceLoading && bookings.length === 0;
+  const acting = actingId;
 
   const visible = id
     ? bookings.filter((booking) => booking._id === id)

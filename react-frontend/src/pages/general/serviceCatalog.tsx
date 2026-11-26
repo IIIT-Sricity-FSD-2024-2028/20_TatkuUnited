@@ -1,8 +1,13 @@
 import { useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
 import PublicNavbar from "../PublicNavbar";
-import { getCategories, getServices, getServicesByCategory } from "@/services";
 import { useEffect, useState } from "react";
-import type { CategoryDocument, ServiceDocument } from "@/models/api.models";
+import type { AppDispatch, RootState } from "@/store";
+import { fetchCategories } from "@/store/category/category-slice";
+import {
+  fetchServices,
+  fetchServicesByCategory,
+} from "@/store/service/service-slice";
 import {
   Select,
   SelectContent,
@@ -17,45 +22,33 @@ import { Spinner } from "@/components/ui/spinner";
 
 export default function ServiceCatalog() {
   const navigate = useNavigate();
+  const dispatch = useDispatch<AppDispatch>();
+  const { items: categories, loading: categoriesLoading } = useSelector(
+    (state: RootState) => state.category,
+  );
+  const { items: services, loading: servicesLoading } = useSelector(
+    (state: RootState) => state.service,
+  );
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
-  const [services, setServices] = useState<Array<ServiceDocument>>([]);
-  const [categories, setCategories] = useState<Array<CategoryDocument>>([]);
-  const [loading, setLoading] = useState<boolean>(false);
 
   useEffect(() => {
-    try {
-      async function fetCategories() {
-        setCategories(await getCategories());
-      }
-
-      setLoading(true);
-      fetCategories();
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+    void dispatch(fetchCategories());
+  }, [dispatch]);
 
   useEffect(() => {
-    try {
-      async function fetchServices() {
-        if (categoryFilter === "all") {
-          setServices(await getServices());
-        } else {
-          setServices(await getServicesByCategory(categoryFilter));
-        }
-      }
-
-      setLoading(true);
-      fetchServices();
-    } finally {
-      setLoading(false);
+    if (categoryFilter === "all") {
+      void dispatch(fetchServices());
+    } else {
+      void dispatch(fetchServicesByCategory(categoryFilter));
     }
-  }, [categoryFilter]);
+  }, [dispatch, categoryFilter]);
 
   const items = [
     { label: "All", value: "all" },
     ...categories.map((cat) => ({ label: cat.name, value: cat._id })),
   ];
+
+  const loading = categoriesLoading || servicesLoading;
 
   if (loading)
     return (

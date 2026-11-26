@@ -32,7 +32,7 @@ function formatSlotTime(minutes: number): string {
   return `${displayHours}:${String(mins).padStart(2, "0")} ${ampm}`;
 }
 
-function playChime() {
+export function playChime() {
   try {
     const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
     if (!AudioCtx) return;

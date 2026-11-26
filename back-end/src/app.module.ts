@@ -1,4 +1,5 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
+import * as path from 'path';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { MongooseModule } from '@nestjs/mongoose';
@@ -39,7 +40,17 @@ import { MatchingModule } from './matching/matching.module';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true }),
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath: [
+        '.env',
+        'back-end/.env',
+        path.resolve(process.cwd(), '.env'),
+        path.resolve(process.cwd(), 'back-end/.env'),
+        path.resolve(__dirname, '../.env'),
+        path.resolve(__dirname, '../../.env'),
+      ],
+    }),
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],

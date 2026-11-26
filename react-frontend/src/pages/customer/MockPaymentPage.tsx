@@ -3,9 +3,12 @@ import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { toast } from "@/components/ui/toast";
 import { getOrderDetails } from "@/services/orders.service";
 import { simulatePayment } from "@/services/payments.service";
+import { getApiErrorMessage } from "@/common/services/apiService";
 import type { OrderDocument } from "@/models/api.models";
+import { CheckCircle2, AlertCircle, XCircle } from "lucide-react";
 
 export default function MockPaymentPage() {
   const { orderId } = useParams();
@@ -14,6 +17,10 @@ export default function MockPaymentPage() {
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState("");
+  const [feedback, setFeedback] = useState<{
+    type: "success" | "error";
+    message: string;
+  } | null>(null);
   const [now, setNow] = useState(Date.now());
   const busy = useRef(false);
   const [reload, setReload] = useState(0);
@@ -65,11 +72,14 @@ export default function MockPaymentPage() {
               ? "This payment window has expired. Return to your cart to check availability and create a new order."
               : "Complete payment to begin finding a provider. If no provider accepts, the booking will be cancelled and refunded.";
 
-  async function pay(success: boolean) {
+  async function pay(e: React.MouseEvent, success: boolean) {
+    e.preventDefault();
     if (!orderId || !payable || busy.current) return;
     busy.current = true;
     setProcessing(true);
     setError("");
+    setFeedback(null);
+
     try {
       const result = await simulatePayment(orderId, success);
       setOrder((current) =>
@@ -81,14 +91,54 @@ export default function MockPaymentPage() {
             }
           : current,
       );
+
       // Read authoritative state, including an immediate matching cancellation/refund.
-      const fresh = await getOrderDetails(orderId);
-      setOrder(fresh);
-    } catch {
-      setError(
-        "We could not verify the payment result. Refresh the order before trying again.",
+      try {
+        const fresh = await getOrderDetails(orderId);
+        setOrder(fresh);
+      } catch {
+        // Retain optimistic state if background fetch fails
+      }
+
+      if (success && (result.paymentStatus === "paid" || result.success)) {
+        setFeedback({
+          type: "success",
+          message:
+            result.message ||
+            "Payment received successfully! Your booking is confirmed and providers are being notified.",
+        });
+        toast.add({
+          title: "Payment Successful",
+          description:
+            "Payment received. View your bookings for provider assignment.",
+          type: "success",
+        });
+      } else {
+        setFeedback({
+          type: "error",
+          message:
+            result.message ||
+            "Payment failed. Your cart is preserved so you can return to your cart and check out again.",
+        });
+        toast.add({
+          title: "Payment Failed",
+          description:
+            "Payment could not be completed. Your cart is saved so you can retry checkout.",
+          type: "error",
+        });
+      }
+    } catch (err) {
+      const errMsg = getApiErrorMessage(
+        err,
+        "We could not verify the payment result. Please check your connection and try again.",
       );
-      setReload((value) => value + 1);
+      setError(errMsg);
+      toast.add({
+        title: "Payment Error",
+        description: errMsg,
+        type: "error",
+      });
+      // Do NOT increment reload here; calling setReload wiped out the state and reset the screen.
     } finally {
       busy.current = false;
       setProcessing(false);
@@ -103,28 +153,71 @@ export default function MockPaymentPage() {
           Review your order and payment status.
         </p>
       </div>
+
+      {feedback?.type === "success" && (
+        <div
+          role="status"
+          className="flex items-start gap-3 rounded-lg border border-emerald-500/30 bg-emerald-50 p-4 text-sm text-emerald-900"
+        >
+          <CheckCircle2 className="size-5 text-emerald-600 shrink-0 mt-0.5" />
+          <div className="space-y-1">
+            <p className="font-semibold text-emerald-950">Payment Successful</p>
+            <p className="text-emerald-800">{feedback.message}</p>
+          </div>
+        </div>
+      )}
+
+      {feedback?.type === "error" && (
+        <div
+          role="alert"
+          className="flex items-start gap-3 rounded-lg border border-red-500/30 bg-red-50 p-4 text-sm text-red-900"
+        >
+          <XCircle className="size-5 text-red-600 shrink-0 mt-0.5" />
+          <div className="space-y-1">
+            <p className="font-semibold text-red-950">Payment Failed</p>
+            <p className="text-red-800">{feedback.message}</p>
+          </div>
+        </div>
+      )}
+
       {loading && <p role="status">Loading order…</p>}
+
       {error && (
         <div
           role="alert"
-          className="rounded-lg border border-destructive p-4 text-sm"
+          className="flex items-start gap-3 rounded-lg border border-destructive/50 bg-destructive/10 p-4 text-sm text-destructive"
         >
-          {error}{" "}
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setReload((v) => v + 1)}
-          >
-            Refresh order
-          </Button>
+          <AlertCircle className="size-5 shrink-0 mt-0.5" />
+          <div className="flex-1 space-y-2">
+            <p>{error}</p>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setReload((v) => v + 1)}
+            >
+              Refresh order
+            </Button>
+          </div>
         </div>
       )}
+
       {!loading && order && (
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between gap-3">
               <CardTitle>Order #{order._id.slice(-8)}</CardTitle>
-              <Badge variant="secondary">{status?.replaceAll("_", " ")}</Badge>
+              <Badge
+                variant={
+                  status === "paid"
+                    ? "default"
+                    : status === "failed"
+                      ? "destructive"
+                      : "secondary"
+                }
+              >
+                {status?.replaceAll("_", " ")}
+              </Badge>
             </div>
           </CardHeader>
           <CardContent className="space-y-5">
@@ -150,31 +243,42 @@ export default function MockPaymentPage() {
                   Demo payment. No real money will be charged.
                 </p>
                 <div className="flex flex-wrap gap-3">
-                  <Button disabled={processing} onClick={() => void pay(true)}>
+                  <Button
+                    type="button"
+                    disabled={processing}
+                    onClick={(e) => void pay(e, true)}
+                    className="cursor-pointer"
+                  >
                     {processing ? "Processing…" : "Pay successfully"}
                   </Button>
                   <Button
+                    type="button"
                     variant="outline"
                     disabled={processing}
-                    onClick={() => void pay(false)}
+                    onClick={(e) => void pay(e, false)}
+                    className="cursor-pointer"
                   >
-                    Fail payment
+                    {processing ? "Processing…" : "Fail payment"}
                   </Button>
                 </div>
               </>
             )}
-            <div className="flex flex-wrap gap-3">
+            <div className="flex flex-wrap gap-3 pt-2">
               <Button
-                variant="outline"
+                type="button"
+                variant={status === "paid" ? "default" : "outline"}
                 disabled={processing}
                 onClick={() => navigate("/customer/bookings")}
+                className="cursor-pointer"
               >
                 View bookings
               </Button>
               <Button
-                variant="ghost"
+                type="button"
+                variant={status === "failed" ? "default" : "ghost"}
                 disabled={processing}
                 onClick={() => navigate("/customer/cart")}
+                className="cursor-pointer"
               >
                 Return to cart
               </Button>

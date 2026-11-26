@@ -14,7 +14,7 @@ import type {
 } from "@/models/api.models";
 import { toast } from "@/components/ui/toast";
 import { Button } from "@/components/ui/button";
-import { useProviderData } from "./ProviderDataContext";
+import { notifiedOfferIds, playChime } from "./useIncomingOfferNotifier";
 import {
   Clock,
   MapPin,
@@ -194,13 +194,7 @@ export default function IncomingOffers({
 
   useEffect(() => {
     void fetchOffers(true);
-    const interval = setInterval(() => {
-      if (!actionBusy.current && !fetchBusy.current) {
-        void dispatch(fetchProviderOffers());
-      }
-    }, 6000);
-    return () => clearInterval(interval);
-  }, [dispatch, fetchOffers]);
+  }, [fetchOffers]);
 
   useEffect(() => {
     let hasNewOffer = false;
@@ -257,7 +251,7 @@ export default function IncomingOffers({
     }
 
     if (hasNewOffer) {
-      playOfferChime();
+      playChime();
     }
   }, [offers, handleAccept, handleDecline]);
 
