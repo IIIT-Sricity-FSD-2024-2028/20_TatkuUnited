@@ -14,7 +14,7 @@ import { store } from "@/store";
 import { AuthActions } from "@/store/auth/auth-slice";
 import { fetchCustomerDetails } from "@/store/customer/customer-slice";
 import { fetchManagerDetails } from "@/store/manager/manager-slice";
-import { superuserActions } from "@/store/superuser/superuser-slice";
+import { fetchSuperuserProfile, superuserActions } from "@/store/superuser/superuser-slice";
 import { providerActions } from "@/store/provider/provider-slice";
 
 export function handleLogout() {
@@ -40,6 +40,8 @@ export function loadSessionProfile() {
     void store.dispatch(fetchCustomerDetails());
   } else if (user.role === "manager") {
     void store.dispatch(fetchManagerDetails(user.id));
+  } else if (user.role === "admin") {
+    void store.dispatch(fetchSuperuserProfile());
   }
 }
 

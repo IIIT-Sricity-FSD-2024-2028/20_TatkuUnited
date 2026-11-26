@@ -8,8 +8,7 @@ import SuperUser_ManageRegions from "./manage_regions";
 import SuperUser_PlatformSettings from "./platform_settings";
 import ProtectedRoute from "../components/protectedRoute";
 import { RolesEnum } from "@/common/roles.enum";
-// import SuperUser_Profile from "./profile";
-// import the new page here
+import SuperUser_Profile from "./profile";
 
 export default function SuperUser() {
   return (
@@ -33,9 +32,7 @@ export default function SuperUser() {
             path="platform_settings"
             element={<SuperUser_PlatformSettings />}
           />
-          {/* <Route path="profile" element={<SuperUser_Profile />} /> */}
-          {/* contue the pattern followed by the above line for the other pages.
-                Now add some lines in superuser sidebar */}
+          <Route path="profile" element={<SuperUser_Profile />} />
         </Route>
       </Routes>
     </ProtectedRoute>
