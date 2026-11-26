@@ -1,4 +1,5 @@
 import { createSlice, isFulfilled, isPending, isRejected } from "@reduxjs/toolkit";
+import axios from "axios";
 import createAsyncThunkTyped from "../asyncThunk";
 import {
   createService as createServiceApi,
@@ -22,6 +23,7 @@ import {
   createUser as createUserApi,
   deleteUser as deleteUserApi,
   getAllUsers,
+  getMe,
   updateUser as updateUserApi,
 } from "@/services/users.service";
 import { createManager, getAllManagers, updateManager } from "@/services/managers.service";
@@ -57,6 +59,7 @@ interface DashboardData {
 }
 
 interface SuperuserState {
+  userInfo: UserDocument | null;
   dashboard: DashboardData;
   users: UserDocument[];
   categories: CategoryDocument[];
@@ -70,6 +73,7 @@ interface SuperuserState {
 }
 
 const initialState: SuperuserState = {
+  userInfo: null,
   dashboard: {
     totalServices: 0,
     totalCategories: 0,
@@ -120,6 +124,39 @@ export interface CreateSuperuserUserArgs {
   /** Required when the new user is a manager; creates the manager profile. */
   managerLocation?: GeoLocationDto;
 }
+
+export const fetchSuperuserProfile = createAsyncThunkTyped(
+  "superuser/fetchSuperuserProfile",
+  async (): Promise<UserDocument> => {
+    return await getMe();
+  },
+);
+
+/** Save the super user's own name/email/phone, then mirror it into the auth session. */
+export const updateSuperuserProfile = createAsyncThunkTyped(
+  "superuser/updateSuperuserProfile",
+  async (
+    { userId, changes }: { userId: string; changes: UpdateUserDto },
+    { dispatch },
+  ): Promise<UserDocument> => {
+    try {
+      const updated = await updateUserApi(userId, changes);
+      dispatch(
+        AuthActions.userUpdated({
+          name: updated.name,
+          email: updated.email,
+          phone: updated.phone,
+        }),
+      );
+      return updated;
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response?.status === 409) {
+        throw new Error("EMAIL_TAKEN");
+      }
+      throw new Error("Could not save your profile");
+    }
+  },
+);
 
 export const fetchUsers = createAsyncThunkTyped(
   "superuser/fetchUsers",
@@ -264,6 +301,7 @@ export const deleteRegion = createAsyncThunkTyped(
 );
 
 const fetchRequests = [
+  fetchSuperuserProfile,
   fetchDashboard,
   fetchUsers,
   fetchCategories,
@@ -300,6 +338,19 @@ const SuperuserSlice = createSlice({
     builder
       .addCase(AuthActions.login, () => initialState)
       .addCase(AuthActions.logout, () => initialState)
+      .addCase(fetchSuperuserProfile.fulfilled, (state, action) => {
+        if (!state.pendingRequests[action.meta.requestId]) return;
+        state.userInfo = action.payload;
+      })
+      .addCase(updateSuperuserProfile.fulfilled, (state, action) => {
+        state.userInfo = state.userInfo
+          ? { ...state.userInfo, ...action.payload }
+          : action.payload;
+        const index = state.users.findIndex(
+          (user) => user._id === action.payload._id,
+        );
+        if (index !== -1) state.users[index] = action.payload;
+      })
       .addCase(fetchDashboard.fulfilled, (state, action) => {
         if (!state.pendingRequests[action.meta.requestId]) return;
         state.dashboard = { ...action.payload, loaded: true };
@@ -316,6 +367,9 @@ const SuperuserSlice = createSlice({
           (user) => user._id === action.payload._id,
         );
         if (index !== -1) state.users[index] = action.payload;
+        if (state.userInfo?._id === action.payload._id) {
+          state.userInfo = { ...state.userInfo, ...action.payload };
+        }
       })
       .addCase(deleteUser.fulfilled, (state, action) => {
         state.users = state.users.filter((user) => user._id !== action.payload);
