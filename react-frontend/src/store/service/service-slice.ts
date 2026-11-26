@@ -1,89 +1,75 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import createAsyncThunkTyped from "../asyncThunk";
-import { errorMessage } from "../errorMessage";
-import {
-  getAvailableSlots,
-  getServiceById,
-  getServices,
-  type AvailableSlotItem,
-} from "@/services/services.service";
 import { AuthActions } from "../auth/auth-slice";
+import {
+  getAvailableSlots as getAvailableSlotsApi,
+  getServiceById as getServiceByIdApi,
+  getServices as getServicesApi,
+  getServicesByCategory as getServicesByCategoryApi,
+  type AvailableSlotItem,
+  type AvailableSlotsResponse,
+} from "@/services/services.service";
 import type { ServiceDocument } from "@/models/api.models";
 
-interface ServiceState {
-  services: ServiceDocument[];
-  /** the service being scheduled */
+export interface ServiceState {
+  items: ServiceDocument[];
   selectedService: ServiceDocument | null;
-  loadingService: boolean;
   slots: AvailableSlotItem[];
-  /** explanation from the backend when no slot is available, or a load error */
-  slotMessage: string;
-  loadingSlots: boolean;
-  /** latest slots request, so an older response can't overwrite a newer one */
-  slotsRequestId: string | null;
+  slotsMessage: string;
+  loading: boolean;
+  slotsLoading: boolean;
   error: string | null;
+  requestId: string | null;
 }
 
 const initialState: ServiceState = {
-  services: [],
+  items: [],
   selectedService: null,
-  loadingService: false,
   slots: [],
-  slotMessage: "",
-  loadingSlots: false,
-  slotsRequestId: null,
+  slotsMessage: "",
+  loading: false,
+  slotsLoading: false,
   error: null,
+  requestId: null,
 };
 
 export const fetchServices = createAsyncThunkTyped(
   "service/fetchServices",
-  async (): Promise<ServiceDocument[]> => {
-    try {
-      return await getServices();
-    } catch (err) {
-      throw new Error(errorMessage(err, "Services could not be loaded."));
-    }
+  async (includeAll?: boolean): Promise<ServiceDocument[]> => {
+    return getServicesApi(includeAll ?? false);
   },
 );
 
-/** Load one service by id, or the first service when no id is given. */
-export const fetchSelectedService = createAsyncThunkTyped(
-  "service/fetchSelectedService",
-  async (serviceId: string | null): Promise<ServiceDocument | null> => {
-    try {
-      if (serviceId) return await getServiceById(serviceId);
-      const all = await getServices();
-      return all[0] ?? null;
-    } catch {
-      throw new Error("Service could not be loaded. Please return to catalog.");
-    }
+export const fetchServicesByCategory = createAsyncThunkTyped(
+  "service/fetchServicesByCategory",
+  async (categoryId: string): Promise<ServiceDocument[]> => {
+    return getServicesByCategoryApi(categoryId);
   },
 );
 
-export const fetchSlots = createAsyncThunkTyped(
-  "service/fetchSlots",
-  async (args: {
+export const fetchServiceById = createAsyncThunkTyped(
+  "service/fetchServiceById",
+  async (id: string): Promise<ServiceDocument> => {
+    return getServiceByIdApi(id);
+  },
+);
+
+export const fetchAvailableSlots = createAsyncThunkTyped(
+  "service/fetchAvailableSlots",
+  async ({
+    serviceId,
+    params,
+  }: {
     serviceId: string;
-    date: string;
-    addressId: string;
-    customerId?: string;
-    lng?: number;
-    lat?: number;
-  }): Promise<{ slots: AvailableSlotItem[]; message: string }> => {
-    try {
-      const { serviceId, ...params } = args;
-      const resp = await getAvailableSlots(serviceId, params);
-      const slots = resp.slots || [];
-      const message = slots.some((s) => s.available)
-        ? ""
-        : resp.message ||
-          "No eligible providers available for this slot or date. Please choose another date.";
-      return { slots, message };
-    } catch (err) {
-      throw new Error(
-        errorMessage(err, "Could not check provider availability. Please try again."),
-      );
-    }
+    params: {
+      date: string;
+      addressId?: string;
+      customerId?: string;
+      lat?: number;
+      lng?: number;
+    };
+  }): Promise<AvailableSlotsResponse> => {
+    return getAvailableSlotsApi(serviceId, params);
   },
 );
 
@@ -92,55 +78,89 @@ const ServiceSlice = createSlice({
   initialState,
   reducers: {
     resetSlice: () => initialState,
+    clearServiceError(state) {
+      state.error = null;
+    },
+    selectService(state, action: PayloadAction<ServiceDocument | null>) {
+      state.selectedService = action.payload;
+    },
     clearSlots(state) {
       state.slots = [];
-      state.slotMessage = "";
-      state.loadingSlots = false;
-      state.slotsRequestId = null;
+      state.slotsMessage = "";
     },
   },
   extraReducers: (builder) => {
     builder
+      .addCase(AuthActions.login, () => initialState)
       .addCase(AuthActions.logout, () => initialState)
-      .addCase(fetchServices.pending, (state) => {
+      .addCase(fetchServices.pending, (state, action) => {
+        state.requestId = action.meta.requestId;
+        state.loading = true;
         state.error = null;
       })
       .addCase(fetchServices.fulfilled, (state, action) => {
-        state.services = action.payload;
+        if (state.requestId !== action.meta.requestId) return;
+        state.items = action.payload;
+        state.loading = false;
+        state.requestId = null;
       })
       .addCase(fetchServices.rejected, (state, action) => {
-        state.error = action.error.message ?? "Services could not be loaded.";
+        if (state.requestId !== action.meta.requestId) return;
+        state.loading = false;
+        state.requestId = null;
+        if (!action.meta.aborted) {
+          state.error = action.error.message ?? "Failed to fetch services";
+        }
       })
-      .addCase(fetchSelectedService.pending, (state) => {
-        state.loadingService = true;
+      .addCase(fetchServicesByCategory.pending, (state, action) => {
+        state.requestId = action.meta.requestId;
+        state.loading = true;
         state.error = null;
       })
-      .addCase(fetchSelectedService.fulfilled, (state, action) => {
-        state.loadingService = false;
+      .addCase(fetchServicesByCategory.fulfilled, (state, action) => {
+        if (state.requestId !== action.meta.requestId) return;
+        state.items = action.payload;
+        state.loading = false;
+        state.requestId = null;
+      })
+      .addCase(fetchServicesByCategory.rejected, (state, action) => {
+        if (state.requestId !== action.meta.requestId) return;
+        state.loading = false;
+        state.requestId = null;
+        if (!action.meta.aborted) {
+          state.error = action.error.message ?? "Failed to fetch services by category";
+        }
+      })
+      .addCase(fetchServiceById.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchServiceById.fulfilled, (state, action) => {
+        state.loading = false;
         state.selectedService = action.payload;
       })
-      .addCase(fetchSelectedService.rejected, (state, action) => {
-        state.loadingService = false;
-        state.error = action.error.message ?? "Service could not be loaded.";
+      .addCase(fetchServiceById.rejected, (state, action) => {
+        state.loading = false;
+        if (!action.meta.aborted) {
+          state.error = action.error.message ?? "Failed to fetch service details";
+        }
       })
-      .addCase(fetchSlots.pending, (state, action) => {
-        state.slotsRequestId = action.meta.requestId;
-        state.loadingSlots = true;
+      .addCase(fetchAvailableSlots.pending, (state) => {
+        state.slotsLoading = true;
         state.slots = [];
-        state.slotMessage = "";
+        state.slotsMessage = "";
+        state.error = null;
       })
-      .addCase(fetchSlots.fulfilled, (state, action) => {
-        if (state.slotsRequestId !== action.meta.requestId) return;
-        state.loadingSlots = false;
-        state.slots = action.payload.slots;
-        state.slotMessage = action.payload.message;
+      .addCase(fetchAvailableSlots.fulfilled, (state, action) => {
+        state.slotsLoading = false;
+        state.slots = action.payload.slots ?? [];
+        state.slotsMessage = action.payload.message ?? "";
       })
-      .addCase(fetchSlots.rejected, (state, action) => {
-        if (state.slotsRequestId !== action.meta.requestId) return;
-        state.loadingSlots = false;
-        state.slots = [];
-        state.slotMessage =
-          action.error.message ?? "Could not check provider availability. Please try again.";
+      .addCase(fetchAvailableSlots.rejected, (state, action) => {
+        state.slotsLoading = false;
+        if (!action.meta.aborted) {
+          state.error = action.error.message ?? "Failed to fetch available slots";
+        }
       });
   },
 });

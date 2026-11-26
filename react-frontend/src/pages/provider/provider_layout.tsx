@@ -1,4 +1,6 @@
+import { useEffect, useRef } from "react";
 import { Outlet } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
 import {
   BsCalendar3,
   BsCash,
@@ -8,6 +10,13 @@ import {
   BsLightningCharge,
   BsPerson,
 } from "react-icons/bs";
+import { RolesEnum } from "@/common/roles.enum";
+import useAuth from "@/hooks/useAuth";
+import type { AppDispatch, RootState } from "@/store";
+import {
+  fetchProviderByUser,
+  fetchProviderOffers,
+} from "@/store/provider/provider-slice";
 import SideBar, { SidebarItem } from "../shared/Sidebar";
 import UserHeader from "../shared/user-header";
 import UrlMap from "../../common/urlMap";
@@ -18,6 +27,40 @@ export default function ProviderLayout() {
 }
 
 function ProviderLayoutContent() {
+  const { user } = useAuth();
+  const dispatch = useDispatch<AppDispatch>();
+  const isProvider = user?.role === RolesEnum.PROVIDER;
+  const { profile } = useSelector((s: RootState) => s.provider);
+
+  const isPollingBusy = useRef(false);
+
+  useEffect(() => {
+    if (isProvider && user?.id && !profile) {
+      void dispatch(fetchProviderByUser(user.id));
+    }
+  }, [dispatch, isProvider, profile, user?.id]);
+
+  useEffect(() => {
+    if (!isProvider || !profile?._id) return;
+    const pollOffers = async () => {
+      if (isPollingBusy.current) return;
+      isPollingBusy.current = true;
+      try {
+        await dispatch(fetchProviderOffers()).unwrap();
+      } catch {
+        // silent fail on background polling
+      } finally {
+        isPollingBusy.current = false;
+      }
+    };
+
+    void pollOffers();
+    const interval = window.setInterval(() => {
+      void pollOffers();
+    }, 6000);
+    return () => window.clearInterval(interval);
+  }, [dispatch, isProvider, profile?._id]);
+
   // Real-time listener for incoming offers with interactive toast alerts (Accept / Decline)
   useIncomingOfferNotifier();
 

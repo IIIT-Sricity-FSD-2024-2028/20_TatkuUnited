@@ -194,13 +194,7 @@ export default function IncomingOffers({
 
   useEffect(() => {
     void fetchOffers(true);
-    const interval = setInterval(() => {
-      if (!actionBusy.current && !fetchBusy.current) {
-        void dispatch(fetchProviderOffers());
-      }
-    }, 6000);
-    return () => clearInterval(interval);
-  }, [dispatch, fetchOffers]);
+  }, [fetchOffers]);
 
   useEffect(() => {
     let hasNewOffer = false;

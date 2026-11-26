@@ -2,12 +2,10 @@ import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch, RootState } from "@/store";
-import {
-  fetchCustomerBookings,
-} from "@/store/booking/booking-slice";
+import { fetchCustomerBookings } from "@/store/booking/booking-slice";
 import {
   ReviewActions,
-  fetchReviews,
+  fetchAllReviews,
   submitReview,
 } from "@/store/review/review-slice";
 import type { ServiceDocument } from "@/models/api.models";
@@ -16,19 +14,22 @@ function RatingsFeedbackPage() {
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
   const [searchParams] = useSearchParams();
-
   // all data comes from the store
   const customerId = useSelector((state: RootState) => state.auth.user?.id);
-  const { bookings, loaded: bookingsLoaded } = useSelector(
+  const { items: bookings, loading: bookingsLoading } = useSelector(
     (state: RootState) => state.booking,
   );
   const {
-    reviews: reviewsList,
+    items: reviewsList,
+    loading: reviewsLoading,
     submitting,
     error: reviewError,
   } = useSelector((state: RootState) => state.review);
   const completedBookings = bookings.filter((b) => b.status === "completed");
-  const loading = !!customerId && !bookingsLoaded;
+  const loading =
+    (bookingsLoading || reviewsLoading) &&
+    completedBookings.length === 0 &&
+    reviewsList.length === 0;
 
   // form state only
   const [selectedBookingId, setSelectedBookingId] = useState<string | null>(null);
@@ -39,15 +40,16 @@ function RatingsFeedbackPage() {
   const error = formError || reviewError || "";
   const clearErrors = () => {
     setFormError("");
-    dispatch(ReviewActions.clearError());
+    dispatch(ReviewActions.clearReviewError());
   };
 
   const targetBookingId = searchParams.get("bookingId");
 
   useEffect(() => {
-    if (!customerId) return;
-    dispatch(fetchCustomerBookings());
-    dispatch(fetchReviews());
+    if (customerId) {
+      dispatch(fetchCustomerBookings(customerId));
+    }
+    dispatch(fetchAllReviews());
   }, [dispatch, customerId]);
 
   // pick the booking from the link, else the first completed one

@@ -1,50 +1,100 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import createAsyncThunkTyped from "../asyncThunk";
-import { errorMessage } from "../errorMessage";
-import { createReview, getAllReviews } from "@/services/reviews.service";
 import { AuthActions } from "../auth/auth-slice";
-import type { CreateReviewDto, ReviewDocument } from "@/models/api.models";
+import {
+  createReview as createReviewApi,
+  deleteReview as deleteReviewApi,
+  getAllReviews as getAllReviewsApi,
+  getReviewByBooking as getReviewByBookingApi,
+  getReviewById as getReviewByIdApi,
+  getReviewsByProvider as getReviewsByProviderApi,
+  getReviewsByService as getReviewsByServiceApi,
+  updateReview as updateReviewApi,
+} from "@/services/reviews.service";
+import type {
+  CreateReviewDto,
+  ReviewDocument,
+  UpdateReviewDto,
+} from "@/models/api.models";
 
-interface ReviewState {
-  reviews: ReviewDocument[];
-  loaded: boolean;
+export interface ReviewState {
+  items: ReviewDocument[];
+  selectedReview: ReviewDocument | null;
+  loading: boolean;
   submitting: boolean;
   error: string | null;
+  requestId: string | null;
 }
 
 const initialState: ReviewState = {
-  reviews: [],
-  loaded: false,
+  items: [],
+  selectedReview: null,
+  loading: false,
   submitting: false,
   error: null,
+  requestId: null,
 };
 
-export const fetchReviews = createAsyncThunkTyped(
-  "review/fetchReviews",
+export const fetchAllReviews = createAsyncThunkTyped(
+  "review/fetchAllReviews",
   async (): Promise<ReviewDocument[]> => {
-    try {
-      return await getAllReviews();
-    } catch {
-      throw new Error("Unable to load reviews.");
-    }
+    return getAllReviewsApi();
   },
 );
 
-/** Submit a review, then reload the public list. */
+export const fetchReviewsByService = createAsyncThunkTyped(
+  "review/fetchReviewsByService",
+  async (serviceId: string): Promise<ReviewDocument[]> => {
+    return getReviewsByServiceApi(serviceId);
+  },
+);
+
+export const fetchReviewsByProvider = createAsyncThunkTyped(
+  "review/fetchReviewsByProvider",
+  async (providerId: string): Promise<ReviewDocument[]> => {
+    return getReviewsByProviderApi(providerId);
+  },
+);
+
+export const fetchReviewByBooking = createAsyncThunkTyped(
+  "review/fetchReviewByBooking",
+  async (bookingId: string): Promise<ReviewDocument> => {
+    return getReviewByBookingApi(bookingId);
+  },
+);
+
+export const fetchReviewById = createAsyncThunkTyped(
+  "review/fetchReviewById",
+  async (id: string): Promise<ReviewDocument> => {
+    return getReviewByIdApi(id);
+  },
+);
+
 export const submitReview = createAsyncThunkTyped(
   "review/submitReview",
-  async (dto: CreateReviewDto): Promise<ReviewDocument[]> => {
-    try {
-      await createReview(dto);
-    } catch (err) {
-      throw new Error(
-        errorMessage(
-          err,
-          "Failed to submit review. Each booking can only be reviewed once.",
-        ),
-      );
-    }
-    return getAllReviews().catch(() => [] as ReviewDocument[]);
+  async (dto: CreateReviewDto): Promise<ReviewDocument> => {
+    return createReviewApi(dto);
+  },
+);
+
+export const updateReviewThunk = createAsyncThunkTyped(
+  "review/updateReview",
+  async ({
+    id,
+    dto,
+  }: {
+    id: string;
+    dto: UpdateReviewDto;
+  }): Promise<ReviewDocument> => {
+    return updateReviewApi(id, dto);
+  },
+);
+
+export const deleteReviewThunk = createAsyncThunkTyped(
+  "review/deleteReview",
+  async (id: string): Promise<string> => {
+    await deleteReviewApi(id);
+    return id;
   },
 );
 
@@ -53,19 +103,47 @@ const ReviewSlice = createSlice({
   initialState,
   reducers: {
     resetSlice: () => initialState,
-    clearError(state) {
+    clearReviewError(state) {
       state.error = null;
+    },
+    selectReview(state, action: PayloadAction<ReviewDocument | null>) {
+      state.selectedReview = action.payload;
     },
   },
   extraReducers: (builder) => {
     builder
+      .addCase(AuthActions.login, () => initialState)
       .addCase(AuthActions.logout, () => initialState)
-      .addCase(fetchReviews.fulfilled, (state, action) => {
-        state.reviews = action.payload;
-        state.loaded = true;
+      .addCase(fetchAllReviews.pending, (state, action) => {
+        state.requestId = action.meta.requestId;
+        state.loading = true;
+        state.error = null;
       })
-      .addCase(fetchReviews.rejected, (state) => {
-        state.loaded = true;
+      .addCase(fetchAllReviews.fulfilled, (state, action) => {
+        if (state.requestId !== action.meta.requestId) return;
+        state.items = action.payload;
+        state.loading = false;
+        state.requestId = null;
+      })
+      .addCase(fetchAllReviews.rejected, (state, action) => {
+        if (state.requestId !== action.meta.requestId) return;
+        state.loading = false;
+        state.requestId = null;
+        if (!action.meta.aborted) {
+          state.error = action.error.message ?? "Failed to fetch reviews";
+        }
+      })
+      .addCase(fetchReviewsByService.fulfilled, (state, action) => {
+        state.items = action.payload;
+      })
+      .addCase(fetchReviewsByProvider.fulfilled, (state, action) => {
+        state.items = action.payload;
+      })
+      .addCase(fetchReviewById.fulfilled, (state, action) => {
+        state.selectedReview = action.payload;
+      })
+      .addCase(fetchReviewByBooking.fulfilled, (state, action) => {
+        state.selectedReview = action.payload;
       })
       .addCase(submitReview.pending, (state) => {
         state.submitting = true;
@@ -73,12 +151,28 @@ const ReviewSlice = createSlice({
       })
       .addCase(submitReview.fulfilled, (state, action) => {
         state.submitting = false;
-        // keep the existing list if the reload came back empty
-        if (action.payload.length > 0) state.reviews = action.payload;
+        state.items.unshift(action.payload);
       })
       .addCase(submitReview.rejected, (state, action) => {
         state.submitting = false;
-        state.error = action.error.message ?? "Failed to submit review.";
+        if (!action.meta.aborted) {
+          state.error = action.error.message ?? "Failed to submit review";
+        }
+      })
+      .addCase(updateReviewThunk.fulfilled, (state, action) => {
+        const index = state.items.findIndex((r) => r._id === action.payload._id);
+        if (index >= 0) {
+          state.items[index] = action.payload;
+        }
+        if (state.selectedReview?._id === action.payload._id) {
+          state.selectedReview = action.payload;
+        }
+      })
+      .addCase(deleteReviewThunk.fulfilled, (state, action) => {
+        state.items = state.items.filter((r) => r._id !== action.payload);
+        if (state.selectedReview?._id === action.payload) {
+          state.selectedReview = null;
+        }
       });
   },
 });

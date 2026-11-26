@@ -10,8 +10,9 @@ import {
 } from "@/store/customer/customer-slice";
 import {
   ServiceActions,
-  fetchSelectedService,
-  fetchSlots,
+  fetchAvailableSlots,
+  fetchServiceById,
+  fetchServices,
 } from "@/store/service/service-slice";
 import type { AvailableSlotItem } from "@/services/services.service";
 import { MapPin, Calendar, Clock, Plus, CheckCircle2, AlertCircle } from "lucide-react";
@@ -35,10 +36,10 @@ function SchedulePage() {
   const customerId = useSelector((state: RootState) => state.auth.user?.id);
   const {
     selectedService,
-    loadingService,
+    loading: loadingService,
     slots,
-    slotMessage,
-    loadingSlots,
+    slotsMessage: slotMessage,
+    slotsLoading: loadingSlots,
     error: serviceError,
   } = useSelector((state: RootState) => state.service);
   const {
@@ -77,7 +78,16 @@ function SchedulePage() {
   // Load the service and the saved addresses into the store
   useEffect(() => {
     dispatch(CustomerActions.clearError());
-    dispatch(fetchSelectedService(serviceIdParam ?? null));
+    if (serviceIdParam) {
+      dispatch(fetchServiceById(serviceIdParam));
+    } else {
+      dispatch(fetchServices(false))
+        .unwrap()
+        .then((all) => {
+          dispatch(ServiceActions.selectService(all[0] ?? null));
+        })
+        .catch(() => {});
+    }
   }, [dispatch, serviceIdParam]);
 
   useEffect(() => {
@@ -104,13 +114,15 @@ function SchedulePage() {
     );
     const coords = chosenAddr?.location?.coordinates;
     dispatch(
-      fetchSlots({
+      fetchAvailableSlots({
         serviceId: selectedService._id,
-        date,
-        addressId: selectedAddressId,
-        customerId,
-        lng: coords?.[0],
-        lat: coords?.[1],
+        params: {
+          date,
+          addressId: selectedAddressId,
+          customerId,
+          lng: coords?.[0],
+          lat: coords?.[1],
+        },
       }),
     );
   }, [dispatch, selectedService?._id, selectedAddressId, date, customerId, addresses]);

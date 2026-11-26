@@ -42,9 +42,14 @@ export class PaymentsController {
   @ApiResponse({ status: 200, description: 'Payment simulation processed.' })
   @ApiResponse({ status: 404, description: 'Order or payment record not found.' })
   simulate(@Body() simulateDto: SimulatePaymentDto, @Req() req: any) {
-    if (process.env.MOCK_PAYMENTS !== 'true') {
+    if (
+      process.env.NODE_ENV === 'production' ||
+      process.env.MOCK_PAYMENTS !== 'true'
+    ) {
       throw new ForbiddenException(
-        'Mock payment simulation is disabled. Set MOCK_PAYMENTS=true to enable.',
+        process.env.NODE_ENV === 'production'
+          ? 'Mock payment simulation is disabled in production.'
+          : 'Mock payment simulation is disabled. Set MOCK_PAYMENTS=true to enable.',
       );
     }
     const user = req.user as AuthenticatedUser;

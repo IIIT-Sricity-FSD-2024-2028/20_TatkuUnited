@@ -24,7 +24,7 @@ function AccountSettingsPage() {
   const { profile, addresses: storedAddresses, pending } = useSelector(
     (state: RootState) => state.customer,
   );
-  const bookings = useSelector((state: RootState) => state.booking.bookings);
+  const bookings = useSelector((state: RootState) => state.booking.items);
   const loading = !!customerId && pending > 0 && !profile;
   const addresses = storedAddresses.map((address: any) => ({
     id: address.id ?? address._id,
@@ -101,7 +101,7 @@ function AccountSettingsPage() {
       .unwrap()
       .catch(() => showError("Could not load your profile from the server."));
     dispatch(fetchAddresses());
-    dispatch(fetchCustomerBookings());
+    dispatch(fetchCustomerBookings(customerId));
   }, [dispatch, customerId, navigate]);
 
   // Fill the form whenever the stored profile changes

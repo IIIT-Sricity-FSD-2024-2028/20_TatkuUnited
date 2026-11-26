@@ -43,6 +43,7 @@ interface CustomerState {
   checkingOut: boolean;
   paying: boolean;
   error: string | null;
+  requestId: string | null;
 }
 
 const initialState: CustomerState = {
@@ -54,6 +55,7 @@ const initialState: CustomerState = {
   checkingOut: false,
   paying: false,
   error: null,
+  requestId: null,
 };
 
 /** The logged-in customer's id, from the auth slice. */
@@ -288,8 +290,17 @@ const CustomerSlice = createSlice({
     builder
       .addCase(AuthActions.login, () => initialState)
       .addCase(AuthActions.logout, () => initialState)
+      .addCase(fetchCustomerDetails.pending, (state, action) => {
+        state.requestId = action.meta.requestId;
+      })
       .addCase(fetchCustomerDetails.fulfilled, (state, action) => {
+        if (state.requestId !== action.meta.requestId) return;
         state.profile = action.payload;
+        state.requestId = null;
+      })
+      .addCase(fetchCustomerDetails.rejected, (state, action) => {
+        if (state.requestId !== action.meta.requestId) return;
+        state.requestId = null;
       })
       .addCase(updateCustomerProfile.fulfilled, (state, action) => {
         state.profile = action.payload;

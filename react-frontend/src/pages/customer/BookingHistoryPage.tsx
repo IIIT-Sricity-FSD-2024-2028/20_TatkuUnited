@@ -4,8 +4,9 @@ import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch, RootState } from "@/store";
 import {
   BookingActions,
-  decideCompletion,
+  confirmCompletion,
   fetchCustomerBookings,
+  rejectCompletion,
 } from "@/store/booking/booking-slice";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -60,25 +61,34 @@ export default function BookingHistoryPage() {
   const { id } = useParams();
   const dispatch = useDispatch<AppDispatch>();
   const customerId = useSelector((state: RootState) => state.auth.user?.id);
-  const { bookings, loaded, acting, error } = useSelector(
-    (state: RootState) => state.booking,
-  );
-  const loading = !loaded;
+  const {
+    items: bookings,
+    loading: sliceLoading,
+    actingId: acting,
+    error,
+  } = useSelector((state: RootState) => state.booking);
+  const loading = sliceLoading && bookings.length === 0;
 
   // load, then keep the list fresh while the page is open
   useEffect(() => {
     if (!customerId) return;
-    dispatch(fetchCustomerBookings());
-    const timer = setInterval(() => dispatch(fetchCustomerBookings()), 6000);
+    dispatch(fetchCustomerBookings(customerId));
+    const timer = setInterval(
+      () => dispatch(fetchCustomerBookings(customerId)),
+      6000,
+    );
     return () => clearInterval(timer);
   }, [dispatch, customerId]);
 
   const decide = async (booking: BookingDocument, complete: boolean) => {
     if (acting !== null) return;
     try {
-      await dispatch(decideCompletion({ id: booking._id, complete })).unwrap();
-      if (complete)
+      if (complete) {
+        await dispatch(confirmCompletion(booking._id)).unwrap();
         navigate("/customer/ratings-feedback?bookingId=" + booking._id);
+      } else {
+        await dispatch(rejectCompletion(booking._id)).unwrap();
+      }
     } catch {
       // the message is in state.booking.error
     }
@@ -110,8 +120,8 @@ export default function BookingHistoryPage() {
             variant="outline"
             size="sm"
             onClick={() => {
-              dispatch(BookingActions.clearError());
-              dispatch(fetchCustomerBookings());
+              dispatch(BookingActions.clearBookingError());
+              if (customerId) dispatch(fetchCustomerBookings(customerId));
             }}
           >
             Refresh

@@ -5,5 +5,5 @@ export function errorMessage(err: unknown, fallback: string): string {
     message?: string;
   };
   const msg = e?.response?.data?.message ?? e?.message ?? fallback;
-  return Array.isArray(msg) ? msg.join(", ") : msg || fallback;
+  return Array.isArray(msg) ? msg.join("; ") : msg || fallback;
 }

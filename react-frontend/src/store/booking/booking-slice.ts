@@ -1,65 +1,82 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import createAsyncThunkTyped from "../asyncThunk";
-import {
-  confirmBookingCompletion,
-  getBookingsByCustomer,
-  rejectBookingCompletion,
-} from "@/services/bookings.service";
 import { AuthActions } from "../auth/auth-slice";
-import type { RootState } from "..";
+import {
+  cancelBooking as cancelBookingApi,
+  confirmBookingCompletion as confirmBookingCompletionApi,
+  getBookingById as getBookingByIdApi,
+  getBookingsByCustomer as getBookingsByCustomerApi,
+  rejectBookingCompletion as rejectBookingCompletionApi,
+} from "@/services/bookings.service";
 import type { BookingDocument } from "@/models/api.models";
 
-interface BookingState {
-  /** the logged-in customer's bookings */
-  bookings: BookingDocument[];
-  /** true after the first fetch finishes, so pages can tell "loading" from "empty" */
-  loaded: boolean;
-  /** id of the booking a confirm/reject is running on */
-  acting: string | null;
+export interface BookingState {
+  items: BookingDocument[];
+  selectedBooking: BookingDocument | null;
+  loading: boolean;
   error: string | null;
+  requestId: string | null;
+  actingId: string | null;
 }
 
 const initialState: BookingState = {
-  bookings: [],
-  loaded: false,
-  acting: null,
+  items: [],
+  selectedBooking: null,
+  loading: false,
   error: null,
+  requestId: null,
+  actingId: null,
 };
+
+function replaceBooking(items: BookingDocument[], updated: BookingDocument) {
+  const index = items.findIndex((b) => b._id === updated._id);
+  if (index >= 0) {
+    items[index] = updated;
+  } else {
+    items.push(updated);
+  }
+}
 
 export const fetchCustomerBookings = createAsyncThunkTyped(
   "booking/fetchCustomerBookings",
-  async (_: void, { getState }): Promise<BookingDocument[]> => {
-    const id = (getState() as RootState).auth.user?.id;
-    if (!id) return [];
-    try {
-      return await getBookingsByCustomer(id);
-    } catch {
-      throw new Error(
-        "Unable to refresh bookings. Displayed details may be out of date.",
-      );
-    }
+  async (customerId: string): Promise<BookingDocument[]> => {
+    return getBookingsByCustomerApi(customerId);
   },
 );
 
-/** Customer confirms (complete = true) or rejects the provider's completion request. */
-export const decideCompletion = createAsyncThunkTyped(
-  "booking/decideCompletion",
+export const fetchBookingById = createAsyncThunkTyped(
+  "booking/fetchBookingById",
+  async (id: string): Promise<BookingDocument> => {
+    return getBookingByIdApi(id);
+  },
+);
+
+export const confirmCompletion = createAsyncThunkTyped(
+  "booking/confirmCompletion",
+  async (id: string): Promise<BookingDocument> => {
+    return confirmBookingCompletionApi(id);
+  },
+);
+
+export const rejectCompletion = createAsyncThunkTyped(
+  "booking/rejectCompletion",
+  async (id: string): Promise<BookingDocument> => {
+    return rejectBookingCompletionApi(id);
+  },
+);
+
+export const cancelBookingThunk = createAsyncThunkTyped(
+  "booking/cancelBooking",
   async ({
     id,
-    complete,
+    cancelledBy = "customer",
+    reason,
   }: {
     id: string;
-    complete: boolean;
+    cancelledBy?: string;
+    reason?: string;
   }): Promise<BookingDocument> => {
-    try {
-      return await (complete
-        ? confirmBookingCompletion(id)
-        : rejectBookingCompletion(id));
-    } catch {
-      throw new Error(
-        "This booking may have changed. Refresh to check its current status before trying again.",
-      );
-    }
+    return cancelBookingApi(id, cancelledBy, reason);
   },
 );
 
@@ -68,40 +85,90 @@ const BookingSlice = createSlice({
   initialState,
   reducers: {
     resetSlice: () => initialState,
-    clearError(state) {
+    clearBookingError(state) {
       state.error = null;
+    },
+    selectBooking(state, action: PayloadAction<BookingDocument | null>) {
+      state.selectedBooking = action.payload;
     },
   },
   extraReducers: (builder) => {
     builder
       .addCase(AuthActions.login, () => initialState)
       .addCase(AuthActions.logout, () => initialState)
-      .addCase(fetchCustomerBookings.fulfilled, (state, action) => {
-        state.loaded = true;
-        // don't overwrite the list while a confirm/reject is mid-flight
-        if (state.acting !== null) return;
-        state.bookings = action.payload;
+      .addCase(fetchCustomerBookings.pending, (state, action) => {
+        state.requestId = action.meta.requestId;
+        state.loading = true;
         state.error = null;
+      })
+      .addCase(fetchCustomerBookings.fulfilled, (state, action) => {
+        if (state.requestId !== action.meta.requestId) return;
+        state.items = action.payload;
+        state.loading = false;
+        state.requestId = null;
       })
       .addCase(fetchCustomerBookings.rejected, (state, action) => {
-        state.loaded = true;
+        if (state.requestId !== action.meta.requestId) return;
+        state.loading = false;
+        state.requestId = null;
         if (!action.meta.aborted) {
-          state.error = action.error.message ?? "Unable to load bookings.";
+          state.error = action.error.message ?? "Failed to fetch customer bookings";
         }
       })
-      .addCase(decideCompletion.pending, (state, action) => {
-        state.acting = action.meta.arg.id;
+      .addCase(fetchBookingById.pending, (state) => {
+        state.loading = true;
         state.error = null;
       })
-      .addCase(decideCompletion.fulfilled, (state, action) => {
-        state.acting = null;
-        state.bookings = state.bookings.map((b) =>
-          b._id === action.payload._id ? action.payload : b,
-        );
+      .addCase(fetchBookingById.fulfilled, (state, action) => {
+        state.loading = false;
+        state.selectedBooking = action.payload;
+        replaceBooking(state.items, action.payload);
       })
-      .addCase(decideCompletion.rejected, (state, action) => {
-        state.acting = null;
-        state.error = action.error.message ?? "Could not update this booking.";
+      .addCase(fetchBookingById.rejected, (state, action) => {
+        state.loading = false;
+        if (!action.meta.aborted) {
+          state.error = action.error.message ?? "Failed to fetch booking";
+        }
+      })
+      .addCase(confirmCompletion.pending, (state, action) => {
+        state.actingId = action.meta.arg;
+        state.error = null;
+      })
+      .addCase(confirmCompletion.fulfilled, (state, action) => {
+        state.actingId = null;
+        replaceBooking(state.items, action.payload);
+        if (state.selectedBooking?._id === action.payload._id) {
+          state.selectedBooking = action.payload;
+        }
+      })
+      .addCase(confirmCompletion.rejected, (state, action) => {
+        state.actingId = null;
+        if (!action.meta.aborted) {
+          state.error = action.error.message ?? "Failed to confirm booking completion";
+        }
+      })
+      .addCase(rejectCompletion.pending, (state, action) => {
+        state.actingId = action.meta.arg;
+        state.error = null;
+      })
+      .addCase(rejectCompletion.fulfilled, (state, action) => {
+        state.actingId = null;
+        replaceBooking(state.items, action.payload);
+        if (state.selectedBooking?._id === action.payload._id) {
+          state.selectedBooking = action.payload;
+        }
+      })
+      .addCase(rejectCompletion.rejected, (state, action) => {
+        state.actingId = null;
+        if (!action.meta.aborted) {
+          state.error = action.error.message ?? "Failed to reject booking completion";
+        }
+      })
+      .addCase(cancelBookingThunk.fulfilled, (state, action) => {
+        replaceBooking(state.items, action.payload);
+        if (state.selectedBooking?._id === action.payload._id) {
+          state.selectedBooking = action.payload;
+        }
       });
   },
 });
