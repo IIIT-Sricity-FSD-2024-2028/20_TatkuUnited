@@ -47,7 +47,8 @@ export default function IncomingOffers({
   const dispatch = useDispatch<AppDispatch>();
   const actionBusy = useRef(false);
   const fetchBusy = useRef(false);
-  const { offers: rawOffers, pending } = useSelector((s: RootState) => s.provider);
+  const { offers: rawOffers, pending, profile } = useSelector((s: RootState) => s.provider);
+  const effectiveProviderId = providerId ?? profile?._id;
   const [error, setError] = useState("");
   const [refreshing, setRefreshing] = useState(false);
   const [actingId, setActingId] = useState<string | null>(null);
@@ -171,7 +172,7 @@ export default function IncomingOffers({
 
   const fetchOffers = useCallback(
     async (isInitial = false) => {
-      if (fetchBusy.current || actionBusy.current) return;
+      if (!effectiveProviderId || fetchBusy.current || actionBusy.current) return;
       fetchBusy.current = true;
       if (!isInitial) setRefreshing(true);
 
@@ -189,12 +190,13 @@ export default function IncomingOffers({
         setRefreshing(false);
       }
     },
-    [dispatch],
+    [dispatch, effectiveProviderId],
   );
 
   useEffect(() => {
+    if (!effectiveProviderId) return;
     void fetchOffers(true);
-  }, [fetchOffers]);
+  }, [effectiveProviderId, fetchOffers]);
 
   useEffect(() => {
     let hasNewOffer = false;

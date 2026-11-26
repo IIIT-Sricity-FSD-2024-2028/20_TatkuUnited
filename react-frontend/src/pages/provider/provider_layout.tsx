@@ -30,15 +30,15 @@ function ProviderLayoutContent() {
   const { user } = useAuth();
   const dispatch = useDispatch<AppDispatch>();
   const isProvider = user?.role === RolesEnum.PROVIDER;
-  const { profile } = useSelector((s: RootState) => s.provider);
+  const { profile, profileStatus } = useSelector((s: RootState) => s.provider);
 
   const isPollingBusy = useRef(false);
 
   useEffect(() => {
-    if (isProvider && user?.id && !profile) {
+    if (isProvider && user?.id && !profile && profileStatus === "idle") {
       void dispatch(fetchProviderByUser(user.id));
     }
-  }, [dispatch, isProvider, profile, user?.id]);
+  }, [dispatch, isProvider, profile, profileStatus, user?.id]);
 
   useEffect(() => {
     if (!isProvider || !profile?._id) return;

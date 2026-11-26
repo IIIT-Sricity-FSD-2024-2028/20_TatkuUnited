@@ -50,13 +50,13 @@ export default function Settings() {
     const [saving, setSaving] = useState(false);
     const [message, setMessage] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
-    const { profile: provider, pending, error: sliceError } = useSelector((s: RootState) => s.provider);
+    const { profile: provider, profileStatus, error: sliceError } = useSelector((s: RootState) => s.provider);
 
     useEffect(() => {
-        if (isProvider && user?.id) {
+        if (isProvider && user?.id && !provider && profileStatus === "idle") {
             void dispatch(fetchProviderByUser(user.id));
         }
-    }, [dispatch, isProvider, user?.id]);
+    }, [dispatch, isProvider, provider, profileStatus, user?.id]);
 
     useEffect(() => {
         if (provider) {
@@ -108,8 +108,8 @@ export default function Settings() {
     );
     }
 
-    const isLoading = pending > 0 && !provider;
-    const isError = Boolean(sliceError) && !provider;
+    const isLoading = profileStatus === "loading" && !provider;
+    const isError = (profileStatus === "failed" || Boolean(sliceError)) && !provider;
 
     if (isLoading) {
     return (

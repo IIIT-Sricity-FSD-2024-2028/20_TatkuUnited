@@ -192,7 +192,7 @@ export class BookingsController {
     const user = req.user as AuthenticatedUser;
     const providerDoc = await this.providersService.findByUser(user.userId);
     if (!providerDoc) {
-      throw new ForbiddenException('Provider profile not found');
+      return [];
     }
     return this.bookingsService.findPendingOffersForProvider(
       providerDoc._id.toString(),

@@ -38,8 +38,12 @@ import type {
   UserDocument,
 } from "@/models/api.models";
 
+export type ProfileLoadStatus = "idle" | "loading" | "succeeded" | "failed";
+
 interface ProviderState {
   profile: ProviderDocument | null;
+  profileStatus: ProfileLoadStatus;
+  profileUserId: string | null;
   userProfile: UserDocument | null;
   bookings: BookingDocument[];
   offers: BookingDocument[];
@@ -52,6 +56,8 @@ interface ProviderState {
 
 const initialState: ProviderState = {
   profile: null,
+  profileStatus: "idle",
+  profileUserId: null,
   userProfile: null,
   bookings: [],
   offers: [],
@@ -68,6 +74,18 @@ export const fetchProviderByUser = createAsyncThunkTyped(
     const provider = await getProviderByUser(userId);
     if (!provider) throw new Error("No provider profile found for this account");
     return provider;
+  },
+  {
+    condition: (userId, { getState }) => {
+      const { provider } = getState();
+      if (
+        provider.profileUserId === userId &&
+        provider.profileStatus !== "idle"
+      ) {
+        return false;
+      }
+      return true;
+    },
   },
 );
 
@@ -246,9 +264,20 @@ const ProviderSlice = createSlice({
     builder
       .addCase(AuthActions.login, () => initialState)
       .addCase(AuthActions.logout, () => initialState)
+      .addCase(fetchProviderByUser.pending, (state, action) => {
+        state.profileStatus = "loading";
+        state.profileUserId = action.meta.arg;
+      })
       .addCase(fetchProviderByUser.fulfilled, (state, action) => {
         if (!state.pendingRequests[action.meta.requestId]) return;
         state.profile = action.payload;
+        state.profileStatus = "succeeded";
+      })
+      .addCase(fetchProviderByUser.rejected, (state, action) => {
+        if (!state.pendingRequests[action.meta.requestId]) return;
+        if (!action.meta.aborted) {
+          state.profileStatus = "failed";
+        }
       })
       .addCase(fetchProviderUser.fulfilled, (state, action) => {
         if (!state.pendingRequests[action.meta.requestId]) return;

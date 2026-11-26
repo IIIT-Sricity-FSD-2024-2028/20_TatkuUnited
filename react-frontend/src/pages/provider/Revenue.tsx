@@ -45,13 +45,13 @@ export default function Revenue() {
   const { user } = useAuth();
   const dispatch = useDispatch<AppDispatch>();
   const isProvider = user?.role === RolesEnum.PROVIDER;
-  const { profile, bookings: allBookings, pending, error } = useSelector((s: RootState) => s.provider);
+  const { profile, profileStatus, bookings: allBookings, pending, error } = useSelector((s: RootState) => s.provider);
 
   useEffect(() => {
-    if (isProvider && user?.id && !profile) {
+    if (isProvider && user?.id && !profile && profileStatus === "idle") {
       void dispatch(fetchProviderByUser(user.id));
     }
-  }, [dispatch, isProvider, profile, user?.id]);
+  }, [dispatch, isProvider, profile, profileStatus, user?.id]);
 
   useEffect(() => {
     if (profile?._id) {
@@ -63,7 +63,7 @@ export default function Revenue() {
     () => allBookings.filter((booking) => booking.status === "completed"),
     [allBookings],
   );
-  const isLoading = pending > 0 && (!profile || allBookings.length === 0);
+  const isLoading = (profileStatus === "loading" && !profile) || (pending > 0 && Boolean(profile) && allBookings.length === 0);
   const isError = Boolean(error) && allBookings.length === 0;
 
   const totals = useMemo(() => {

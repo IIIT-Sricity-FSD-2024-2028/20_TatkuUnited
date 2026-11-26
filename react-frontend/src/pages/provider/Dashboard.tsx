@@ -12,16 +12,16 @@ export default function Dashboard() {
   const { user } = useAuth();
   const dispatch = useDispatch<AppDispatch>();
   const isProvider = user?.role === RolesEnum.PROVIDER;
-  const { profile: provider, pending, error } = useSelector((s: RootState) => s.provider);
+  const { profile: provider, profileStatus, error } = useSelector((s: RootState) => s.provider);
 
   useEffect(() => {
-    if (isProvider && user?.id) {
+    if (isProvider && user?.id && !provider && profileStatus === "idle") {
       void dispatch(fetchProviderByUser(user.id));
     }
-  }, [dispatch, isProvider, user?.id]);
+  }, [dispatch, isProvider, provider, profileStatus, user?.id]);
 
-  const isLoading = pending > 0 && !provider;
-  const isError = Boolean(error) && !provider;
+  const isLoading = profileStatus === "loading" && !provider;
+  const isError = (profileStatus === "failed" || Boolean(error)) && !provider;
 
   if (isLoading) {
     return (

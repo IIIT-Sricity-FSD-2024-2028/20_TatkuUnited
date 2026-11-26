@@ -18,6 +18,7 @@ import {
 } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { UsersService } from '../users/users.service';
+import { ProvidersService } from '../providers/providers.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 import { Public } from '../common/decorators/public.decorator';
@@ -25,6 +26,7 @@ import { CurrentUser } from '../common/decorators/current-user.decorator';
 import type { AuthenticatedUser } from '../common/interfaces/authenticated-user.interface';
 import { UserStatus } from '../common/enums/user-status.enum';
 import { Role } from '../common/enums/roles.enum';
+import { ProviderStatus } from '../common/enums';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -32,7 +34,24 @@ export class AuthController {
   constructor(
     private readonly authService: AuthService,
     private readonly usersService: UsersService,
+    private readonly providersService: ProvidersService,
   ) {}
+
+  private async ensureProviderProfile(userId: string) {
+    const existing = await this.providersService.findByUser(userId);
+    if (!existing) {
+      await this.providersService.create({
+        user: userId,
+        offeredServices: [],
+        experience: 0,
+        workHourStart: 540,
+        workHourEnd: 1080,
+        workingDays: [1, 2, 3, 4, 5],
+        location: { type: 'Point', coordinates: [0, 0] },
+        status: ProviderStatus.PENDING,
+      });
+    }
+  }
 
   @Public()
   @Post('login')
@@ -68,6 +87,10 @@ export class AuthController {
     );
     if (!isMatch) {
       throw new UnauthorizedException('Invalid email or password');
+    }
+
+    if (user.role === Role.PROVIDER) {
+      await this.ensureProviderProfile(user._id.toString());
     }
 
     const accessToken = await this.authService.generateToken({
@@ -146,6 +169,10 @@ export class AuthController {
       gender: registerDto.gender,
       dob: registerDto.dob,
     });
+
+    if (createdUser.role === Role.PROVIDER) {
+      await this.ensureProviderProfile(createdUser._id.toString());
+    }
 
     const accessToken = await this.authService.generateToken({
       sub: createdUser._id.toString(),

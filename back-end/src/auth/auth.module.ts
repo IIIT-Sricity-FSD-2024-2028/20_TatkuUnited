@@ -4,6 +4,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { UsersModule } from '../users/users.module';
+import { ProvidersModule } from '../providers/providers.module';
 
 @Global()
 @Module({
@@ -21,6 +22,7 @@ import { UsersModule } from '../users/users.module';
       }),
     }),
     forwardRef(() => UsersModule),
+    forwardRef(() => ProvidersModule),
   ],
   controllers: [AuthController],
   providers: [AuthService],

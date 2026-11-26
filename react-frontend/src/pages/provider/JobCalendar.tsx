@@ -129,14 +129,14 @@ export default function JobCalendar() {
         reason: "",
     });
 
-    const { profile, schedule, unavailability, pending } = useSelector((s: RootState) => s.provider);
+    const { profile, profileStatus, schedule, unavailability } = useSelector((s: RootState) => s.provider);
     const providerId = profile?._id;
 
     useEffect(() => {
-        if (isProvider && user?.id && !profile) {
+        if (isProvider && user?.id && !profile && profileStatus === "idle") {
             void dispatch(fetchProviderByUser(user.id));
         }
-    }, [dispatch, isProvider, profile, user?.id]);
+    }, [dispatch, isProvider, profile, profileStatus, user?.id]);
 
     useEffect(() => {
         if (!providerId) return;
@@ -148,7 +148,7 @@ export default function JobCalendar() {
         return () => clearInterval(interval);
     }, [dispatch, providerId]);
 
-    const loading = pending > 0 && !profile;
+    const loading = profileStatus === "loading" && !profile;
     const calendarData = useMemo(
         () => buildCalendarData(schedule, unavailability),
         [schedule, unavailability],
