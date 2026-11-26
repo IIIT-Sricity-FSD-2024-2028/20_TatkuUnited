@@ -4,6 +4,7 @@ import ManagerDashboard from "./dashboard";
 import ManagerProfile from "./my-profile";
 import ManagerRevenue from "./revenue";
 import ManagerManageProviders from "./manage-providers";
+import ManagerManageBookings from "./manage-bookings";
 import ProtectedRoute from "../components/protectedRoute";
 import { RolesEnum } from "@/common/roles.enum";
 export default function ManagerRouter() {
@@ -15,6 +16,7 @@ export default function ManagerRouter() {
           <Route path="dashboard" element={<ManagerDashboard />} />
           <Route path="revenue" element={<ManagerRevenue />} />
           <Route path="providers" element={<ManagerManageProviders />} />
+          <Route path="bookings" element={<ManagerManageBookings />} />
           <Route path="profile" element={<ManagerProfile />} />
         </Route>
       </Routes>

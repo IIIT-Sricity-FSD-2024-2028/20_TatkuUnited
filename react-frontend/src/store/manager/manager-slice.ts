@@ -9,7 +9,11 @@ import {
 } from "@/services/providers.service";
 import { updateUser } from "@/services/users.service";
 import axios from "axios";
-import { getBookingsByRegion } from "@/services/bookings.service";
+import {
+  cancelBooking,
+  completeBooking,
+  getBookingsByRegion,
+} from "@/services/bookings.service";
 import { getServices } from "@/services/services.service";
 import { getCategories } from "@/services/categories.service";
 import { AuthActions } from "../auth/auth-slice";
@@ -164,6 +168,36 @@ export const updateManagerProfile = createAsyncThunkTyped(
   },
 );
 
+/** POST /bookings/:id/complete — manager marks a booking completed. */
+export const completeRegionBooking = createAsyncThunkTyped(
+  "manager/completeRegionBooking",
+  async (id: string): Promise<RegionBooking> => {
+    try {
+      return await completeBooking(id);
+    } catch {
+      throw new Error("Could not complete booking");
+    }
+  },
+);
+
+/** POST /bookings/:id/cancel — manager cancels a booking, with an optional reason. */
+export const cancelRegionBooking = createAsyncThunkTyped(
+  "manager/cancelRegionBooking",
+  async ({
+    id,
+    reason,
+  }: {
+    id: string;
+    reason?: string;
+  }): Promise<RegionBooking> => {
+    try {
+      return await cancelBooking(id, "manager", reason);
+    } catch {
+      throw new Error("Could not cancel booking");
+    }
+  },
+);
+
 /** Names of the categories a provider works in, via their offered services. */
 export function getProviderCategoryNames(
   provider: RegionProvider,
@@ -183,6 +217,24 @@ export function getProviderCategoryNames(
     if (name) names.add(name);
   }
   return [...names];
+}
+
+// Merge an updated booking into the list, keeping the populated
+// service/customer/provider if the POST response returns them as plain ids.
+function replaceBooking(
+  state: ManagerState,
+  action: PayloadAction<RegionBooking>,
+) {
+  const i = state.bookings.findIndex((b) => b._id === action.payload._id);
+  if (i === -1) return;
+  const old = state.bookings[i];
+  const next: Record<string, unknown> = { ...old, ...action.payload };
+  for (const key of ["service", "customer", "provider"] as const) {
+    if (typeof action.payload[key] === "string" && typeof old[key] === "object") {
+      next[key] = old[key];
+    }
+  }
+  state.bookings[i] = next as unknown as RegionBooking;
 }
 
 const managerRequests = [
@@ -243,6 +295,8 @@ const ManagerSlice = createSlice({
         const provider = state.providers.find((p) => p._id === action.payload.id);
         if (provider) provider.status = action.payload.status;
       })
+      .addCase(completeRegionBooking.fulfilled, replaceBooking)
+      .addCase(cancelRegionBooking.fulfilled, replaceBooking)
       .addCase(updateManagerProfile.fulfilled, (state, action) => {
         if (state.userInfo) state.userInfo = { ...state.userInfo, ...action.payload };
       })

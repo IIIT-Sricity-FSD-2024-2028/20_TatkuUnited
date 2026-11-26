@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch, RootState } from "../../store";
 import SideBar, { SidebarItem } from "../shared/Sidebar";
-import { BsCash, BsGrid, BsPeople, BsPersonAdd } from "react-icons/bs";
+import { BsCalendarCheck, BsCash, BsGrid, BsPeople, BsPersonAdd } from "react-icons/bs";
 import { Outlet } from "react-router-dom";
 import UserHeader from "../shared/user-header";
 import UrlMap from "../../common/urlMap";
@@ -60,6 +60,11 @@ export default function ManagerLayout() {
           label="Manage Providers"
           icon={<BsPersonAdd />}
           to={`${UrlMap.manager}/providers`}
+        ></SidebarItem>
+        <SidebarItem
+          label="Manage Bookings"
+          icon={<BsCalendarCheck />}
+          to={`${UrlMap.manager}/bookings`}
         ></SidebarItem>
         <SidebarItem
           label="My Profile"
