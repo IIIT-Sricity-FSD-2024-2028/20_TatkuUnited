@@ -1,10 +1,19 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
-import { getServiceById, getServices, getAvailableSlots, type AvailableSlotItem } from "@/services/services.service";
-import { getUserAddresses, addUserAddress, addCartItem, setCartAddress } from "@/services/users.service";
-import { getStoredUser, getStoredUserId } from "@/common/services/authService";
-import useAuth from "@/hooks/useAuth";
-import type { ServiceDocument, UserAddress } from "@/models/api.models";
+import { useDispatch, useSelector } from "react-redux";
+import type { AppDispatch, RootState } from "@/store";
+import {
+  CustomerActions,
+  addAddress,
+  addToCart,
+  fetchAddresses,
+} from "@/store/customer/customer-slice";
+import {
+  ServiceActions,
+  fetchSelectedService,
+  fetchSlots,
+} from "@/store/service/service-slice";
+import type { AvailableSlotItem } from "@/services/services.service";
 import { MapPin, Calendar, Clock, Plus, CheckCircle2, AlertCircle } from "lucide-react";
 
 function getLocalDateString(date: Date): string {
@@ -16,18 +25,32 @@ function getLocalDateString(date: Date): string {
 
 function SchedulePage() {
   const navigate = useNavigate();
+  const dispatch = useDispatch<AppDispatch>();
   const params = useParams<{ service_id?: string; serviceId?: string }>();
   const [searchParams] = useSearchParams();
-  const authSession = useAuth();
 
   const serviceIdParam = params.service_id || params.serviceId || searchParams.get("serviceId") || searchParams.get("id");
 
-  const [selectedService, setSelectedService] = useState<ServiceDocument | null>(null);
-  const [loadingService, setLoadingService] = useState(true);
+  // all data comes from the store
+  const customerId = useSelector((state: RootState) => state.auth.user?.id);
+  const {
+    selectedService,
+    loadingService,
+    slots,
+    slotMessage,
+    loadingSlots,
+    error: serviceError,
+  } = useSelector((state: RootState) => state.service);
+  const {
+    addresses,
+    pending,
+    error: customerError,
+  } = useSelector((state: RootState) => state.customer);
+  const loadingAddresses = pending > 0 && addresses.length === 0;
 
-  // Addresses state
-  const [addresses, setAddresses] = useState<UserAddress[]>([]);
-  const [loadingAddresses, setLoadingAddresses] = useState(true);
+  // form / selection state only (not server data)
+  const [savingAddress, setSavingAddress] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [selectedAddressId, setSelectedAddressId] = useState<string>("");
   const [showAddAddress, setShowAddAddress] = useState(false);
   const [newAddress, setNewAddress] = useState({
@@ -36,166 +59,86 @@ function SchedulePage() {
     city: "Bengaluru",
     coordinates: [77.5946, 12.9716] as [number, number],
   });
-  const [savingAddress, setSavingAddress] = useState(false);
-
-  // Slot and date state
   const today = getLocalDateString(new Date());
   const latestDateObj = new Date();
   latestDateObj.setDate(latestDateObj.getDate() + 2); // 3 day booking window
   const maxDate = getLocalDateString(latestDateObj);
 
   const [date, setDate] = useState<string>("");
-  const [slots, setSlots] = useState<AvailableSlotItem[]>([]);
   const [selectedSlot, setSelectedSlot] = useState<AvailableSlotItem | null>(null);
-  const [loadingSlots, setLoadingSlots] = useState(false);
-  const [slotMessage, setSlotMessage] = useState<string>("");
-
-  const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState("");
-
-  const storedUser = getStoredUser();
-  const customerId =
-    authSession.authDetails?.user?.id ||
-    getStoredUserId() ||
-    storedUser?.id;
+  const [formError, setFormError] = useState("");
+  const error = formError || customerError || serviceError || "";
 
   // Protect route & check auth
   useEffect(() => {
-    if (!customerId) {
-      navigate("/auth/login");
-    }
+    if (!customerId) navigate("/auth/login");
   }, [customerId, navigate]);
 
-  // Load Service details
+  // Load the service and the saved addresses into the store
   useEffect(() => {
-    let isMounted = true;
-    async function loadService() {
-      setLoadingService(true);
-      setError("");
-      try {
-        if (serviceIdParam) {
-          const svc = await getServiceById(serviceIdParam);
-          if (isMounted) setSelectedService(svc);
-        } else {
-          const allServices = await getServices();
-          if (isMounted && allServices.length > 0) {
-            setSelectedService(allServices[0]);
-          }
-        }
-      } catch (err: any) {
-        if (isMounted) {
-          console.error("Failed to load service:", err);
-          setError("Service could not be loaded. Please return to catalog.");
-        }
-      } finally {
-        if (isMounted) setLoadingService(false);
-      }
-    }
-    loadService();
-    return () => {
-      isMounted = false;
-    };
-  }, [serviceIdParam]);
+    dispatch(CustomerActions.clearError());
+    dispatch(fetchSelectedService(serviceIdParam ?? null));
+  }, [dispatch, serviceIdParam]);
 
-  // Load Saved Addresses
-  const fetchAddresses = async () => {
+  useEffect(() => {
     if (!customerId) return;
-    setLoadingAddresses(true);
-    try {
-      const addrs = await getUserAddresses(customerId);
-      const list = Array.isArray(addrs) ? addrs : [];
-      setAddresses(list);
-      if (list.length > 0 && !selectedAddressId) {
-        setSelectedAddressId((list[0] as any).id || (list[0] as any)._id);
-      }
-    } catch (err) {
-      console.error("Failed to fetch addresses:", err);
-    } finally {
-      setLoadingAddresses(false);
-    }
-  };
+    dispatch(fetchAddresses());
+  }, [dispatch, customerId]);
 
+  // Pre-select the first saved address
   useEffect(() => {
-    fetchAddresses();
-  }, [customerId]);
+    if (addresses.length > 0 && !selectedAddressId) {
+      setSelectedAddressId((addresses[0] as any).id || (addresses[0] as any)._id);
+    }
+  }, [addresses, selectedAddressId]);
 
   // Fetch slots whenever address or date changes
   useEffect(() => {
-    let isMounted = true;
-    async function loadSlots() {
-      if (!selectedService?._id || !selectedAddressId || !date) {
-        setSlots([]);
-        setSelectedSlot(null);
-        setSlotMessage("");
-        return;
-      }
-
-      const chosenAddr = addresses.find(
-        (a: any) => a.id === selectedAddressId || a._id === selectedAddressId,
-      );
-      const coords = chosenAddr?.location?.coordinates;
-
-      setSlots([]);
-      setLoadingSlots(true);
-      setSlotMessage("");
-      setSelectedSlot(null);
-      try {
-        const resp = await getAvailableSlots(selectedService._id, {
-          date,
-          addressId: selectedAddressId,
-          customerId,
-          lng: coords?.[0],
-          lat: coords?.[1],
-        });
-
-        if (!isMounted) return;
-        setSlots(resp.slots || []);
-        if (!resp.slots || !resp.slots.some(slot => slot.available)) {
-          setSlotMessage(resp.message || "No eligible providers available for this slot or date. Please choose another date.");
-        }
-      } catch (err: any) {
-        if (!isMounted) return;
-        const msg =
-          err?.response?.data?.message ||
-          err?.message ||
-          "Could not check provider availability. Please try again.";
-        setSlotMessage(Array.isArray(msg) ? msg.join(", ") : msg);
-        setSlots([]);
-      } finally {
-        if (isMounted) setLoadingSlots(false);
-      }
+    setSelectedSlot(null);
+    if (!selectedService?._id || !selectedAddressId || !date) {
+      dispatch(ServiceActions.clearSlots());
+      return;
     }
-
-    loadSlots();
-    return () => {
-      isMounted = false;
-    };
-  }, [selectedService?._id, selectedAddressId, date, customerId, addresses]);
+    const chosenAddr = addresses.find(
+      (a: any) => a.id === selectedAddressId || a._id === selectedAddressId,
+    );
+    const coords = chosenAddr?.location?.coordinates;
+    dispatch(
+      fetchSlots({
+        serviceId: selectedService._id,
+        date,
+        addressId: selectedAddressId,
+        customerId,
+        lng: coords?.[0],
+        lat: coords?.[1],
+      }),
+    );
+  }, [dispatch, selectedService?._id, selectedAddressId, date, customerId, addresses]);
 
   // Handle adding new address inline
   const handleAddNewAddress = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!customerId || !newAddress.line.trim() || !newAddress.city.trim()) {
-      setError("Please fill out all address fields.");
+      setFormError("Please fill out all address fields.");
       return;
     }
 
     setSavingAddress(true);
-    setError("");
+    setFormError("");
     try {
       const generatedId = `addr-${Date.now()}`;
-      await addUserAddress(customerId, {
-        id: generatedId,
-        label: newAddress.label,
-        line: newAddress.line.trim(),
-        city: newAddress.city.trim(),
-        location: {
-          type: "Point",
-          coordinates: newAddress.coordinates,
-        },
-      });
-
-      await fetchAddresses();
+      await dispatch(
+        addAddress({
+          id: generatedId,
+          label: newAddress.label,
+          line: newAddress.line.trim(),
+          city: newAddress.city.trim(),
+          location: {
+            type: "Point",
+            coordinates: newAddress.coordinates,
+          },
+        }),
+      ).unwrap();
       setSelectedAddressId(generatedId);
       setShowAddAddress(false);
       setNewAddress({
@@ -204,12 +147,8 @@ function SchedulePage() {
         city: "Bengaluru",
         coordinates: [77.5946, 12.9716],
       });
-    } catch (err: any) {
-      const msg =
-        err?.response?.data?.message ||
-        err?.message ||
-        "Failed to save address.";
-      setError(Array.isArray(msg) ? msg.join(", ") : msg);
+    } catch {
+      // the message is in state.customer.error
     } finally {
       setSavingAddress(false);
     }
@@ -217,28 +156,24 @@ function SchedulePage() {
 
   // Add to cart handler
   const handleAddToCart = async () => {
-    setError("");
+    setFormError("");
 
     if (!selectedAddressId) {
-      setError("Please select a service delivery address.");
+      setFormError("Please select a service delivery address.");
       return;
     }
-
     if (!date) {
-      setError("Please select a date.");
+      setFormError("Please select a date.");
       return;
     }
-
     if (!selectedSlot) {
-      setError("Please select an available start-time slot.");
+      setFormError("Please select an available start-time slot.");
       return;
     }
-
     if (!selectedService?._id) {
-      setError("No valid service selected.");
+      setFormError("No valid service selected.");
       return;
     }
-
     if (!customerId) {
       navigate("/auth/login");
       return;
@@ -251,29 +186,16 @@ function SchedulePage() {
 
     setSubmitting(true);
     try {
-      // 1. Add item to cart
-      await addCartItem(customerId, {
-        service: selectedService._id,
-        scheduledDate,
-        startTime,
-        endTime,
-      });
-
-      // 2. Ensure cart.address is set to the chosen address
-      try {
-        await setCartAddress(customerId, selectedAddressId);
-      } catch (addrErr) {
-        console.warn("Could not set cart address explicitly:", addrErr);
-      }
-
-      // 3. Navigate to /customer/cart per Section 1 workflow
+      await dispatch(
+        addToCart({
+          item: { service: selectedService._id, scheduledDate, startTime, endTime },
+          addressId: selectedAddressId,
+        }),
+      ).unwrap();
+      // Per Section 1 workflow
       navigate("/customer/cart");
-    } catch (err: any) {
-      const msg =
-        err?.response?.data?.message ||
-        err?.message ||
-        "Failed to add service to cart. Please try again.";
-      setError(Array.isArray(msg) ? msg.join(", ") : msg);
+    } catch {
+      // the message is in state.customer.error
     } finally {
       setSubmitting(false);
     }
