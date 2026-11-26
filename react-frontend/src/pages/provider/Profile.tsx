@@ -11,7 +11,14 @@ import {
   fetchProviderUser,
   updateProviderUserThunk,
 } from "@/store/provider/provider-slice";
-import type { UpdateUserDto, UserDocument } from "@/models/api.models";
+import type { Gender, UpdateUserDto, UserDocument } from "@/models/api.models";
+
+const VALID_GENDERS: readonly Gender[] = ["male", "female", "other"];
+
+function normalizeGender(value?: string): Gender | "" {
+  const normalized = value?.trim().toLowerCase();
+  return VALID_GENDERS.includes(normalized as Gender) ? (normalized as Gender) : "";
+}
 
 interface ProfileForm {
   name: string;
@@ -38,7 +45,7 @@ function formFromUser(user: Pick<UserDocument, "name" | "email" | "phone" | "gen
     name: user.name ?? "",
     email: user.email ?? "",
     phone: user.phone ?? "",
-    gender: user.gender ?? "",
+    gender: normalizeGender(user.gender),
     dob: toDateInput(user.dob),
   };
 }
@@ -80,11 +87,12 @@ export default function Profile() {
       return;
     }
 
+    const normalizedGender = normalizeGender(form.gender);
     const changes: UpdateUserDto = {
       name: form.name.trim(),
       email: form.email.trim(),
       phone: form.phone.trim(),
-      gender: form.gender.trim() || undefined,
+      gender: normalizedGender || undefined,
       dob: form.dob || undefined,
     };
 
@@ -162,13 +170,28 @@ export default function Profile() {
             {fields.map(({ key, label, type }) => (
               <div className="space-y-2" key={key}>
                 <Label htmlFor={`profile-${key}`}>{label}</Label>
-                <Input
-                  id={`profile-${key}`}
-                  type={type}
-                  value={form[key]}
-                  disabled={!editing || saving}
-                  onChange={(event) => updateField(key, event.target.value)}
-                />
+                {key === "gender" ? (
+                  <select
+                    id={`profile-${key}`}
+                    className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs transition-colors outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50"
+                    value={form[key]}
+                    disabled={!editing || saving}
+                    onChange={(event) => updateField(key, event.target.value)}
+                  >
+                    <option value="">Select gender</option>
+                    <option value="male">Male</option>
+                    <option value="female">Female</option>
+                    <option value="other">Other</option>
+                  </select>
+                ) : (
+                  <Input
+                    id={`profile-${key}`}
+                    type={type}
+                    value={form[key]}
+                    disabled={!editing || saving}
+                    onChange={(event) => updateField(key, event.target.value)}
+                  />
+                )}
               </div>
             ))}
             <div className="space-y-2">

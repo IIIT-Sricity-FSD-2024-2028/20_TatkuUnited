@@ -19,6 +19,21 @@ import {
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
+import { formatProviderTime } from "./provider-utils";
+
+function clampMinutes(minutes: number): number {
+    if (!Number.isFinite(minutes)) return 0;
+    return Math.max(0, Math.min(1439, Math.round(minutes)));
+}
+
+function timeToMinutes(value: string): number | null {
+    const match = /^(\d{2}):(\d{2})$/.exec(value);
+    if (!match) return null;
+    const hours = Number(match[1]);
+    const mins = Number(match[2]);
+    if (hours < 0 || hours > 23 || mins < 0 || mins > 59) return null;
+    return hours * 60 + mins;
+}
 
 interface SettingsForm {
     experience: number;
@@ -61,10 +76,10 @@ export default function Settings() {
     useEffect(() => {
         if (provider) {
         setForm({
-            experience: provider.experience,
-            workHourStart: provider.workHourStart,
-            workHourEnd: provider.workHourEnd,
-            workingDays: provider.workingDays,
+            experience: provider.experience ?? 0,
+            workHourStart: provider.workHourStart ?? 540,
+            workHourEnd: provider.workHourEnd ?? 1080,
+            workingDays: provider.workingDays ?? [],
         });
         }
     }, [provider]);
@@ -153,35 +168,39 @@ export default function Settings() {
                 </FieldLabel>
                 <Input
                 id="work-start"
-                min="0"
-                max="1439"
-                type="number"
-                value={form.workHourStart}
-                onChange={(event) =>
+                type="time"
+                value={formatProviderTime(clampMinutes(form.workHourStart))}
+                onChange={(event) => {
+                    const minutes = timeToMinutes(event.target.value);
+                    if (minutes === null) return;
                     setForm((current) => ({
                     ...current,
-                    workHourStart: Number(event.target.value),
-                    }))
-                }
+                    workHourStart: minutes,
+                    }));
+                }}
                 />
-                <FieldDescription>Minutes from midnight.</FieldDescription>
+                <FieldDescription>
+                    Start of your daily working hours ({formatProviderTime(clampMinutes(form.workHourStart), true)}).
+                </FieldDescription>
             </Field>
             <Field>
                 <FieldLabel htmlFor="work-end">Work end</FieldLabel>
                 <Input
                 id="work-end"
-                min="0"
-                max="1439"
-                type="number"
-                value={form.workHourEnd}
-                onChange={(event) =>
+                type="time"
+                value={formatProviderTime(clampMinutes(form.workHourEnd))}
+                onChange={(event) => {
+                    const minutes = timeToMinutes(event.target.value);
+                    if (minutes === null) return;
                     setForm((current) => ({
                     ...current,
-                    workHourEnd: Number(event.target.value),
-                    }))
-                }
+                    workHourEnd: minutes,
+                    }));
+                }}
                 />
-                <FieldDescription>Minutes from midnight.</FieldDescription>
+                <FieldDescription>
+                    End of your daily working hours ({formatProviderTime(clampMinutes(form.workHourEnd), true)}).
+                </FieldDescription>
             </Field>
             </div>
 
