@@ -1,40 +1,56 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { HTTP_METHODS_ENUM } from "@/common/http.methods";
-import { apiService } from "@/common/services/apiService";
-import { ENDPOINT_ENUM } from "@/common/endpoints";
 import { handleLogout } from "@/common/services/authService";
+import { useDispatch, useSelector } from "react-redux";
+import type { AppDispatch, RootState } from "@/store";
 import {
-  getUserById,
-  updateUser,
-  addUserAddress,
-  deleteUserAddress,
-} from "@/services/users.service";
-import { getBookingsByCustomer } from "@/services/bookings.service";
-import useAuth from "@/hooks/useAuth";
-import { useDispatch } from "react-redux";
-import { AuthActions } from "@/store/auth/auth-slice";
+  addAddress,
+  changePassword,
+  deleteAddress,
+  fetchAddresses,
+  fetchCustomerDetails,
+  updateCustomerProfile,
+} from "@/store/customer/customer-slice";
+import { fetchCustomerBookings } from "@/store/booking/booking-slice";
 
 function AccountSettingsPage() {
   const navigate = useNavigate();
-  const dispatch = useDispatch();
-  const { user } = useAuth();
+  const dispatch = useDispatch<AppDispatch>();
+  const user = useSelector((state: RootState) => state.auth.user);
   const customerId = user?.id;
   const storedUser = user;
 
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
+  // all data comes from the store
+  const { profile, addresses: storedAddresses, pending } = useSelector(
+    (state: RootState) => state.customer,
+  );
+  const bookings = useSelector((state: RootState) => state.booking.bookings);
+  const loading = !!customerId && pending > 0 && !profile;
+  const addresses = storedAddresses.map((address: any) => ({
+    id: address.id ?? address._id,
+    tag: address.label || address.tag || "Home",
+    text:
+      address.line ||
+      address.text ||
+      [address.city, address.state].filter(Boolean).join(", "),
+  }));
+  // the 4 most recent bookings
+  const activities: any[] = [...bookings]
+    .sort(
+      (a: any, b: any) =>
+        new Date(b.createdAt || b.created_at).getTime() -
+        new Date(a.createdAt || a.created_at).getTime(),
+    )
+    .slice(0, 4);
 
+  // form state only (not server data)
+  const [saving, setSaving] = useState(false);
   const [name, setName] = useState(user?.name ?? "");
   const [email, setEmail] = useState(user?.email ?? "");
   const [phone, setPhone] = useState(user?.phone ?? "");
   const [dob, setDob] = useState("");
-
-  const [addresses, setAddresses] = useState<any[]>([]);
   const [newAddress, setNewAddress] = useState("");
   const [showAddressForm, setShowAddressForm] = useState(false);
-
-  const [activities, setActivities] = useState<any[]>([]);
 
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [currentPassword, setCurrentPassword] = useState("");
@@ -75,75 +91,30 @@ function AccountSettingsPage() {
     return /^[A-Za-z]+(?:\s+[A-Za-z]+)*$/.test(value.trim());
   };
 
-  // Load customer information
+  // Load the profile, addresses and bookings into the store
   useEffect(() => {
-    const loadProfile = async () => {
-      if (!customerId) {
-        navigate("/auth/login");
-        return;
-      }
+    if (!customerId) {
+      navigate("/auth/login");
+      return;
+    }
+    dispatch(fetchCustomerDetails())
+      .unwrap()
+      .catch(() => showError("Could not load your profile from the server."));
+    dispatch(fetchAddresses());
+    dispatch(fetchCustomerBookings());
+  }, [dispatch, customerId, navigate]);
 
-      try {
-        const data = await getUserById(customerId);
-
-        setName(data.name || (data as any).full_name || storedUser?.name || "");
-        setEmail(data.email || storedUser?.email || "");
-
-        const rawPhone = data.phone
-          ? String(data.phone).replace(/\D/g, "").slice(-10)
-          : "";
-
-        setPhone(rawPhone);
-        setDob(data.dob || "");
-
-        const savedAddresses = Array.isArray(data.addresses)
-          ? data.addresses
-          : [];
-        setAddresses(
-          savedAddresses.map((address: any) => ({
-            id: address.id ?? address._id,
-            tag: address.label || address.tag || "Home",
-            text:
-              address.line ||
-              address.text ||
-              [address.city, address.state].filter(Boolean).join(", "),
-          })),
-        );
-      } catch (err) {
-        console.error(err);
-        showError("Could not load your profile from the server.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadProfile();
-  }, [customerId, navigate]);
-
-  // Load recent activity from real bookings
+  // Fill the form whenever the stored profile changes
   useEffect(() => {
-    const loadActivity = async () => {
-      if (!customerId) return;
-
-      try {
-        const data = await getBookingsByCustomer(customerId);
-
-        setActivities(
-          (data || [])
-            .sort(
-              (a: any, b: any) =>
-                new Date(b.createdAt || b.created_at).getTime() -
-                new Date(a.createdAt || a.created_at).getTime(),
-            )
-            .slice(0, 4),
-        );
-      } catch {
-        setActivities([]);
-      }
-    };
-
-    loadActivity();
-  }, [customerId]);
+    if (!profile) return;
+    setName(profile.name || (profile as any).full_name || storedUser?.name || "");
+    setEmail(profile.email || storedUser?.email || "");
+    setPhone(
+      profile.phone ? String(profile.phone).replace(/\D/g, "").slice(-10) : "",
+    );
+    setDob(profile.dob || "");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [profile]);
 
   // Save personal information
   const handleSavePersonalInfo = async () => {
@@ -182,26 +153,18 @@ function AccountSettingsPage() {
     setSaving(true);
 
     try {
-      const updatedUserDoc = await updateUser(customerId, {
-        name: name.trim(),
-        email: email.trim(),
-        phone: phone.startsWith("+91") ? phone : `+91${phone}`,
-        dob: dob || undefined,
-      });
-
-      dispatch(AuthActions.userUpdated({
-        name: updatedUserDoc.name,
-        email: updatedUserDoc.email,
-        phone: updatedUserDoc.phone,
-      }));
+      await dispatch(
+        updateCustomerProfile({
+          name: name.trim(),
+          email: email.trim(),
+          phone: phone.startsWith("+91") ? phone : `+91${phone}`,
+          dob: dob || undefined,
+        }),
+      ).unwrap();
 
       showMessage("Personal information saved successfully!");
     } catch (err: any) {
-      showError(
-        err?.response?.data?.message ||
-          err.message ||
-          "Failed to save changes.",
-      );
+      showError(err?.message || "Failed to save changes.");
     } finally {
       setSaving(false);
     }
@@ -217,35 +180,23 @@ function AccountSettingsPage() {
     if (!customerId) return;
 
     try {
-      const savedAddresses = await addUserAddress(customerId, {
-        label: "Home",
-        line: newAddress.trim(),
-        city: "Sri City",
-        location: {
-          type: "Point",
-          coordinates: [80.027, 13.556],
-        },
-      } as any);
-
-      if (Array.isArray(savedAddresses)) {
-        setAddresses(
-          savedAddresses.map((address: any) => ({
-            id: address.id ?? address._id,
-            tag: address.label || "Home",
-            text: address.line || "",
-          })),
-        );
-      }
+      await dispatch(
+        addAddress({
+          label: "Home",
+          line: newAddress.trim(),
+          city: "Sri City",
+          location: {
+            type: "Point",
+            coordinates: [80.027, 13.556],
+          },
+        } as any),
+      ).unwrap();
 
       setNewAddress("");
       setShowAddressForm(false);
       showMessage("Address added successfully!");
     } catch (err: any) {
-      showError(
-        err?.response?.data?.message ||
-          err.message ||
-          "Failed to save address.",
-      );
+      showError(err?.message || "Failed to save address.");
     }
   };
 
@@ -254,26 +205,10 @@ function AccountSettingsPage() {
     if (!customerId) return;
 
     try {
-      const savedAddresses = await deleteUserAddress(customerId, String(id));
-
-      if (Array.isArray(savedAddresses)) {
-        setAddresses(
-          savedAddresses.map((address: any) => ({
-            id: address.id ?? address._id,
-            tag: address.label || "Home",
-            text: address.line || "",
-          })),
-        );
-      } else {
-        setAddresses((prev) => prev.filter((a) => a.id !== id));
-      }
+      await dispatch(deleteAddress(String(id))).unwrap();
       showMessage("Address removed.");
     } catch (err: any) {
-      showError(
-        err?.response?.data?.message ||
-          err.message ||
-          "Failed to remove address.",
-      );
+      showError(err?.message || "Failed to remove address.");
     }
   };
 
@@ -300,21 +235,7 @@ function AccountSettingsPage() {
     }
 
     try {
-      // 1. Verify current credentials against backend auth/login endpoint
-      try {
-        await apiService(HTTP_METHODS_ENUM.post, ENDPOINT_ENUM.AUTH_LOGIN, {
-          email: email.trim(),
-          password: currentPassword,
-        });
-      } catch {
-        showError("Current password is incorrect.");
-        return;
-      }
-
-      // 2. Update to new password via PATCH /users/:id (bcrypt hashed by usersService.update)
-      await updateUser(customerId, {
-        password: newPassword,
-      });
+      await dispatch(changePassword({ currentPassword, newPassword })).unwrap();
 
       setCurrentPassword("");
       setNewPassword("");
@@ -323,11 +244,7 @@ function AccountSettingsPage() {
 
       showMessage("Password successfully updated!");
     } catch (err: any) {
-      showError(
-        err?.response?.data?.message ||
-          err.message ||
-          "Failed to change password.",
-      );
+      showError(err?.message || "Failed to change password.");
     }
   };
 
@@ -654,7 +571,7 @@ function AccountSettingsPage() {
                   <div className="space-y-5">
                     {activities.map((activity) => (
                       <div
-                        key={activity.id}
+                        key={activity._id ?? activity.id}
                         className="border-b border-slate-100 pb-4"
                       >
                         <p className="font-medium">
