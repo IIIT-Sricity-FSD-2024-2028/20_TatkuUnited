@@ -39,4 +39,12 @@ export interface UserRegistrationInterface {
   email: string,
   password: string,
   phone: string,
+  address?: {
+    line: string;
+    city: string;
+    location: {
+      type: "Point";
+      coordinates: [number, number];
+    };
+  };
 }

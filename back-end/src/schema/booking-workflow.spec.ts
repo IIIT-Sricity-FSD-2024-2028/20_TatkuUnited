@@ -36,7 +36,7 @@ describe('Section 0: booking workflow schemas', () => {
 
   it('validates offers and permits an explicit disputed state', () => {
     const doc = booking();
-    doc.status = 'disputed';
+    doc.status = 'disputed' as any;
     expect(doc.validateSync()).toBeUndefined();
     doc.set('offers', [{ provider: new Types.ObjectId(), status: 'invalid' }]);
     expect(doc.validateSync()?.errors['offers.0.status']).toBeDefined();
@@ -55,7 +55,7 @@ describe('Section 0: booking workflow schemas', () => {
       doc.offerBatchSize,
       doc.payoutHoldHours,
     ]).toEqual([5, 3, 5, 0]);
-    expect(doc.matchWeights.toObject()).toEqual({
+    expect((doc.matchWeights as any).toObject()).toEqual({
       distance: 0.4,
       rating: 0.4,
       availability: 0.2,

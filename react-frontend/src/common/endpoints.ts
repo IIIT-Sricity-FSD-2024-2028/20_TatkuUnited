@@ -40,6 +40,7 @@ export const ENDPOINT_ENUM = {
 
   // --- Regions ---
   REGIONS: "/regions",
+  REGIONS_ACTIVE: "/regions/active",
   REGIONS_BY_MANAGER: "/regions/manager/{managerId}",
   REGIONS_BY_ID: "/regions/{id}",
   REGIONS_RECOMPUTE_CENTROID: "/regions/{id}/recompute-centroid",

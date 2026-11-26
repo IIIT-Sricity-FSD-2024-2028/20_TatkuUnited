@@ -98,6 +98,40 @@ export default function Settings() {
     const providerId = provider?._id;
     if (!providerId) return;
 
+    if (!Number.isFinite(form.experience) || form.experience < 0 || form.experience > 80) {
+        setError("Experience must be between 0 and 80 years.");
+        return;
+    }
+    if (
+        !Number.isFinite(form.workHourStart) ||
+        !Number.isFinite(form.workHourEnd) ||
+        form.workHourStart < 0 ||
+        form.workHourStart > 1439 ||
+        form.workHourEnd < 1 ||
+        form.workHourEnd > 1440 ||
+        form.workHourStart >= form.workHourEnd
+    ) {
+        setError("Work hours must be between 0 and 1440, with end time after start time.");
+        return;
+    }
+    if (form.workingDays.length === 0) {
+        setError("Please select at least one working day.");
+        return;
+    }
+
+    if (form.experience < 0 || form.experience > 80) {
+        setError("Experience must be between 0 and 80 years.");
+        return;
+    }
+    if (form.workHourStart < 0 || form.workHourEnd > 1440 || form.workHourStart >= form.workHourEnd) {
+        setError("Working hours must be valid and end time must be after start time.");
+        return;
+    }
+    if (form.workingDays.length === 0) {
+        setError("Please select at least one working day.");
+        return;
+    }
+
     try {
         setError(null);
         setMessage(null);

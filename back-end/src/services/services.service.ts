@@ -20,14 +20,10 @@ import { User, UserDocument } from '../schema/user.schema';
 import { BookingStatus } from '../common/enums/booking-status.enum';
 import { CreateServiceDto } from './dto/create-service.dto';
 import { UpdateServiceDto } from './dto/update-service.dto';
-
-function getISTDateAndMinutes(now: Date = new Date()) {
-  const utc = now.getTime() + now.getTimezoneOffset() * 60000;
-  const ist = new Date(utc + 330 * 60000);
-  const istDateString = ist.toISOString().slice(0, 10);
-  const istMinutes = ist.getHours() * 60 + ist.getMinutes();
-  return { istDateString, istMinutes };
-}
+import {
+  getISTDateAndMinutes,
+  parseAndValidateBookingDate,
+} from '../common/utils/date.util';
 
 @Injectable()
 export class ServicesService {
@@ -142,12 +138,14 @@ export class ServicesService {
     }
 
     const { istDateString, istMinutes } = getISTDateAndMinutes();
-    const [y, m, d] = dateString.split('-').map(Number);
-    if (!y || !m || !d) {
-      throw new BadRequestException('Invalid date format. Expected YYYY-MM-DD');
-    }
-    const targetDate = new Date(`${dateString}T00:00:00.000Z`);
-    const targetWeekday = new Date(Date.UTC(y, m - 1, d)).getUTCDay();
+    const {
+      dateString: validatedDate,
+      targetDate,
+      weekday: targetWeekday,
+    } = parseAndValidateBookingDate(
+      dateString,
+      safeSettings.bookingWindowDays ?? 3,
+    );
 
     // Query qualified candidate providers within distance
     const maxDistanceMetres = (safeSettings.maxAssignmentDistanceKm || 10) * 1000;

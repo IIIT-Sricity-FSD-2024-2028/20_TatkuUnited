@@ -20,6 +20,9 @@ import SummaryCards, {
   type SummaryStat,
 } from "@/components/superuser/SummaryCards";
 import { BsGeoAltFill, BsGeoAlt, BsGlobe, BsPlus } from "react-icons/bs";
+import { CitySelect } from "@/components/shared/CitySelect";
+import { LocationPicker } from "@/components/shared/LocationPicker";
+import { SUPPORTED_CITIES } from "@/common/cities";
 
 /** Region.manager can be an id or a populated manager; the page needs the id. */
 function managerIdOf(region: RegionDocument): string {
@@ -268,8 +271,13 @@ function AddRegion({
   const [name, setName] = useState("");
   const [manager, setManager] = useState("");
   const [isActive, setIsActive] = useState(true);
-  const [coord1, setCoord1] = useState("");
-  const [coord2, setCoord2] = useState("");
+  const [locationCoords, setLocationCoords] = useState<[number, number] | null>(
+    null,
+  );
+  const [jumpCity, setJumpCity] = useState("");
+  const [centerHint, setCenterHint] = useState<[number, number]>(
+    SUPPORTED_CITIES[0].coordinates,
+  );
   const [salary, setSalary] = useState("");
   const [formError, setFormError] = useState("");
   const error = formError || storeError;
@@ -286,8 +294,10 @@ function AddRegion({
       setFormError("Please select a manager.");
       return;
     }
-    if (!coord1 || !coord2) {
-      setFormError("Please enter both coordinates.");
+    if (!locationCoords) {
+      setFormError(
+        "Please pin the region location on the map or use Live Location.",
+      );
       return;
     }
 
@@ -296,7 +306,7 @@ function AddRegion({
       manager,
       location: {
         type: "Point",
-        coordinates: [parseFloat(coord1), parseFloat(coord2)],
+        coordinates: locationCoords,
       },
       isActive,
     };
@@ -367,29 +377,30 @@ function AddRegion({
 
           <div className="flex flex-col gap-1">
             <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">
-              Longitude (coord[0])
+              Jump to City (Optional)
             </label>
-            <input
-              type="text"
-              value={coord1}
-              onChange={(e) => setCoord1(e.target.value)}
-              required
-              placeholder="e.g. 77.5946"
+            <CitySelect
+              value={jumpCity}
+              placeholder="Jump map to a city..."
+              onChange={(cityOption) => {
+                setJumpCity(cityOption.name);
+                setCenterHint(cityOption.coordinates);
+                setLocationCoords(cityOption.coordinates);
+              }}
               className="w-full p-2 border border-slate-300 rounded-lg text-sm outline-none focus:border-blue-500 bg-white"
             />
           </div>
 
-          <div className="flex flex-col gap-1">
-            <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">
-              Latitude (coord[1])
-            </label>
-            <input
-              type="text"
-              value={coord2}
-              onChange={(e) => setCoord2(e.target.value)}
-              required
-              placeholder="e.g. 12.9716"
-              className="w-full p-2 border border-slate-300 rounded-lg text-sm outline-none focus:border-blue-500 bg-white"
+          <div className="md:col-span-2">
+            <LocationPicker
+              value={locationCoords}
+              centerHint={centerHint}
+              heightClass="h-56"
+              label="Region Location (Click map or Use Live Location)"
+              onChange={(coords, resolved) => {
+                setLocationCoords(coords);
+                if (resolved?.city) setJumpCity(resolved.city);
+              }}
             />
           </div>
         </div>
@@ -453,8 +464,13 @@ function EditRegion({
 
   const [name, setName] = useState(region.name);
   const [isActive, setIsActive] = useState(region.isActive);
-  const [coord1, setCoord1] = useState(String(region.location.coordinates[0]));
-  const [coord2, setCoord2] = useState(String(region.location.coordinates[1]));
+  const [locationCoords, setLocationCoords] = useState<[number, number]>(
+    region.location.coordinates,
+  );
+  const [jumpCity, setJumpCity] = useState("");
+  const [centerHint, setCenterHint] = useState<[number, number]>(
+    region.location.coordinates,
+  );
 
   const currentManagerId = managerIdOf(region);
   const currentManagerValid = Boolean(userNameMap[currentManagerId]);
@@ -479,8 +495,8 @@ function EditRegion({
       setFormError("Please select a manager.");
       return;
     }
-    if (!coord1 || !coord2) {
-      setFormError("Please enter both coordinates.");
+    if (!locationCoords) {
+      setFormError("Please pin the region location on the map.");
       return;
     }
 
@@ -489,7 +505,7 @@ function EditRegion({
       manager: managerId,
       location: {
         type: "Point",
-        coordinates: [parseFloat(coord1), parseFloat(coord2)],
+        coordinates: locationCoords,
       },
       isActive,
     };
@@ -591,29 +607,32 @@ function EditRegion({
               />
             </div>
 
-            <div className="flex flex-col gap-1">
+            <div className="flex flex-col gap-1 md:col-span-2">
               <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">
-                Longitude (coord[0])
+                Jump to City (Optional)
               </label>
-              <input
-                type="text"
-                value={coord1}
-                onChange={(e) => setCoord1(e.target.value)}
-                required
+              <CitySelect
+                value={jumpCity}
+                placeholder="Jump map to a city..."
+                onChange={(cityOption) => {
+                  setJumpCity(cityOption.name);
+                  setCenterHint(cityOption.coordinates);
+                  setLocationCoords(cityOption.coordinates);
+                }}
                 className="w-full p-2 border border-slate-300 rounded-lg text-sm outline-none focus:border-blue-500 bg-white"
               />
             </div>
 
-            <div className="flex flex-col gap-1">
-              <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">
-                Latitude (coord[1])
-              </label>
-              <input
-                type="text"
-                value={coord2}
-                onChange={(e) => setCoord2(e.target.value)}
-                required
-                className="w-full p-2 border border-slate-300 rounded-lg text-sm outline-none focus:border-blue-500 bg-white"
+            <div className="md:col-span-2">
+              <LocationPicker
+                value={locationCoords}
+                centerHint={centerHint}
+                heightClass="h-52"
+                label="Region Location (Click map or Use Live Location)"
+                onChange={(coords, resolved) => {
+                  setLocationCoords(coords);
+                  if (resolved?.city) setJumpCity(resolved.city);
+                }}
               />
             </div>
           </div>

@@ -2,19 +2,28 @@ import {
   Injectable,
   NotFoundException,
   BadRequestException,
+  Optional,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import * as bcrypt from 'bcryptjs';
 import { Role } from '../common/enums/roles.enum';
 import { User, UserDocument } from '../schema/user.schema';
+import {
+  PlatformSetting,
+  PlatformSettingDocument,
+} from '../schema/platform-setting.schema';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { parseAndValidateBookingDate } from '../common/utils/date.util';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectModel(User.name) private readonly userModel: Model<UserDocument>,
+    @Optional()
+    @InjectModel(PlatformSetting.name)
+    private readonly platformSettingModel?: Model<PlatformSettingDocument>,
   ) {}
 
   async create(dto: CreateUserDto) {
@@ -102,13 +111,35 @@ export class UsersService {
     const user = await this.userModel.findById(userId).exec();
     if (!user) throw new NotFoundException(`User ${userId} not found`);
 
+    if (
+      typeof item?.startTime !== 'number' ||
+      typeof item?.endTime !== 'number' ||
+      item.startTime < 0 ||
+      item.endTime > 1440 ||
+      item.startTime >= item.endTime
+    ) {
+      throw new BadRequestException('Invalid slot time range');
+    }
+
+    const settings = this.platformSettingModel
+      ? await this.platformSettingModel.findOne().exec()
+      : null;
+    const bookingWindowDays = settings?.bookingWindowDays ?? 3;
+    const { dateString: newDateStr } = parseAndValidateBookingDate(
+      item.scheduledDate,
+      bookingWindowDays,
+    );
+
     const cartItem =
       item?.service && Types.ObjectId.isValid(item.service)
-        ? { ...item, service: new Types.ObjectId(item.service) }
+        ? {
+            ...item,
+            service: new Types.ObjectId(item.service),
+            scheduledDate: new Date(`${newDateStr}T00:00:00.000Z`),
+          }
         : item;
 
     // Acceptance criterion #7: Reject overlapping cart items
-    const newDateStr = new Date(item.scheduledDate).toISOString().slice(0, 10);
     const hasOverlap = (user.cart?.items || []).some((existing) => {
       const existingDateStr = new Date(existing.scheduledDate)
         .toISOString()

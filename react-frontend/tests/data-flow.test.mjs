@@ -53,6 +53,7 @@ const { fetchProviderOffers } = await import('../src/store/provider/provider-sli
 const { fetchCustomerBookings, confirmCompletion } = await import('../src/store/booking/booking-slice.ts');
 const { fetchAllReviews, submitReview } = await import('../src/store/review/review-slice.ts');
 const { fetchServices, fetchAvailableSlots } = await import('../src/store/service/service-slice.ts');
+const { fetchSuperuserProfile, updateSuperuserProfile } = await import('../src/store/superuser/superuser-slice.ts');
 const { simulatePayment } = await import('../src/services/payments.service.ts');
 const { apiService } = await import('../src/common/services/apiService.ts');
 const { apiService: legacyApiService } = await import('../src/services/apiService.ts');
@@ -281,4 +282,32 @@ test('simulatePayment handles failure scenario correctly without crashing', asyn
   assert.equal(capturedBody.success, false);
   assert.equal(result.success, false);
   assert.equal(result.paymentStatus, 'failed');
+});
+
+test('superuser slice fetches profile and updates both superuser.userInfo and auth.user', async () => {
+  const adminSession = {
+    token: 'admin-token',
+    user: { id: 'admin-1', name: 'Super Admin', email: 'admin@example.com', phone: '9876543210', role: 'admin', status: 'active' },
+  };
+  const adminDoc = { _id: 'admin-1', name: 'Super Admin', email: 'admin@example.com', phone: '9876543210', role: 'admin', status: 'active' };
+  const updatedDoc = { ...adminDoc, name: 'Updated Admin', phone: '9998887776' };
+
+  store.dispatch(AuthActions.login(adminSession));
+  respond = (config) => {
+    if (config.method === 'get' && config.url === '/users/me') return { data: adminDoc };
+    if (config.method === 'patch' && config.url === '/users/admin-1') return { data: updatedDoc };
+    throw new Error(`Unexpected request: ${config.method} ${config.url}`);
+  };
+
+  await store.dispatch(fetchSuperuserProfile());
+  assert.deepEqual(store.getState().superuser.userInfo, adminDoc);
+
+  await store.dispatch(updateSuperuserProfile({ userId: 'admin-1', changes: { name: 'Updated Admin', phone: '9998887776' } }));
+  assert.equal(store.getState().superuser.userInfo.name, 'Updated Admin');
+  assert.equal(store.getState().superuser.userInfo.phone, '9998887776');
+  assert.equal(store.getState().auth.user.name, 'Updated Admin');
+  assert.equal(store.getState().auth.user.phone, '9998887776');
+
+  store.dispatch(AuthActions.logout());
+  assert.equal(store.getState().superuser.userInfo, null);
 });

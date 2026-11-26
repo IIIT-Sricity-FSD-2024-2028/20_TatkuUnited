@@ -22,6 +22,7 @@ import {
 } from '../schema/unavailability.schema';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
+import { parseAndValidateBookingDate } from '../common/utils/date.util';
 import { BookingStatus, PaymentStatus, PayoutStatus } from '../common/enums';
 
 @Injectable()
@@ -229,12 +230,21 @@ export class OrdersService {
           );
         }
 
-        const scheduledDate = new Date(item.scheduledDate);
-        if (scheduledDate < new Date(now.toISOString().slice(0, 10))) {
-          throw new BadRequestException('Scheduled date cannot be in the past');
+        if (
+          typeof item.startTime !== 'number' ||
+          typeof item.endTime !== 'number' ||
+          item.startTime < 0 ||
+          item.endTime > 1440 ||
+          item.startTime >= item.endTime
+        ) {
+          throw new BadRequestException('Invalid slot time range');
         }
 
-        const dateStr = scheduledDate.toISOString().slice(0, 10);
+        const { dateString: dateStr, targetDate: scheduledDate } =
+          parseAndValidateBookingDate(
+            item.scheduledDate,
+            safeSettings.bookingWindowDays ?? 3,
+          );
 
         // Prevent duplicate unpaid orders for the same customer and slot (§5)
         const duplicateUnpaidBooking = await this.bookingModel

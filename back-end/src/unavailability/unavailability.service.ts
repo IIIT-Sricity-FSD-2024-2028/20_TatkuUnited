@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import {
@@ -19,6 +23,9 @@ export class UnavailabilityService {
   ) {}
 
   create(dto: CreateUnavailabilityDto) {
+    if (dto.startTime >= dto.endTime) {
+      throw new BadRequestException('endTime must be greater than startTime');
+    }
     return new this.unavailabilityModel(dto).save();
   }
 
@@ -75,6 +82,13 @@ export class UnavailabilityService {
   }
 
   async update(id: string, dto: UpdateUnavailabilityDto) {
+    if (
+      dto.startTime !== undefined &&
+      dto.endTime !== undefined &&
+      dto.startTime >= dto.endTime
+    ) {
+      throw new BadRequestException('endTime must be greater than startTime');
+    }
     const doc = await this.unavailabilityModel
       .findByIdAndUpdate(id, dto, { new: true })
       .exec();

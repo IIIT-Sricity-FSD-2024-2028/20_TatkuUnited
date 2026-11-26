@@ -1,4 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 import {
   IsEmail,
   IsEnum,
@@ -6,8 +7,36 @@ import {
   IsOptional,
   IsString,
   MinLength,
+  ValidateNested,
 } from 'class-validator';
 import { Role } from '../../common/enums/roles.enum';
+import { GeoLocationDto } from '../../common/dto/geo-location.dto';
+
+export class RegisterAddressDto {
+  @ApiProperty({
+    example: '12 Main Road',
+    description: 'Street address line',
+  })
+  @IsString()
+  @IsNotEmpty()
+  line: string;
+
+  @ApiProperty({
+    example: 'Bengaluru',
+    description: 'City name',
+  })
+  @IsString()
+  @IsNotEmpty()
+  city: string;
+
+  @ApiProperty({
+    type: GeoLocationDto,
+    description: 'GeoJSON Point [longitude, latitude]',
+  })
+  @ValidateNested()
+  @Type(() => GeoLocationDto)
+  location: GeoLocationDto;
+}
 
 export class RegisterDto {
   @ApiPropertyOptional({
@@ -73,4 +102,14 @@ export class RegisterDto {
   })
   @IsOptional()
   dob?: string;
+
+  @ApiPropertyOptional({
+    type: RegisterAddressDto,
+    description:
+      'Initial address (saved as Home for customers, or default location for providers)',
+  })
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => RegisterAddressDto)
+  address?: RegisterAddressDto;
 }
