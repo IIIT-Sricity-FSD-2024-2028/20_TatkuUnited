@@ -1,15 +1,16 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import CartList from "../../components/CartList";
 import CartSummary from "../../components/CartSummary";
 import EmptyCart from "../../components/EmptyCart";
-import useAuth from "@/hooks/useAuth";
-import { getStoredUser, getStoredUserId } from "@/common/services/authService";
+import { useDispatch, useSelector } from "react-redux";
+import type { AppDispatch, RootState } from "@/store";
 import {
-  getUserCart,
-  removeCartItem,
-} from "@/services/users.service";
-import { checkoutCart } from "@/services/orders.service";
+  CustomerActions,
+  checkout,
+  fetchCart,
+  removeFromCart,
+} from "@/store/customer/customer-slice";
 import type {
   BackendCart,
   ServiceDocument,
@@ -46,82 +47,44 @@ function formatBookingDate(dateVal?: string | Date): string {
   }
 }
 
+const transformCartItems = (cart: BackendCart | null): CartItemData[] => {
+  if (!cart?.items || !Array.isArray(cart.items)) return [];
+  return cart.items.map((item, index) => {
+    const svc =
+      typeof item.service === "object" && item.service !== null
+        ? (item.service as ServiceDocument)
+        : null;
+    const serviceName = svc?.name || "Scheduled Service";
+    const priceInPaise = typeof svc?.price === "number" ? svc.price : 0;
+    const priceInRupees = Math.round(priceInPaise / 100);
+    const dateStr = formatBookingDate(item.scheduledDate);
+    const timeStr = `${formatSlotTime(item.startTime)} - ${formatSlotTime(item.endTime)}`;
+    return {
+      id: index,
+      serviceName,
+      location: "Sri City",
+      schedule: `${dateStr} at ${timeStr}`,
+      price: priceInRupees,
+    };
+  });
+};
+
 function CartPage() {
   const navigate = useNavigate();
-  const authSession = useAuth();
-
-  const [cartItems, setCartItems] = useState<CartItemData[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-  const [isCheckingOut, setIsCheckingOut] = useState(false);
-
-  const storedUser = getStoredUser();
-  const customerId =
-    authSession.authDetails?.user?.id ||
-    getStoredUserId() ||
-    storedUser?.id;
-
-  const transformCartItems = (cart: BackendCart): CartItemData[] => {
-    if (!cart?.items || !Array.isArray(cart.items)) return [];
-    return cart.items.map((item, index) => {
-      const svc =
-        typeof item.service === "object" && item.service !== null
-          ? (item.service as ServiceDocument)
-          : null;
-      const serviceName = svc?.name || "Scheduled Service";
-      const priceInPaise = typeof svc?.price === "number" ? svc.price : 0;
-      const priceInRupees = Math.round(priceInPaise / 100);
-      const dateStr = formatBookingDate(item.scheduledDate);
-      const timeStr = `${formatSlotTime(item.startTime)} - ${formatSlotTime(item.endTime)}`;
-      return {
-        id: index,
-        serviceName,
-        location: "Sri City",
-        schedule: `${dateStr} at ${timeStr}`,
-        price: priceInRupees,
-      };
-    });
-  };
-
-  const fetchCart = async () => {
-    if (!customerId) {
-      setError("Please log in to view your cart.");
-      setLoading(false);
-      return;
-    }
-    setLoading(true);
-    setError("");
-    try {
-      const cart = await getUserCart(customerId);
-      setCartItems(transformCartItems(cart));
-    } catch (err: any) {
-      const msg =
-        err?.response?.data?.message ||
-        err?.message ||
-        "Unable to load your cart from the server. Please try again.";
-      setError(Array.isArray(msg) ? msg.join(", ") : msg);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const dispatch = useDispatch<AppDispatch>();
+  const { cart, pending, checkingOut, error } = useSelector(
+    (state: RootState) => state.customer,
+  );
+  const loading = pending > 0 && !cart;
+  const cartItems = transformCartItems(cart);
 
   useEffect(() => {
-    fetchCart();
-  }, [customerId]);
+    dispatch(CustomerActions.clearError());
+    dispatch(fetchCart());
+  }, [dispatch]);
 
-  const handleRemoveItem = async (index: number) => {
-    if (!customerId) return;
-    setError("");
-    try {
-      const updatedCart = await removeCartItem(customerId, index);
-      setCartItems(transformCartItems(updatedCart));
-    } catch (err: any) {
-      const msg =
-        err?.response?.data?.message ||
-        err?.message ||
-        "Unable to remove item from your cart. Please try again.";
-      setError(Array.isArray(msg) ? msg.join(", ") : msg);
-    }
+  const handleRemoveItem = (index: number) => {
+    dispatch(removeFromCart(index));
   };
 
   const subtotal = cartItems.reduce((sum, item) => sum + item.price, 0);
@@ -129,21 +92,13 @@ function CartPage() {
   const total = subtotal + gst;
 
   const handleCheckout = async () => {
-    if (!customerId || cartItems.length === 0 || isCheckingOut) return;
-    setIsCheckingOut(true);
-    setError("");
+    if (cartItems.length === 0 || checkingOut) return;
     try {
-      const resp = await checkoutCart();
+      const resp = await dispatch(checkout()).unwrap();
       // Per Section 2, step 5: Return {orderId, amount}. Front-end goes to /customer/pay/:orderId
       navigate(`/customer/pay/${resp.orderId}`);
-    } catch (err: any) {
-      const msg =
-        err?.response?.data?.message ||
-        err?.message ||
-        "Checkout failed. Unable to place order. Please try again.";
-      setError(Array.isArray(msg) ? msg.join(", ") : msg);
-    } finally {
-      setIsCheckingOut(false);
+    } catch {
+      // the error is already in state.customer.error and shown below
     }
   };
 
@@ -212,8 +167,8 @@ function CartPage() {
                   gst={gst}
                   total={total}
                   onCheckout={handleCheckout}
-                  isCheckingOut={isCheckingOut}
-                  disabled={cartItems.length === 0 || loading || isCheckingOut}
+                  isCheckingOut={checkingOut}
+                  disabled={cartItems.length === 0 || loading || checkingOut}
                 />
               </div>
             </div>
