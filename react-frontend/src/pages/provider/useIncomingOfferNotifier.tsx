@@ -32,7 +32,7 @@ function formatSlotTime(minutes: number): string {
   return `${displayHours}:${String(mins).padStart(2, "0")} ${ampm}`;
 }
 
-function playChime() {
+export function playOfferChime() {
   try {
     const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
     if (!AudioCtx) return;
@@ -214,7 +214,7 @@ export function useIncomingOfferNotifier(onOfferAccepted?: (booking: BookingDocu
     }
 
     if (hasNew) {
-      playChime();
+      playOfferChime();
     }
   }, [user, handleAccept, handleDecline, offers]);
 

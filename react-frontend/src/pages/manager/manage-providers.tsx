@@ -209,7 +209,7 @@ export default function ManagerManageProviders() {
       </Card>
       <Dialog
         open={confirming !== null}
-        onOpenChange={(open) => !open && !saving && setConfirming(null)}
+        onOpenChange={(open: boolean) => !open && !saving && setConfirming(null)}
       >
         <DialogContent>
           <DialogHeader>

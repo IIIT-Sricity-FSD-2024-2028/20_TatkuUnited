@@ -14,7 +14,7 @@ import type {
 } from "@/models/api.models";
 import { toast } from "@/components/ui/toast";
 import { Button } from "@/components/ui/button";
-import { useProviderData } from "./ProviderDataContext";
+import { notifiedOfferIds, playOfferChime } from "./useIncomingOfferNotifier";
 import {
   Clock,
   MapPin,

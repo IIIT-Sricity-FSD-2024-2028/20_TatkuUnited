@@ -5,6 +5,7 @@ import useAuth from "@/hooks/useAuth";
 import type { AppDispatch, RootState } from "@/store";
 import {
     createUnavailabilityThunk,
+    deleteUnavailabilityThunk,
     fetchProviderByUser,
     fetchProviderSchedule,
     fetchUnavailability,
@@ -147,7 +148,15 @@ export default function JobCalendar() {
         return () => clearInterval(interval);
     }, [dispatch, providerId]);
 
-    const loading = pending > 0 && !profile;
+    async function loadCalendar() {
+        if (!providerId) return;
+        await Promise.all([
+            dispatch(fetchProviderSchedule(providerId)),
+            dispatch(fetchUnavailability(providerId)),
+        ]);
+    }
+
+    const pageLoading = pending > 0 && !profile;
     const calendarData = useMemo(
         () => buildCalendarData(schedule, unavailability),
         [schedule, unavailability],
@@ -215,7 +224,7 @@ export default function JobCalendar() {
     async function removeUnavailability(slot: UnavailabilityRecord) {
         setSaving(true);
         try {
-            await deleteUnavailability(slot._id);
+            await dispatch(deleteUnavailabilityThunk(slot._id)).unwrap();
             setSelectedItem(null);
             await loadCalendar();
         } catch (requestError) {

@@ -168,7 +168,7 @@ export default function ManagerManageBookings() {
       </Card>
       <Dialog
         open={confirming !== null}
-        onOpenChange={(open) => !open && !saving && close()}
+        onOpenChange={(open: boolean) => !open && !saving && close()}
       >
         <DialogContent>
           <DialogHeader>

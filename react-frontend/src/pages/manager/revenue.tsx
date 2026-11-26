@@ -95,7 +95,7 @@ export default function ManagerRevenue() {
               <DropdownMenuLabel>Select filter</DropdownMenuLabel>
               <DropdownMenuRadioGroup
                 value={period}
-                onValueChange={(value) => setPeriod(value as Period)}
+                onValueChange={(value: string) => setPeriod(value as Period)}
               >
                 <DropdownMenuRadioItem value="all">
                   All time
