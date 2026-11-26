@@ -17,7 +17,7 @@
 | `auth-slice.ts` | 44 | ❌ | Sync only — OK (login/logout/userUpdated sync actions; session persistence via store subscription) |
 | `booking-slice.ts` | 195 | ✅ | ✅ Full customer booking thunks (`fetchCustomerBookings`, `fetchBookingById`, `confirmCompletion`, `rejectCompletion`, `cancelBookingThunk`) |
 | `category-slice.ts` | 196 | ✅ | ✅ Full CRUD thunks (`fetchCategories`, `fetchCategoryById`, `createCategory`, `updateCategory`, `deleteCategory`) |
-| `customer-slice.ts` | 54 | ✅ | ✅ Profile (`fetchCustomerDetails`) with request ID stale-response guard |
+| `customer-slice.ts` | 372 | ✅ | ✅ Full customer thunks (`fetchCustomerDetails`, `updateCustomerProfile`, `changePassword`, `fetchCart`, `addToCart`, `removeFromCart`, `fetchAddresses`, `addAddress`, `deleteAddress`, `checkout`, `fetchOrder`, `payOrder`) with `requestId` stale-response guard on `fetchCustomerDetails` |
 | `manager-slice.ts` | 222 | ✅ | ✅ GET + writes (`changeProviderStatus`, `updateManagerProfile`, etc.) |
 | `platform-slice.ts` | 95 | ✅ | ✅ GET + PUT (`fetchSettings`, `updateSettings`) |
 | `provider-slice.ts` | 352 | ✅ | ✅ Full CRUD (bookings, offers, schedule, unavailability, provider profile, user profile) |
@@ -41,7 +41,7 @@
 | `manager` | ✅ | — | ✅ | — | ✅ (PUT for provider status & profile; POST/DELETE N/A for manager role) |
 | `superuser` | ✅ | ✅ | ✅ | ✅ | ✅ (Full domain CRUD across all entities) |
 | `platform` | ✅ | — | ✅ | — | ✅ (Platform settings GET + PUT; POST/DELETE N/A) |
-| `customer` | ✅ | — | — | — | ✅ (Profile fetch `fetchCustomerDetails`) |
+| `customer` | ✅ | ✅ | ✅ | ✅ | ✅ (Full customer CRUD: profile, password, addresses, cart, checkout, order fetch & mock payment) |
 
 ---
 
@@ -65,8 +65,11 @@
 
 | Page | useSelector | dispatch | Direct Service | Status |
 |---|---|---|---|---|
+| `AccountSettingsPage.tsx` | ✅ | ✅ | ❌ | ✅ Consumes `state.customer` & `state.booking.items`; dispatches profile, address, password, and booking thunks |
 | `BookingHistoryPage.tsx` | ✅ | ✅ | ❌ | ✅ Consumes `state.booking.items`; dispatches `fetchCustomerBookings`, `confirmCompletion`, `rejectCompletion` |
-| `RatingsFeedbackPage.tsx` | ✅ | ✅ | ❌ | ✅ Consumes `state.booking.items` and `state.review.items`; dispatches `fetchAllReviews`, `submitReview` |
+| `MockPaymentPage.tsx` | ✅ | ✅ | ❌ | ✅ Consumes `state.customer.currentOrder`; dispatches `fetchOrder`, `payOrder` |
+| `RatingsFeedbackPage.tsx` | ✅ | ✅ | ❌ | ✅ Consumes `state.booking.items` and `state.review.items`; dispatches `fetchCustomerBookings`, `fetchAllReviews`, `submitReview` |
+| `SchedulePage.tsx` | ✅ | ✅ | ❌ (type-only) | ✅ Consumes `state.service` & `state.customer`; dispatches `fetchServiceById`, `fetchServices`, `fetchAvailableSlots`, `fetchAddresses`, `addAddress`, `addToCart` |
 
 ### General & Catalog Pages ✅
 
@@ -96,6 +99,6 @@
 
 | Check | Command | Result |
 |---|---|---|
-| Data-flow regression tests | `node --test tests/data-flow.test.mjs` | ✅ **12/12 tests passed** (100%) |
-| Full production build (pnpm) | `pnpm run build` (`tsc -b && vite build`) | ✅ **Built in 4.08s** (0 errors) |
-| Full production build (npm) | `npm run build` (`tsc -b && vite build`) | ✅ **Built in 4.15s** (0 errors) |
+| Data-flow regression tests | `node --test tests/data-flow.test.mjs` | ✅ **14/14 tests passed** (100%) |
+| Production bundle | `npx vite build` | ✅ **Built cleanly** (3091 modules transformed) |
+| TypeScript check | `npx tsc -b` | ⚠️ **0 application errors** (`TS7016` on `@base-ui/react/*` in `src/components/ui/*` due to missing `.d.ts` in `node_modules`) |

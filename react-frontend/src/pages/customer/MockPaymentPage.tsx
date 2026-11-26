@@ -17,12 +17,16 @@ export default function MockPaymentPage() {
   const { orderId } = useParams();
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
-  const { currentOrder, pending, paying: processing, error: storeError } =
-    useSelector((state: RootState) => state.customer);
+  const {
+    currentOrder,
+    pending,
+    paying: processing,
+    error: storeError,
+  } = useSelector((state: RootState) => state.customer);
   // only show the order that matches this URL, never a stale one from before
   const order = currentOrder?._id === orderId ? currentOrder : null;
   const loading = pending > 0 && !order;
-  const error = !orderId ? "Order not found." : storeError ?? "";
+  const error = !orderId ? "Order not found." : (storeError ?? "");
   const [feedback, setFeedback] = useState<{
     type: "success" | "error";
     message: string;
@@ -63,7 +67,7 @@ export default function MockPaymentPage() {
     setFeedback(null);
     try {
       const updated = await dispatch(payOrder({ orderId, success })).unwrap();
-      if (success && updated.paymentStatus === "paid") {
+      if (updated.paymentStatus === "paid") {
         setFeedback({
           type: "success",
           message:
@@ -74,6 +78,16 @@ export default function MockPaymentPage() {
           description:
             "Payment received. View your bookings for provider assignment.",
           type: "success",
+        });
+      } else if (
+        updated.paymentStatus === "refunded" ||
+        updated.paymentStatus === "partially_refunded"
+      ) {
+        toast.add({
+          title: "Order Refunded",
+          description:
+            "No providers were available, so your payment has been refunded.",
+          type: "info",
         });
       } else {
         setFeedback({
@@ -88,9 +102,16 @@ export default function MockPaymentPage() {
           type: "error",
         });
       }
-    } catch {
-      // the error is in state.customer.error; reload the order's real state
-      dispatch(fetchOrder(orderId));
+    } catch (err) {
+      const errMsg =
+        err instanceof Error
+          ? err.message
+          : "We could not verify the payment result. Refresh the order before trying again.";
+      toast.add({
+        title: "Payment Error",
+        description: errMsg,
+        type: "error",
+      });
     }
   }
 
