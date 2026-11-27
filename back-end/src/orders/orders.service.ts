@@ -2,6 +2,7 @@ import {
   Injectable,
   NotFoundException,
   BadRequestException,
+  Optional,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
@@ -24,6 +25,8 @@ import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { parseAndValidateBookingDate } from '../common/utils/date.util';
 import { BookingStatus, PaymentStatus, PayoutStatus } from '../common/enums';
+import { RegionsService } from '../regions/regions.service';
+import { ProvidersService } from '../providers/providers.service';
 
 @Injectable()
 export class OrdersService {
@@ -44,6 +47,10 @@ export class OrdersService {
     private readonly platformSettingModel: Model<PlatformSettingDocument>,
     @InjectModel(Unavailability.name)
     private readonly unavailabilityModel: Model<UnavailabilityDocument>,
+    @Optional()
+    private readonly regionsService?: RegionsService,
+    @Optional()
+    private readonly providersService?: ProvidersService,
   ) {}
 
   create(dto: CreateOrderDto) {
@@ -171,24 +178,19 @@ export class OrdersService {
       const feePercent = safeSettings.platformFeePercent ?? 15;
       const travelBuffer = safeSettings.travelBufferMinutes ?? 30;
 
-      // 3. Find nearest active region to address
-      let regionDoc = await this.regionModel
-        .findOne({
-          isActive: true,
-          location: {
-            $nearSphere: {
-              $geometry: { type: 'Point', coordinates: coords },
-            },
-          },
-        })
-        .session(session)
-        .exec();
+      // 3. Resolve region from address coordinates (no nearest-active fallback)
+      const regionDoc = this.regionsService
+        ? await this.regionsService.resolveForLocation(
+            coords[0],
+            coords[1],
+            session,
+          )
+        : null;
 
       if (!regionDoc) {
-        regionDoc = await this.regionModel
-          .findOne({ isActive: true })
-          .session(session)
-          .exec();
+        throw new BadRequestException(
+          'Service is not available in your selected delivery address area',
+        );
       }
 
       // 4. Validate no two cart items overlap
@@ -277,78 +279,24 @@ export class OrdersService {
         const [y, m, d] = dateStr.split('-').map(Number);
         const targetWeekday = new Date(Date.UTC(y, m - 1, d)).getUTCDay();
 
-        // Check provider eligibility for this slot
-        const maxDistanceMetres =
-          (safeSettings.maxAssignmentDistanceKm || 10) * 1000;
-        const candidates = await this.providerModel.aggregate([
-          {
-            $geoNear: {
-              near: { type: 'Point', coordinates: coords },
-              distanceField: 'dist',
-              maxDistance: maxDistanceMetres,
-              spherical: true,
-              query: {
-                status: 'approved',
-                offeredServices: service._id,
-                workingDays: targetWeekday,
-              },
-            },
-          },
-        ]);
-
-        if (!candidates || candidates.length === 0) {
-          throw new BadRequestException(
-            `No available provider found for ${service.name} on ${dateStr}`,
-          );
-        }
-
-        const candidateIds = candidates.map((c) => c._id);
-        const activeBookings = await this.bookingModel
-          .find({
-            provider: { $in: candidateIds },
-            scheduledDate: scheduledDate,
-            status: {
-              $in: [BookingStatus.CONFIRMED, BookingStatus.IN_PROGRESS],
-            },
-          })
-          .session(session)
-          .exec();
-
-        const unavailabilities = await this.unavailabilityModel
-          .find({
-            provider: { $in: candidateIds },
-            date: scheduledDate,
-          })
-          .session(session)
-          .exec();
-
+        // Check provider eligibility for this slot using shared gate
         const blockStartTime = item.startTime - travelBuffer;
-        const hasEligible = candidates.some((candidate) => {
-          if (
-            candidate.workHourStart > item.startTime ||
-            item.endTime > candidate.workHourEnd
-          ) {
-            return false;
-          }
-          const bookingConflict = activeBookings.some((b) => {
-            if (b.provider?.toString() !== candidate._id?.toString())
-              return false;
-            const bBlock = b.blockStartTime ?? (b.startTime - travelBuffer);
-            return bBlock < item.endTime && b.endTime > blockStartTime;
-          });
-          if (bookingConflict) return false;
+        const { candidates: eligibleCandidates } = this.providersService
+          ? await this.providersService.findEligibleProviders({
+              regionId: regionDoc._id.toString(),
+              serviceId: service._id.toString(),
+              scheduledDate,
+              targetWeekday,
+              location: coords,
+              travelBufferMinutes: travelBuffer,
+              startTime: item.startTime,
+              endTime: item.endTime,
+              maxRadiusKm: regionDoc.maxRadiusKm ?? null,
+              session,
+            })
+          : { candidates: [] };
 
-          const unavailConflict = unavailabilities.some((u) => {
-            if (u.provider?.toString() !== candidate._id?.toString())
-              return false;
-            return u.startTime < item.endTime && u.endTime > blockStartTime;
-          });
-          if (unavailConflict) return false;
-
-          return true;
-        });
-
-        if (!hasEligible) {
+        if (!eligibleCandidates || eligibleCandidates.length === 0) {
           throw new BadRequestException(
             `No available provider for slot on ${dateStr} from ${item.startTime} to ${item.endTime}`,
           );

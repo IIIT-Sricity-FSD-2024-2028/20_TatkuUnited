@@ -7,7 +7,9 @@ import {
   Param,
   Delete,
   Query,
+  Req,
 } from '@nestjs/common';
+import type { AuthenticatedUser } from '../common/interfaces/authenticated-user.interface';
 import {
   ApiTags,
   ApiOperation,
@@ -104,6 +106,18 @@ export class ProvidersController {
   }
 
   @Roles(Role.ADMIN, Role.MANAGER)
+  @Get('unassigned')
+  @ApiOperation({
+    summary: 'Get providers without an assigned region',
+    description:
+      'Retrieves providers whose location did not match any active region.',
+  })
+  @ApiResponse({ status: 200, description: 'List of unassigned providers.' })
+  findUnassigned() {
+    return this.providersService.findUnassigned();
+  }
+
+  @Roles(Role.ADMIN, Role.MANAGER)
   @Get('status/:status')
   @ApiOperation({
     summary: 'Get providers by status',
@@ -153,10 +167,12 @@ export class ProvidersController {
     example: '65f1a2b3c4d5e6f7a8b9c0d1',
   })
   @ApiResponse({ status: 200, description: 'Provider approved.' })
-  approve(@Param('id') id: string) {
-    return this.providersService.update(id, {
-      status: ProviderStatus.APPROVED,
-    });
+  approve(@Param('id') id: string, @Req() req: any) {
+    return this.providersService.update(
+      id,
+      { status: ProviderStatus.APPROVED },
+      req.user as AuthenticatedUser,
+    );
   }
 
   @Roles(Role.ADMIN, Role.MANAGER)
@@ -172,10 +188,12 @@ export class ProvidersController {
     example: '65f1a2b3c4d5e6f7a8b9c0d1',
   })
   @ApiResponse({ status: 200, description: 'Provider suspended.' })
-  suspend(@Param('id') id: string) {
-    return this.providersService.update(id, {
-      status: ProviderStatus.SUSPENDED,
-    });
+  suspend(@Param('id') id: string, @Req() req: any) {
+    return this.providersService.update(
+      id,
+      { status: ProviderStatus.SUSPENDED },
+      req.user as AuthenticatedUser,
+    );
   }
 
   @Roles(Role.ADMIN, Role.MANAGER, Role.PROVIDER)
@@ -214,8 +232,13 @@ export class ProvidersController {
   update(
     @Param('id') id: string,
     @Body() updateProviderDto: UpdateProviderDto,
+    @Req() req: any,
   ) {
-    return this.providersService.update(id, updateProviderDto);
+    return this.providersService.update(
+      id,
+      updateProviderDto,
+      req.user as AuthenticatedUser,
+    );
   }
 
   @Roles(Role.ADMIN)

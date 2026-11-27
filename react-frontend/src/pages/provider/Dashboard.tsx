@@ -6,6 +6,7 @@ import type { AppDispatch, RootState } from "@/store";
 import { fetchProviderByUser } from "@/store/provider/provider-slice";
 import IncomingOffers from "./IncomingOffers";
 import AssignedJobs from "./AssignedJobs";
+import { formatProviderTime } from "./provider-utils";
 import { Star, ShieldCheck, UserCheck } from "lucide-react";
 
 export default function Dashboard() {
@@ -67,7 +68,7 @@ export default function Dashboard() {
                 </div>
                 <p className="text-xs text-slate-500 mt-0.5">
                   Experience: {provider.experience} years • Working Hours:{" "}
-                  {Math.floor(provider.workHourStart / 60)}:00 - {Math.floor(provider.workHourEnd / 60)}:00
+                  {formatProviderTime(provider.workHourStart, true)} - {formatProviderTime(provider.workHourEnd, true)}
                 </p>
               </div>
             </div>

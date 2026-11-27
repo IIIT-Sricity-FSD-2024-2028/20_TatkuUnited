@@ -5,7 +5,9 @@ import type { AppDispatch, RootState } from "../../store";
 import {
   changeProviderStatus,
   getProviderCategoryNames,
+  updateProviderServices,
   type ProviderStatus,
+  type RegionProvider,
 } from "../../store/manager/manager-slice";
 import { Skeleton } from "../../components/ui/skeleton";
 import { Button } from "../../components/ui/button";
@@ -56,9 +58,75 @@ export default function ManagerManageProviders() {
     action: ProviderAction;
   } | null>(null);
   const [saving, setSaving] = useState(false);
+  const [editingProvider, setEditingProvider] = useState<RegionProvider | null>(null);
+  const [selectedServiceIds, setSelectedServiceIds] = useState<string[]>([]);
+  const [savingServices, setSavingServices] = useState(false);
   // only this page cares about the filter, so it stays local, not in Redux
   const [filter, setFilter] = useState<StatusFilter>("all");
   const loading = pending > 0;
+
+  const openEditServices = (p: RegionProvider) => {
+    const initialIds = (p.offeredServices || []).map((s) =>
+      typeof s === "string" ? s : s._id,
+    );
+    setSelectedServiceIds(initialIds);
+    setEditingProvider(p);
+  };
+
+  const toggleServiceId = (serviceId: string) => {
+    setSelectedServiceIds((prev) =>
+      prev.includes(serviceId)
+        ? prev.filter((id) => id !== serviceId)
+        : [...prev, serviceId],
+    );
+  };
+
+  const handleSaveServices = async (approve: boolean) => {
+    if (!editingProvider) return;
+    setSavingServices(true);
+    const providerUser =
+      typeof editingProvider.user === "string" ? null : editingProvider.user;
+    const providerName = providerUser?.name ?? "Provider";
+    try {
+      await dispatch(
+        updateProviderServices({
+          id: editingProvider._id,
+          offeredServices: selectedServiceIds,
+          approve,
+        }),
+      ).unwrap();
+      toast.add({
+        type: "info",
+        description: approve
+          ? `${providerName} services updated and approved`
+          : `${providerName} services updated`,
+      });
+      setEditingProvider(null);
+    } catch {
+      toast.add({
+        type: "error",
+        description: `Could not update services for ${providerName}`,
+        priority: "high",
+      });
+    } finally {
+      setSavingServices(false);
+    }
+  };
+
+  const activeServices = services.filter((s) => s.isActive !== false);
+  const servicesByCategory = categories
+    .map((cat) => ({
+      category: cat,
+      items: activeServices.filter((s) => {
+        const catId = typeof s.category === "string" ? s.category : s.category?._id;
+        return catId === cat._id;
+      }),
+    }))
+    .filter((group) => group.items.length > 0);
+  const uncategorizedServices = activeServices.filter((s) => {
+    const catId = typeof s.category === "string" ? s.category : s.category?._id;
+    return !catId || !categories.some((c) => c._id === catId);
+  });
 
   const active = providers.filter((p) => p.status === "approved");
   // providers nobody has rated yet shouldn't pull the average down
@@ -184,8 +252,16 @@ export default function ManagerManageProviders() {
                       </div>
                       <Button
                         size="sm"
-                        variant={p.status === "approved" ? "outline" : "default"}
+                        variant="outline"
                         className="ml-3"
+                        onClick={() => openEditServices(p)}
+                      >
+                        Edit Services ({p.offeredServices?.length ?? 0})
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant={p.status === "approved" ? "outline" : "default"}
+                        className="ml-2"
                         onClick={() =>
                           setConfirming({
                             id: p._id,
@@ -233,6 +309,118 @@ export default function ManagerManageProviders() {
             <Button disabled={saving} onClick={confirmAction}>
               {saving ? "Saving…" : "Confirm"}
             </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={editingProvider !== null}
+        onOpenChange={(open: boolean) => !open && !savingServices && setEditingProvider(null)}
+      >
+        <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>
+              Edit Services —{" "}
+              {editingProvider && typeof editingProvider.user !== "string"
+                ? editingProvider.user?.name
+                : "Provider"}
+            </DialogTitle>
+            <DialogDescription>
+              Select the services this provider is qualified to offer in your region.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-2">
+            {servicesByCategory.map(({ category, items }) => (
+              <div key={category._id} className="space-y-2">
+                <h4 className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+                  {category.name}
+                </h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {items.map((svc) => {
+                    const checked = selectedServiceIds.includes(svc._id);
+                    return (
+                      <label
+                        key={svc._id}
+                        className={`flex items-center gap-2 rounded-lg border px-3 py-2 text-sm cursor-pointer transition ${
+                          checked
+                            ? "border-blue-500 bg-blue-50 text-blue-900"
+                            : "border-slate-200 hover:bg-slate-50"
+                        }`}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={checked}
+                          onChange={() => toggleServiceId(svc._id)}
+                          className="rounded border-slate-300"
+                        />
+                        <span className="truncate">{svc.name}</span>
+                      </label>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+
+            {uncategorizedServices.length > 0 && (
+              <div className="space-y-2">
+                <h4 className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+                  Other Services
+                </h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {uncategorizedServices.map((svc) => {
+                    const checked = selectedServiceIds.includes(svc._id);
+                    return (
+                      <label
+                        key={svc._id}
+                        className={`flex items-center gap-2 rounded-lg border px-3 py-2 text-sm cursor-pointer transition ${
+                          checked
+                            ? "border-blue-500 bg-blue-50 text-blue-900"
+                            : "border-slate-200 hover:bg-slate-50"
+                        }`}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={checked}
+                          onChange={() => toggleServiceId(svc._id)}
+                          className="rounded border-slate-300"
+                        />
+                        <span className="truncate">{svc.name}</span>
+                      </label>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {activeServices.length === 0 && (
+              <p className="text-sm text-slate-500">No active services available.</p>
+            )}
+          </div>
+
+          <DialogFooter className="flex flex-wrap gap-2">
+            <Button
+              variant="outline"
+              disabled={savingServices}
+              onClick={() => setEditingProvider(null)}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="outline"
+              disabled={savingServices}
+              onClick={() => void handleSaveServices(false)}
+            >
+              {savingServices ? "Saving…" : "Save Services"}
+            </Button>
+            {editingProvider && editingProvider.status !== "approved" && (
+              <Button
+                disabled={savingServices}
+                onClick={() => void handleSaveServices(true)}
+              >
+                {savingServices ? "Saving…" : "Save & Approve"}
+              </Button>
+            )}
           </DialogFooter>
         </DialogContent>
       </Dialog>

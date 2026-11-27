@@ -27,6 +27,15 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { formatProviderTime, getErrorMessage } from "./provider-utils";
 import { getLocalDateString, isDateInRange } from "@/lib/dateValidation";
 
+function timeToMinutes(value: string): number | null {
+    const [hoursText, minutesText] = value.split(":");
+    const hours = Number(hoursText);
+    const minutes = Number(minutesText);
+    if (!Number.isInteger(hours) || !Number.isInteger(minutes)) return null;
+    if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) return null;
+    return hours * 60 + minutes;
+}
+
 interface UnavailabilityRecord {
     _id: string;
     provider: string | ProviderDocument;
@@ -425,22 +434,24 @@ export default function JobCalendar() {
                                 <Label htmlFor="unavailability-start">Start time</Label>
                                 <Input
                                     id="unavailability-start"
-                                    min="0"
-                                    max="1439"
-                                    type="number"
-                                    value={form.startTime}
-                                    onChange={(event) => setForm({ ...form, startTime: Number(event.target.value) })}
+                                    type="time"
+                                    value={formatProviderTime(Math.min(1439, Math.max(0, form.startTime)))}
+                                    onChange={(event) => {
+                                        const mins = timeToMinutes(event.target.value);
+                                        if (mins !== null) setForm({ ...form, startTime: mins });
+                                    }}
                                 />
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="unavailability-end">End time</Label>
                                 <Input
                                     id="unavailability-end"
-                                    min="0"
-                                    max="1439"
-                                    type="number"
-                                    value={form.endTime}
-                                    onChange={(event) => setForm({ ...form, endTime: Number(event.target.value) })}
+                                    type="time"
+                                    value={formatProviderTime(Math.min(1439, Math.max(0, form.endTime)))}
+                                    onChange={(event) => {
+                                        const mins = timeToMinutes(event.target.value);
+                                        if (mins !== null) setForm({ ...form, endTime: mins });
+                                    }}
                                 />
                             </div>
                         </div>

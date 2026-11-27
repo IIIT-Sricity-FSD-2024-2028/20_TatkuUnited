@@ -6,6 +6,7 @@ import {
   approveProvider,
   getProvidersByRegion,
   suspendProvider,
+  updateProvider,
 } from "@/services/providers.service";
 import { updateUser } from "@/services/users.service";
 import axios from "axios";
@@ -138,6 +139,29 @@ export const changeProviderStatus = createAsyncThunkTyped(
       return { id, status: updated.status as unknown as ProviderStatus };
     } catch {
       throw new Error(`Could not ${action} provider`);
+    }
+  },
+);
+
+/** Update a provider's offeredServices (and optionally approve in one step). */
+export const updateProviderServices = createAsyncThunkTyped(
+  "manager/updateProviderServices",
+  async ({
+    id,
+    offeredServices,
+    approve,
+  }: {
+    id: string;
+    offeredServices: string[];
+    approve?: boolean;
+  }): Promise<RegionProvider> => {
+    try {
+      return await updateProvider(id, {
+        offeredServices,
+        ...(approve ? { status: "approved" as ProviderStatus } : {}),
+      });
+    } catch {
+      throw new Error("Could not update provider services");
     }
   },
 );
@@ -294,6 +318,15 @@ const ManagerSlice = createSlice({
       .addCase(changeProviderStatus.fulfilled, (state, action) => {
         const provider = state.providers.find((p) => p._id === action.payload.id);
         if (provider) provider.status = action.payload.status;
+      })
+      .addCase(updateProviderServices.fulfilled, (state, action) => {
+        const idx = state.providers.findIndex((p) => p._id === action.payload._id);
+        if (idx !== -1) {
+          state.providers[idx] = {
+            ...state.providers[idx],
+            ...action.payload,
+          };
+        }
       })
       .addCase(completeRegionBooking.fulfilled, replaceBooking)
       .addCase(cancelRegionBooking.fulfilled, replaceBooking)

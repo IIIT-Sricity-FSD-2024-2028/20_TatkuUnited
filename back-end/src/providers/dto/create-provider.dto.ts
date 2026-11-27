@@ -49,6 +49,10 @@ export class CreateProviderDto {
   location: GeoLocationDto;
 
   @IsOptional()
+  @IsMongoId()
+  region?: string;
+
+  @IsOptional()
   @IsEnum(ProviderStatus)
   status?: ProviderStatus;
 }

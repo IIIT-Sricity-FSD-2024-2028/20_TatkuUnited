@@ -31,6 +31,11 @@ export async function getAllProviders(): Promise<ProviderDocument[]> {
   return apiService<ProviderDocument[]>(HTTP_METHODS_ENUM.get, ENDPOINT_ENUM.PROVIDERS);
 }
 
+/** GET /providers/unassigned — Providers without an assigned region. */
+export async function getUnassignedProviders(): Promise<ProviderDocument[]> {
+  return apiService<ProviderDocument[]>(HTTP_METHODS_ENUM.get, ENDPOINT_ENUM.PROVIDERS_UNASSIGNED);
+}
+
 /** GET /providers/user/:userId */
 export async function getProviderByUser(userId: string): Promise<ProviderDocument> {
   const url = buildEndpoint(ENDPOINT_ENUM.PROVIDERS_BY_USER, { userId });

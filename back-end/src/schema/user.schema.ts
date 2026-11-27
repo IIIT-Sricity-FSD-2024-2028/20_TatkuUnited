@@ -77,6 +77,9 @@ export class User {
 
   @Prop({ type: [UserAddress], default: [] })
   addresses: UserAddress[];
+
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Region', default: null })
+  defaultRegionId?: Types.ObjectId | null;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

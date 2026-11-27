@@ -2,6 +2,7 @@ import {
   Injectable,
   NotFoundException,
   BadRequestException,
+  Optional,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
@@ -24,6 +25,8 @@ import {
   getISTDateAndMinutes,
   parseAndValidateBookingDate,
 } from '../common/utils/date.util';
+import { RegionsService } from '../regions/regions.service';
+import { ProvidersService } from '../providers/providers.service';
 
 @Injectable()
 export class ServicesService {
@@ -40,6 +43,10 @@ export class ServicesService {
     private readonly platformSettingModel: Model<PlatformSettingDocument>,
     @InjectModel(User.name)
     private readonly userModel: Model<UserDocument>,
+    @Optional()
+    private readonly regionsService?: RegionsService,
+    @Optional()
+    private readonly providersService?: ProvidersService,
   ) {}
 
   create(dto: CreateServiceDto) {
@@ -147,50 +154,45 @@ export class ServicesService {
       safeSettings.bookingWindowDays ?? 3,
     );
 
-    // Query qualified candidate providers within distance
-    const maxDistanceMetres = (safeSettings.maxAssignmentDistanceKm || 10) * 1000;
-    const candidates = await this.providerModel.aggregate([
-      {
-        $geoNear: {
-          near: { type: 'Point', coordinates: coords },
-          distanceField: 'dist',
-          maxDistance: maxDistanceMetres,
-          spherical: true,
-          query: {
-            status: 'approved',
-            offeredServices: new Types.ObjectId(serviceId),
-            workingDays: targetWeekday,
-          },
-        },
-      },
-    ]);
+    // Resolve region for the customer coordinates (region is the gate, not 10km radius)
+    const resolvedRegion = this.regionsService
+      ? await this.regionsService.resolveForLocation(coords[0], coords[1])
+      : null;
+
+    if (this.regionsService && !resolvedRegion) {
+      return {
+        date: dateString,
+        slots: [],
+        serviceable: false,
+        message: 'Service is not available in your area yet',
+      };
+    }
+
+    const {
+      candidates,
+      activeBookings,
+      unavailabilities,
+    } = this.providersService && resolvedRegion
+      ? await this.providersService.findEligibleProviders({
+          regionId: resolvedRegion._id.toString(),
+          serviceId,
+          scheduledDate: targetDate,
+          targetWeekday,
+          location: coords,
+          travelBufferMinutes: safeSettings.travelBufferMinutes ?? 30,
+          maxRadiusKm: resolvedRegion.maxRadiusKm ?? null,
+        })
+      : { candidates: [], activeBookings: [], unavailabilities: [] };
 
     if (!candidates || candidates.length === 0) {
       return {
         date: dateString,
         slots: [],
+        serviceable: true,
+        regionName: resolvedRegion?.name,
         message: 'No eligible service providers in your area for this date',
       };
     }
-
-    const candidateIds = candidates.map((c) => c._id);
-
-    // Fetch active bookings (confirmed, in_progress)
-    const activeBookings = await this.bookingModel
-      .find({
-        provider: { $in: candidateIds },
-        scheduledDate: targetDate,
-        status: { $in: [BookingStatus.CONFIRMED, BookingStatus.IN_PROGRESS] },
-      })
-      .exec();
-
-    // Fetch provider unavailabilities on this date
-    const unavailabilities = await this.unavailabilityModel
-      .find({
-        provider: { $in: candidateIds },
-        date: targetDate,
-      })
-      .exec();
 
     const availableSlots: Array<{
       startTime: number;

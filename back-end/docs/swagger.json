@@ -187,6 +187,27 @@
         ]
       }
     },
+    "/users/unassigned-addresses": {
+      "get": {
+        "description": "Retrieves customer addresses whose coordinates did not match any active region.",
+        "operationId": "UsersController_findUnassignedAddresses",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "List of unassigned addresses."
+          }
+        },
+        "security": [
+          {
+            "bearer-token": []
+          }
+        ],
+        "summary": "Get user addresses without a resolved region",
+        "tags": [
+          "Users"
+        ]
+      }
+    },
     "/users/role/{role}": {
       "get": {
         "description": "Retrieves all users filtered by role (customer, provider, manager, admin). Admin only.",
@@ -715,6 +736,302 @@
         ]
       }
     },
+    "/regions": {
+      "post": {
+        "description": "Registers a serviceable geographical region assigned to a regional manager with centroid coordinates.",
+        "operationId": "RegionsController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateRegionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Region successfully created."
+          },
+          "400": {
+            "description": "Invalid region payload."
+          }
+        },
+        "security": [
+          {
+            "bearer-token": []
+          }
+        ],
+        "summary": "Create a new region",
+        "tags": [
+          "Regions"
+        ]
+      },
+      "get": {
+        "description": "Retrieves all operational regions. Restricted to regional managers and admins.",
+        "operationId": "RegionsController_findAll",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "List of all regions."
+          },
+          "403": {
+            "description": "Forbidden. Requires manager or admin role."
+          }
+        },
+        "security": [
+          {
+            "bearer-token": []
+          }
+        ],
+        "summary": "Get all regions",
+        "tags": [
+          "Regions"
+        ]
+      }
+    },
+    "/regions/active": {
+      "get": {
+        "description": "Retrieves all active operational regions/cities for location selection.",
+        "operationId": "RegionsController_findActive",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "List of active regions."
+          }
+        },
+        "security": [
+          {
+            "bearer-token": []
+          }
+        ],
+        "summary": "Get active serviceable regions",
+        "tags": [
+          "Regions"
+        ]
+      }
+    },
+    "/regions/resolve": {
+      "get": {
+        "description": "Checks whether [lng, lat] falls inside any active region boundary or service radius.",
+        "operationId": "RegionsController_resolveLocation",
+        "parameters": [
+          {
+            "name": "lng",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "lat",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Resolution result."
+          }
+        },
+        "security": [
+          {
+            "bearer-token": []
+          }
+        ],
+        "summary": "Resolve serviceable region for coordinates",
+        "tags": [
+          "Regions"
+        ]
+      }
+    },
+    "/regions/manager/{managerId}": {
+      "get": {
+        "description": "Retrieves all operational regions assigned to a specific manager (supports manager ObjectId or user ObjectId). Restricted to regional managers and admins.",
+        "operationId": "RegionsController_findByManager",
+        "parameters": [
+          {
+            "name": "managerId",
+            "required": true,
+            "in": "path",
+            "description": "Manager Mongo ObjectId or User ObjectId",
+            "schema": {
+              "example": "65f1a2b3c4d5e6f7a8b9c0d1",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of regions controlled by manager."
+          },
+          "403": {
+            "description": "Forbidden. Requires manager or admin role."
+          }
+        },
+        "security": [
+          {
+            "bearer-token": []
+          }
+        ],
+        "summary": "Get regions controlled by manager ID",
+        "tags": [
+          "Regions"
+        ]
+      }
+    },
+    "/regions/{id}": {
+      "get": {
+        "description": "Retrieves a single region document by Mongo ObjectId. Restricted to regional managers and admins.",
+        "operationId": "RegionsController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Region Mongo ObjectId",
+            "schema": {
+              "example": "65f1a2b3c4d5e6f7a8b9c0d1",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Region found."
+          },
+          "403": {
+            "description": "Forbidden. Requires manager or admin role."
+          },
+          "404": {
+            "description": "Region not found."
+          }
+        },
+        "security": [
+          {
+            "bearer-token": []
+          }
+        ],
+        "summary": "Get region by ID",
+        "tags": [
+          "Regions"
+        ]
+      },
+      "patch": {
+        "description": "Updates region properties, such as assigned manager, centroid GeoLocation, or active state.",
+        "operationId": "RegionsController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Region Mongo ObjectId",
+            "schema": {
+              "example": "65f1a2b3c4d5e6f7a8b9c0d1",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateRegionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Region successfully updated."
+          },
+          "404": {
+            "description": "Region not found."
+          }
+        },
+        "security": [
+          {
+            "bearer-token": []
+          }
+        ],
+        "summary": "Update region",
+        "tags": [
+          "Regions"
+        ]
+      },
+      "delete": {
+        "description": "Removes a region from the platform.",
+        "operationId": "RegionsController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Region Mongo ObjectId",
+            "schema": {
+              "example": "65f1a2b3c4d5e6f7a8b9c0d1",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Region successfully removed."
+          },
+          "404": {
+            "description": "Region not found."
+          }
+        },
+        "security": [
+          {
+            "bearer-token": []
+          }
+        ],
+        "summary": "Delete region",
+        "tags": [
+          "Regions"
+        ]
+      }
+    },
+    "/regions/{id}/recompute-centroid": {
+      "post": {
+        "description": "Calculates the mean coordinates of all approved providers in this region and updates the centroid (§4.2, §3.5).",
+        "operationId": "RegionsController_recomputeCentroid",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Region Mongo ObjectId",
+            "schema": {
+              "example": "65f1a2b3c4d5e6f7a8b9c0d1",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Region centroid recomputed."
+          }
+        },
+        "security": [
+          {
+            "bearer-token": []
+          }
+        ],
+        "summary": "Recompute region centroid",
+        "tags": [
+          "Regions"
+        ]
+      }
+    },
     "/providers": {
       "post": {
         "description": "Creates a new provider document linked to a User, specifying offered services, work hours, working days, and GeoJSON location.",
@@ -844,6 +1161,27 @@
           }
         ],
         "summary": "Get providers by region ID",
+        "tags": [
+          "Providers"
+        ]
+      }
+    },
+    "/providers/unassigned": {
+      "get": {
+        "description": "Retrieves providers whose location did not match any active region.",
+        "operationId": "ProvidersController_findUnassigned",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "List of unassigned providers."
+          }
+        },
+        "security": [
+          {
+            "bearer-token": []
+          }
+        ],
+        "summary": "Get providers without an assigned region",
         "tags": [
           "Providers"
         ]
@@ -1284,264 +1622,6 @@
         "summary": "Delete manager",
         "tags": [
           "Managers"
-        ]
-      }
-    },
-    "/regions": {
-      "post": {
-        "description": "Registers a serviceable geographical region assigned to a regional manager with centroid coordinates.",
-        "operationId": "RegionsController_create",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateRegionDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "Region successfully created."
-          },
-          "400": {
-            "description": "Invalid region payload."
-          }
-        },
-        "security": [
-          {
-            "bearer-token": []
-          }
-        ],
-        "summary": "Create a new region",
-        "tags": [
-          "Regions"
-        ]
-      },
-      "get": {
-        "description": "Retrieves all operational regions. Restricted to regional managers and admins.",
-        "operationId": "RegionsController_findAll",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "List of all regions."
-          },
-          "403": {
-            "description": "Forbidden. Requires manager or admin role."
-          }
-        },
-        "security": [
-          {
-            "bearer-token": []
-          }
-        ],
-        "summary": "Get all regions",
-        "tags": [
-          "Regions"
-        ]
-      }
-    },
-    "/regions/active": {
-      "get": {
-        "description": "Retrieves all active operational regions/cities for location selection.",
-        "operationId": "RegionsController_findActive",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "List of active regions."
-          }
-        },
-        "security": [
-          {
-            "bearer-token": []
-          }
-        ],
-        "summary": "Get active serviceable regions",
-        "tags": [
-          "Regions"
-        ]
-      }
-    },
-    "/regions/manager/{managerId}": {
-      "get": {
-        "description": "Retrieves all operational regions assigned to a specific manager (supports manager ObjectId or user ObjectId). Restricted to regional managers and admins.",
-        "operationId": "RegionsController_findByManager",
-        "parameters": [
-          {
-            "name": "managerId",
-            "required": true,
-            "in": "path",
-            "description": "Manager Mongo ObjectId or User ObjectId",
-            "schema": {
-              "example": "65f1a2b3c4d5e6f7a8b9c0d1",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "List of regions controlled by manager."
-          },
-          "403": {
-            "description": "Forbidden. Requires manager or admin role."
-          }
-        },
-        "security": [
-          {
-            "bearer-token": []
-          }
-        ],
-        "summary": "Get regions controlled by manager ID",
-        "tags": [
-          "Regions"
-        ]
-      }
-    },
-    "/regions/{id}": {
-      "get": {
-        "description": "Retrieves a single region document by Mongo ObjectId. Restricted to regional managers and admins.",
-        "operationId": "RegionsController_findOne",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "description": "Region Mongo ObjectId",
-            "schema": {
-              "example": "65f1a2b3c4d5e6f7a8b9c0d1",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Region found."
-          },
-          "403": {
-            "description": "Forbidden. Requires manager or admin role."
-          },
-          "404": {
-            "description": "Region not found."
-          }
-        },
-        "security": [
-          {
-            "bearer-token": []
-          }
-        ],
-        "summary": "Get region by ID",
-        "tags": [
-          "Regions"
-        ]
-      },
-      "patch": {
-        "description": "Updates region properties, such as assigned manager, centroid GeoLocation, or active state.",
-        "operationId": "RegionsController_update",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "description": "Region Mongo ObjectId",
-            "schema": {
-              "example": "65f1a2b3c4d5e6f7a8b9c0d1",
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateRegionDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Region successfully updated."
-          },
-          "404": {
-            "description": "Region not found."
-          }
-        },
-        "security": [
-          {
-            "bearer-token": []
-          }
-        ],
-        "summary": "Update region",
-        "tags": [
-          "Regions"
-        ]
-      },
-      "delete": {
-        "description": "Removes a region from the platform.",
-        "operationId": "RegionsController_remove",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "description": "Region Mongo ObjectId",
-            "schema": {
-              "example": "65f1a2b3c4d5e6f7a8b9c0d1",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Region successfully removed."
-          },
-          "404": {
-            "description": "Region not found."
-          }
-        },
-        "security": [
-          {
-            "bearer-token": []
-          }
-        ],
-        "summary": "Delete region",
-        "tags": [
-          "Regions"
-        ]
-      }
-    },
-    "/regions/{id}/recompute-centroid": {
-      "post": {
-        "description": "Calculates the mean coordinates of all approved providers in this region and updates the centroid (§4.2, §3.5).",
-        "operationId": "RegionsController_recomputeCentroid",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "description": "Region Mongo ObjectId",
-            "schema": {
-              "example": "65f1a2b3c4d5e6f7a8b9c0d1",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Region centroid recomputed."
-          }
-        },
-        "security": [
-          {
-            "bearer-token": []
-          }
-        ],
-        "summary": "Recompute region centroid",
-        "tags": [
-          "Regions"
         ]
       }
     },
@@ -4261,6 +4341,73 @@
           }
         }
       },
+      "GeoPolygonDto": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "Polygon"
+            ]
+          },
+          "coordinates": {
+            "type": "array",
+            "items": {
+              "name": "coordinates",
+              "type": "array",
+              "items": {
+                "required": true,
+                "type": "array",
+                "items": {
+                  "type": "number"
+                }
+              }
+            }
+          }
+        },
+        "required": [
+          "type",
+          "coordinates"
+        ]
+      },
+      "CreateRegionDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "manager": {
+            "type": "string"
+          },
+          "location": {
+            "$ref": "#/components/schemas/GeoLocationDto"
+          },
+          "boundary": {
+            "$ref": "#/components/schemas/GeoPolygonDto"
+          },
+          "radiusKm": {
+            "type": "number",
+            "minimum": 1
+          },
+          "maxRadiusKm": {
+            "type": "number",
+            "nullable": true,
+            "minimum": 1
+          },
+          "isActive": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "name",
+          "manager",
+          "location"
+        ]
+      },
+      "UpdateRegionDto": {
+        "type": "object",
+        "properties": {}
+      },
       "CreateProviderDto": {
         "type": "object",
         "properties": {
@@ -4298,6 +4445,9 @@
           },
           "location": {
             "$ref": "#/components/schemas/GeoLocationDto"
+          },
+          "region": {
+            "type": "string"
           },
           "status": {
             "type": "string",
@@ -4398,32 +4548,6 @@
             "type": "string"
           }
         }
-      },
-      "CreateRegionDto": {
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string"
-          },
-          "manager": {
-            "type": "string"
-          },
-          "location": {
-            "$ref": "#/components/schemas/GeoLocationDto"
-          },
-          "isActive": {
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "name",
-          "manager",
-          "location"
-        ]
-      },
-      "UpdateRegionDto": {
-        "type": "object",
-        "properties": {}
       },
       "CreateCategoryDto": {
         "type": "object",

@@ -1,4 +1,6 @@
+import { useEffect, useState } from "react";
 import { SUPPORTED_CITIES, type CityOption } from "@/common/cities";
+import { getActiveRegions } from "@/services/regions.service";
 
 interface CitySelectProps {
   value: string;
@@ -17,9 +19,36 @@ export function CitySelect({
   disabled = false,
   required = false,
   id,
-  placeholder = "Select a city",
+  placeholder = "Select a serviceable region",
 }: CitySelectProps) {
-  const hasKnownCity = SUPPORTED_CITIES.some((c) => c.name === value);
+  const [options, setOptions] = useState<CityOption[]>(SUPPORTED_CITIES);
+
+  useEffect(() => {
+    let cancelled = false;
+    getActiveRegions()
+      .then((regions) => {
+        if (cancelled || !Array.isArray(regions) || regions.length === 0) return;
+        const mapped: CityOption[] = regions
+          .filter((r) => r.location?.coordinates?.length === 2)
+          .map((r) => ({
+            name: r.name,
+            state: "Serviceable Region",
+            coordinates: r.location!.coordinates as [number, number],
+            regionId: r._id,
+          }));
+        if (mapped.length > 0) {
+          setOptions(mapped);
+        }
+      })
+      .catch(() => {
+        // Keep SUPPORTED_CITIES fallback if network request fails
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const hasKnownCity = options.some((c) => c.name === value);
 
   return (
     <select
@@ -28,7 +57,7 @@ export function CitySelect({
       disabled={disabled}
       required={required}
       onChange={(e) => {
-        const selected = SUPPORTED_CITIES.find((c) => c.name === e.target.value);
+        const selected = options.find((c) => c.name === e.target.value);
         if (selected) onChange(selected);
       }}
       className={className}
@@ -39,9 +68,9 @@ export function CitySelect({
       {!hasKnownCity && value && (
         <option value={value}>{value}</option>
       )}
-      {SUPPORTED_CITIES.map((city) => (
-        <option key={city.name} value={city.name}>
-          {city.name}, {city.state}
+      {options.map((city) => (
+        <option key={city.regionId ?? city.name} value={city.name}>
+          {city.regionId ? city.name : `${city.name}, ${city.state}`}
         </option>
       ))}
     </select>

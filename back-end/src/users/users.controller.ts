@@ -94,6 +94,18 @@ export class UsersController {
   }
 
   @Roles(Role.ADMIN)
+  @Get('unassigned-addresses')
+  @ApiOperation({
+    summary: 'Get user addresses without a resolved region',
+    description:
+      'Retrieves customer addresses whose coordinates did not match any active region.',
+  })
+  @ApiResponse({ status: 200, description: 'List of unassigned addresses.' })
+  findUnassignedAddresses() {
+    return this.usersService.findUnassignedAddresses();
+  }
+
+  @Roles(Role.ADMIN)
   @Get('role/:role')
   @ApiOperation({
     summary: 'Get users by role',

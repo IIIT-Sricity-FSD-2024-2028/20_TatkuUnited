@@ -6,8 +6,25 @@ import {
   IsNumber,
   IsOptional,
   IsString,
+  Validate,
   ValidateNested,
+  ValidatorConstraint,
+  ValidatorConstraintInterface,
 } from 'class-validator';
+import { isValidGeoCoordinates } from '../utils/geo.util';
+
+@ValidatorConstraint({ name: 'validGeoCoordinates', async: false })
+export class ValidGeoCoordinatesConstraint
+  implements ValidatorConstraintInterface
+{
+  validate(coords: unknown) {
+    return isValidGeoCoordinates(coords);
+  }
+
+  defaultMessage() {
+    return 'Coordinates must be [longitude, latitude] with lng in [-180, 180], lat in [-90, 90], and not [0, 0]';
+  }
+}
 
 /** GeoJSON Point: { type: "Point", coordinates: [lng, lat] } */
 export class GeoLocationDto {
@@ -19,6 +36,7 @@ export class GeoLocationDto {
   @ArrayMinSize(2)
   @ArrayMaxSize(2)
   @IsNumber({}, { each: true })
+  @Validate(ValidGeoCoordinatesConstraint)
   coordinates: [number, number]; // [longitude, latitude]
 }
 

@@ -69,6 +69,10 @@ export class PlatformSetting {
   @Prop({ type: Number, default: 0 })
   payoutHoldHours: number;
 
+  /** Grace window in minutes before scheduled start when provider may start a job. Default 60. */
+  @Prop({ type: Number, default: 60 })
+  startGraceMinutes: number;
+
   /** Matching score weights. Default { distance: 0.4, rating: 0.4, availability: 0.2 }. */
   @Prop({
     type: MatchWeights,

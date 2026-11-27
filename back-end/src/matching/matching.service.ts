@@ -4,6 +4,7 @@ import {
   OnModuleInit,
   OnModuleDestroy,
   Inject,
+  Optional,
   forwardRef,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
@@ -16,12 +17,14 @@ import {
   UnavailabilityDocument,
 } from '../schema/unavailability.schema';
 import { Service, ServiceDocument } from '../schema/service.schema';
+import { Region, RegionDocument } from '../schema/region.schema';
 import {
   PlatformSetting,
   PlatformSettingDocument,
 } from '../schema/platform-setting.schema';
 import { NotificationsService } from '../notifications/notifications.service';
 import { PaymentsService } from '../payments/payments.service';
+import { ProvidersService } from '../providers/providers.service';
 import {
   BookingStatus,
   CancelledBy,
@@ -50,6 +53,11 @@ export class MatchingService implements OnModuleInit, OnModuleDestroy {
     private readonly notificationsService: NotificationsService,
     @Inject(forwardRef(() => PaymentsService))
     private readonly paymentsService: PaymentsService,
+    @Optional()
+    private readonly providersService?: ProvidersService,
+    @Optional()
+    @InjectModel(Region.name)
+    private readonly regionModel?: Model<RegionDocument>,
   ) {}
 
   onModuleInit() {
@@ -158,11 +166,7 @@ export class MatchingService implements OnModuleInit, OnModuleDestroy {
     }
 
     const settings = await this.getSettings();
-    const baseDistanceKm = settings.maxAssignmentDistanceKm || 15;
     const currentRound = booking.offerRound || 0;
-    const radiusMultiplier = Math.pow(1.5, currentRound);
-    const effectiveDistanceKm = baseDistanceKm * radiusMultiplier;
-    const maxDistanceMetres = effectiveDistanceKm * 1000;
     const travelBuffer = settings.travelBufferMinutes || 30;
     const maxOfferRounds = settings.maxOfferRounds || 3;
     const offerBatchSize = settings.offerBatchSize || 5;
@@ -172,6 +176,16 @@ export class MatchingService implements OnModuleInit, OnModuleDestroy {
       rating: 0.4,
       availability: 0.2,
     };
+
+    const regionDoc =
+      booking.region && this.regionModel
+        ? await this.regionModel.findById(booking.region).exec()
+        : null;
+    const regionMaxRadiusKm = regionDoc?.maxRadiusKm ?? null;
+    const maxDistanceMetres =
+      regionMaxRadiusKm && regionMaxRadiusKm > 0
+        ? regionMaxRadiusKm * 1000
+        : (settings.maxAssignmentDistanceKm || 15) * 1000;
 
     // Providers already offered or declined for this booking
     const alreadyOfferedIds = (booking.offers || []).map((o) =>
@@ -188,119 +202,63 @@ export class MatchingService implements OnModuleInit, OnModuleDestroy {
     const [y, m, d] = dateStr.split('-').map(Number);
     const targetWeekday = new Date(Date.UTC(y, m - 1, d)).getUTCDay();
 
-    const geoNearQuery: any = {
-      status: ProviderStatus.APPROVED,
-      offeredServices: booking.service,
-      workingDays: targetWeekday,
-      workHourStart: { $lte: booking.startTime },
-      workHourEnd: { $gte: booking.endTime },
-    };
-    if (excludedIds.length > 0) {
-      geoNearQuery._id = { $nin: excludedIds };
-    }
-
-    const candidates = await this.providerModel.aggregate([
-      {
-        $geoNear: {
-          near: { type: 'Point', coordinates: coords },
-          distanceField: 'dist',
-          maxDistance: maxDistanceMetres,
-          spherical: true,
-          query: geoNearQuery,
-        },
-      },
-    ]);
-
-    const candidateIds = candidates.map((c) => c._id);
-    const blockStartTime = booking.startTime - travelBuffer;
-
-    let activeBookings: BookingDocument[] = [];
-    let unavailabilities: UnavailabilityDocument[] = [];
-    if (candidateIds.length > 0) {
-      [activeBookings, unavailabilities] = await Promise.all([
-        this.bookingModel
-          .find({
-            provider: { $in: candidateIds },
-            scheduledDate: scheduledDate,
-            status: {
-              $in: [BookingStatus.CONFIRMED, BookingStatus.IN_PROGRESS],
-            },
+    const { candidates: eligibleCandidates, activeBookings } =
+      booking.region && this.providersService
+        ? await this.providersService.findEligibleProviders({
+            regionId: booking.region.toString(),
+            serviceId: booking.service.toString(),
+            scheduledDate,
+            targetWeekday,
+            location: coords as [number, number],
+            travelBufferMinutes: travelBuffer,
+            startTime: booking.startTime,
+            endTime: booking.endTime,
+            excludedProviderIds: excludedIds,
+            maxRadiusKm: regionMaxRadiusKm,
           })
-          .exec(),
-        this.unavailabilityModel
-          .find({
-            provider: { $in: candidateIds },
-            date: scheduledDate,
-          })
-          .exec(),
-      ]);
-    }
-
-    const eligibleCandidates = candidates.filter((candidate) => {
-      // 1. Overlapping active booking
-      const bookingConflict = activeBookings.some((b) => {
-        if (b.provider?.toString() !== candidate._id.toString()) return false;
-        const bBlock = b.blockStartTime ?? b.startTime - travelBuffer;
-        return bBlock < booking.endTime && b.endTime > blockStartTime;
-      });
-      if (bookingConflict) return false;
-
-      // 2. Overlapping unavailability
-      const unavailConflict = unavailabilities.some((u) => {
-        if (u.provider?.toString() !== candidate._id.toString()) return false;
-        return u.startTime < booking.endTime && u.endTime > blockStartTime;
-      });
-      if (unavailConflict) return false;
-
-      return true;
-    });
+        : { candidates: [] as any[], activeBookings: [] as any[] };
 
     if (eligibleCandidates.length === 0) {
       this.logger.log(
-        `offerBooking: No candidates found for booking ${booking._id} in round ${currentRound} (radius ${effectiveDistanceKm.toFixed(1)}km)`,
+        `offerBooking: No candidates found for booking ${booking._id} in region ${booking.region} (round ${currentRound})`,
       );
 
-      // Section 4 Step 6: If no candidates exist, treat as failed round and go to timeout handling
-      if (currentRound + 1 < maxOfferRounds) {
-        booking.offerRound = currentRound + 1;
-        await booking.save();
-        this.logger.log(
-          `Advancing booking ${booking._id} to offerRound ${booking.offerRound} with expanded radius`,
-        );
-        return this.offerBooking(booking._id.toString());
-      } else {
-        // Max rounds exhausted with no candidates
-        this.logger.warn(
-          `No providers available after ${maxOfferRounds} rounds for booking ${booking._id}. Cancelling and refunding.`,
-        );
-        booking.status = BookingStatus.CANCELLED;
-        booking.cancelledBy = CancelledBy.SYSTEM;
-        booking.cancelledReason = 'no provider available';
-        booking.offerExpiresAt = null;
-        await booking.save();
+      // Never widen past the region boundary: if no candidates remain in region, cancel & refund
+      this.logger.warn(
+        `No providers available in region ${booking.region} for booking ${booking._id}. Cancelling and refunding.`,
+      );
+      booking.status = BookingStatus.CANCELLED;
+      booking.cancelledBy = CancelledBy.SYSTEM;
+      booking.cancelledReason = 'no provider available';
+      booking.offerExpiresAt = null;
+      await booking.save();
 
-        await this.paymentsService.refund(
-          booking._id.toString(),
-          booking.price,
-          'no provider available',
-        );
+      await this.paymentsService.refund(
+        booking._id.toString(),
+        booking.price,
+        'no provider available',
+      );
 
-        await this.notificationsService.create(
-          booking.customer,
-          'booking_cancelled',
-          'No provider available for your booking. A full refund has been initiated.',
-          booking._id,
-        );
-        return false;
-      }
+      await this.notificationsService.create(
+        booking.customer,
+        'booking_cancelled',
+        'No provider available for your booking. A full refund has been initiated.',
+        booking._id,
+      );
+      return false;
     }
 
     // Step 4: Scoring
     const slotDuration = booking.endTime - booking.startTime + travelBuffer;
+    const maxObservedDist = eligibleCandidates.reduce(
+      (max, c) => Math.max(max, c.dist || 0),
+      0,
+    );
+    const distanceScaleMetres = Math.max(maxDistanceMetres, maxObservedDist, 1);
 
     const scoredCandidates = eligibleCandidates.map((candidate) => {
       // 1. Distance score
-      const distanceScore = Math.max(0, 1 - candidate.dist / maxDistanceMetres);
+      const distanceScore = Math.max(0, 1 - candidate.dist / distanceScaleMetres);
 
       // 2. Bayesian adjusted rating
       const C = 5;

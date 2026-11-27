@@ -15,6 +15,7 @@ export const ENDPOINT_ENUM = {
   // --- Users ---
   USERS: "/users",
   USERS_ME: "/users/me",
+  USERS_UNASSIGNED_ADDRESSES: "/users/unassigned-addresses",
   USERS_BY_ROLE: "/users/role/{role}",
   USERS_BY_ID: "/users/{id}",
   USERS_ADDRESSES: "/users/{id}/addresses",
@@ -25,6 +26,7 @@ export const ENDPOINT_ENUM = {
 
   // --- Providers ---
   PROVIDERS: "/providers",
+  PROVIDERS_UNASSIGNED: "/providers/unassigned",
   PROVIDERS_BY_USER: "/providers/user/{userId}",
   PROVIDERS_BY_REGION: "/providers/region/{regionId}",
   PROVIDERS_BY_STATUS: "/providers/status/{status}",
@@ -41,6 +43,7 @@ export const ENDPOINT_ENUM = {
   // --- Regions ---
   REGIONS: "/regions",
   REGIONS_ACTIVE: "/regions/active",
+  REGIONS_RESOLVE: "/regions/resolve",
   REGIONS_BY_MANAGER: "/regions/manager/{managerId}",
   REGIONS_BY_ID: "/regions/{id}",
   REGIONS_RECOMPUTE_CENTROID: "/regions/{id}/recompute-centroid",

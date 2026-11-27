@@ -3,6 +3,7 @@ export interface CityOption {
   state: string;
   /** GeoJSON [longitude, latitude] */
   coordinates: [number, number];
+  regionId?: string;
 }
 
 export const SUPPORTED_CITIES: CityOption[] = [

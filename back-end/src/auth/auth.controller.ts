@@ -19,6 +19,8 @@ import {
 import { AuthService } from './auth.service';
 import { UsersService } from '../users/users.service';
 import { ProvidersService } from '../providers/providers.service';
+import { RegionsService } from '../regions/regions.service';
+import { isValidGeoCoordinates } from '../common/utils/geo.util';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 import { Public } from '../common/decorators/public.decorator';
@@ -35,6 +37,7 @@ export class AuthController {
     private readonly authService: AuthService,
     private readonly usersService: UsersService,
     private readonly providersService: ProvidersService,
+    private readonly regionsService: RegionsService,
   ) {}
 
   private async ensureProviderProfile(
@@ -43,6 +46,14 @@ export class AuthController {
   ) {
     const existing = await this.providersService.findByUser(userId);
     if (!existing) {
+      const hasValidCoords = isValidGeoCoordinates(location?.coordinates);
+      const resolvedRegion = hasValidCoords
+        ? await this.regionsService.resolveForLocation(
+            location!.coordinates[0],
+            location!.coordinates[1],
+          )
+        : null;
+
       await this.providersService.create({
         user: userId,
         offeredServices: [],
@@ -52,8 +63,9 @@ export class AuthController {
         workingDays: [1, 2, 3, 4, 5],
         location: {
           type: 'Point',
-          coordinates: location?.coordinates ?? [0, 0],
+          coordinates: hasValidCoords ? location!.coordinates : [0, 0],
         },
+        region: resolvedRegion ? resolvedRegion._id.toString() : undefined,
         status: ProviderStatus.PENDING,
       });
     }

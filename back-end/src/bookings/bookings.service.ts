@@ -7,6 +7,8 @@ import {
   UnauthorizedException,
   Logger,
   Inject,
+  OnModuleInit,
+  OnModuleDestroy,
   forwardRef,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
@@ -29,6 +31,7 @@ import { UpdateBookingDto } from './dto/update-booking.dto';
 import {
   BookingStatus,
   CancelledBy,
+  PayoutStatus,
   ProviderStatus,
   UserStatus,
   Role,
@@ -36,8 +39,9 @@ import {
 import type { AuthenticatedUser } from '../common/interfaces/authenticated-user.interface';
 
 @Injectable()
-export class BookingsService {
+export class BookingsService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(BookingsService.name);
+  private payoutSweepInterval: NodeJS.Timeout | null = null;
 
   constructor(
     @InjectModel(Booking.name)
@@ -54,6 +58,35 @@ export class BookingsService {
     @Inject(forwardRef(() => MatchingService))
     private readonly matchingService: MatchingService,
   ) {}
+
+  onModuleInit() {
+    this.payoutSweepInterval = setInterval(() => {
+      this.releaseDuePayouts().catch((err) =>
+        this.logger.error('Error releasing due payouts:', err),
+      );
+    }, 60000);
+  }
+
+  onModuleDestroy() {
+    if (this.payoutSweepInterval) {
+      clearInterval(this.payoutSweepInterval);
+      this.payoutSweepInterval = null;
+    }
+  }
+
+  async releaseDuePayouts() {
+    const result = await this.bookingModel
+      .updateMany(
+        {
+          status: BookingStatus.COMPLETED,
+          payoutStatus: PayoutStatus.PENDING,
+          payoutAt: { $ne: null, $lte: new Date() },
+        },
+        { $set: { payoutStatus: PayoutStatus.PAID } },
+      )
+      .exec();
+    return result.modifiedCount ?? 0;
+  }
 
   create(dto: CreateBookingDto) {
     return new this.bookingModel(dto).save();
@@ -554,6 +587,25 @@ export class BookingsService {
         : providerId;
     }
 
+    const existing = await this.bookingModel.findOne(filter).exec();
+    if (!existing) {
+      throw new BadRequestException(
+        'Booking cannot be started (must be in confirmed state)',
+      );
+    }
+
+    const settings = await this.platformSettingModel.findOne().exec();
+    const graceMinutes = settings?.startGraceMinutes ?? 60;
+    // scheduledDate is midnight UTC for the IST calendar day; startTime is minutes from IST midnight (UTC+5:30 = +330m)
+    const scheduledStartMs =
+      new Date(existing.scheduledDate).getTime() +
+      (existing.startTime - 330) * 60_000;
+    if (Date.now() < scheduledStartMs - graceMinutes * 60_000) {
+      throw new BadRequestException(
+        `Job cannot be started more than ${graceMinutes} minutes before the scheduled start time`,
+      );
+    }
+
     const booking = await this.bookingModel
       .findOneAndUpdate(
         filter,
@@ -655,6 +707,14 @@ export class BookingsService {
   }
 
   async confirmCompletion(bookingId: string, user: AuthenticatedUser) {
+    const settings = await this.platformSettingModel.findOne().exec();
+    const holdHours = settings?.payoutHoldHours ?? 0;
+    const now = new Date();
+    const payoutAt =
+      holdHours <= 0 ? now : new Date(now.getTime() + holdHours * 3600_000);
+    const payoutStatus =
+      holdHours <= 0 ? PayoutStatus.PAID : PayoutStatus.PENDING;
+
     const booking = await this.bookingModel
       .findOneAndUpdate(
         {
@@ -662,7 +722,12 @@ export class BookingsService {
           customer: user.userId,
           status: BookingStatus.COMPLETION_REQUESTED,
         },
-        { status: BookingStatus.COMPLETED, completedAt: new Date() },
+        {
+          status: BookingStatus.COMPLETED,
+          completedAt: now,
+          payoutStatus,
+          payoutAt,
+        },
         { new: true },
       )
       .populate('service customer order region')
@@ -680,7 +745,31 @@ export class BookingsService {
     return booking;
   }
 
-  async rejectCompletion(bookingId: string, user: AuthenticatedUser) {
+  async rejectCompletion(
+    bookingId: string,
+    user: AuthenticatedUser,
+    reason?: string,
+  ) {
+    const existing = await this.bookingModel
+      .findOne({
+        _id: bookingId,
+        customer: user.userId,
+        status: BookingStatus.COMPLETION_REQUESTED,
+      })
+      .exec();
+
+    if (!existing) {
+      throw new BadRequestException(
+        'Completion request not found for this customer',
+      );
+    }
+
+    const attempts = existing.completionAttempts ?? 0;
+    const isRetry = attempts === 0;
+    const nextStatus = isRetry
+      ? BookingStatus.IN_PROGRESS
+      : BookingStatus.DISPUTED;
+
     const booking = await this.bookingModel
       .findOneAndUpdate(
         {
@@ -688,7 +777,12 @@ export class BookingsService {
           customer: user.userId,
           status: BookingStatus.COMPLETION_REQUESTED,
         },
-        { status: BookingStatus.DISPUTED, completionRejectedAt: new Date() },
+        {
+          status: nextStatus,
+          completionAttempts: attempts + 1,
+          completionRejectionReason: reason?.trim() || null,
+          completionRejectedAt: new Date(),
+        },
         { new: true },
       )
       .populate('service customer order region')
@@ -703,16 +797,61 @@ export class BookingsService {
         'Completion request not found for this customer',
       );
     }
-    // The persisted dispute remains actionable even if notification delivery fails.
+
+    if (isRetry) {
+      try {
+        const providerUserId = (booking.provider as any)?.user?._id;
+        if (providerUserId) {
+          const reasonSuffix = reason?.trim() ? ` Reason: ${reason.trim()}` : '';
+          await this.notificationsService.create(
+            providerUserId,
+            'completion_rejected',
+            `Customer requested rework before confirming completion.${reasonSuffix}`,
+            booking._id as Types.ObjectId,
+          );
+        }
+      } catch (error) {
+        this.logger.error(
+          'Unable to notify provider of completion rejection retry',
+          error,
+        );
+      }
+      return booking;
+    }
+
+    // Second rejection escalates to DISPUTED: notify regional manager(s) AND active admins
     try {
+      const recipientIds = new Set<string>();
       const admins = await this.userModel
         .find({ role: Role.ADMIN, status: UserStatus.ACTIVE })
         .select('_id')
         .exec();
+      for (const admin of admins) {
+        recipientIds.add(admin._id.toString());
+      }
+
+      const regionId =
+        (booking.region as any)?._id?.toString() || booking.region?.toString();
+      if (regionId) {
+        const regionDoc: any = await this.bookingModel.db
+          .model('Region')
+          .findById(regionId)
+          .exec();
+        if (regionDoc?.manager) {
+          const managerDoc: any = await this.bookingModel.db
+            .model('Manager')
+            .findById(regionDoc.manager)
+            .exec();
+          if (managerDoc?.user) {
+            recipientIds.add(managerDoc.user.toString());
+          }
+        }
+      }
+
       await Promise.all(
-        admins.map((admin) =>
+        Array.from(recipientIds).map((uid) =>
           this.notificationsService.create(
-            admin._id as Types.ObjectId,
+            new Types.ObjectId(uid),
             'completion_disputed',
             'A customer reported incomplete work. Review the disputed booking before resolving it.',
             booking._id as Types.ObjectId,
@@ -721,7 +860,7 @@ export class BookingsService {
       );
     } catch (error) {
       this.logger.error(
-        'Unable to notify administrators of persisted booking dispute',
+        'Unable to notify managers/administrators of persisted booking dispute',
         error,
       );
     }

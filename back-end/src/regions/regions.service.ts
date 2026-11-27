@@ -1,10 +1,14 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
+import { ClientSession, Model, Types } from 'mongoose';
 import { Region, RegionDocument } from '../schema/region.schema';
 import { Manager, ManagerDocument } from '../schema/manager.schema';
 import { Provider, ProviderDocument } from '../schema/provider.schema';
 import { ProviderStatus } from '../common/enums';
+import {
+  assertValidGeoCoordinates,
+  haversineKm,
+} from '../common/utils/geo.util';
 import { CreateRegionDto } from './dto/create-region.dto';
 import { UpdateRegionDto } from './dto/update-region.dto';
 
@@ -70,6 +74,64 @@ export class RegionsService {
 
   findActive() {
     return this.regionModel.find({ isActive: true }).exec();
+  }
+
+  /**
+   * Resolves the active Region containing [lng, lat].
+   * 1. Checks GeoJSON polygon boundaries via $geoIntersects.
+   * 2. Falls back to regions without a polygon boundary using center + radiusKm (default 25km).
+   * Returns null if outside all active regions ("not serviceable").
+   */
+  async resolveForLocation(
+    lng: number,
+    lat: number,
+    session?: ClientSession,
+  ): Promise<RegionDocument | null> {
+    assertValidGeoCoordinates([lng, lat], 'region lookup coordinates');
+
+    const polygonMatch = await this.regionModel
+      .findOne({
+        isActive: true,
+        boundary: {
+          $geoIntersects: {
+            $geometry: { type: 'Point', coordinates: [lng, lat] },
+          },
+        },
+      })
+      .session(session ?? null)
+      .exec();
+
+    if (polygonMatch) {
+      return polygonMatch;
+    }
+
+    const radiusRegions = await this.regionModel
+      .find({
+        isActive: true,
+        $or: [
+          { boundary: { $exists: false } },
+          { boundary: null },
+          { 'boundary.coordinates': { $size: 0 } },
+        ],
+      })
+      .session(session ?? null)
+      .exec();
+
+    let bestMatch: RegionDocument | null = null;
+    let bestDistKm = Infinity;
+
+    for (const region of radiusRegions) {
+      const coords = region.location?.coordinates;
+      if (!coords || coords.length !== 2) continue;
+      const radiusKm = region.radiusKm ?? 25;
+      const distKm = haversineKm([lng, lat], coords);
+      if (distKm <= radiusKm && distKm < bestDistKm) {
+        bestDistKm = distKm;
+        bestMatch = region;
+      }
+    }
+
+    return bestMatch;
   }
 
   async findByManager(managerId: string) {

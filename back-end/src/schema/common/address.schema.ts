@@ -1,4 +1,5 @@
 import { Prop, Schema } from '@nestjs/mongoose';
+import { Schema as MongooseSchema, Types } from 'mongoose';
 import { GeoPointSchema } from './geo-point.schema';
 
 /** Inline type used on @Prop fields to avoid TS1272 with isolatedModules. */
@@ -25,6 +26,9 @@ export class UserAddress {
 
   @Prop({ type: GeoPointSchema, required: true })
   location: GeoPointType;
+
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Region', default: null })
+  regionId?: Types.ObjectId | null;
 }
 
 /**
@@ -41,4 +45,7 @@ export class AddressSnapshot {
 
   @Prop({ type: GeoPointSchema, required: true })
   location: GeoPointType;
+
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Region', default: null })
+  regionId?: Types.ObjectId | null;
 }

@@ -30,6 +30,20 @@ export async function getActiveRegions(): Promise<RegionDocument[]> {
   return apiService<RegionDocument[]>(HTTP_METHODS_ENUM.get, ENDPOINT_ENUM.REGIONS_ACTIVE);
 }
 
+export interface ResolveRegionResult {
+  serviceable: boolean;
+  region: { _id: string; name: string; maxRadiusKm?: number | null } | null;
+}
+
+/** GET /regions/resolve?lng=...&lat=... — Resolve serviceable region for coordinates. Public. */
+export async function resolveRegionForLocation(
+  lng: number,
+  lat: number,
+): Promise<ResolveRegionResult> {
+  const url = `${ENDPOINT_ENUM.REGIONS_RESOLVE}?lng=${encodeURIComponent(lng)}&lat=${encodeURIComponent(lat)}`;
+  return apiService<ResolveRegionResult>(HTTP_METHODS_ENUM.get, url);
+}
+
 /** GET /regions/manager/:managerId */
 export async function getRegionsByManager(managerId: string): Promise<RegionDocument[]> {
   const url = buildEndpoint(ENDPOINT_ENUM.REGIONS_BY_MANAGER, { managerId });

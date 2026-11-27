@@ -113,7 +113,12 @@ export class Booking {
   @Prop({ type: Date, default: null })
   completedAt: Date | null;
 
-  // A rejected completion is escalated, never automatically sent back to work.
+  @Prop({ type: Number, default: 0 })
+  completionAttempts: number;
+
+  @Prop({ type: String, default: null })
+  completionRejectionReason: string | null;
+
   @Prop({ type: Date, default: null })
   completionRejectedAt: Date | null;
 }

@@ -16,6 +16,8 @@ import {
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { parseAndValidateBookingDate } from '../common/utils/date.util';
+import { assertValidGeoCoordinates } from '../common/utils/geo.util';
+import { RegionsService } from '../regions/regions.service';
 
 @Injectable()
 export class UsersService {
@@ -24,6 +26,8 @@ export class UsersService {
     @Optional()
     @InjectModel(PlatformSetting.name)
     private readonly platformSettingModel?: Model<PlatformSettingDocument>,
+    @Optional()
+    private readonly regionsService?: RegionsService,
   ) {}
 
   async create(dto: CreateUserDto) {
@@ -70,18 +74,74 @@ export class UsersService {
   }
 
   async addAddress(userId: string, address: any) {
+    const coords = assertValidGeoCoordinates(
+      address?.location?.coordinates,
+      'address coordinates',
+    );
+    const resolvedRegion = this.regionsService
+      ? await this.regionsService.resolveForLocation(coords[0], coords[1])
+      : null;
+
     const addressId = address.id || new Types.ObjectId().toString();
-    const newAddress = { ...address, id: addressId };
+    const newAddress = {
+      ...address,
+      id: addressId,
+      location: { type: 'Point', coordinates: coords },
+      regionId: resolvedRegion ? resolvedRegion._id : null,
+    };
+
+    const update: Record<string, any> = {
+      $push: { addresses: newAddress },
+    };
+    if (resolvedRegion) {
+      const existing = await this.userModel
+        .findById(userId)
+        .select('defaultRegionId')
+        .exec();
+      if (existing && !existing.defaultRegionId) {
+        update.$set = { defaultRegionId: resolvedRegion._id };
+      }
+    }
+
     const user = await this.userModel
-      .findByIdAndUpdate(
-        userId,
-        { $push: { addresses: newAddress } },
-        { new: true },
-      )
+      .findByIdAndUpdate(userId, update, { new: true })
       .select('-password')
       .exec();
     if (!user) throw new NotFoundException(`User ${userId} not found`);
     return user.addresses;
+  }
+
+  async findUnassignedAddresses() {
+    const users = await this.userModel
+      .find({
+        addresses: {
+          $elemMatch: {
+            $or: [{ regionId: null }, { regionId: { $exists: false } }],
+          },
+        },
+      })
+      .select('name email phone addresses')
+      .exec();
+
+    const unassigned: Array<{
+      userId: string;
+      userName: string;
+      userEmail: string;
+      address: any;
+    }> = [];
+    for (const u of users) {
+      for (const addr of u.addresses || []) {
+        if (!addr.regionId) {
+          unassigned.push({
+            userId: u._id.toString(),
+            userName: u.name,
+            userEmail: u.email,
+            address: addr,
+          });
+        }
+      }
+    }
+    return unassigned;
   }
 
   async removeAddress(userId: string, addressId: string) {

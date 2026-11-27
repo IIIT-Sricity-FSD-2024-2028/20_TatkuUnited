@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import { LocateFixed, MapPin, Search, Loader2 } from "lucide-react";
+import { LocateFixed, MapPin, Search, Loader2, CheckCircle2, AlertTriangle } from "lucide-react";
 import { findCityByName, findNearestCity } from "@/common/cities";
+import { resolveRegionForLocation, type ResolveRegionResult } from "@/services/regions.service";
 
 export interface ResolvedLocationInfo {
   addressLine?: string;
@@ -116,6 +117,25 @@ export function LocationPicker({
   const [resolving, setResolving] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusError, setStatusError] = useState<string | null>(null);
+  const [regionStatus, setRegionStatus] = useState<ResolveRegionResult | null>(null);
+
+  useEffect(() => {
+    if (!value || (value[0] === 0 && value[1] === 0)) {
+      setRegionStatus(null);
+      return;
+    }
+    let cancelled = false;
+    resolveRegionForLocation(value[0], value[1])
+      .then((res) => {
+        if (!cancelled) setRegionStatus(res);
+      })
+      .catch(() => {
+        if (!cancelled) setRegionStatus(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [value?.[0], value?.[1]]);
 
   const initialCoords = value ?? centerHint ?? DEFAULT_CENTER;
 
@@ -348,6 +368,20 @@ export function LocationPicker({
           <span className="text-slate-500">
             Click anywhere on the map or use Live Location to pin.
           </span>
+        )}
+
+        {value && regionStatus && (
+          regionStatus.serviceable && regionStatus.region ? (
+            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 text-emerald-700 font-medium">
+              <CheckCircle2 className="w-3.5 h-3.5" />
+              Serviceable: {regionStatus.region.name}
+            </span>
+          ) : (
+            <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 border border-amber-200 px-2.5 py-0.5 text-amber-800 font-medium">
+              <AlertTriangle className="w-3.5 h-3.5" />
+              Service not available here
+            </span>
+          )
         )}
       </div>
 

@@ -8,6 +8,7 @@ import type { AppDispatch, RootState } from "@/store";
 import {
   CustomerActions,
   checkout,
+  fetchAddresses,
   fetchCart,
   removeFromCart,
 } from "@/store/customer/customer-slice";
@@ -47,7 +48,10 @@ function formatBookingDate(dateVal?: string | Date): string {
   }
 }
 
-const transformCartItems = (cart: BackendCart | null): CartItemData[] => {
+const transformCartItems = (
+  cart: BackendCart | null,
+  addressLabel: string,
+): CartItemData[] => {
   if (!cart?.items || !Array.isArray(cart.items)) return [];
   return cart.items.map((item, index) => {
     const svc =
@@ -62,7 +66,7 @@ const transformCartItems = (cart: BackendCart | null): CartItemData[] => {
     return {
       id: index,
       serviceName,
-      location: "Sri City",
+      location: addressLabel,
       schedule: `${dateStr} at ${timeStr}`,
       price: priceInRupees,
     };
@@ -72,15 +76,22 @@ const transformCartItems = (cart: BackendCart | null): CartItemData[] => {
 function CartPage() {
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
-  const { cart, pending, checkingOut, error } = useSelector(
+  const { cart, addresses, pending, checkingOut, error } = useSelector(
     (state: RootState) => state.customer,
   );
   const loading = pending > 0 && !cart;
-  const cartItems = transformCartItems(cart);
+  const selectedAddress = addresses.find(
+    (a: any) => a.id === cart?.address || a._id === cart?.address,
+  ) as any;
+  const addressLabel = selectedAddress
+    ? [selectedAddress.city, selectedAddress.line].filter(Boolean).join(" · ") || "Selected address"
+    : "No address selected";
+  const cartItems = transformCartItems(cart, addressLabel);
 
   useEffect(() => {
     dispatch(CustomerActions.clearError());
     dispatch(fetchCart());
+    dispatch(fetchAddresses());
   }, [dispatch]);
 
   const handleRemoveItem = (index: number) => {

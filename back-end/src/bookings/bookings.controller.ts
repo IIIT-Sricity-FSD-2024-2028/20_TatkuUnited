@@ -416,10 +416,15 @@ export class BookingsController {
   @Post(':id/reject-completion')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Reject a provider completion request' })
-  rejectCompletion(@Param('id') id: string, @Req() req: any) {
+  rejectCompletion(
+    @Param('id') id: string,
+    @Req() req: any,
+    @Body('reason') reason?: string,
+  ) {
     return this.bookingsService.rejectCompletion(
       id,
       req.user as AuthenticatedUser,
+      reason,
     );
   }
 

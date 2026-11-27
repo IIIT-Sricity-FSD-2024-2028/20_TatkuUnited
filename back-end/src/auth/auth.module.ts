@@ -5,6 +5,7 @@ import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { UsersModule } from '../users/users.module';
 import { ProvidersModule } from '../providers/providers.module';
+import { RegionsModule } from '../regions/regions.module';
 
 @Global()
 @Module({
@@ -23,6 +24,7 @@ import { ProvidersModule } from '../providers/providers.module';
     }),
     forwardRef(() => UsersModule),
     forwardRef(() => ProvidersModule),
+    RegionsModule,
   ],
   controllers: [AuthController],
   providers: [AuthService],

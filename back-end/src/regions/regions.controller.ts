@@ -6,6 +6,8 @@ import {
   Patch,
   Param,
   Delete,
+  Query,
+  BadRequestException,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -68,6 +70,37 @@ export class RegionsController {
   @ApiResponse({ status: 200, description: 'List of active regions.' })
   findActive() {
     return this.regionsService.findActive();
+  }
+
+  @Public()
+  @Get('resolve')
+  @ApiOperation({
+    summary: 'Resolve serviceable region for coordinates',
+    description:
+      'Checks whether [lng, lat] falls inside any active region boundary or service radius.',
+  })
+  @ApiResponse({ status: 200, description: 'Resolution result.' })
+  async resolveLocation(
+    @Query('lng') lngStr?: string,
+    @Query('lat') latStr?: string,
+  ) {
+    const lng = Number(lngStr);
+    const lat = Number(latStr);
+    if (!Number.isFinite(lng) || !Number.isFinite(lat)) {
+      throw new BadRequestException('Valid numeric lng and lat are required');
+    }
+    const region = await this.regionsService.resolveForLocation(lng, lat);
+    if (!region) {
+      return { serviceable: false, region: null };
+    }
+    return {
+      serviceable: true,
+      region: {
+        _id: region._id,
+        name: region.name,
+        maxRadiusKm: region.maxRadiusKm ?? null,
+      },
+    };
   }
 
   @Roles(Role.MANAGER, Role.ADMIN)
