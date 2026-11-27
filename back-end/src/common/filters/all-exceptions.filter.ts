@@ -46,9 +46,13 @@ export class AllExceptionsFilter implements ExceptionFilter {
       if (err.code === 11000) {
         status = HttpStatus.CONFLICT;
         errorType = 'ConflictException';
-        const keyPattern = (err.keyPattern || {}) as Record<string, any>;
-        const key = Object.keys(keyPattern)[0] || 'field';
-        message = `A record with this ${key} already exists.`;
+        const keyPattern = (err.keyPattern ||
+          err.errorResponse?.keyPattern ||
+          err.writeErrors?.[0]?.err?.keyPattern ||
+          {}) as Record<string, any>;
+        const keys = Object.keys(keyPattern);
+        const keyLabel = keys.length > 0 ? keys.join(', ') : 'field';
+        message = `A record with this ${keyLabel} already exists.`;
       }
       // Handle Mongoose CastError (e.g. invalid ObjectId)
       else if (err.name === 'CastError') {

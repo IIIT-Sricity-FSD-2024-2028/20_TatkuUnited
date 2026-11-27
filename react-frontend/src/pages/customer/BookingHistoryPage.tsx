@@ -1,9 +1,10 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch, RootState } from "@/store";
 import {
   BookingActions,
+  cancelBookingThunk,
   confirmCompletion,
   fetchCustomerBookings,
   rejectCompletion,
@@ -11,6 +12,16 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import type { BookingDocument } from "@/models/api.models";
 
 const labels: Record<string, string> = {
@@ -68,6 +79,9 @@ export default function BookingHistoryPage() {
     error,
   } = useSelector((state: RootState) => state.booking);
   const loading = sliceLoading && bookings.length === 0;
+  const [cancellingBooking, setCancellingBooking] =
+    useState<BookingDocument | null>(null);
+  const [cancelReason, setCancelReason] = useState("");
 
   // load, then keep the list fresh while the page is open
   useEffect(() => {
@@ -89,6 +103,23 @@ export default function BookingHistoryPage() {
       } else {
         await dispatch(rejectCompletion(booking._id)).unwrap();
       }
+    } catch {
+      // the message is in state.booking.error
+    }
+  };
+
+  const handleConfirmCancel = async () => {
+    if (!cancellingBooking || acting !== null) return;
+    try {
+      await dispatch(
+        cancelBookingThunk({
+          id: cancellingBooking._id,
+          cancelledBy: "customer",
+          reason: cancelReason.trim() || "Cancelled by customer",
+        }),
+      ).unwrap();
+      setCancellingBooking(null);
+      setCancelReason("");
     } catch {
       // the message is in state.booking.error
     }
@@ -229,6 +260,22 @@ export default function BookingHistoryPage() {
                       Payment details
                     </Button>
                   )}
+                  {["pending", "awaiting_provider", "confirmed"].includes(
+                    booking.status,
+                  ) && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700"
+                      disabled={acting !== null}
+                      onClick={() => {
+                        setCancelReason("");
+                        setCancellingBooking(booking);
+                      }}
+                    >
+                      Cancel booking
+                    </Button>
+                  )}
                   {booking.status === "completed" && (
                     <Button
                       variant="outline"
@@ -265,6 +312,55 @@ export default function BookingHistoryPage() {
           );
         })
       )}
+
+      <Dialog
+        open={cancellingBooking !== null}
+        onOpenChange={(open: boolean) => {
+          if (!open && acting === null) {
+            setCancellingBooking(null);
+          }
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Cancel this booking?</DialogTitle>
+            <DialogDescription>
+              This will cancel your booking
+              {cancellingBooking &&
+              typeof cancellingBooking.service === "object" &&
+              cancellingBooking.service?.name
+                ? ` for ${cancellingBooking.service.name}`
+                : ""}
+              .
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2 py-2">
+            <Label htmlFor="cancel-reason">Reason (optional)</Label>
+            <Input
+              id="cancel-reason"
+              placeholder="e.g. Plans changed"
+              value={cancelReason}
+              onChange={(e) => setCancelReason(e.target.value)}
+            />
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              disabled={acting !== null}
+              onClick={() => setCancellingBooking(null)}
+            >
+              Keep booking
+            </Button>
+            <Button
+              variant="destructive"
+              disabled={acting !== null}
+              onClick={() => void handleConfirmCancel()}
+            >
+              {acting !== null ? "Cancelling…" : "Confirm cancel"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </section>
   );
 }
