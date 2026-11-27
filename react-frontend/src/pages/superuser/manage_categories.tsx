@@ -1,6 +1,9 @@
+import axios from 'axios';
+import useAuth from "@/hooks/useAuth";
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import type { AppDispatch, RootState } from "@/store";
+import { BASE_URL } from '@/common/endpoints';
 import {
   createCategory,
   deleteCategory,
@@ -190,9 +193,31 @@ function AddCategory({ onClose }: AddCategoryProps) {
   const { submitting, error } = useSelector(
     (state: RootState) => state.superuser,
   );
+  const { token } = useAuth();
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [image, setImage] = useState('');
+
+  const handleImageFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const response = await axios.post(`${BASE_URL}/upload/image`, formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      const uploadedUrl: string = response.data.url;
+      setImage(uploadedUrl);
+    } catch (err) {
+      console.error('Image upload failed:', err);
+    }
+  };
 
   const handleSubmit = async (e: React.SyntheticEvent) => {
     e.preventDefault();
@@ -250,16 +275,38 @@ function AddCategory({ onClose }: AddCategoryProps) {
             />
           </div>
 
-          <div className="flex flex-col gap-1">
-            <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Image URL</label>
-            <input
-              type="text"
-              value={image}
-              onChange={(e) => setImage(e.target.value)}
-              placeholder="https://example.com/image.jpg"
-              className="w-full p-2 border border-slate-300 rounded-lg text-sm outline-none focus:border-blue-500 bg-white"
-              required
-            />
+          <div className="flex flex-col gap-3 md:col-span-2">
+            <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Category Image</label>
+            {!image ? (
+              <p className="text-xs text-slate-400 italic bg-slate-50 p-3 rounded-lg border border-slate-200">
+                No image added yet. Upload an image below.
+              </p>
+            ) : (
+              <div className="flex items-center justify-between gap-2 p-2 bg-slate-50 rounded-lg border border-slate-200">
+                <div className="flex items-center gap-2 overflow-hidden">
+                  <img src={image} alt="category-preview" className="w-10 h-10 object-cover rounded border border-slate-200 shrink-0" />
+                  <span className="text-xs text-slate-600 truncate">{image}</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setImage('')}
+                  className="text-xs text-red-500 hover:text-red-700 font-semibold shrink-0 px-2 py-1"
+                >
+                  Remove
+                </button>
+              </div>
+            )}
+            <div className="flex gap-2 items-center">
+              <label className="flex-1 flex items-center justify-center gap-2 p-2 border border-dashed border-slate-300 rounded-lg text-sm text-slate-500 cursor-pointer hover:border-blue-500 hover:text-blue-500 transition-colors bg-white">
+                <span>Click to upload an image</span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleImageFileChange}
+                />
+              </label>
+            </div>
           </div>
         </div>
 
@@ -290,10 +337,32 @@ function EditCategory({ onClose, category }: EditCategoryProps) {
   const { submitting, error } = useSelector(
     (state: RootState) => state.superuser,
   );
+  const { token } = useAuth();
   const [categoryName, setCategoryName] = useState(category.name);
   const [categoryDescription, setCategoryDescription] = useState(category.description);
   const [categoryImage, setCategoryImage] = useState(category.imageUrl);
   const [status, setStatus] = useState(category.isActive);
+
+  const handleImageFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const response = await axios.post(`${BASE_URL}/upload/image`, formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      const uploadedUrl: string = response.data.url;
+      setCategoryImage(uploadedUrl);
+    } catch (err) {
+      console.error('Image upload failed:', err);
+    }
+  };
 
   const handleSubmit = async (e: React.SyntheticEvent) => {
     e.preventDefault();
@@ -362,16 +431,38 @@ function EditCategory({ onClose, category }: EditCategoryProps) {
             />
           </div>
 
-          <div className="flex flex-col gap-1">
-            <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Image URL</label>
-            <input
-              type="text"
-              value={categoryImage || ""}
-              onChange={(e) => setCategoryImage(e.target.value)}
-              placeholder="https://example.com/image.jpg"
-              className="w-full p-2 border border-slate-300 rounded-lg text-sm outline-none focus:border-blue-500 bg-white"
-              required
-            />
+          <div className="flex flex-col gap-3">
+            <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Category Image</label>
+            {!categoryImage ? (
+              <p className="text-xs text-slate-400 italic bg-slate-50 p-3 rounded-lg border border-slate-200">
+                No image added yet. Upload an image below.
+              </p>
+            ) : (
+              <div className="flex items-center justify-between gap-2 p-2 bg-slate-50 rounded-lg border border-slate-200">
+                <div className="flex items-center gap-2 overflow-hidden">
+                  <img src={categoryImage} alt="category-preview" className="w-10 h-10 object-cover rounded border border-slate-200 shrink-0" />
+                  <span className="text-xs text-slate-600 truncate">{categoryImage}</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setCategoryImage('')}
+                  className="text-xs text-red-500 hover:text-red-700 font-semibold shrink-0 px-2 py-1"
+                >
+                  Remove
+                </button>
+              </div>
+            )}
+            <div className="flex gap-2 items-center">
+              <label className="flex-1 flex items-center justify-center gap-2 p-2 border border-dashed border-slate-300 rounded-lg text-sm text-slate-500 cursor-pointer hover:border-blue-500 hover:text-blue-500 transition-colors bg-white">
+                <span>Click to upload an image</span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleImageFileChange}
+                />
+              </label>
+            </div>
           </div>
 
           <div>

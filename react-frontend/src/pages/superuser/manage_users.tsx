@@ -20,6 +20,16 @@ import type {
 import { CitySelect } from "@/components/shared/CitySelect";
 import { LocationPicker } from "@/components/shared/LocationPicker";
 import { SUPPORTED_CITIES } from "@/common/cities";
+import { RolesEnum, type Role } from "@/common/roles.enum";
+
+const ROLE_LABELS: Record<Role, string> = {
+  [RolesEnum.CUSTOMER]: "Customer",
+  [RolesEnum.PROVIDER]: "Service Provider",
+  [RolesEnum.MANAGER]: "Manager",
+  [RolesEnum.ADMIN]: "Super User",
+};
+
+const CREATABLE_ROLES: Role[] = [RolesEnum.MANAGER, RolesEnum.ADMIN];
 
 export default function SuperUser_ManageUsers() {
   const dispatch = useDispatch<AppDispatch>();
@@ -177,18 +187,11 @@ export default function SuperUser_ManageUsers() {
             <option id="all-roles" value="all-roles">
               All Roles
             </option>
-            <option id="provider" value="provider">
-              Service Provider
-            </option>
-            <option id="manager" value="manager">
-              Manager
-            </option>
-            <option id="customer" value="customer">
-              Customer
-            </option>
-            <option id="admin" value="admin">
-              Super User
-            </option>
+            {Object.values(RolesEnum).map((r) => (
+              <option key={r} id={r} value={r}>
+                {ROLE_LABELS[r] ?? r}
+              </option>
+            ))}
           </select>
         </div>
 
@@ -299,7 +302,7 @@ function AddUser({ onClose }: AddUserProps) {
       setFormError("Please enter a valid date of birth in the past.");
       return;
     }
-    if (role === "manager" && !managerCoords) {
+    if (role === RolesEnum.MANAGER && !managerCoords) {
       setFormError(
         "Please pin the manager location on the map or use Live Location.",
       );
@@ -316,7 +319,7 @@ function AddUser({ onClose }: AddUserProps) {
       role,
     };
     const managerLocation: GeoLocationDto | undefined =
-      role === "manager" && managerCoords
+      role === RolesEnum.MANAGER && managerCoords
         ? {
             type: "Point",
             coordinates: managerCoords,
@@ -357,8 +360,11 @@ function AddUser({ onClose }: AddUserProps) {
               <option value="" disabled>
                 Select Role
               </option>
-              <option value="manager">Manager</option>
-              <option value="admin">Super User</option>
+              {CREATABLE_ROLES.map((r) => (
+                <option key={r} value={r}>
+                  {ROLE_LABELS[r] ?? r}
+                </option>
+              ))}
             </select>
           </div>
 
@@ -430,7 +436,7 @@ function AddUser({ onClose }: AddUserProps) {
             </select>
           </div>
 
-          {role === "manager" && (
+          {role === RolesEnum.MANAGER && (
             <>
               <div className="flex flex-col gap-1 md:col-span-2">
                 <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">
